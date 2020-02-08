@@ -1,19 +1,11 @@
 package vertexarrayobject
 
 import (
-	"github.com/akosgarai/opengl_playground/pkg/primitives"
-
 	"github.com/go-gl/gl/v4.1-core/gl"
 )
 
 // New initializes and returns a vertex array from the points provided.
-func New(vectors []primitives.Vector) uint32 {
-	var points []float32
-	for _, vector := range vectors {
-		points = append(points, float32(vector.X))
-		points = append(points, float32(vector.Y))
-		points = append(points, float32(vector.Z))
-	}
+func New(points []float32) uint32 {
 	var vertexBufferObject uint32
 	gl.GenBuffers(1, &vertexBufferObject)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)

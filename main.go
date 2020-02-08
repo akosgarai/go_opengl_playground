@@ -6,7 +6,6 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/primitives"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
-	vao "github.com/akosgarai/opengl_playground/pkg/vertexarrayobject"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -19,11 +18,11 @@ const (
 )
 
 var (
-	triangle = []primitives.Vector{
-		primitives.Vector{0, 0.5, 0},     // top
-		primitives.Vector{-0.5, -0.5, 0}, // left
-		primitives.Vector{0.5, -0.5, 0},  // right
-	}
+	triangle = primitives.NewTriangle(
+		primitives.Vector{-1, 1, 0},     // top
+		primitives.Vector{-1, 0.5, 0},   // left
+		primitives.Vector{-0.5, 0.5, 0}, // right
+	)
 )
 
 func initGlfw() *glfw.Window {
@@ -71,15 +70,6 @@ func initOpenGL() uint32 {
 	return program
 }
 
-func draw(vertexArrayObject uint32, window *glfw.Window, program uint32) {
-	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-	gl.UseProgram(program)
-	gl.BindVertexArray(vertexArrayObject)
-	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(triangle)))
-	glfw.PollEvents()
-	window.SwapBuffers()
-}
-
 func main() {
 	runtime.LockOSThread()
 
@@ -87,8 +77,11 @@ func main() {
 	defer glfw.Terminate()
 	program := initOpenGL()
 
-	vertexArrayObject := vao.New(triangle)
 	for !window.ShouldClose() {
-		draw(vertexArrayObject, window, program)
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+		gl.UseProgram(program)
+		triangle.Draw()
+		glfw.PollEvents()
+		window.SwapBuffers()
 	}
 }
