@@ -23,6 +23,12 @@ var (
 		primitives.Vector{-1, 0.5, 0},   // left
 		primitives.Vector{-0.5, 0.5, 0}, // right
 	)
+	square = primitives.NewSquare(
+		primitives.Vector{0.25, -0.25, 0}, // top-left
+		primitives.Vector{0.25, -0.75, 0}, // bottom-left
+		primitives.Vector{0.75, -0.75, 0}, // bottom-right
+		primitives.Vector{0.75, -0.25, 0}, // top-right
+	)
 )
 
 func initGlfw() *glfw.Window {
@@ -81,6 +87,7 @@ func main() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		gl.UseProgram(program)
 		triangle.Draw()
+		square.Draw()
 		glfw.PollEvents()
 		window.SwapBuffers()
 	}
