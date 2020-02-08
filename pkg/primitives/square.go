@@ -39,5 +39,6 @@ func (t *Square) Draw() {
 	points = append(points, float32(t.A.Z))
 	vertexArrayObject := vao.New(points)
 	gl.BindVertexArray(vertexArrayObject)
+	// The square is represented by 2 triangle, so we have 2 * 3 points here.
 	gl.DrawArrays(gl.TRIANGLES, 0, 6)
 }
