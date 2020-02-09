@@ -22,6 +22,13 @@ var (
 	frag_colour = vec4(1, 1, 1, 1);
     }
     ` + "\x00"
+	GreenFragmentShaderSource = `
+    #version 410
+    out vec4 frag_colour;
+    void main() {
+	frag_colour = vec4(0, 1, 0, 1);
+    }
+    ` + "\x00"
 )
 
 func CompileShader(source string, shaderType uint32) (uint32, error) {
