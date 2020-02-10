@@ -23,6 +23,12 @@ var (
 		primitives.Vector{-0.75, 0.25, 0}, // left
 		primitives.Vector{-0.25, 0.25, 0}, // right
 	)
+	square = primitives.NewSquare(
+		primitives.Vector{0.25, -0.25, 0}, // top-left
+		primitives.Vector{0.25, -0.75, 0}, // bottom-left
+		primitives.Vector{0.75, -0.75, 0}, // bottom-right
+		primitives.Vector{0.75, -0.25, 0}, // top-right
+	)
 )
 
 func initGlfw() *glfw.Window {
@@ -73,8 +79,10 @@ func initOpenGL() uint32 {
 func keyHandler(window *glfw.Window) {
 	if window.GetKey(glfw.KeyT) == glfw.Press {
 		triangle.SetColor(primitives.Vector{0, 1, 0})
+		square.SetColor(primitives.Vector{1, 0, 0})
 	} else {
 		triangle.SetColor(primitives.Vector{1, 0, 0})
+		square.SetColor(primitives.Vector{0, 1, 0})
 	}
 }
 
@@ -99,6 +107,7 @@ func main() {
 		keyHandler(window)
 		gl.UseProgram(program)
 		triangle.Draw()
+		square.Draw()
 		glfw.PollEvents()
 		window.SwapBuffers()
 	}
