@@ -15,6 +15,18 @@ var (
 	gl_Position = vec4(vp, 1.0);
     }
     ` + "\x00"
+	VertexShaderCookBookSource = `
+    #version 410
+    layout(location = 0) in vec3 vVertex;
+    layout(location = 1) in vec3 vColor;
+    smooth out vec4 vSmoothColor;
+    uniform mat4 MVP;
+    void main()
+    {
+	vSmoothColor = vec4(vColor,1);
+	gl_Position = MVP*vec4(vVertex,1);
+    }
+    ` + "\x00"
 	FragmentShaderSource = `
     #version 410
     out vec4 frag_colour;
@@ -27,6 +39,15 @@ var (
     out vec4 frag_colour;
     void main() {
 	frag_colour = vec4(0, 1, 0, 1);
+    }
+    ` + "\x00"
+	FragmentShaderCookBookSource = `
+    #version 410
+    smooth in vec4 vSmoothColor;
+    layout(location=0) out vec4 vFragColor;
+    void main()
+    {
+	vFragColor = vSmoothColor;
     }
     ` + "\x00"
 )
