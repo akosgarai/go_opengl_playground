@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"runtime"
+	"time"
 
 	"github.com/akosgarai/opengl_playground/pkg/primitives"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -15,6 +16,7 @@ const (
 	windowWidth  = 800
 	windowHeight = 600
 	windowTitle  = "Example - static button handler"
+	epsilon      = 300
 )
 
 var (
@@ -29,6 +31,7 @@ var (
 		primitives.Vector{0.75, -0.75, 0}, // bottom-right
 		primitives.Vector{0.75, -0.25, 0}, // top-right
 	)
+	lastUpdate = time.Now().UnixNano() / 1000000
 )
 
 func initGlfw() *glfw.Window {
@@ -83,6 +86,50 @@ func keyHandler(window *glfw.Window) {
 	} else {
 		triangle.SetColor(primitives.Vector{1, 0, 0})
 		square.SetColor(primitives.Vector{0, 1, 0})
+	}
+	nowUnixM := time.Now().UnixNano() / 1000000
+	if lastUpdate+epsilon > nowUnixM {
+		return
+	}
+	if window.GetKey(glfw.KeyW) == glfw.Press {
+		square.A.Y += 0.05
+		square.B.Y += 0.05
+		square.C.Y += 0.05
+		square.D.Y += 0.05
+		triangle.A.Y -= 0.05
+		triangle.B.Y -= 0.05
+		triangle.C.Y -= 0.05
+		lastUpdate = nowUnixM
+	}
+	if window.GetKey(glfw.KeyA) == glfw.Press {
+		square.A.X -= 0.05
+		square.B.X -= 0.05
+		square.C.X -= 0.05
+		square.D.X -= 0.05
+		triangle.A.X += 0.05
+		triangle.B.X += 0.05
+		triangle.C.X += 0.05
+		lastUpdate = nowUnixM
+	}
+	if window.GetKey(glfw.KeyS) == glfw.Press {
+		square.A.Y -= 0.05
+		square.B.Y -= 0.05
+		square.C.Y -= 0.05
+		square.D.Y -= 0.05
+		triangle.A.Y += 0.05
+		triangle.B.Y += 0.05
+		triangle.C.Y += 0.05
+		lastUpdate = nowUnixM
+	}
+	if window.GetKey(glfw.KeyD) == glfw.Press {
+		square.A.X += 0.05
+		square.B.X += 0.05
+		square.C.X += 0.05
+		square.D.X += 0.05
+		triangle.A.X -= 0.05
+		triangle.B.X -= 0.05
+		triangle.C.X -= 0.05
+		lastUpdate = nowUnixM
 	}
 }
 
