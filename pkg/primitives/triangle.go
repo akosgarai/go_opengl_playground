@@ -7,13 +7,18 @@ import (
 )
 
 type Triangle struct {
-	A Vector
-	B Vector
-	C Vector
+	A     Vector
+	B     Vector
+	C     Vector
+	Color Vector
 }
 
 func NewTriangle(v1, v2, v3 Vector) *Triangle {
-	return &Triangle{v1, v2, v3}
+	return &Triangle{v1, v2, v3, Vector{1, 1, 1}}
+}
+
+func (t *Triangle) SetColor(color Vector) {
+	t.Color = color
 }
 
 func (t *Triangle) buildVao() uint32 {
@@ -33,17 +38,12 @@ func (t *Triangle) buildVao() uint32 {
 	points = append(points, float32(t.C.Z))
 
 	// Colors (red)
-	points = append(points, float32(1.0))
-	points = append(points, float32(0.0))
-	points = append(points, float32(0.0))
 
-	points = append(points, float32(1.0))
-	points = append(points, float32(0.0))
-	points = append(points, float32(0.0))
-
-	points = append(points, float32(1.0))
-	points = append(points, float32(0.0))
-	points = append(points, float32(0.0))
+	for _, _ = range []int{0, 1, 2} {
+		points = append(points, float32(t.Color.X))
+		points = append(points, float32(t.Color.Y))
+		points = append(points, float32(t.Color.Z))
+	}
 
 	var vertexBufferObject uint32
 	gl.GenBuffers(1, &vertexBufferObject)
