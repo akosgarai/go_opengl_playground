@@ -92,43 +92,43 @@ func keyHandler(window *glfw.Window) {
 		return
 	}
 	if window.GetKey(glfw.KeyW) == glfw.Press {
-		square.A.Y += 0.05
-		square.B.Y += 0.05
-		square.C.Y += 0.05
-		square.D.Y += 0.05
-		triangle.A.Y -= 0.05
-		triangle.B.Y -= 0.05
-		triangle.C.Y -= 0.05
+		square.A.Coordinate.Y += 0.05
+		square.B.Coordinate.Y += 0.05
+		square.C.Coordinate.Y += 0.05
+		square.D.Coordinate.Y += 0.05
+		triangle.A.Coordinate.Y -= 0.05
+		triangle.B.Coordinate.Y -= 0.05
+		triangle.C.Coordinate.Y -= 0.05
 		lastUpdate = nowUnixM
 	}
 	if window.GetKey(glfw.KeyA) == glfw.Press {
-		square.A.X -= 0.05
-		square.B.X -= 0.05
-		square.C.X -= 0.05
-		square.D.X -= 0.05
-		triangle.A.X += 0.05
-		triangle.B.X += 0.05
-		triangle.C.X += 0.05
+		square.A.Coordinate.X -= 0.05
+		square.B.Coordinate.X -= 0.05
+		square.C.Coordinate.X -= 0.05
+		square.D.Coordinate.X -= 0.05
+		triangle.A.Coordinate.X += 0.05
+		triangle.B.Coordinate.X += 0.05
+		triangle.C.Coordinate.X += 0.05
 		lastUpdate = nowUnixM
 	}
 	if window.GetKey(glfw.KeyS) == glfw.Press {
-		square.A.Y -= 0.05
-		square.B.Y -= 0.05
-		square.C.Y -= 0.05
-		square.D.Y -= 0.05
-		triangle.A.Y += 0.05
-		triangle.B.Y += 0.05
-		triangle.C.Y += 0.05
+		square.A.Coordinate.Y -= 0.05
+		square.B.Coordinate.Y -= 0.05
+		square.C.Coordinate.Y -= 0.05
+		square.D.Coordinate.Y -= 0.05
+		triangle.A.Coordinate.Y += 0.05
+		triangle.B.Coordinate.Y += 0.05
+		triangle.C.Coordinate.Y += 0.05
 		lastUpdate = nowUnixM
 	}
 	if window.GetKey(glfw.KeyD) == glfw.Press {
-		square.A.X += 0.05
-		square.B.X += 0.05
-		square.C.X += 0.05
-		square.D.X += 0.05
-		triangle.A.X -= 0.05
-		triangle.B.X -= 0.05
-		triangle.C.X -= 0.05
+		square.A.Coordinate.X += 0.05
+		square.B.Coordinate.X += 0.05
+		square.C.Coordinate.X += 0.05
+		square.D.Coordinate.X += 0.05
+		triangle.A.Coordinate.X -= 0.05
+		triangle.B.Coordinate.X -= 0.05
+		triangle.C.Coordinate.X -= 0.05
 		lastUpdate = nowUnixM
 	}
 }
