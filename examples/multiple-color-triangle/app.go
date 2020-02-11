@@ -58,7 +58,7 @@ func initOpenGL() uint32 {
 	if err != nil {
 		panic(err)
 	}
-	fragmentShader, err := shader.CompileShader(shader.FragmentShaderCookBookSource, gl.FRAGMENT_SHADER)
+	fragmentShader, err := shader.CompileShader(shader.FragmentShaderBasicSource, gl.FRAGMENT_SHADER)
 	if err != nil {
 		panic(err)
 	}

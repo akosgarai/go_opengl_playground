@@ -20,7 +20,7 @@ var (
 	gl_Position = MVP*vec4(vVertex,1);
     }
     ` + "\x00"
-	FragmentShaderCookBookSource = `
+	FragmentShaderBasicSource = `
     #version 410
     smooth in vec4 vSmoothColor;
     layout(location=0) out vec4 vFragColor;
