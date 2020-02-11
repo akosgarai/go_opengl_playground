@@ -8,14 +8,7 @@ import (
 )
 
 var (
-	VertexShaderSource = `
-    #version 410
-    in vec3 vp;
-    void main() {
-	gl_Position = vec4(vp, 1.0);
-    }
-    ` + "\x00"
-	VertexShaderCookBookSource = `
+	VertexShaderBasicSource = `
     #version 410
     layout(location = 0) in vec3 vVertex;
     layout(location = 1) in vec3 vColor;
@@ -27,21 +20,7 @@ var (
 	gl_Position = MVP*vec4(vVertex,1);
     }
     ` + "\x00"
-	FragmentShaderSource = `
-    #version 410
-    out vec4 frag_colour;
-    void main() {
-	frag_colour = vec4(1, 1, 1, 1);
-    }
-    ` + "\x00"
-	GreenFragmentShaderSource = `
-    #version 410
-    out vec4 frag_colour;
-    void main() {
-	frag_colour = vec4(0, 1, 0, 1);
-    }
-    ` + "\x00"
-	FragmentShaderCookBookSource = `
+	FragmentShaderBasicSource = `
     #version 410
     smooth in vec4 vSmoothColor;
     layout(location=0) out vec4 vFragColor;

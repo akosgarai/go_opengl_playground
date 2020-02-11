@@ -1,8 +1,6 @@
 package primitives
 
 import (
-	//vao "github.com/akosgarai/opengl_playground/pkg/vertexarrayobject"
-
 	"github.com/go-gl/gl/v4.1-core/gl"
 )
 
