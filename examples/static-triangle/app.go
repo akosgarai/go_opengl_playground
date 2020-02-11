@@ -54,11 +54,11 @@ func initOpenGL() uint32 {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
 
-	vertexShader, err := shader.CompileShader(shader.VertexShaderSource, gl.VERTEX_SHADER)
+	vertexShader, err := shader.CompileShader(shader.VertexShaderCookBookSource, gl.VERTEX_SHADER)
 	if err != nil {
 		panic(err)
 	}
-	fragmentShader, err := shader.CompileShader(shader.FragmentShaderSource, gl.FRAGMENT_SHADER)
+	fragmentShader, err := shader.CompileShader(shader.FragmentShaderCookBookSource, gl.FRAGMENT_SHADER)
 	if err != nil {
 		panic(err)
 	}
@@ -77,9 +77,17 @@ func main() {
 	defer glfw.Terminate()
 	program := initOpenGL()
 
+	gl.UseProgram(program)
+	uniform := [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
+	// mvp - modelview - projection matrix
+	mvp := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
+	gl.UniformMatrix4fv(mvp, 1, false, &uniform[0])
+
+	gl.Enable(gl.DEPTH_TEST)
+	gl.DepthFunc(gl.LESS)
+
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-		gl.UseProgram(program)
 		triangle.Draw()
 		glfw.PollEvents()
 		window.SwapBuffers()
