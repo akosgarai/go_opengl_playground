@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"runtime"
-	"time"
 
 	"github.com/akosgarai/opengl_playground/pkg/primitives"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -15,8 +14,7 @@ import (
 const (
 	windowWidth  = 800
 	windowHeight = 600
-	windowTitle  = "Example - static button handler"
-	epsilon      = 300
+	windowTitle  = "Example - static triangle with multiple color"
 )
 
 var (
@@ -25,13 +23,6 @@ var (
 		primitives.Vector{-0.75, 0.25, 0}, // left
 		primitives.Vector{-0.25, 0.25, 0}, // right
 	)
-	square = primitives.NewSquare(
-		primitives.Vector{0.25, -0.25, 0}, // top-left
-		primitives.Vector{0.25, -0.75, 0}, // bottom-left
-		primitives.Vector{0.75, -0.75, 0}, // bottom-right
-		primitives.Vector{0.75, -0.25, 0}, // top-right
-	)
-	lastUpdate = time.Now().UnixNano() / 1000000
 )
 
 func initGlfw() *glfw.Window {
@@ -79,60 +70,6 @@ func initOpenGL() uint32 {
 	return program
 }
 
-func keyHandler(window *glfw.Window) {
-	if window.GetKey(glfw.KeyT) == glfw.Press {
-		triangle.SetColor(primitives.Vector{0, 1, 0})
-		square.SetColor(primitives.Vector{1, 0, 0})
-	} else {
-		triangle.SetColor(primitives.Vector{1, 0, 0})
-		square.SetColor(primitives.Vector{0, 1, 0})
-	}
-	nowUnixM := time.Now().UnixNano() / 1000000
-	if lastUpdate+epsilon > nowUnixM {
-		return
-	}
-	if window.GetKey(glfw.KeyW) == glfw.Press {
-		square.A.Coordinate.Y += 0.05
-		square.B.Coordinate.Y += 0.05
-		square.C.Coordinate.Y += 0.05
-		square.D.Coordinate.Y += 0.05
-		triangle.A.Coordinate.Y -= 0.05
-		triangle.B.Coordinate.Y -= 0.05
-		triangle.C.Coordinate.Y -= 0.05
-		lastUpdate = nowUnixM
-	}
-	if window.GetKey(glfw.KeyA) == glfw.Press {
-		square.A.Coordinate.X -= 0.05
-		square.B.Coordinate.X -= 0.05
-		square.C.Coordinate.X -= 0.05
-		square.D.Coordinate.X -= 0.05
-		triangle.A.Coordinate.X += 0.05
-		triangle.B.Coordinate.X += 0.05
-		triangle.C.Coordinate.X += 0.05
-		lastUpdate = nowUnixM
-	}
-	if window.GetKey(glfw.KeyS) == glfw.Press {
-		square.A.Coordinate.Y -= 0.05
-		square.B.Coordinate.Y -= 0.05
-		square.C.Coordinate.Y -= 0.05
-		square.D.Coordinate.Y -= 0.05
-		triangle.A.Coordinate.Y += 0.05
-		triangle.B.Coordinate.Y += 0.05
-		triangle.C.Coordinate.Y += 0.05
-		lastUpdate = nowUnixM
-	}
-	if window.GetKey(glfw.KeyD) == glfw.Press {
-		square.A.Coordinate.X += 0.05
-		square.B.Coordinate.X += 0.05
-		square.C.Coordinate.X += 0.05
-		square.D.Coordinate.X += 0.05
-		triangle.A.Coordinate.X -= 0.05
-		triangle.B.Coordinate.X -= 0.05
-		triangle.C.Coordinate.X -= 0.05
-		lastUpdate = nowUnixM
-	}
-}
-
 func main() {
 	runtime.LockOSThread()
 
@@ -149,13 +86,17 @@ func main() {
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
+	// red
+	triangle.A.SetColor(primitives.Vector{1, 0, 0})
+	// green
+	triangle.B.SetColor(primitives.Vector{0, 1, 0})
+	// blue
+	triangle.C.SetColor(primitives.Vector{0, 0, 1})
 
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-		keyHandler(window)
 		gl.UseProgram(program)
 		triangle.Draw()
-		square.Draw()
 		glfw.PollEvents()
 		window.SwapBuffers()
 	}

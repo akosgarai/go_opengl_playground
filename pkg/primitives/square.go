@@ -7,54 +7,74 @@ import (
 )
 
 type Square struct {
-	A     Vector
-	B     Vector
-	C     Vector
-	D     Vector
-	Color Vector
+	A Point
+	B Point
+	C Point
+	D Point
 }
 
 func NewSquare(v1, v2, v3, v4 Vector) *Square {
-	return &Square{v1, v2, v3, v4, Vector{1, 1, 1}}
+	return &Square{Point{v1, Vector{1, 1, 1}}, Point{v2, Vector{1, 1, 1}}, Point{v3, Vector{1, 1, 1}}, Point{v4, Vector{1, 1, 1}}}
 }
 
 func (s *Square) SetColor(color Vector) {
-	s.Color = color
+	s.A.SetColor(color)
+	s.B.SetColor(color)
+	s.C.SetColor(color)
+	s.D.SetColor(color)
 }
 
 func (s *Square) buildVao() uint32 {
 	var points []float32
 	// Coordinates
-	points = append(points, float32(s.A.X))
-	points = append(points, float32(s.A.Y))
-	points = append(points, float32(s.A.Z))
+	points = append(points, float32(s.A.Coordinate.X))
+	points = append(points, float32(s.A.Coordinate.Y))
+	points = append(points, float32(s.A.Coordinate.Z))
 
-	points = append(points, float32(s.B.X))
-	points = append(points, float32(s.B.Y))
-	points = append(points, float32(s.B.Z))
+	points = append(points, float32(s.B.Coordinate.X))
+	points = append(points, float32(s.B.Coordinate.Y))
+	points = append(points, float32(s.B.Coordinate.Z))
 
-	points = append(points, float32(s.C.X))
-	points = append(points, float32(s.C.Y))
-	points = append(points, float32(s.C.Z))
+	points = append(points, float32(s.C.Coordinate.X))
+	points = append(points, float32(s.C.Coordinate.Y))
+	points = append(points, float32(s.C.Coordinate.Z))
 
-	points = append(points, float32(s.C.X))
-	points = append(points, float32(s.C.Y))
-	points = append(points, float32(s.C.Z))
+	points = append(points, float32(s.C.Coordinate.X))
+	points = append(points, float32(s.C.Coordinate.Y))
+	points = append(points, float32(s.C.Coordinate.Z))
 
-	points = append(points, float32(s.D.X))
-	points = append(points, float32(s.D.Y))
-	points = append(points, float32(s.D.Z))
+	points = append(points, float32(s.D.Coordinate.X))
+	points = append(points, float32(s.D.Coordinate.Y))
+	points = append(points, float32(s.D.Coordinate.Z))
 
-	points = append(points, float32(s.A.X))
-	points = append(points, float32(s.A.Y))
-	points = append(points, float32(s.A.Z))
+	points = append(points, float32(s.A.Coordinate.X))
+	points = append(points, float32(s.A.Coordinate.Y))
+	points = append(points, float32(s.A.Coordinate.Z))
 
-	// Colors (red)
-	for _, _ = range []int{0, 1, 2, 3, 4, 5} {
-		points = append(points, float32(s.Color.X))
-		points = append(points, float32(s.Color.Y))
-		points = append(points, float32(s.Color.Z))
-	}
+	// Colors
+	points = append(points, float32(s.A.Color.X))
+	points = append(points, float32(s.A.Color.Y))
+	points = append(points, float32(s.A.Color.Z))
+
+	points = append(points, float32(s.B.Color.X))
+	points = append(points, float32(s.B.Color.Y))
+	points = append(points, float32(s.B.Color.Z))
+
+	points = append(points, float32(s.C.Color.X))
+	points = append(points, float32(s.C.Color.Y))
+	points = append(points, float32(s.C.Color.Z))
+
+	points = append(points, float32(s.C.Color.X))
+	points = append(points, float32(s.C.Color.Y))
+	points = append(points, float32(s.C.Color.Z))
+
+	points = append(points, float32(s.D.Color.X))
+	points = append(points, float32(s.D.Color.Y))
+	points = append(points, float32(s.D.Color.Z))
+
+	points = append(points, float32(s.A.Color.X))
+	points = append(points, float32(s.A.Color.Y))
+	points = append(points, float32(s.A.Color.Z))
 
 	var vertexBufferObject uint32
 	gl.GenBuffers(1, &vertexBufferObject)

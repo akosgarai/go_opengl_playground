@@ -7,43 +7,49 @@ import (
 )
 
 type Triangle struct {
-	A     Vector
-	B     Vector
-	C     Vector
-	Color Vector
+	A Point
+	B Point
+	C Point
 }
 
 func NewTriangle(v1, v2, v3 Vector) *Triangle {
-	return &Triangle{v1, v2, v3, Vector{1, 1, 1}}
+	return &Triangle{Point{v1, Vector{1, 1, 1}}, Point{v2, Vector{1, 1, 1}}, Point{v3, Vector{1, 1, 1}}}
 }
 
 func (t *Triangle) SetColor(color Vector) {
-	t.Color = color
+	t.A.SetColor(color)
+	t.B.SetColor(color)
+	t.C.SetColor(color)
 }
 
 func (t *Triangle) buildVao() uint32 {
 	var points []float32
 
 	// Coordinates
-	points = append(points, float32(t.A.X))
-	points = append(points, float32(t.A.Y))
-	points = append(points, float32(t.A.Z))
+	points = append(points, float32(t.A.Coordinate.X))
+	points = append(points, float32(t.A.Coordinate.Y))
+	points = append(points, float32(t.A.Coordinate.Z))
 
-	points = append(points, float32(t.B.X))
-	points = append(points, float32(t.B.Y))
-	points = append(points, float32(t.B.Z))
+	points = append(points, float32(t.B.Coordinate.X))
+	points = append(points, float32(t.B.Coordinate.Y))
+	points = append(points, float32(t.B.Coordinate.Z))
 
-	points = append(points, float32(t.C.X))
-	points = append(points, float32(t.C.Y))
-	points = append(points, float32(t.C.Z))
+	points = append(points, float32(t.C.Coordinate.X))
+	points = append(points, float32(t.C.Coordinate.Y))
+	points = append(points, float32(t.C.Coordinate.Z))
 
-	// Colors (red)
+	// Colors
+	points = append(points, float32(t.A.Color.X))
+	points = append(points, float32(t.A.Color.Y))
+	points = append(points, float32(t.A.Color.Z))
 
-	for _, _ = range []int{0, 1, 2} {
-		points = append(points, float32(t.Color.X))
-		points = append(points, float32(t.Color.Y))
-		points = append(points, float32(t.Color.Z))
-	}
+	points = append(points, float32(t.B.Color.X))
+	points = append(points, float32(t.B.Color.Y))
+	points = append(points, float32(t.B.Color.Z))
+
+	points = append(points, float32(t.C.Color.X))
+	points = append(points, float32(t.C.Color.Y))
+	points = append(points, float32(t.C.Color.Z))
 
 	var vertexBufferObject uint32
 	gl.GenBuffers(1, &vertexBufferObject)
