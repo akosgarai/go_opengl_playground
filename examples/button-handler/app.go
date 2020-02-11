@@ -143,6 +143,7 @@ func main() {
 	// Configure global settings
 	gl.UseProgram(program)
 	uniform := [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
+	// mvp - modelview - projection matrix
 	mvp := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
 	gl.UniformMatrix4fv(mvp, 1, false, &uniform[0])
 
