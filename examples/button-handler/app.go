@@ -15,7 +15,7 @@ import (
 const (
 	windowWidth  = 800
 	windowHeight = 600
-	windowTitle  = "Hello world"
+	windowTitle  = "Example - static button handler"
 	epsilon      = 300
 )
 
@@ -152,6 +152,7 @@ func main() {
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		keyHandler(window)
+		gl.UseProgram(program)
 		triangle.Draw()
 		square.Draw()
 		glfw.PollEvents()
