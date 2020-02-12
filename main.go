@@ -15,23 +15,11 @@ import (
 const (
 	windowWidth  = 800
 	windowHeight = 600
-	windowTitle  = "Hello world"
-	epsilon      = 300
+	windowTitle  = "Example - static triangle"
 )
 
 var (
-	triangle = primitives.NewTriangle(
-		primitives.Vector{-0.75, 0.75, 0}, // top
-		primitives.Vector{-0.75, 0.25, 0}, // left
-		primitives.Vector{-0.25, 0.25, 0}, // right
-	)
-	square = primitives.NewSquare(
-		primitives.Vector{0.25, -0.25, 0}, // top-left
-		primitives.Vector{0.25, -0.75, 0}, // bottom-left
-		primitives.Vector{0.75, -0.75, 0}, // bottom-right
-		primitives.Vector{0.75, -0.25, 0}, // top-right
-	)
-	lastUpdate = time.Now().UnixNano() / 1000000
+	triangles []primitives.Triangle
 )
 
 func initGlfw() *glfw.Window {
@@ -63,11 +51,11 @@ func initOpenGL() uint32 {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
 
-	vertexShader, err := shader.CompileShader(shader.VertexShaderCookBookSource, gl.VERTEX_SHADER)
+	vertexShader, err := shader.CompileShader(shader.VertexShaderDeformVertexPositionSource, gl.VERTEX_SHADER)
 	if err != nil {
 		panic(err)
 	}
-	fragmentShader, err := shader.CompileShader(shader.FragmentShaderCookBookSource, gl.FRAGMENT_SHADER)
+	fragmentShader, err := shader.CompileShader(shader.FragmentShaderBasicSource, gl.FRAGMENT_SHADER)
 	if err != nil {
 		panic(err)
 	}
@@ -79,57 +67,29 @@ func initOpenGL() uint32 {
 	return program
 }
 
-func keyHandler(window *glfw.Window) {
-	if window.GetKey(glfw.KeyT) == glfw.Press {
-		triangle.SetColor(primitives.Vector{0, 1, 0})
-		square.SetColor(primitives.Vector{1, 0, 0})
-	} else {
-		triangle.SetColor(primitives.Vector{1, 0, 0})
-		square.SetColor(primitives.Vector{0, 1, 0})
-	}
-	nowUnixM := time.Now().UnixNano() / 1000000
-	if lastUpdate+epsilon > nowUnixM {
-		return
-	}
-	if window.GetKey(glfw.KeyW) == glfw.Press {
-		square.A.Y += 0.05
-		square.B.Y += 0.05
-		square.C.Y += 0.05
-		square.D.Y += 0.05
-		triangle.A.Y -= 0.05
-		triangle.B.Y -= 0.05
-		triangle.C.Y -= 0.05
-		lastUpdate = nowUnixM
-	}
-	if window.GetKey(glfw.KeyA) == glfw.Press {
-		square.A.X -= 0.05
-		square.B.X -= 0.05
-		square.C.X -= 0.05
-		square.D.X -= 0.05
-		triangle.A.X += 0.05
-		triangle.B.X += 0.05
-		triangle.C.X += 0.05
-		lastUpdate = nowUnixM
-	}
-	if window.GetKey(glfw.KeyS) == glfw.Press {
-		square.A.Y -= 0.05
-		square.B.Y -= 0.05
-		square.C.Y -= 0.05
-		square.D.Y -= 0.05
-		triangle.A.Y += 0.05
-		triangle.B.Y += 0.05
-		triangle.C.Y += 0.05
-		lastUpdate = nowUnixM
-	}
-	if window.GetKey(glfw.KeyD) == glfw.Press {
-		square.A.X += 0.05
-		square.B.X += 0.05
-		square.C.X += 0.05
-		square.D.X += 0.05
-		triangle.A.X -= 0.05
-		triangle.B.X -= 0.05
-		triangle.C.X -= 0.05
-		lastUpdate = nowUnixM
+func generateTriangles() {
+	/*
+	 * The goal is to draw triangles to the screen. The screen will contain 20 * 20 triangles.
+	 * The screen [-1, 1] -> 20 part, one part : 0.10
+	 */
+	rows := 5
+	cols := 5
+	length := 0.40
+	for i := 0; i <= rows; i++ {
+		for j := 0; j <= cols; j++ {
+			topX := 1.0 - (float64(j) * length)
+			topY := -1.0 + (float64(i) * length)
+			topZ := 0.0
+
+			triangles = append(
+				triangles,
+				*primitives.NewTriangle(
+					primitives.Vector{topX, topY, topZ},
+					primitives.Vector{topX, topY - length, topZ},
+					primitives.Vector{topX - length, topY - length, topZ},
+				),
+			)
+		}
 	}
 }
 
@@ -142,18 +102,32 @@ func main() {
 
 	// Configure global settings
 	gl.UseProgram(program)
+	/*
+	 * MPV = P * M, where P is the projection matrix and M is the model-view matrix (aka. object to world space * world space to camera space)
+	 * https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/projection-matrix-introduction
+	 */
 	uniform := [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
+	// mvp - modelview - projection matrix
 	mvp := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
 	gl.UniformMatrix4fv(mvp, 1, false, &uniform[0])
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
 
+	generateTriangles()
+
+	nowUnix := time.Now().UnixNano()
+
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-		keyHandler(window)
-		triangle.Draw()
-		square.Draw()
+		// time
+		elapsedTimeNano := time.Now().UnixNano() - nowUnix
+		time := gl.GetUniformLocation(program, gl.Str("time\x00"))
+		gl.Uniform1f(time, float32(elapsedTimeNano/100))
+
+		for _, item := range triangles {
+			item.Draw()
+		}
 		glfw.PollEvents()
 		window.SwapBuffers()
 	}
