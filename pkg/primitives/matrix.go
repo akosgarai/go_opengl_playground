@@ -48,6 +48,36 @@ func TranslationMatrix4x4(translationX, translationY, translationZ float32) *Mat
 		},
 	}
 }
+func RotationXMatrix4x4(rotationAngle float64) *Matrix4x4 {
+	return &Matrix4x4{
+		[16]float32{
+			1.0, 0.0, 0.0, 0.0,
+			0.0, float32(math.Cos(rotationAngle)), float32(-math.Sin(rotationAngle)), 0.0,
+			0.0, float32(math.Sin(rotationAngle)), float32(math.Cos(rotationAngle)), 0.0,
+			0.0, 0.0, 0.0, 1.0,
+		},
+	}
+}
+func RotationYMatrix4x4(rotationAngle float64) *Matrix4x4 {
+	return &Matrix4x4{
+		[16]float32{
+			float32(math.Cos(rotationAngle)), 0.0, float32(math.Sin(rotationAngle)), 0.0,
+			0.0, 1.0, 0.0, 0.0,
+			float32(-math.Sin(rotationAngle)), 0.0, float32(math.Cos(rotationAngle)), 0.0,
+			0.0, 0.0, 0.0, 1.0,
+		},
+	}
+}
+func RotationZMatrix4x4(rotationAngle float64) *Matrix4x4 {
+	return &Matrix4x4{
+		[16]float32{
+			float32(math.Cos(rotationAngle)), float32(-math.Sin(rotationAngle)), 0.0, 0.0,
+			float32(math.Sin(rotationAngle)), float32(math.Cos(rotationAngle)), 0.0, 0.0,
+			0.0, 0.0, 1.0, 0.0,
+			0.0, 0.0, 0.0, 1.0,
+		},
+	}
+}
 
 //func ProjectionMatrix4x4(const float &angleOfView, const float &near, const float &far, Matrix44f &M) *Matrix4x4 {
 func ProjectionMatrix4x4(angleOfView, near, far float64) *Matrix4x4 {
