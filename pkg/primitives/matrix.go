@@ -79,7 +79,6 @@ func RotationZMatrix4x4(rotationAngle float64) *Matrix4x4 {
 	}
 }
 
-//func ProjectionMatrix4x4(const float &angleOfView, const float &near, const float &far, Matrix44f &M) *Matrix4x4 {
 func ProjectionMatrix4x4(angleOfView, near, far float64) *Matrix4x4 {
 	scale := float32(1 / math.Tan(angleOfView*0.5*math.Pi/180))
 	projection := NullMatrix4x4()
