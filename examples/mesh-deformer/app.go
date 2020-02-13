@@ -15,7 +15,7 @@ import (
 const (
 	windowWidth  = 800
 	windowHeight = 600
-	windowTitle  = "Example - static triangle"
+	windowTitle  = "Example - mesh deformer"
 )
 
 var (
@@ -66,11 +66,9 @@ func initOpenGL() uint32 {
 	gl.LinkProgram(program)
 	return program
 }
+
+// It generates a bunch of triangles and sets their color to static blue.
 func generateTrianglesModelCoordinates() {
-	/*
-	 * The goal is to draw triangles to the screen. The screen will contain 20 * 20 triangles.
-	 * one part : 10 width,
-	 */
 	rows := 100
 	cols := 100
 	length := 10.0
@@ -80,13 +78,15 @@ func generateTrianglesModelCoordinates() {
 			topY := (float64(i) * length)
 			topZ := 0.0
 
+			triangle := *primitives.NewTriangle(
+				primitives.Vector{topX, topY, topZ},
+				primitives.Vector{topX, topY - length, topZ},
+				primitives.Vector{topX - length, topY - length, topZ},
+			)
+			triangle.SetColor(primitives.Vector{0, 0, 1})
 			triangles = append(
 				triangles,
-				*primitives.NewTriangle(
-					primitives.Vector{topX, topY, topZ},
-					primitives.Vector{topX, topY - length, topZ},
-					primitives.Vector{topX - length, topY - length, topZ},
-				),
+				triangle,
 			)
 		}
 	}
@@ -113,9 +113,13 @@ func main() {
 	angelOfView := float64(270)
 	near := float64(0.1)
 	far := float64(100)
+	// projection matrix
 	P := primitives.ProjectionMatrix4x4(angelOfView, near, far)
+	// scalematrix - coord / 100
 	scaleMatrix := primitives.ScaleMatrix4x4(0.01, 0.01, 0.01)
-	translationMatrix := primitives.TranslationMatrix4x4(-1, -1, -100)
+	// translation matrix
+	translationMatrix := primitives.TranslationMatrix4x4(-1, -1, -50)
+	// rotationmatrix - rotate on the Z coord.
 	rotationMatrix := primitives.RotationZMatrix4x4(90)
 	MV := (scaleMatrix.Dot(translationMatrix)).Dot(rotationMatrix)
 	mvpPoints := (P.Dot(MV)).Points
@@ -126,22 +130,6 @@ func main() {
 		elapsedTimeNano := time.Now().UnixNano() - nowUnix
 		time := gl.GetUniformLocation(program, gl.Str("time\x00"))
 		gl.Uniform1f(time, float32(elapsedTimeNano/10000000))
-		/*
-		 * MPV = P * M, where P is the projection matrix and M is the model-view matrix (aka. object to world space * world space to camera space)
-		 * P supposed to be something like this : [16]float32{
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		 }
-		 * MV supposed to be something like this : [16]float32{
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		 }
-		 * https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/projection-matrix-introduction
-		*/
 		mvp := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
 		gl.UniformMatrix4fv(mvp, 1, false, &mvpPoints[0])
 

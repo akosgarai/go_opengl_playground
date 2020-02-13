@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"runtime"
-	"time"
 
 	"github.com/akosgarai/opengl_playground/pkg/primitives"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -15,7 +14,7 @@ import (
 const (
 	windowWidth  = 800
 	windowHeight = 600
-	windowTitle  = "Example - static triangle"
+	windowTitle  = "Example - static triangles, lots of them"
 )
 
 var (
@@ -51,7 +50,7 @@ func initOpenGL() uint32 {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
 
-	vertexShader, err := shader.CompileShader(shader.VertexShaderDeformVertexPositionSource, gl.VERTEX_SHADER)
+	vertexShader, err := shader.CompileShader(shader.VertexShaderBasicSource, gl.VERTEX_SHADER)
 	if err != nil {
 		panic(err)
 	}
@@ -66,18 +65,19 @@ func initOpenGL() uint32 {
 	gl.LinkProgram(program)
 	return program
 }
-func generateTrianglesModelCoordinates() {
+
+func generateTriangles() {
 	/*
 	 * The goal is to draw triangles to the screen. The screen will contain 20 * 20 triangles.
-	 * one part : 10 width,
+	 * The screen [-1, 1] -> 20 part, one part : 0.10
 	 */
-	rows := 100
-	cols := 100
-	length := 10.0
+	rows := 20
+	cols := 20
+	length := 0.10
 	for i := 0; i <= rows; i++ {
 		for j := 0; j <= cols; j++ {
-			topX := (float64(j) * length)
-			topY := (float64(i) * length)
+			topX := 1.0 - (float64(j) * length)
+			topY := -1.0 + (float64(i) * length)
 			topZ := 0.0
 
 			triangles = append(
@@ -101,49 +101,18 @@ func main() {
 
 	// Configure global settings
 	gl.UseProgram(program)
+	uniform := [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
+	// mvp - modelview - projection matrix
+	mvp := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
+	gl.UniformMatrix4fv(mvp, 1, false, &uniform[0])
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
 
-	generateTrianglesModelCoordinates()
-
-	nowUnix := time.Now().UnixNano()
-
-	// mvp - modelview - projection matrix
-	angelOfView := float64(270)
-	near := float64(0.1)
-	far := float64(100)
-	P := primitives.ProjectionMatrix4x4(angelOfView, near, far)
-	scaleMatrix := primitives.ScaleMatrix4x4(0.01, 0.01, 0.01)
-	translationMatrix := primitives.TranslationMatrix4x4(-1, -1, -100)
-	rotationMatrix := primitives.RotationZMatrix4x4(90)
-	MV := (scaleMatrix.Dot(translationMatrix)).Dot(rotationMatrix)
-	mvpPoints := (P.Dot(MV)).Points
+	generateTriangles()
 
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-		// time
-		elapsedTimeNano := time.Now().UnixNano() - nowUnix
-		time := gl.GetUniformLocation(program, gl.Str("time\x00"))
-		gl.Uniform1f(time, float32(elapsedTimeNano/10000000))
-		/*
-		 * MPV = P * M, where P is the projection matrix and M is the model-view matrix (aka. object to world space * world space to camera space)
-		 * P supposed to be something like this : [16]float32{
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		 }
-		 * MV supposed to be something like this : [16]float32{
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		 }
-		 * https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/projection-matrix-introduction
-		*/
-		mvp := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
-		gl.UniformMatrix4fv(mvp, 1, false, &mvpPoints[0])
 
 		for _, item := range triangles {
 			item.Draw()
