@@ -88,6 +88,16 @@ func generateTrianglesModelCoordinates() {
 				triangles,
 				triangle,
 			)
+			triangle = *primitives.NewTriangle(
+				primitives.Vector{topX, topY, topZ},
+				primitives.Vector{topX - length, topY - length, topZ},
+				primitives.Vector{topX - length, topY, topZ},
+			)
+			triangle.SetColor(primitives.Vector{0, 0.5, 1})
+			triangles = append(
+				triangles,
+				triangle,
+			)
 		}
 	}
 }
@@ -112,7 +122,7 @@ func main() {
 	// mvp - modelview - projection matrix
 	angelOfView := float64(270)
 	near := float64(0.1)
-	far := float64(100)
+	far := float64(1000)
 	// projection matrix
 	P := primitives.ProjectionMatrix4x4(angelOfView, near, far)
 	// scalematrix - coord / 100
