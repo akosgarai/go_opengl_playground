@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"runtime"
-	"time"
 
 	"github.com/akosgarai/opengl_playground/pkg/primitives"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -15,11 +14,23 @@ import (
 const (
 	windowWidth  = 800
 	windowHeight = 600
-	windowTitle  = "Example - static triangle"
+	windowTitle  = "Example - dynamically subdivision"
 )
 
 var (
-	triangles []primitives.Triangle
+	square = primitives.NewSquare(
+		primitives.Vector{-5, 0, -5},
+		primitives.Vector{-5, 0, 5},
+		primitives.Vector{5, 0, 5},
+		primitives.Vector{5, 0, -5},
+	)
+	sub_division       = 1.0
+	mouseButtonPressed = false
+	mousePositionX     = 0
+	mousePositionY     = 0
+	rotationX          = 45.0
+	rotationY          = 45.0
+	distance           = 1.0
 )
 
 func initGlfw() *glfw.Window {
@@ -51,44 +62,83 @@ func initOpenGL() uint32 {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
 
-	vertexShader, err := shader.CompileShader(shader.VertexShaderDeformVertexPositionSource, gl.VERTEX_SHADER)
+	vertexShader, err := shader.CompileShader(shader.VertexShaderDirectOutputSource, gl.VERTEX_SHADER)
 	if err != nil {
 		panic(err)
 	}
-	fragmentShader, err := shader.CompileShader(shader.FragmentShaderBasicSource, gl.FRAGMENT_SHADER)
+	geometryShader, err := shader.CompileShader(shader.GeometryShaderQuadSubdivisionSource, gl.GEOMETRY_SHADER)
+	if err != nil {
+		panic(err)
+	}
+	fragmentShader, err := shader.CompileShader(shader.FragmentShaderConstantSource, gl.FRAGMENT_SHADER)
 	if err != nil {
 		panic(err)
 	}
 
 	program := gl.CreateProgram()
 	gl.AttachShader(program, vertexShader)
+	gl.AttachShader(program, geometryShader)
 	gl.AttachShader(program, fragmentShader)
 	gl.LinkProgram(program)
 	return program
 }
-func generateTrianglesModelCoordinates() {
-	/*
-	 * The goal is to draw triangles to the screen. The screen will contain 20 * 20 triangles.
-	 * one part : 10 width,
-	 */
-	rows := 100
-	cols := 100
-	length := 10.0
-	for i := 0; i <= rows; i++ {
-		for j := 0; j <= cols; j++ {
-			topX := (float64(j) * length)
-			topY := (float64(i) * length)
-			topZ := 0.0
 
-			triangles = append(
-				triangles,
-				*primitives.NewTriangle(
-					primitives.Vector{topX, topY, topZ},
-					primitives.Vector{topX, topY - length, topZ},
-					primitives.Vector{topX - length, topY - length, topZ},
-				),
-			)
+/*
+* Mouse click handler logic:
+* - if the button is pressed: state is on(1), else off(0)
+* - if the state is on(1) - we can store the old x,y coordinates
+* Mouse move handler logic:
+* - if the state is on: we can calculate the dist. variable.
+* - if the state is off: we can calculate rx, rY rotation values.
+ */
+func mouseHandler(window *glfw.Window) {
+	x, y := window.GetCursorPos()
+
+	if window.GetMouseButton(glfw.MouseButtonMiddle) == glfw.Press {
+		if !mouseButtonPressed {
+			mousePositionX = int(x)
+			mousePositionY = int(y)
+			mouseButtonPressed = true
+			fmt.Print("Button Pressed x: ")
+			fmt.Print(x)
+			fmt.Print(", y: ")
+			fmt.Print(y)
 		}
+	} else {
+		mouseButtonPressed = false
+	}
+	if mousePositionX != int(x) || mousePositionY != int(y) {
+		if mouseButtonPressed {
+			distance *= float64((1 + (int(y)-mousePositionY)/60.0))
+			fmt.Print("Distance : ")
+			fmt.Print(distance)
+		} else {
+			rotationY += float64((int(x) - mousePositionX) / 5.0)
+			rotationX += float64((int(y) - mousePositionY) / 5.0)
+		}
+		mousePositionX = int(x)
+		mousePositionY = int(y)
+	}
+}
+func keyHandler(window *glfw.Window) {
+	if window.GetKey(glfw.KeyT) == glfw.Press {
+		sub_division = sub_division + 1.0
+	}
+	if window.GetKey(glfw.KeyR) == glfw.Press {
+		sub_division = sub_division - 1.0
+	}
+	if sub_division < 1 {
+		sub_division = 1.0
+	}
+	if sub_division > 8 {
+		sub_division = 8.0
+	}
+	if window.GetKey(glfw.KeyO) == glfw.Press {
+		x, y := window.GetCursorPos()
+		fmt.Print("x: ")
+		fmt.Print(x)
+		fmt.Print(", y: ")
+		fmt.Print(y)
 	}
 }
 
@@ -98,6 +148,7 @@ func main() {
 	window := initGlfw()
 	defer glfw.Terminate()
 	program := initOpenGL()
+	square.SetupVaoPoligonMode()
 
 	// Configure global settings
 	gl.UseProgram(program)
@@ -105,49 +156,54 @@ func main() {
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
 
-	generateTrianglesModelCoordinates()
-
-	nowUnix := time.Now().UnixNano()
-
-	// mvp - modelview - projection matrix
-	angelOfView := float64(270)
-	near := float64(0.1)
-	far := float64(100)
+	// projection matrix
+	angelOfView := float64(45)
+	near := float64(1)
+	far := float64(1000)
+	// P = glm::perspective(45.0f, (GLfloat)w/h, 1.f, 1000.f);
 	P := primitives.ProjectionMatrix4x4(angelOfView, near, far)
-	scaleMatrix := primitives.ScaleMatrix4x4(0.01, 0.01, 0.01)
-	translationMatrix := primitives.TranslationMatrix4x4(-1, -1, -100)
-	rotationMatrix := primitives.RotationZMatrix4x4(90)
-	MV := (scaleMatrix.Dot(translationMatrix)).Dot(rotationMatrix)
-	mvpPoints := (P.Dot(MV)).Points
+
+	sub_divisionLocation := gl.GetUniformLocation(program, gl.Str("sub_divisions\x00"))
+	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
 
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-		// time
-		elapsedTimeNano := time.Now().UnixNano() - nowUnix
-		time := gl.GetUniformLocation(program, gl.Str("time\x00"))
-		gl.Uniform1f(time, float32(elapsedTimeNano/10000000))
-		/*
-		 * MPV = P * M, where P is the projection matrix and M is the model-view matrix (aka. object to world space * world space to camera space)
-		 * P supposed to be something like this : [16]float32{
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		 }
-		 * MV supposed to be something like this : [16]float32{
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		     0.0,0.0,0.0,0.0,
-		 }
-		 * https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/projection-matrix-introduction
-		*/
-		mvp := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
-		gl.UniformMatrix4fv(mvp, 1, false, &mvpPoints[0])
+		// define the matrixes:
+		translationMatrix := primitives.TranslationMatrix4x4(0, 0, float32(distance))
+		rotationXMatrix := primitives.RotationXMatrix4x4(rotationX)
+		rotationYMatrix := primitives.RotationYMatrix4x4(rotationY)
 
-		for _, item := range triangles {
-			item.Draw()
-		}
+		MV := translationMatrix.Dot(rotationXMatrix.Dot(rotationYMatrix))
+
+		translationMatrix = primitives.TranslationMatrix4x4(-5, 0, -5)
+		MV = MV.Dot(translationMatrix)
+		// sub_division
+		gl.Uniform1f(sub_divisionLocation, float32(sub_division))
+		mvpPoints := (P.Dot(MV)).Points
+		gl.UniformMatrix4fv(mvpLocation, 1, false, &mvpPoints[0])
+
+		gl.DrawElements(gl.TRIANGLES, 6, gl.FLOAT, gl.PtrOffset(0))
+
+		translationMatrix = primitives.TranslationMatrix4x4(10, 0, 0)
+		MV = MV.Dot(translationMatrix)
+		mvpPoints = (P.Dot(MV)).Points
+		gl.UniformMatrix4fv(mvpLocation, 1, false, &mvpPoints[0])
+		gl.DrawElements(gl.TRIANGLES, 6, gl.FLOAT, gl.PtrOffset(0))
+
+		translationMatrix = primitives.TranslationMatrix4x4(0, 0, 10)
+		MV = MV.Dot(translationMatrix)
+		mvpPoints = (P.Dot(MV)).Points
+		gl.UniformMatrix4fv(mvpLocation, 1, false, &mvpPoints[0])
+		gl.DrawElements(gl.TRIANGLES, 6, gl.FLOAT, gl.PtrOffset(0))
+
+		translationMatrix = primitives.TranslationMatrix4x4(-10, 0, 0)
+		MV = MV.Dot(translationMatrix)
+		mvpPoints = (P.Dot(MV)).Points
+		gl.UniformMatrix4fv(mvpLocation, 1, false, &mvpPoints[0])
+		gl.DrawElements(gl.TRIANGLES, 6, gl.FLOAT, gl.PtrOffset(0))
+
+		keyHandler(window)
+		mouseHandler(window)
 		glfw.PollEvents()
 		window.SwapBuffers()
 	}
