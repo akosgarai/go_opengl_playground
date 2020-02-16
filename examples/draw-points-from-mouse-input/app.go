@@ -18,6 +18,7 @@ const (
 )
 
 var (
+	DebugPrint         = false
 	mouseButtonPressed = false
 	mousePositionX     = 0.0
 	mousePositionY     = 0.0
@@ -30,6 +31,8 @@ type Application struct {
 func (a *Application) AddPoint(point primitives.Point) {
 	a.Points = append(a.Points, point)
 }
+
+var app Application
 
 func initGlfw() *glfw.Window {
 	if err := glfw.Init(); err != nil {
@@ -94,7 +97,24 @@ func mouseHandler(window *glfw.Window) {
 		if mouseButtonPressed {
 			mouseButtonPressed = false
 			x, y := convertMouseCoordinates()
+			app.AddPoint(
+				primitives.Point{
+					primitives.Vector{x, y, 0.0},
+					primitives.Vector{1, 1, 1},
+				})
 		}
+	}
+}
+
+// Key handler function. it supports the debug option. (print out the points of the app)
+func keyHandler(window *glfw.Window) {
+	if window.GetKey(glfw.KeyD) == glfw.Press {
+		if !DebugPrint {
+			DebugPrint = true
+			fmt.Println(app.Points)
+		}
+	} else {
+		DebugPrint = false
 	}
 }
 func convertMouseCoordinates() (float64, float64) {
@@ -116,6 +136,7 @@ func main() {
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		mouseHandler(window)
+		keyHandler(window)
 		glfw.PollEvents()
 		window.SwapBuffers()
 	}
