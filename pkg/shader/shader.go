@@ -8,6 +8,16 @@ import (
 )
 
 var (
+	VertexShaderPointSource = `
+    #version 410
+    layout(location = 0) in vec3 vVertex;
+    const float pointSize = 20.0;
+    void main()
+    {
+	gl_Position = vec4(vVertex,1);
+	gl_PointSize = pointSize;
+    }
+    ` + "\x00"
 	VertexShaderDirectOutputSource = `
     #version 410
     layout(location = 0) in vec3 vVertex;

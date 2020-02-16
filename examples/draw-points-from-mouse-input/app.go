@@ -63,7 +63,7 @@ func initOpenGL() uint32 {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
 
-	vertexShader, err := shader.CompileShader(shader.VertexShaderDirectOutputSource, gl.VERTEX_SHADER)
+	vertexShader, err := shader.CompileShader(shader.VertexShaderPointSource, gl.VERTEX_SHADER)
 	if err != nil {
 		panic(err)
 	}
@@ -124,6 +124,38 @@ func convertMouseCoordinates() (float64, float64) {
 	y := (halfHeight - mousePositionY) / (halfHeight)
 	return x, y
 }
+func buildVAO() []float32 {
+	var vao []float32
+	for _, item := range app.Points {
+		vao = append(vao, float32(item.Coordinate.X))
+		vao = append(vao, float32(item.Coordinate.Y))
+		vao = append(vao, float32(item.Coordinate.Z))
+	}
+	return vao
+}
+func Draw() {
+	if len(app.Points) < 1 {
+		return
+	}
+	points := buildVAO()
+	var vertexBufferObject uint32
+	gl.GenBuffers(1, &vertexBufferObject)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
+	// a 32-bit float has 4 bytes, so we are saying the size of the buffer,
+	// in bytes, is 4 times the number of points
+	gl.BufferData(gl.ARRAY_BUFFER, 4*len(points), gl.Ptr(points), gl.STATIC_DRAW)
+
+	var vertexArrayObject uint32
+	gl.GenVertexArrays(1, &vertexArrayObject)
+	gl.BindVertexArray(vertexArrayObject)
+	// setup points
+	gl.EnableVertexAttribArray(0)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 4*3, gl.PtrOffset(0))
+
+	gl.BindVertexArray(vertexArrayObject)
+	gl.DrawArrays(gl.POINTS, 0, int32(len(app.Points)))
+}
+
 func main() {
 	runtime.LockOSThread()
 
@@ -133,10 +165,13 @@ func main() {
 
 	gl.UseProgram(program)
 
+	gl.Enable(gl.PROGRAM_POINT_SIZE)
+
 	for !window.ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+		gl.Clear(gl.COLOR_BUFFER_BIT)
 		mouseHandler(window)
 		keyHandler(window)
+		Draw()
 		glfw.PollEvents()
 		window.SwapBuffers()
 	}
