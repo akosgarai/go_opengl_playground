@@ -19,8 +19,8 @@ const (
 
 var (
 	mouseButtonPressed = false
-	mousePositionX     = 0
-	mousePositionY     = 0
+	mousePositionX     = 0.0
+	mousePositionY     = 0.0
 )
 
 type Application struct {
@@ -64,10 +64,6 @@ func initOpenGL() uint32 {
 	if err != nil {
 		panic(err)
 	}
-	geometryShader, err := shader.CompileShader(shader.GeometryShaderQuadSubdivisionSource, gl.GEOMETRY_SHADER)
-	if err != nil {
-		panic(err)
-	}
 	fragmentShader, err := shader.CompileShader(shader.FragmentShaderConstantSource, gl.FRAGMENT_SHADER)
 	if err != nil {
 		panic(err)
@@ -75,7 +71,6 @@ func initOpenGL() uint32 {
 
 	program := gl.CreateProgram()
 	gl.AttachShader(program, vertexShader)
-	gl.AttachShader(program, geometryShader)
 	gl.AttachShader(program, fragmentShader)
 	gl.LinkProgram(program)
 	return program
@@ -91,23 +86,23 @@ func mouseHandler(window *glfw.Window) {
 
 	if window.GetMouseButton(glfw.MouseButtonMiddle) == glfw.Press {
 		if !mouseButtonPressed {
-			mousePositionX = int(x)
-			mousePositionY = int(y)
+			mousePositionX = x
+			mousePositionY = y
 			mouseButtonPressed = true
-			fmt.Print("Button Pressed x: ")
-			fmt.Print(x)
-			fmt.Print(", y: ")
-			fmt.Print(y)
 		}
 	} else {
 		if mouseButtonPressed {
 			mouseButtonPressed = false
-			fmt.Print("Point to add x: ")
-			fmt.Print(mousePositionX)
-			fmt.Print(", y: ")
-			fmt.Print(mousePositionY)
+			x, y := convertMouseCoordinates()
 		}
 	}
+}
+func convertMouseCoordinates() (float64, float64) {
+	halfWidth := windowWidth / 2.0
+	halfHeight := windowHeight / 2.0
+	x := (mousePositionX - halfWidth) / (halfWidth)
+	y := (halfHeight - mousePositionY) / (halfHeight)
+	return x, y
 }
 func main() {
 	runtime.LockOSThread()
@@ -116,11 +111,7 @@ func main() {
 	defer glfw.Terminate()
 	program := initOpenGL()
 
-	// Configure global settings
 	gl.UseProgram(program)
-
-	gl.Enable(gl.DEPTH_TEST)
-	gl.DepthFunc(gl.LESS)
 
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
