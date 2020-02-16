@@ -28,12 +28,14 @@ type Application struct {
 	Points []primitives.Point
 }
 
+// AddPoint inserts a new point to the points.
 func (a *Application) AddPoint(point primitives.Point) {
 	a.Points = append(a.Points, point)
 }
 
 var app Application
 
+// Basic function for glfw initialization.
 func initGlfw() *glfw.Window {
 	if err := glfw.Init(); err != nil {
 		panic(fmt.Errorf("could not initialize glfw: %v", err))
