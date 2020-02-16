@@ -194,6 +194,8 @@ func main() {
 
 	gl.Enable(gl.PROGRAM_POINT_SIZE)
 
+	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
+
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 		keyHandler(window)
