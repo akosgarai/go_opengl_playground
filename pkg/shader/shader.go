@@ -18,6 +18,19 @@ var (
 	gl_PointSize = pointSize;
     }
     ` + "\x00"
+	VertexShaderPointWithColorSource = `
+    #version 410
+    layout(location = 0) in vec3 vVertex;
+    layout(location = 1) in vec3 vColor;
+    const float pointSize = 20.0;
+    smooth out vec4 vSmoothColor;
+    void main()
+    {
+	gl_Position = vec4(vVertex,1);
+	gl_PointSize = pointSize;
+	vSmoothColor = vec4(vColor,1);
+    }
+    ` + "\x00"
 	VertexShaderDirectOutputSource = `
     #version 410
     layout(location = 0) in vec3 vVertex;
