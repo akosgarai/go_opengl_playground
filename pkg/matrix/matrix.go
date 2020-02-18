@@ -9,6 +9,18 @@ type Matrix struct {
 	Points [16]float64
 }
 
+// Translation returns a translation matrix based on the input vector
+func Translation(v V.Vector) *Matrix {
+	return &Matrix{
+		[16]float64{
+			1.0, 0.0, 0.0, 0.0,
+			0.0, 1.0, 0.0, 0.0,
+			0.0, 0.0, 1.0, 0.0,
+			v.X, v.Y, v.Z, 1.0,
+		},
+	}
+}
+
 // GetPoints returns the points in float32 format.
 func (m *Matrix) GetPoints() [16]float32 {
 	var result [16]float32

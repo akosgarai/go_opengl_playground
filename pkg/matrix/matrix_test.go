@@ -138,3 +138,19 @@ func TestMultiVector(t *testing.T) {
 		t.Error("Unexpected value - MultiVector")
 	}
 }
+func TestTranslation(t *testing.T) {
+	testData := []struct {
+		v V.Vector
+	}{
+		{V.Vector{1, 1, 1}},
+		{V.Vector{4, 2, 0}},
+		{V.Vector{0, 0, 0}},
+	}
+	for _, tt := range testData {
+		v := tt.v
+		result := Translation(v)
+		if result.Points[12] != v.X || result.Points[13] != v.Y || result.Points[14] != v.Z {
+			t.Error("Unexpected value - Translation")
+		}
+	}
+}
