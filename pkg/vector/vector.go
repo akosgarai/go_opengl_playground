@@ -38,3 +38,11 @@ func (v Vector) Cross(ov Vector) Vector {
 func (v Vector) Length() float64 {
 	return math.Sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
 }
+
+// Normalize returns the normalized vector
+func (v Vector) Normalize() Vector {
+	if v.X == 0 && v.Y == 0 && v.Z == 0 {
+		return v
+	}
+	return v.MultiplyScalar(1 / v.Length())
+}

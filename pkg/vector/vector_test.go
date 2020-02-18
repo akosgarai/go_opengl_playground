@@ -1,6 +1,7 @@
 package vector
 
 import (
+	"math"
 	"testing"
 )
 
@@ -87,12 +88,31 @@ func TestLength(t *testing.T) {
 		Expected float64
 	}{
 		{Vector{0, 0, 0}, 0},
-		{Vector{2, 2, 2}, 4},
+		{Vector{4, 4, 4}, math.Sqrt(3 * 4 * 4)},
 	}
 	for _, tt := range testData {
 		value := tt.v.Length()
 		if value != tt.Expected {
 			t.Error("Invalid output for Length")
+		}
+	}
+}
+func TestNormalize(t *testing.T) {
+	testData := []struct {
+		v        Vector
+		Expected Vector
+	}{
+		{Vector{0, 0, 0}, Vector{0, 0, 0}},
+		{Vector{2, 0, 0}, Vector{1, 0, 0}},
+		{Vector{0, 5, 0}, Vector{0, 1, 0}},
+		{Vector{0, 0, 9}, Vector{0, 0, 1}},
+	}
+	for _, tt := range testData {
+		value := tt.v.Normalize()
+		if value.X != tt.Expected.X || value.Y != tt.Expected.Y || value.Z != tt.Expected.Z {
+			t.Log(value)
+			t.Log(tt.Expected)
+			t.Error("Invalid output for Normalize")
 		}
 	}
 }
