@@ -33,6 +33,8 @@ var (
 
 type Application struct {
 	Points []primitives.PointBB
+
+	KeyDowns map[string]bool
 }
 
 // AddPoint inserts a new point to the points.
@@ -187,6 +189,12 @@ func Draw() {
 
 func main() {
 	app.AddPoint(primitives.PointBB{V.Vector{50, 50, 0}, V.Vector{1, 1, 1}})
+	app.KeyDowns = make(map[string]bool)
+	app.KeyDowns["W"] = false
+	app.KeyDowns["A"] = false
+	app.KeyDowns["S"] = false
+	app.KeyDowns["D"] = false
+
 	runtime.LockOSThread()
 
 	window := initGlfw()
@@ -197,6 +205,13 @@ func main() {
 
 	gl.Enable(gl.PROGRAM_POINT_SIZE)
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
+	// - Projection matrix
+	angleOfView := float64(45)
+	near := float64(0.1)
+	far := float64(1000)
+	aspect := float64(windowWidth / windowHeight)
+	ProjectionMatrix := M.Perspective(angleOfView, aspect, near, far)
+	fmt.Println(ProjectionMatrix)
 	// - Camera matrix
 	cameraPosition := V.Vector{50, 50, 50}
 	cameraLookAt := V.Vector{50, 50, 0}
@@ -212,7 +227,7 @@ func main() {
 
 	// - calculate MVP
 	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
-	MVPMatrix := CameraTransformationMatrix.Dot(*ModelMatrix)
+	MVPMatrix := ProjectionMatrix.Dot(*(CameraTransformationMatrix.Dot(*ModelMatrix)))
 	MVP := MVPMatrix.GetPoints()
 	gl.UniformMatrix4fv(mvpLocation, 1, false, &MVP[0])
 	fmt.Println(MVP)
