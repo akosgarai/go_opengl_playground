@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/akosgarai/opengl_playground/pkg/primitives"
+	_ "github.com/akosgarai/opengl_playground/pkg/primitives"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -17,21 +17,7 @@ const (
 	windowTitle  = "Example - dynamically subdivision"
 )
 
-var (
-	square = primitives.NewSquare(
-		primitives.Vector{-5, 0, -5},
-		primitives.Vector{-5, 0, 5},
-		primitives.Vector{5, 0, 5},
-		primitives.Vector{5, 0, -5},
-	)
-	sub_division       = 1.0
-	mouseButtonPressed = false
-	mousePositionX     = 0
-	mousePositionY     = 0
-	rotationX          = 45.0
-	rotationY          = 45.0
-	distance           = 1.0
-)
+var ()
 
 func initGlfw() *glfw.Window {
 	if err := glfw.Init(); err != nil {
@@ -91,6 +77,7 @@ func initOpenGL() uint32 {
 * - if the state is on: we can calculate the dist. variable.
 * - if the state is off: we can calculate rx, rY rotation values.
  */
+/*
 func mouseHandler(window *glfw.Window) {
 	x, y := window.GetCursorPos()
 
@@ -141,14 +128,13 @@ func keyHandler(window *glfw.Window) {
 		fmt.Print(y)
 	}
 }
-
+*/
 func main() {
 	runtime.LockOSThread()
 
 	window := initGlfw()
 	defer glfw.Terminate()
 	program := initOpenGL()
-	square.SetupVaoPoligonMode()
 
 	// Configure global settings
 	gl.UseProgram(program)
@@ -156,54 +142,8 @@ func main() {
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
 
-	// projection matrix
-	angelOfView := float64(45)
-	near := float64(1)
-	far := float64(1000)
-	// P = glm::perspective(45.0f, (GLfloat)w/h, 1.f, 1000.f);
-	P := primitives.ProjectionMatrix4x4(angelOfView, near, far)
-
-	sub_divisionLocation := gl.GetUniformLocation(program, gl.Str("sub_divisions\x00"))
-	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
-
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-		// define the matrixes:
-		translationMatrix := primitives.TranslationMatrix4x4(0, 0, float32(distance))
-		rotationXMatrix := primitives.RotationXMatrix4x4(rotationX)
-		rotationYMatrix := primitives.RotationYMatrix4x4(rotationY)
-
-		MV := translationMatrix.Dot(rotationXMatrix.Dot(rotationYMatrix))
-
-		translationMatrix = primitives.TranslationMatrix4x4(-5, 0, -5)
-		MV = MV.Dot(translationMatrix)
-		// sub_division
-		gl.Uniform1f(sub_divisionLocation, float32(sub_division))
-		mvpPoints := (P.Dot(MV)).Points
-		gl.UniformMatrix4fv(mvpLocation, 1, false, &mvpPoints[0])
-
-		gl.DrawElements(gl.TRIANGLES, 6, gl.FLOAT, gl.PtrOffset(0))
-
-		translationMatrix = primitives.TranslationMatrix4x4(10, 0, 0)
-		MV = MV.Dot(translationMatrix)
-		mvpPoints = (P.Dot(MV)).Points
-		gl.UniformMatrix4fv(mvpLocation, 1, false, &mvpPoints[0])
-		gl.DrawElements(gl.TRIANGLES, 6, gl.FLOAT, gl.PtrOffset(0))
-
-		translationMatrix = primitives.TranslationMatrix4x4(0, 0, 10)
-		MV = MV.Dot(translationMatrix)
-		mvpPoints = (P.Dot(MV)).Points
-		gl.UniformMatrix4fv(mvpLocation, 1, false, &mvpPoints[0])
-		gl.DrawElements(gl.TRIANGLES, 6, gl.FLOAT, gl.PtrOffset(0))
-
-		translationMatrix = primitives.TranslationMatrix4x4(-10, 0, 0)
-		MV = MV.Dot(translationMatrix)
-		mvpPoints = (P.Dot(MV)).Points
-		gl.UniformMatrix4fv(mvpLocation, 1, false, &mvpPoints[0])
-		gl.DrawElements(gl.TRIANGLES, 6, gl.FLOAT, gl.PtrOffset(0))
-
-		keyHandler(window)
-		mouseHandler(window)
 		glfw.PollEvents()
 		window.SwapBuffers()
 	}
