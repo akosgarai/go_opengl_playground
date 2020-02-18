@@ -2,6 +2,8 @@
 package matrix
 
 import (
+	"math"
+
 	V "github.com/akosgarai/opengl_playground/pkg/vector"
 )
 
@@ -31,6 +33,19 @@ func Scale(v V.Vector) *Matrix {
 			0.0, 0.0, 0.0, 1.0,
 		},
 	}
+}
+
+// Projection is the implementation of he gluPerspective function it returns matrix
+func Perspective(angleOfView, aspect, near, far float64) *Matrix {
+	slopey := math.Tan(angleOfView * math.Pi / 180)
+	var result Matrix
+	result.Clear()
+	result.Points[0] = 1 / slopey / aspect
+	result.Points[5] = 1 / slopey
+	result.Points[10] = -((far + near) / (far - near))
+	result.Points[11] = -1
+	result.Points[14] = -(2 * far * near / (far - near))
+	return &result
 }
 
 // GetPoints returns the points in float32 format.
