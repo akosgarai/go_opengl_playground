@@ -15,7 +15,7 @@ import (
 const (
 	windowWidth  = 800
 	windowHeight = 800
-	windowTitle  = "Example - draw points from mouse inputs"
+	windowTitle  = "Example - draw points from mouse inputs - graph book based solution"
 )
 
 var (
@@ -23,6 +23,10 @@ var (
 	mouseButtonPressed = false
 	mousePositionX     = 0.0
 	mousePositionY     = 0.0
+	colorR             = 0.0
+	colorG             = 0.0
+	colorB             = 0.0
+	modelSize          = 100
 )
 
 type Application struct {
@@ -66,11 +70,11 @@ func initOpenGL() uint32 {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
 
-	vertexShader, err := shader.CompileShader(shader.VertexShaderPointSource, gl.VERTEX_SHADER)
+	vertexShader, err := shader.CompileShader(shader.VertexShaderPointWithColorMVPSource, gl.VERTEX_SHADER)
 	if err != nil {
 		panic(err)
 	}
-	fragmentShader, err := shader.CompileShader(shader.FragmentShaderConstantSource, gl.FRAGMENT_SHADER)
+	fragmentShader, err := shader.CompileShader(shader.FragmentShaderBasicSource, gl.FRAGMENT_SHADER)
 	if err != nil {
 		panic(err)
 	}
@@ -100,9 +104,12 @@ func mouseHandler(window *glfw.Window) {
 		if mouseButtonPressed {
 			mouseButtonPressed = false
 			x, y := convertMouseCoordinates()
+			positionVector := V.Vector{x, y, 1.0}
+			scalarPart := float64(modelSize / 2)
+			modelPositionVector := (positionVector.MultiplyScalar(scalarPart)).Add(V.Vector{scalarPart, scalarPart, scalarPart})
 			app.AddPoint(
 				primitives.PointBB{
-					V.Vector{x, y, 0.0},
+					modelPositionVector,
 					V.Vector{1, 1, 1},
 				})
 		}
@@ -118,6 +125,21 @@ func keyHandler(window *glfw.Window) {
 		}
 	} else {
 		DebugPrint = false
+	}
+	if window.GetKey(glfw.KeyR) == glfw.Press {
+		colorR = 1
+	} else {
+		colorR = 0
+	}
+	if window.GetKey(glfw.KeyG) == glfw.Press {
+		colorG = 1
+	} else {
+		colorG = 0
+	}
+	if window.GetKey(glfw.KeyB) == glfw.Press {
+		colorB = 1
+	} else {
+		colorB = 0
 	}
 }
 func convertMouseCoordinates() (float64, float64) {
@@ -154,6 +176,8 @@ func Draw() {
 	// setup points
 	gl.EnableVertexAttribArray(0)
 	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 4*3, gl.PtrOffset(0))
+	gl.EnableVertexAttribArray(1)
+	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*3, gl.PtrOffset(4*3*len(app.Points)))
 
 	gl.BindVertexArray(vertexArrayObject)
 	gl.DrawArrays(gl.POINTS, 0, int32(len(app.Points)))
@@ -169,6 +193,7 @@ func main() {
 	gl.UseProgram(program)
 
 	gl.Enable(gl.PROGRAM_POINT_SIZE)
+	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
