@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"runtime"
 
+	C "github.com/akosgarai/opengl_playground/pkg/camera"
+	M "github.com/akosgarai/opengl_playground/pkg/matrix"
 	"github.com/akosgarai/opengl_playground/pkg/primitives"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	V "github.com/akosgarai/opengl_playground/pkg/vector"
@@ -104,13 +106,13 @@ func mouseHandler(window *glfw.Window) {
 		if mouseButtonPressed {
 			mouseButtonPressed = false
 			x, y := convertMouseCoordinates()
-			positionVector := V.Vector{x, y, 1.0}
+			positionVector := V.Vector{x, y, 0.0}
 			scalarPart := float64(modelSize / 2)
 			modelPositionVector := (positionVector.MultiplyScalar(scalarPart)).Add(V.Vector{scalarPart, scalarPart, scalarPart})
 			app.AddPoint(
 				primitives.PointBB{
 					modelPositionVector,
-					V.Vector{1, 1, 1},
+					V.Vector{colorR, colorG, colorB},
 				})
 		}
 	}
@@ -184,6 +186,7 @@ func Draw() {
 }
 
 func main() {
+	app.AddPoint(primitives.PointBB{V.Vector{50, 50, 0}, V.Vector{1, 1, 1}})
 	runtime.LockOSThread()
 
 	window := initGlfw()
@@ -194,6 +197,25 @@ func main() {
 
 	gl.Enable(gl.PROGRAM_POINT_SIZE)
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
+	// - Camera matrix
+	cameraPosition := V.Vector{50, 50, 50}
+	cameraLookAt := V.Vector{50, 50, 0}
+	worldUpDirection := V.Vector{0, 1, 0}
+	camera := C.New(cameraPosition, cameraLookAt, worldUpDirection)
+	CameraTransformationMatrix := camera.GetTransformation()
+	fmt.Println(CameraTransformationMatrix.GetPoints())
+	// - Model matrix
+	translationMatrix := M.Translation(V.Vector{-50, -50, -50})
+	scaleMatrix := M.Scale(V.Vector{1 / 50.0, 1 / 50.0, 1 / 50.0})
+	ModelMatrix := translationMatrix.Dot(*scaleMatrix)
+	fmt.Println(ModelMatrix)
+
+	// - calculate MVP
+	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
+	MVPMatrix := CameraTransformationMatrix.Dot(*ModelMatrix)
+	MVP := MVPMatrix.GetPoints()
+	gl.UniformMatrix4fv(mvpLocation, 1, false, &MVP[0])
+	fmt.Println(MVP)
 
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
