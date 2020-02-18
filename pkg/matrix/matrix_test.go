@@ -154,3 +154,19 @@ func TestTranslation(t *testing.T) {
 		}
 	}
 }
+func TestScale(t *testing.T) {
+	testData := []struct {
+		v V.Vector
+	}{
+		{V.Vector{1, 1, 1}},
+		{V.Vector{4, 2, 0}},
+		{V.Vector{0, 0, 0}},
+	}
+	for _, tt := range testData {
+		v := tt.v
+		result := Scale(v)
+		if result.Points[0] != v.X || result.Points[5] != v.Y || result.Points[10] != v.Z {
+			t.Error("Unexpected value - Scale")
+		}
+	}
+}

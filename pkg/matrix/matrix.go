@@ -21,6 +21,18 @@ func Translation(v V.Vector) *Matrix {
 	}
 }
 
+// Scale returns a scale matrix based on the input vector
+func Scale(v V.Vector) *Matrix {
+	return &Matrix{
+		[16]float64{
+			v.X, 0.0, 0.0, 0.0,
+			0.0, v.Y, 0.0, 0.0,
+			0.0, 0.0, v.Z, 0.0,
+			0.0, 0.0, 0.0, 1.0,
+		},
+	}
+}
+
 // GetPoints returns the points in float32 format.
 func (m *Matrix) GetPoints() [16]float32 {
 	var result [16]float32
