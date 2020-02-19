@@ -25,6 +25,9 @@ var (
 	mouseButtonPressed = false
 	mousePositionX     = 0.0
 	mousePositionY     = 0.0
+	cameraX            = 0.0
+	cameraY            = 0.0
+	cameraRotate       = false
 	colorR             = 0.0
 	colorG             = 0.0
 	colorB             = 0.0
@@ -44,6 +47,9 @@ func (a *Application) AddPoint(point primitives.PointBB) {
 
 var app Application
 var camera *C.Camera
+var ProjectionMatrix *M.Matrix
+var ModelMatrix *M.Matrix
+var MVP [16]float32
 
 // Basic function for glfw initialization.
 func initGlfw() *glfw.Window {
@@ -119,6 +125,20 @@ func mouseHandler(window *glfw.Window) {
 				})
 		}
 	}
+	// camera movement
+	if window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
+		if !cameraRotate {
+			cameraX = x
+			cameraY = y
+			cameraRotate = true
+		} else {
+			camera.RotateCamera(V.Vector{x - cameraX, y - cameraY, 0})
+			cameraX = x
+			cameraY = y
+		}
+	} else {
+		cameraRotate = false
+	}
 }
 
 // Key handler function. it supports the debug option. (print out the points of the app)
@@ -126,8 +146,18 @@ func keyHandler(window *glfw.Window) {
 	if window.GetKey(glfw.KeyH) == glfw.Press {
 		if !DebugPrint {
 			DebugPrint = true
+			fmt.Print("app.Points: ")
 			fmt.Println(app.Points)
+			fmt.Print("ProjectionMatrix: ")
+			fmt.Println(ProjectionMatrix)
+			fmt.Print("camera: ")
 			fmt.Println(camera)
+			fmt.Print("camera.GetTransformation(): ")
+			fmt.Println(camera.GetTransformation())
+			fmt.Print("ModelMatrix: ")
+			fmt.Println(ModelMatrix)
+			fmt.Print("MVP: ")
+			fmt.Println(MVP)
 		}
 	} else {
 		DebugPrint = false
@@ -243,8 +273,7 @@ func main() {
 	near := float64(0.1)
 	far := float64(1000)
 	aspect := float64(windowWidth / windowHeight)
-	ProjectionMatrix := M.Perspective(angleOfView, aspect, near, far)
-	fmt.Println(ProjectionMatrix)
+	ProjectionMatrix = M.Perspective(angleOfView, aspect, near, far)
 	// - Camera matrix
 	cameraPosition := V.Vector{50, 50, 50}
 	cameraLookAt := (V.Vector{50, 50, 0}).Normalize()
@@ -255,15 +284,13 @@ func main() {
 	// - Model matrix
 	translationMatrix := M.Translation(V.Vector{-50, -50, -50})
 	scaleMatrix := M.Scale(V.Vector{1 / 50.0, 1 / 50.0, 1 / 50.0})
-	ModelMatrix := translationMatrix.Dot(*scaleMatrix)
-	fmt.Println(ModelMatrix)
+	ModelMatrix = translationMatrix.Dot(*scaleMatrix)
 
 	// - calculate MVP
 	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
 	MVPMatrix := ProjectionMatrix.Dot(*(CameraTransformationMatrix.Dot(*ModelMatrix)))
-	MVP := MVPMatrix.GetPoints()
+	MVP = MVPMatrix.GetPoints()
 	gl.UniformMatrix4fv(mvpLocation, 1, false, &MVP[0])
-	fmt.Println(MVP)
 
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
