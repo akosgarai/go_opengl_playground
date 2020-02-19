@@ -255,8 +255,22 @@ func Draw() {
 	gl.DrawArrays(gl.POINTS, 0, int32(len(app.Points)))
 }
 
+func addLotOfPointsManually() {
+	app.AddPoint(primitives.PointBB{V.Vector{0, 0, 0}, V.Vector{1, 1, 1}})
+	for j := 1; j <= 10; j++ {
+		i := float64(j)
+		app.AddPoint(primitives.PointBB{V.Vector{i * 10, i * 10, i * 10}, V.Vector{1, 1, 1}})
+		app.AddPoint(primitives.PointBB{V.Vector{i * 10, i * 10, 0}, V.Vector{1, 1, 1}})
+		app.AddPoint(primitives.PointBB{V.Vector{i * 10, 0, i * 10}, V.Vector{1, 1, 1}})
+		app.AddPoint(primitives.PointBB{V.Vector{0, i * 10, i * 10}, V.Vector{1, 1, 1}})
+		app.AddPoint(primitives.PointBB{V.Vector{i * 10, 0, 0}, V.Vector{1, 1, 1}})
+		app.AddPoint(primitives.PointBB{V.Vector{0, i * 10, 0}, V.Vector{1, 1, 1}})
+		app.AddPoint(primitives.PointBB{V.Vector{0, 0, i * 10}, V.Vector{1, 1, 1}})
+	}
+}
+
 func main() {
-	app.AddPoint(primitives.PointBB{V.Vector{50, 50, 0}, V.Vector{1, 1, 1}})
+	addLotOfPointsManually()
 	app.KeyDowns = make(map[string]bool)
 	app.KeyDowns["W"] = false
 	app.KeyDowns["A"] = false
@@ -281,7 +295,7 @@ func main() {
 	app.ProjectionMatrix = M.Perspective(angleOfView, aspect, near, far)
 	// - Camera matrix
 	cameraPosition := V.Vector{50, 50, 50}
-	cameraLookAt := (V.Vector{50, 50, 0}).Normalize()
+	cameraLookAt := (V.Vector{-50, -50, 0}).Normalize()
 	worldUpDirection := V.Vector{0, 1, 0}
 	app.Camera = C.New(cameraPosition, cameraLookAt, worldUpDirection)
 	CameraTransformationMatrix := app.Camera.GetTransformation()
