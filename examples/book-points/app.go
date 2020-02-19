@@ -43,6 +43,7 @@ func (a *Application) AddPoint(point primitives.PointBB) {
 }
 
 var app Application
+var camera *C.Camera
 
 // Basic function for glfw initialization.
 func initGlfw() *glfw.Window {
@@ -126,6 +127,7 @@ func keyHandler(window *glfw.Window) {
 		if !DebugPrint {
 			DebugPrint = true
 			fmt.Println(app.Points)
+			fmt.Println(camera)
 		}
 	} else {
 		DebugPrint = false
@@ -144,6 +146,37 @@ func keyHandler(window *glfw.Window) {
 		colorB = 1
 	} else {
 		colorB = 0
+	}
+	if window.GetKey(glfw.KeyW) == glfw.Press {
+		app.KeyDowns["W"] = true
+	} else {
+		app.KeyDowns["W"] = false
+	}
+	if window.GetKey(glfw.KeyA) == glfw.Press {
+		app.KeyDowns["A"] = true
+	} else {
+		app.KeyDowns["A"] = false
+	}
+	if window.GetKey(glfw.KeyS) == glfw.Press {
+		app.KeyDowns["S"] = true
+	} else {
+		app.KeyDowns["S"] = false
+	}
+	if window.GetKey(glfw.KeyD) == glfw.Press {
+		app.KeyDowns["D"] = true
+	} else {
+		app.KeyDowns["D"] = false
+	}
+	// Move camera
+	if app.KeyDowns["W"] && !app.KeyDowns["S"] {
+		camera.MoveCamera(V.Vector{0, 0, 5})
+	} else if app.KeyDowns["S"] && !app.KeyDowns["W"] {
+		camera.MoveCamera(V.Vector{0, 0, -5})
+	}
+	if app.KeyDowns["A"] && !app.KeyDowns["D"] {
+		camera.MoveCamera(V.Vector{0, -5, 0})
+	} else if app.KeyDowns["D"] && !app.KeyDowns["A"] {
+		camera.MoveCamera(V.Vector{0, 5, 0})
 	}
 }
 func convertMouseCoordinates() (float64, float64) {
@@ -216,7 +249,7 @@ func main() {
 	cameraPosition := V.Vector{50, 50, 50}
 	cameraLookAt := (V.Vector{50, 50, 0}).Normalize()
 	worldUpDirection := V.Vector{0, 1, 0}
-	camera := C.New(cameraPosition, cameraLookAt, worldUpDirection)
+	camera = C.New(cameraPosition, cameraLookAt, worldUpDirection)
 	CameraTransformationMatrix := camera.GetTransformation()
 	fmt.Println(CameraTransformationMatrix.GetPoints())
 	// - Model matrix
