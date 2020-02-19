@@ -214,7 +214,7 @@ func main() {
 	fmt.Println(ProjectionMatrix)
 	// - Camera matrix
 	cameraPosition := V.Vector{50, 50, 50}
-	cameraLookAt := V.Vector{50, 50, 0}
+	cameraLookAt := (V.Vector{50, 50, 0}).Normalize()
 	worldUpDirection := V.Vector{0, 1, 0}
 	camera := C.New(cameraPosition, cameraLookAt, worldUpDirection)
 	CameraTransformationMatrix := camera.GetTransformation()
@@ -236,6 +236,10 @@ func main() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 		mouseHandler(window)
 		keyHandler(window)
+		CameraTransformationMatrix = camera.GetTransformation()
+		MVPMatrix = ProjectionMatrix.Dot(*(CameraTransformationMatrix.Dot(*ModelMatrix)))
+		MVP = MVPMatrix.GetPoints()
+		gl.UniformMatrix4fv(mvpLocation, 1, false, &MVP[0])
 		Draw()
 		glfw.PollEvents()
 		window.SwapBuffers()
