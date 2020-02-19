@@ -35,7 +35,10 @@ var (
 )
 
 type Application struct {
-	Points []primitives.PointBB
+	Points           []primitives.PointBB
+	Camera           *C.Camera
+	ProjectionMatrix *M.Matrix
+	ModelMatrix      *M.Matrix
 
 	KeyDowns map[string]bool
 }
@@ -44,11 +47,13 @@ type Application struct {
 func (a *Application) AddPoint(point primitives.PointBB) {
 	a.Points = append(a.Points, point)
 }
+func (a *Application) GetMVP() [16]float32 {
+	MVPMatrix := a.ProjectionMatrix.Dot(
+		*((a.Camera.GetTransformation()).Dot(*a.ModelMatrix)))
+	return MVPMatrix.GetPoints()
+}
 
 var app Application
-var camera *C.Camera
-var ProjectionMatrix *M.Matrix
-var ModelMatrix *M.Matrix
 var MVP [16]float32
 
 // Basic function for glfw initialization.
@@ -132,7 +137,7 @@ func mouseHandler(window *glfw.Window) {
 			cameraY = y
 			cameraRotate = true
 		} else {
-			camera.RotateCamera(V.Vector{x - cameraX, y - cameraY, 0})
+			app.Camera.RotateCamera(V.Vector{x - cameraX, y - cameraY, 0})
 			cameraX = x
 			cameraY = y
 		}
@@ -148,16 +153,16 @@ func keyHandler(window *glfw.Window) {
 			DebugPrint = true
 			fmt.Print("app.Points: ")
 			fmt.Println(app.Points)
-			fmt.Print("ProjectionMatrix: ")
-			fmt.Println(ProjectionMatrix)
-			fmt.Print("camera: ")
-			fmt.Println(camera)
-			fmt.Print("camera.GetTransformation(): ")
-			fmt.Println(camera.GetTransformation())
-			fmt.Print("ModelMatrix: ")
-			fmt.Println(ModelMatrix)
-			fmt.Print("MVP: ")
-			fmt.Println(MVP)
+			fmt.Print("app.ProjectionMatrix: ")
+			fmt.Println(app.ProjectionMatrix)
+			fmt.Print("app.Camera: ")
+			fmt.Println(app.Camera)
+			fmt.Print("app.Camera.GetTransformation(): ")
+			fmt.Println(app.Camera.GetTransformation())
+			fmt.Print("app.ModelMatrix: ")
+			fmt.Println(app.ModelMatrix)
+			fmt.Print("app.GetMVP(): ")
+			fmt.Println(app.GetMVP())
 		}
 	} else {
 		DebugPrint = false
@@ -199,14 +204,14 @@ func keyHandler(window *glfw.Window) {
 	}
 	// Move camera
 	if app.KeyDowns["W"] && !app.KeyDowns["S"] {
-		camera.MoveCamera(V.Vector{0, 0, 5})
+		app.Camera.MoveCamera(V.Vector{0, 0, 5})
 	} else if app.KeyDowns["S"] && !app.KeyDowns["W"] {
-		camera.MoveCamera(V.Vector{0, 0, -5})
+		app.Camera.MoveCamera(V.Vector{0, 0, -5})
 	}
 	if app.KeyDowns["A"] && !app.KeyDowns["D"] {
-		camera.MoveCamera(V.Vector{0, -5, 0})
+		app.Camera.MoveCamera(V.Vector{0, -5, 0})
 	} else if app.KeyDowns["D"] && !app.KeyDowns["A"] {
-		camera.MoveCamera(V.Vector{0, 5, 0})
+		app.Camera.MoveCamera(V.Vector{0, 5, 0})
 	}
 }
 func convertMouseCoordinates() (float64, float64) {
@@ -273,32 +278,29 @@ func main() {
 	near := float64(0.1)
 	far := float64(1000)
 	aspect := float64(windowWidth / windowHeight)
-	ProjectionMatrix = M.Perspective(angleOfView, aspect, near, far)
+	app.ProjectionMatrix = M.Perspective(angleOfView, aspect, near, far)
 	// - Camera matrix
 	cameraPosition := V.Vector{50, 50, 50}
 	cameraLookAt := (V.Vector{50, 50, 0}).Normalize()
 	worldUpDirection := V.Vector{0, 1, 0}
-	camera = C.New(cameraPosition, cameraLookAt, worldUpDirection)
-	CameraTransformationMatrix := camera.GetTransformation()
+	app.Camera = C.New(cameraPosition, cameraLookAt, worldUpDirection)
+	CameraTransformationMatrix := app.Camera.GetTransformation()
 	fmt.Println(CameraTransformationMatrix.GetPoints())
 	// - Model matrix
 	translationMatrix := M.Translation(V.Vector{-50, -50, -50})
 	scaleMatrix := M.Scale(V.Vector{1 / 50.0, 1 / 50.0, 1 / 50.0})
-	ModelMatrix = translationMatrix.Dot(*scaleMatrix)
+	app.ModelMatrix = translationMatrix.Dot(*scaleMatrix)
 
 	// - calculate MVP
 	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
-	MVPMatrix := ProjectionMatrix.Dot(*(CameraTransformationMatrix.Dot(*ModelMatrix)))
-	MVP = MVPMatrix.GetPoints()
+	MVP = app.GetMVP()
 	gl.UniformMatrix4fv(mvpLocation, 1, false, &MVP[0])
 
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 		mouseHandler(window)
 		keyHandler(window)
-		CameraTransformationMatrix = camera.GetTransformation()
-		MVPMatrix = ProjectionMatrix.Dot(*(CameraTransformationMatrix.Dot(*ModelMatrix)))
-		MVP = MVPMatrix.GetPoints()
+		MVP = app.GetMVP()
 		gl.UniformMatrix4fv(mvpLocation, 1, false, &MVP[0])
 		Draw()
 		glfw.PollEvents()
