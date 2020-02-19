@@ -122,7 +122,7 @@ func mouseHandler(window *glfw.Window) {
 
 // Key handler function. it supports the debug option. (print out the points of the app)
 func keyHandler(window *glfw.Window) {
-	if window.GetKey(glfw.KeyD) == glfw.Press {
+	if window.GetKey(glfw.KeyH) == glfw.Press {
 		if !DebugPrint {
 			DebugPrint = true
 			fmt.Println(app.Points)
