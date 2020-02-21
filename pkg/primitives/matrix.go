@@ -131,6 +131,19 @@ func ProjectionMatrix4x4(angleOfView, near, far float64) *Matrix4x4 {
 	return projection
 }
 
+// https://stackoverflow.com/questions/8115352/glmperspective-explanation
+// ProjectionNewSolution.
+func Perspective(angle, ratio, near, far, float32) *Matrix4x4 {
+	perspective := NullMatrix4x4()
+	// degree to radian formula: n deg = n * PI / 180 rad
+	slopey := math.Tan(angleOfView * math.Pi / 180)
+	result.Points[0] = 1 / slopey / ratio
+	result.Points[5] = 1 / slopey
+	result.Points[10] = -((far + near) / (far - near))
+	result.Points[11] = -1
+	result.Points[14] = -(2 * far * near / (far - near))
+}
+
 func (m *Matrix4x4) Dot(m2 *Matrix4x4) *Matrix4x4 {
 	result := NullMatrix4x4()
 	for i := 0; i < 4; i++ {
