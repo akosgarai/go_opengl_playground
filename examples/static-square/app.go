@@ -79,10 +79,14 @@ func main() {
 	program := initOpenGL()
 
 	gl.UseProgram(program)
-	uniform := [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
-	// mvp - modelview - projection matrix
-	mvp := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
-	gl.UniformMatrix4fv(mvp, 1, false, &uniform[0])
+
+	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
+
+	P := primitives.UnitMatrix4x4()
+	MV := primitives.UnitMatrix4x4()
+	mvpMatrix := P.Dot(MV)
+	mvp := mvpMatrix.Points
+	gl.UniformMatrix4fv(mvpLocation, 1, false, &mvp[0])
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
