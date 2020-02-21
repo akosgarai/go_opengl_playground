@@ -17,9 +17,16 @@ const (
 	windowTitle  = "Example - static triangles, lots of them"
 )
 
-var (
-	triangles []primitives.Triangle
-)
+type Application struct {
+	Triangles []primitives.Triangle
+}
+
+// AddTriangle inserts a new triangle to the application.
+func (a *Application) AddTriangle(t primitives.Triangle) {
+	a.Triangles = append(a.Triangles, t)
+}
+
+var app Application
 
 func initGlfw() *glfw.Window {
 	if err := glfw.Init(); err != nil {
@@ -80,14 +87,12 @@ func generateTriangles() {
 			topY := -1.0 + (float64(i) * length)
 			topZ := 0.0
 
-			triangles = append(
-				triangles,
+			app.AddTriangle(
 				*primitives.NewTriangle(
 					primitives.Vector{topX, topY, topZ},
 					primitives.Vector{topX, topY - length, topZ},
 					primitives.Vector{topX - length, topY - length, topZ},
-				),
-			)
+				))
 		}
 	}
 }
@@ -101,10 +106,11 @@ func main() {
 
 	// Configure global settings
 	gl.UseProgram(program)
-	P := primitives.UnitMatrix4x4()
-	MV := primitives.UnitMatrix4x4()
 	// mvp - modelview - projection matrix
 	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
+
+	P := primitives.UnitMatrix4x4()
+	MV := primitives.UnitMatrix4x4()
 	mvpMatrix := P.Dot(MV)
 	mvp := mvpMatrix.Points
 	gl.UniformMatrix4fv(mvpLocation, 1, false, &mvp[0])
@@ -117,7 +123,7 @@ func main() {
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		for _, item := range triangles {
+		for _, item := range app.Triangles {
 			item.Draw()
 		}
 		glfw.PollEvents()
