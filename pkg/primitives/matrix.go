@@ -156,3 +156,12 @@ func (m *Matrix4x4) Dot(m2 *Matrix4x4) *Matrix4x4 {
 	}
 	return result
 }
+
+// MultiVector returns a new Vector. this is the multiplication of a vector - matrix element.
+func (m *Matrix4x4) MultiVector(v Vector) *Vector {
+	Xh := m.Points[0]*v.X + m.Points[1]*v.Y + m.Points[2]*v.Z + m.Points[3]
+	Yh := m.Points[4]*v.X + m.Points[5]*v.Y + m.Points[6]*v.Z + m.Points[7]
+	Zh := m.Points[8]*v.X + m.Points[9]*v.Y + m.Points[10]*v.Z + m.Points[11]
+	h := m.Points[12]*v.X + m.Points[13]*v.Y + m.Points[14]*v.Z + m.Points[15]
+	return &Vector{Xh / h, Yh / h, Zh / h}
+}
