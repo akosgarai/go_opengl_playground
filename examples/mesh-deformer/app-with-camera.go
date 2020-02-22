@@ -14,7 +14,7 @@ import (
 
 const (
 	windowWidth  = 800
-	windowHeight = 600
+	windowHeight = 800
 	windowTitle  = "Example - mesh deformer"
 )
 
@@ -39,8 +39,8 @@ func NewApplication() *Application {
 	app.triangleColorFront = primitives.Vector{0, 0, 1}
 	app.triangleColorBack = primitives.Vector{0, 0.5, 1}
 	app.camera = primitives.NewCamera()
-	app.camera.SetPosition(primitives.Vector{0, 0, 100})
-	app.camera.TargetCameraSetTarget(primitives.Vector{0, 0, 0})
+	app.camera.SetPosition(primitives.Vector{0, 0, 200})
+	app.camera.TargetCameraSetTarget(primitives.Vector{10, 10, 0})
 	app.camera.SetupProjection(45, float64(windowWidth/windowHeight))
 	app.camera.UpDirection = primitives.Vector{0, 0, 1}
 	return &app
