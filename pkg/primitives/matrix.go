@@ -134,14 +134,15 @@ func ProjectionMatrix4x4(angleOfView, near, far float64) *Matrix4x4 {
 // https://stackoverflow.com/questions/8115352/glmperspective-explanation
 // ProjectionNewSolution.
 func Perspective(angle, ratio, near, far float32) *Matrix4x4 {
-	perspective := NullMatrix4x4()
 	// degree to radian formula: n deg = n * PI / 180 rad
-	slopey := math.Tan(angleOfView * math.Pi / 180)
+	slopey := float32(math.Tan(float64(angle * math.Pi / 180)))
+	result := NullMatrix4x4()
 	result.Points[0] = 1 / slopey / ratio
 	result.Points[5] = 1 / slopey
 	result.Points[10] = -((far + near) / (far - near))
 	result.Points[11] = -1
 	result.Points[14] = -(2 * far * near / (far - near))
+	return result
 }
 
 func (m *Matrix4x4) Dot(m2 *Matrix4x4) *Matrix4x4 {
@@ -159,9 +160,9 @@ func (m *Matrix4x4) Dot(m2 *Matrix4x4) *Matrix4x4 {
 
 // MultiVector returns a new Vector. this is the multiplication of a vector - matrix element.
 func (m *Matrix4x4) MultiVector(v Vector) *Vector {
-	Xh := m.Points[0]*v.X + m.Points[1]*v.Y + m.Points[2]*v.Z + m.Points[3]
-	Yh := m.Points[4]*v.X + m.Points[5]*v.Y + m.Points[6]*v.Z + m.Points[7]
-	Zh := m.Points[8]*v.X + m.Points[9]*v.Y + m.Points[10]*v.Z + m.Points[11]
-	h := m.Points[12]*v.X + m.Points[13]*v.Y + m.Points[14]*v.Z + m.Points[15]
+	Xh := float64(m.Points[0])*v.X + float64(m.Points[1])*v.Y + float64(m.Points[2])*v.Z + float64(m.Points[3])
+	Yh := float64(m.Points[4])*v.X + float64(m.Points[5])*v.Y + float64(m.Points[6])*v.Z + float64(m.Points[7])
+	Zh := float64(m.Points[8])*v.X + float64(m.Points[9])*v.Y + float64(m.Points[10])*v.Z + float64(m.Points[11])
+	h := float64(m.Points[12])*v.X + float64(m.Points[13])*v.Y + float64(m.Points[14])*v.Z + float64(m.Points[15])
 	return &Vector{Xh / h, Yh / h, Zh / h}
 }
