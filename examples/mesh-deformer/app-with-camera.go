@@ -16,6 +16,11 @@ const (
 	windowWidth  = 800
 	windowHeight = 800
 	windowTitle  = "Example - mesh deformer"
+	moveSpeed    = 1.0
+)
+
+var (
+	cameraRotate = false
 )
 
 type Application struct {
@@ -28,6 +33,8 @@ type Application struct {
 	worldHeight           int
 	worldDepth            int
 	worldUpDirection      *primitives.Vector
+
+	KeyDowns map[string]bool
 }
 
 func NewApplication() *Application {
@@ -43,6 +50,11 @@ func NewApplication() *Application {
 	app.camera.TargetCameraSetTarget(primitives.Vector{10, 10, 0})
 	app.camera.SetupProjection(45, float64(windowWidth/windowHeight))
 	app.camera.UpDirection = primitives.Vector{0, 0, 1}
+	app.KeyDowns = make(map[string]bool)
+	app.KeyDowns["W"] = false
+	app.KeyDowns["A"] = false
+	app.KeyDowns["S"] = false
+	app.KeyDowns["D"] = false
 	return &app
 }
 
@@ -77,6 +89,64 @@ func (a *Application) GenerateTriangles() {
 			a.AddTriangle(triangle)
 		}
 	}
+}
+
+// Key handler function. it supports the debug option. (print out the points of the app)
+func (a *Application) KeyHandler(window *glfw.Window) {
+	if window.GetKey(glfw.KeyW) == glfw.Press {
+		a.KeyDowns["W"] = true
+	} else {
+		a.KeyDowns["W"] = false
+	}
+	if window.GetKey(glfw.KeyA) == glfw.Press {
+		a.KeyDowns["A"] = true
+	} else {
+		a.KeyDowns["A"] = false
+	}
+	if window.GetKey(glfw.KeyS) == glfw.Press {
+		a.KeyDowns["S"] = true
+	} else {
+		a.KeyDowns["S"] = false
+	}
+	if window.GetKey(glfw.KeyD) == glfw.Press {
+		a.KeyDowns["D"] = true
+	} else {
+		a.KeyDowns["D"] = false
+	}
+	// Move camera
+	moveX := 0.0
+	moveY := 0.0
+	if a.KeyDowns["W"] && !a.KeyDowns["S"] {
+		moveY = moveSpeed
+	} else if a.KeyDowns["S"] && !a.KeyDowns["W"] {
+		moveY = -moveSpeed
+	}
+	if a.KeyDowns["A"] && !a.KeyDowns["D"] {
+		moveX = -moveSpeed
+	} else if a.KeyDowns["D"] && !a.KeyDowns["A"] {
+		moveX = moveSpeed
+	}
+	a.camera.TargetCameraMove(moveX, moveY)
+}
+func (a *Application) MouseHandler(window *glfw.Window) {
+
+	// camera movement
+	/*
+		x, y := window.GetCursorPos()
+		if window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
+			if !cameraRotate {
+				cameraX = x
+				cameraY = y
+				cameraRotate = true
+			} else {
+				app.Camera.RotateCamera(V.Vector{x - cameraX, y - cameraY, 0})
+				cameraX = x
+				cameraY = y
+			}
+		} else {
+			cameraRotate = false
+		}
+	*/
 }
 
 func initGlfw() *glfw.Window {
@@ -160,6 +230,7 @@ func main() {
 		for _, item := range app.triangles {
 			item.Draw()
 		}
+		app.KeyHandler(window)
 		glfw.PollEvents()
 		window.SwapBuffers()
 	}
