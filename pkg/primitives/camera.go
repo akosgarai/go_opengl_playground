@@ -48,10 +48,10 @@ func NewCamera() *Camera {
 	cam.freeCameraOptions.translation = Vector{0, 0, 0}
 	cam.targetCameraOptions.minRy = -60
 	cam.targetCameraOptions.maxRy = 60
-	cam.targetCameraOptions.minDistance = 1
-	cam.targetCameraOptions.maxDistance = 100
+	cam.targetCameraOptions.minDistance = 0.1
+	cam.targetCameraOptions.maxDistance = 1000
 	cam.fov = 45
-	cam.aspectRatio = 1.3333
+	cam.aspectRatio = 1
 	return &cam
 }
 
