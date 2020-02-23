@@ -21,6 +21,7 @@ const (
 
 var (
 	cameraRotate = false
+	DebugPrint   = false
 )
 
 type Application struct {
@@ -93,6 +94,14 @@ func (a *Application) GenerateTriangles() {
 
 // Key handler function. it supports the debug option. (print out the points of the app)
 func (a *Application) KeyHandler(window *glfw.Window) {
+	if window.GetKey(glfw.KeyH) == glfw.Press {
+		if !DebugPrint {
+			DebugPrint = true
+			fmt.Printf("app.camera: %v\n", a.camera)
+		}
+	} else {
+		DebugPrint = false
+	}
 	if window.GetKey(glfw.KeyW) == glfw.Press {
 		a.KeyDowns["W"] = true
 	} else {
