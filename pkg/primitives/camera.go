@@ -49,7 +49,7 @@ func NewCamera() *Camera {
 	cam.targetCameraOptions.minRy = -60
 	cam.targetCameraOptions.maxRy = 60
 	cam.targetCameraOptions.minDistance = 1
-	cam.targetCameraOptions.maxDistance = 10
+	cam.targetCameraOptions.maxDistance = 100
 	cam.fov = 45
 	cam.aspectRatio = 1.3333
 	return &cam
