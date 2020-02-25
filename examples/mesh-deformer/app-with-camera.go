@@ -16,7 +16,7 @@ const (
 	windowWidth  = 800
 	windowHeight = 800
 	windowTitle  = "Example - mesh deformer"
-	moveSpeed    = 1.0
+	moveSpeed    = 5.0
 )
 
 var (
@@ -29,7 +29,7 @@ type Application struct {
 	defaultTriangleLength int
 	triangleColorFront    primitives.Vector
 	triangleColorBack     primitives.Vector
-	camera                *primitives.Camera
+	camera                *primitives.CameraImpr
 	worldWidth            int
 	worldHeight           int
 	worldDepth            int
@@ -46,11 +46,11 @@ func NewApplication() *Application {
 	app.defaultTriangleLength = 10
 	app.triangleColorFront = primitives.Vector{0, 0, 1}
 	app.triangleColorBack = primitives.Vector{0, 0.5, 1}
-	app.camera = primitives.NewCamera()
-	app.camera.SetPosition(primitives.Vector{0, 0, 200})
-	app.camera.TargetCameraSetTarget(primitives.Vector{10, 10, 0})
+	app.camera = primitives.NewCameraImpr()
+	app.camera.SetPosition(primitives.Vector{50, 0, 50})
+	app.camera.TargetCameraSetTarget(primitives.Vector{0, 0, 0})
 	app.camera.SetupProjection(45, float64(windowWidth/windowHeight))
-	app.camera.UpDirection = primitives.Vector{0, 0, 1}
+	app.camera.UpDirection = primitives.Vector{0, 1, 0}
 	app.KeyDowns = make(map[string]bool)
 	app.KeyDowns["W"] = false
 	app.KeyDowns["A"] = false
@@ -97,7 +97,7 @@ func (a *Application) KeyHandler(window *glfw.Window) {
 	if window.GetKey(glfw.KeyH) == glfw.Press {
 		if !DebugPrint {
 			DebugPrint = true
-			fmt.Printf("app.camera: %v\n", a.camera)
+			fmt.Printf("app.camera: %s\n", a.camera.Log())
 		}
 	} else {
 		DebugPrint = false
