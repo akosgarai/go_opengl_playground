@@ -25,6 +25,7 @@ type CameraImpr struct {
 
 	cameraUpDirection    Vector
 	cameraRightDirection Vector
+	cameraFrontDirection Vector
 	// view matrix
 	viewMatrix *Matrix4x4
 
@@ -40,23 +41,29 @@ type CameraImpr struct {
 	}
 }
 
+// Log returns the string representation of this object.
 func (c *CameraImpr) Log() string {
-	logString := "Position: Vector{" + c.vectorToString(c.position) + "}\n"
-	logString += "LookAt: Vector{" + c.vectorToString(c.lookAt) + "}\n"
-	logString += "UpDirection: Vector{" + c.vectorToString(c.UpDirection) + "}\n"
+	logString := "Position: Vector{" + c.position.ToString() + "}\n"
+	logString += "LookAt: Vector{" + c.lookAt.ToString() + "}\n"
+	logString += "UpDirection: Vector{" + c.UpDirection.ToString() + "}\n"
 	logString += "ProjectionOptions:\n"
-	logString += " - fov : " + strconv.FormatFloat(c.projectionOptions.fov, 'f', 6, 64)
-	logString += " - aspectRatio : " + strconv.FormatFloat(c.projectionOptions.aspectRatio, 'f', 6, 64)
-	logString += " - far : " + strconv.FormatFloat(c.projectionOptions.far, 'f', 6, 64)
-	logString += " - near : " + strconv.FormatFloat(c.projectionOptions.near, 'f', 6, 64)
+	logString += " - fov : " + strconv.FormatFloat(c.projectionOptions.fov, 'f', 6, 64) + "\n"
+	logString += " - aspectRatio : " + strconv.FormatFloat(c.projectionOptions.aspectRatio, 'f', 6, 64) + "\n"
+	logString += " - far : " + strconv.FormatFloat(c.projectionOptions.far, 'f', 6, 64) + "\n"
+	logString += " - near : " + strconv.FormatFloat(c.projectionOptions.near, 'f', 6, 64) + "\n"
+	logString += "CameraUpDirection: Vector{" + c.cameraUpDirection.ToString() + "}\n"
+	logString += "CameraRightDirection: Vector{" + c.cameraRightDirection.ToString() + "}\n"
+	logString += "CameraForwardDirection: Vector{" + c.cameraFrontDirection.ToString() + "}\n"
+	logString += "CameraOptions:\n"
+	logString += " - yaw : " + strconv.FormatFloat(c.cameraOptions.yaw, 'f', 6, 64) + "\n"
+	logString += " - pitch : " + strconv.FormatFloat(c.cameraOptions.pitch, 'f', 6, 64) + "\n"
+	logString += " - roll : " + strconv.FormatFloat(c.cameraOptions.roll, 'f', 6, 64) + "\n"
+	logString += " - minRy : " + strconv.FormatFloat(c.cameraOptions.minRy, 'f', 6, 64) + "\n"
+	logString += " - maxRy : " + strconv.FormatFloat(c.cameraOptions.maxRy, 'f', 6, 64) + "\n"
+	logString += " - distance : " + strconv.FormatFloat(c.cameraOptions.distance, 'f', 6, 64) + "\n"
+	logString += " - minDistance : " + strconv.FormatFloat(c.cameraOptions.minDistance, 'f', 6, 64) + "\n"
+	logString += " - maxDistance : " + strconv.FormatFloat(c.cameraOptions.maxDistance, 'f', 6, 64) + "\n"
 	return logString
-}
-func (c *CameraImpr) vectorToString(v Vector) string {
-	x := strconv.FormatFloat(v.X, 'f', 6, 64)
-	y := strconv.FormatFloat(v.Y, 'f', 6, 64)
-	z := strconv.FormatFloat(v.Z, 'f', 6, 64)
-	return "X : " + x + ", Y : " + y + ", Z : " + z
-
 }
 
 func NewCameraImpr() *CameraImpr {
@@ -94,6 +101,14 @@ func (c *CameraImpr) SetupProjection(fov, aspRatio float64) {
 	c.projectionMatrix = Perspective(float32(c.projectionOptions.fov), float32(c.projectionOptions.aspectRatio), float32(c.projectionOptions.near), float32(c.projectionOptions.far))
 }
 
+// setupCameraDirections is a helper function for updating the camera[Up|Right|Forward]Diraction variables
+func (c *CameraImpr) setupCameraDirections() {
+	c.cameraFrontDirection = (c.position.Add(c.lookAt.MultiplyScalar(-1))).Normalize()
+
+	c.cameraRightDirection = (c.UpDirection.Cross(c.cameraFrontDirection)).Normalize()
+	c.cameraUpDirection = c.cameraFrontDirection.Cross(c.cameraRightDirection)
+}
+
 // TargetCameraSetTarget updates the camera based on the new targetPoint
 // It updates the lookAt vector (target - position normalized)
 // It calculates the distance
@@ -105,6 +120,7 @@ func (c *CameraImpr) TargetCameraSetTarget(target Vector) {
 	c.cameraOptions.distance = math.Max(
 		c.cameraOptions.minDistance, math.Min(
 			c.cameraOptions.distance, c.cameraOptions.maxDistance))
+	c.setupCameraDirections()
 	c.viewMatrix = LookAt(c.position, c.lookAt, c.cameraUpDirection)
 	c.cameraOptions.yaw = 0
 	c.cameraOptions.pitch = 0
@@ -116,8 +132,8 @@ func (c *CameraImpr) TargetCameraSetTarget(target Vector) {
 	c.cameraOptions.pitch = RadToDeg(math.Asin(-float64(c.viewMatrix.Points[6])))
 }
 
-// TargetCameraUpdate setup the viewMatrix based on the given cameraOptions
-func (c *CameraImpr) TargetCameraUpdate() {
+// Update setup the viewMatrix based on the given cameraOptions
+func (c *CameraImpr) Update() {
 	rotation := YPR(
 		DegToRad(c.cameraOptions.yaw),
 		DegToRad(c.cameraOptions.pitch),
@@ -129,10 +145,30 @@ func (c *CameraImpr) TargetCameraUpdate() {
 	c.cameraRightDirection = c.lookAt.Cross(c.cameraUpDirection)
 	c.viewMatrix = LookAt(c.position, c.lookAt, c.cameraUpDirection)
 }
+
+// SetViewMatrix setup the viewMatrix based on the given cameraOptions
+func (c *CameraImpr) SetViewMatrix() {
+	c.setupCameraDirections()
+	c.viewMatrix = LookAt(c.position, c.lookAt, c.cameraUpDirection)
+}
 func (c *CameraImpr) TargetCameraMove(dX, dY float64) {
 	x := c.cameraRightDirection.MultiplyScalar(dX)
 	y := c.lookAt.MultiplyScalar(dY)
 	c.position = c.position.Add(x.Add(y))
 	c.lookAt = c.lookAt.Add(x.Add(y))
-	c.TargetCameraUpdate()
+	c.Update()
+}
+
+// Walk updates the translation for the transformation (forward, back directions)
+func (c *CameraImpr) Walk(amount float64) {
+	c.position = c.position.Add(
+		c.lookAt.MultiplyScalar(amount))
+	c.SetViewMatrix()
+}
+
+// Strafe updates the translation for the transformation (left, right directions)
+func (c *CameraImpr) Strafe(amount float64) {
+	c.position = c.position.Add(
+		c.cameraRightDirection.MultiplyScalar(amount))
+	c.SetViewMatrix()
 }
