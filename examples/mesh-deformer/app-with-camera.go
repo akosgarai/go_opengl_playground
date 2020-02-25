@@ -47,10 +47,18 @@ func NewApplication() *Application {
 	app.triangleColorFront = primitives.Vector{0, 0, 1}
 	app.triangleColorBack = primitives.Vector{0, 0.5, 1}
 	app.camera = primitives.NewCameraImpr()
-	app.camera.SetPosition(primitives.Vector{50, 0, 50})
-	app.camera.TargetCameraSetTarget(primitives.Vector{0, 0, 0})
-	app.camera.SetupProjection(45, float64(windowWidth/windowHeight))
+	fmt.Println("Camera state after new function")
+	fmt.Println(app.camera.Log())
 	app.camera.UpDirection = primitives.Vector{0, 1, 0}
+	app.camera.SetPosition(primitives.Vector{0, 0, 0})
+	fmt.Println("Camera state after setPosition function")
+	fmt.Println(app.camera.Log())
+	app.camera.TargetCameraSetTarget(primitives.Vector{10, 0, 0})
+	fmt.Println("Camera state after setTarget function")
+	fmt.Println(app.camera.Log())
+	app.camera.SetupProjection(45, float64(windowWidth/windowHeight))
+	fmt.Println("Camera state after setupProjection function")
+	fmt.Println(app.camera.Log())
 	app.KeyDowns = make(map[string]bool)
 	app.KeyDowns["W"] = false
 	app.KeyDowns["A"] = false
@@ -123,19 +131,24 @@ func (a *Application) KeyHandler(window *glfw.Window) {
 		a.KeyDowns["D"] = false
 	}
 	// Move camera
-	moveX := 0.0
-	moveY := 0.0
+	forward := 0.0
 	if a.KeyDowns["W"] && !a.KeyDowns["S"] {
-		moveY = moveSpeed
+		forward = -moveSpeed
 	} else if a.KeyDowns["S"] && !a.KeyDowns["W"] {
-		moveY = -moveSpeed
+		forward = moveSpeed
 	}
+	if forward != 0 {
+		a.camera.Walk(forward)
+	}
+	horisontal := 0.0
 	if a.KeyDowns["A"] && !a.KeyDowns["D"] {
-		moveX = -moveSpeed
+		horisontal = -moveSpeed
 	} else if a.KeyDowns["D"] && !a.KeyDowns["A"] {
-		moveX = moveSpeed
+		horisontal = moveSpeed
 	}
-	a.camera.TargetCameraMove(moveX, moveY)
+	if horisontal != 0 {
+		a.camera.Strafe(horisontal)
+	}
 }
 func (a *Application) MouseHandler(window *glfw.Window) {
 
