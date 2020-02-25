@@ -149,6 +149,15 @@ func (a *Application) KeyHandler(window *glfw.Window) {
 	if horisontal != 0 {
 		a.camera.Strafe(horisontal)
 	}
+	vertical := 0.0
+	if a.KeyDowns["Q"] && !a.KeyDowns["E"] {
+		vertical = -moveSpeed
+	} else if a.KeyDowns["E"] && !a.KeyDowns["Q"] {
+		vertical = moveSpeed
+	}
+	if vertical != 0 {
+		a.camera.Strafe(vertical)
+	}
 }
 func (a *Application) MouseHandler(window *glfw.Window) {
 
