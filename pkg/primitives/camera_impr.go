@@ -44,6 +44,11 @@ func (c *CameraImpr) Log() string {
 	logString := "Position: Vector{" + c.vectorToString(c.position) + "}\n"
 	logString += "LookAt: Vector{" + c.vectorToString(c.lookAt) + "}\n"
 	logString += "UpDirection: Vector{" + c.vectorToString(c.UpDirection) + "}\n"
+	logString += "ProjectionOptions:\n"
+	logString += " - fov : " + strconv.FormatFloat(c.projectionOptions.fov, 'f', 6, 64)
+	logString += " - aspectRatio : " + strconv.FormatFloat(c.projectionOptions.aspectRatio, 'f', 6, 64)
+	logString += " - far : " + strconv.FormatFloat(c.projectionOptions.far, 'f', 6, 64)
+	logString += " - near : " + strconv.FormatFloat(c.projectionOptions.near, 'f', 6, 64)
 	return logString
 }
 func (c *CameraImpr) vectorToString(v Vector) string {
