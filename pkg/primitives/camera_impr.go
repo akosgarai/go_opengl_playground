@@ -133,6 +133,7 @@ func (c *CameraImpr) TargetCameraSetTarget(target Vector) {
 }
 
 // Update setup the viewMatrix based on the given cameraOptions
+/*
 func (c *CameraImpr) Update() {
 	rotation := YPR(
 		DegToRad(c.cameraOptions.yaw),
@@ -145,12 +146,14 @@ func (c *CameraImpr) Update() {
 	c.cameraRightDirection = c.lookAt.Cross(c.cameraUpDirection)
 	c.viewMatrix = LookAt(c.position, c.lookAt, c.cameraUpDirection)
 }
-
+*/
 // SetViewMatrix setup the viewMatrix based on the given cameraOptions
 func (c *CameraImpr) SetViewMatrix() {
 	c.setupCameraDirections()
 	c.viewMatrix = LookAt(c.position, c.lookAt, c.cameraUpDirection)
 }
+
+/*
 func (c *CameraImpr) TargetCameraMove(dX, dY float64) {
 	x := c.cameraRightDirection.MultiplyScalar(dX)
 	y := c.lookAt.MultiplyScalar(dY)
@@ -158,6 +161,7 @@ func (c *CameraImpr) TargetCameraMove(dX, dY float64) {
 	c.lookAt = c.lookAt.Add(x.Add(y))
 	c.Update()
 }
+*/
 
 // Walk updates the translation for the transformation (forward, back directions)
 func (c *CameraImpr) Walk(amount float64) {
@@ -170,5 +174,12 @@ func (c *CameraImpr) Walk(amount float64) {
 func (c *CameraImpr) Strafe(amount float64) {
 	c.position = c.position.Add(
 		c.cameraRightDirection.MultiplyScalar(amount))
+	c.SetViewMatrix()
+}
+
+// Lift updates the translation for the transformation (up, down directions)
+func (c *CameraImpr) Lift(amount float64) {
+	c.position = c.position.Add(
+		c.cameraUpDirection.MultiplyScalar(amount))
 	c.SetViewMatrix()
 }
