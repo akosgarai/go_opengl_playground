@@ -46,6 +46,21 @@ func YPR(yaw, pitch, roll float64) *Matrix4x4 {
 }
 
 // implementation of the gluLookAt function (based on the Szirmay graph book. page: 194)
+func LookAtV(right, up, forward, position Vector) *Matrix4x4 {
+	result := NullMatrix4x4()
+	result.Points[0] = float32(right.X)
+	result.Points[1] = float32(right.Y)
+	result.Points[2] = float32(right.Z)
+	result.Points[4] = float32(up.X)
+	result.Points[5] = float32(up.Y)
+	result.Points[6] = float32(up.Z)
+	result.Points[8] = float32(forward.X)
+	result.Points[9] = float32(forward.Y)
+	result.Points[10] = float32(forward.Z)
+	result.Points[15] = 1
+	translationMatrix := TranslationMatrix4x4(-float32(position.X), -float32(position.Y), -float32(position.Z))
+	return translationMatrix.Dot(result)
+}
 func LookAt(eye, lookAt, worldUp Vector) *Matrix4x4 {
 	w := eye.Subtract(lookAt)
 	wNorm := w.Length()
@@ -79,5 +94,28 @@ func LookAt(eye, lookAt, worldUp Vector) *Matrix4x4 {
 	result.Points[10] = float32(w.Z)
 	result.Points[15] = 1
 	translationMatrix := TranslationMatrix4x4(-float32(eye.X), -float32(eye.Y), -float32(eye.Z))
-	return result.Dot(translationMatrix)
+	return translationMatrix.Dot(result)
+}
+
+// Helper function to transform the mouse coordinates.
+func ConvertMouseCoordinates(mousePositionX, mousePositionY, windowWidth, windowHeight float64) (float64, float64) {
+	halfWidth := windowWidth / 2.0
+	halfHeight := windowHeight / 2.0
+	x := (mousePositionX - halfWidth) / (halfWidth)
+	y := (halfHeight - mousePositionY) / (halfHeight)
+	return x, y
+}
+
+// https://stackoverflow.com/questions/8115352/glmperspective-explanation
+// ProjectionNewSolution.
+func Perspective(angle, ratio, near, far float32) *Matrix4x4 {
+	// degree to radian formula: n deg = n * PI / 180 rad
+	slopey := float32(math.Tan(float64(angle * math.Pi / 180)))
+	result := NullMatrix4x4()
+	result.Points[0] = 1 / slopey / ratio
+	result.Points[5] = 1 / slopey
+	result.Points[10] = -((far + near) / (far - near))
+	result.Points[11] = -1
+	result.Points[14] = -(2 * far * near / (far - near))
+	return result
 }

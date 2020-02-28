@@ -23,6 +23,7 @@ type CameraImpr struct {
 	// projection matrix
 	projectionMatrix *Matrix4x4
 
+	// camera coordinate system directions
 	cameraUpDirection    Vector
 	cameraRightDirection Vector
 	cameraFrontDirection Vector
@@ -33,11 +34,8 @@ type CameraImpr struct {
 		yaw         float64
 		pitch       float64
 		roll        float64
-		minRy       float64
-		maxRy       float64
-		distance    float64
-		minDistance float64
-		maxDistance float64
+		speed       float64
+		translation Vector
 	}
 }
 
@@ -58,20 +56,11 @@ func (c *CameraImpr) Log() string {
 	logString += " - yaw : " + strconv.FormatFloat(c.cameraOptions.yaw, 'f', 6, 64) + "\n"
 	logString += " - pitch : " + strconv.FormatFloat(c.cameraOptions.pitch, 'f', 6, 64) + "\n"
 	logString += " - roll : " + strconv.FormatFloat(c.cameraOptions.roll, 'f', 6, 64) + "\n"
-	logString += " - minRy : " + strconv.FormatFloat(c.cameraOptions.minRy, 'f', 6, 64) + "\n"
-	logString += " - maxRy : " + strconv.FormatFloat(c.cameraOptions.maxRy, 'f', 6, 64) + "\n"
-	logString += " - distance : " + strconv.FormatFloat(c.cameraOptions.distance, 'f', 6, 64) + "\n"
-	logString += " - minDistance : " + strconv.FormatFloat(c.cameraOptions.minDistance, 'f', 6, 64) + "\n"
-	logString += " - maxDistance : " + strconv.FormatFloat(c.cameraOptions.maxDistance, 'f', 6, 64) + "\n"
 	return logString
 }
 
 func NewCameraImpr() *CameraImpr {
 	var cam CameraImpr
-	cam.cameraOptions.minRy = -60
-	cam.cameraOptions.maxRy = 60
-	cam.cameraOptions.minDistance = 0.1
-	cam.cameraOptions.maxDistance = 1000
 	cam.projectionOptions.fov = 45
 	cam.projectionOptions.aspectRatio = 1
 	cam.projectionOptions.near = 0.1
@@ -103,7 +92,7 @@ func (c *CameraImpr) SetupProjection(fov, aspRatio float64) {
 
 // setupCameraDirections is a helper function for updating the camera[Up|Right|Forward]Diraction variables
 func (c *CameraImpr) setupCameraDirections() {
-	c.cameraFrontDirection = (c.position.Add(c.lookAt.MultiplyScalar(-1))).Normalize()
+	c.cameraFrontDirection = (c.position.Add(c.lookAt)).Normalize()
 
 	c.cameraRightDirection = (c.UpDirection.Cross(c.cameraFrontDirection)).Normalize()
 	c.cameraUpDirection = c.cameraFrontDirection.Cross(c.cameraRightDirection)
@@ -111,19 +100,24 @@ func (c *CameraImpr) setupCameraDirections() {
 
 // TargetCameraSetTarget updates the camera based on the new targetPoint
 // It updates the lookAt vector (target - position normalized)
-// It calculates the distance
 // Sets the viewMatrix
 // Sets the yaw, pitch values
 func (c *CameraImpr) TargetCameraSetTarget(target Vector) {
-	c.lookAt = (target.Subtract(c.position)).Normalize()
-	c.cameraOptions.distance = (c.position.Subtract(target)).Length()
-	c.cameraOptions.distance = math.Max(
-		c.cameraOptions.minDistance, math.Min(
-			c.cameraOptions.distance, c.cameraOptions.maxDistance))
-	c.setupCameraDirections()
-	c.viewMatrix = LookAt(c.position, c.lookAt, c.cameraUpDirection)
+	c.SetLookAtDistance(target)
+	c.SetViewMatrix()
+}
+
+// SetLookAtDistance updates the lookAt variable
+func (c *CameraImpr) SetLookAtDistance(target Vector) {
+	c.lookAt = (c.position.Subtract(target)).Normalize()
+}
+
+// SetYPRValues updates the cameraOptions.(yaw|pitch|roll) values based on the current viewMatrix
+// the roll is kept on 0.
+func (c *CameraImpr) SetYPRValues() {
 	c.cameraOptions.yaw = 0
 	c.cameraOptions.pitch = 0
+	c.cameraOptions.roll = 0
 	if c.viewMatrix.Points[0] < 0 {
 		c.cameraOptions.yaw = RadToDeg(math.Pi - math.Asin(-float64(c.viewMatrix.Points[8])))
 	} else {
@@ -150,7 +144,9 @@ func (c *CameraImpr) Update() {
 // SetViewMatrix setup the viewMatrix based on the given cameraOptions
 func (c *CameraImpr) SetViewMatrix() {
 	c.setupCameraDirections()
-	c.viewMatrix = LookAt(c.position, c.lookAt, c.cameraUpDirection)
+	//c.viewMatrix = LookAt(c.position, c.position.Add(c.lookAt), c.cameraUpDirection)
+	c.viewMatrix = LookAtV(c.cameraRightDirection, c.cameraUpDirection, c.cameraFrontDirection, c.position)
+	c.SetYPRValues()
 }
 
 /*
@@ -166,7 +162,8 @@ func (c *CameraImpr) TargetCameraMove(dX, dY float64) {
 // Walk updates the translation for the transformation (forward, back directions)
 func (c *CameraImpr) Walk(amount float64) {
 	c.position = c.position.Add(
-		c.lookAt.MultiplyScalar(amount))
+		c.cameraFrontDirection.MultiplyScalar(amount))
+	c.SetLookAtDistance(c.position.Add(c.cameraFrontDirection.MultiplyScalar(amount)))
 	c.SetViewMatrix()
 }
 
@@ -174,6 +171,7 @@ func (c *CameraImpr) Walk(amount float64) {
 func (c *CameraImpr) Strafe(amount float64) {
 	c.position = c.position.Add(
 		c.cameraRightDirection.MultiplyScalar(amount))
+	c.SetLookAtDistance(c.position.Add(c.cameraRightDirection.MultiplyScalar(amount)))
 	c.SetViewMatrix()
 }
 
@@ -181,5 +179,15 @@ func (c *CameraImpr) Strafe(amount float64) {
 func (c *CameraImpr) Lift(amount float64) {
 	c.position = c.position.Add(
 		c.cameraUpDirection.MultiplyScalar(amount))
+	c.SetLookAtDistance(c.position.Add(c.cameraUpDirection.MultiplyScalar(amount)))
 	c.SetViewMatrix()
 }
+
+/*
+void CAbstractCamera::Rotate(const float y, const float p, const float r) {
+	  yaw=glm::radians(y);
+	pitch=glm::radians(p);
+	 roll=glm::radians(r);
+	Update();
+}
+*/
