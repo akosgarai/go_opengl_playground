@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"runtime"
 	"time"
 
@@ -24,15 +25,13 @@ var (
 )
 
 type Application struct {
-	cube               *primitives.Cube
-	triangleColorBack  primitives.Vector
-	triangleColorRight primitives.Vector
-	triangleColorTop   primitives.Vector
-	camera             *primitives.CameraImpr
-	cameraLastUpdate   int64
-	worldUpDirection   *primitives.Vector
-	moveSpeed          float64
-	epsilon            float64
+	cube             *primitives.Cube
+	cubePosition     primitives.Vector
+	camera           *primitives.CameraImpr
+	cameraLastUpdate int64
+	worldUpDirection *primitives.Vector
+	moveSpeed        float64
+	epsilon          float64
 
 	window  *glfw.Window
 	program uint32
@@ -42,19 +41,25 @@ type Application struct {
 
 func NewApplication() *Application {
 	var app Application
-	app.triangleColorBack = primitives.Vector{0, 0, 1}
-	app.triangleColorRight = primitives.Vector{1, 0, 0}
-	app.triangleColorTop = primitives.Vector{0, 1, 0}
 	app.moveSpeed = 1.0 / 1000.0
 	app.epsilon = 50.0
 	app.camera = primitives.NewCameraImpr()
 	fmt.Println("Camera state after new function")
 	fmt.Println(app.camera.Log())
 	app.camera.UpDirection = primitives.Vector{0, 1, 0}
-	app.camera.SetPosition(primitives.Vector{0, 0, 2.5})
+	app.camera.SetPosition(primitives.Vector{0, 0, 0})
 	fmt.Println("Camera state after setPosition function")
 	fmt.Println(app.camera.Log())
 	// Rotation related code comes here.
+	// how to calculate the lookVector. lookat point, camera position. lookatpoint - cameraposition = lookAt vector.
+	// lookAtPoint - the center of the cube. (10,10,10)
+	lookAtPoint := primitives.Vector{10, 10, 10}
+	lookVector := (lookAtPoint.Subtract(app.camera.GetPosition())).Normalize()
+	yaw := primitives.RadToDeg(math.Atan2(lookVector.Z, lookVector.X) + math.Pi)
+	pitch := primitives.RadToDeg(math.Asin(lookVector.Y))
+	app.camera.Rotate(yaw, pitch, 0)
+	fmt.Println("Camera state after Rotate function")
+	fmt.Println(app.camera.Log())
 	/*
 		glm::vec3 look =  glm::normalize(p);
 
@@ -66,9 +71,6 @@ func NewApplication() *Application {
 		cam.Rotate(rX,rY,0);
 
 	*/
-	app.camera.TargetCameraSetTarget(primitives.Vector{0, 0, -1})
-	fmt.Println("Camera state after setTarget function")
-	fmt.Println(app.camera.Log())
 	app.camera.SetupProjection(45, float64(windowWidth/windowHeight))
 	fmt.Println("Camera state after setupProjection function")
 	fmt.Println(app.camera.Log())
@@ -85,7 +87,8 @@ func NewApplication() *Application {
 
 // It generates a cube.
 func (a *Application) GenerateCube() {
-	a.cube = primitives.NewCubeByVectorAndLength(primitives.Vector{-0.5, -0.5, -0.5}, 1)
+	a.cube = primitives.NewCubeByVectorAndLength(primitives.Vector{-0.5, -0.5, -0.5}, 0.5)
+	a.cubePosition = primitives.Vector{10, 10, -10}
 }
 
 // Key handler function. it supports the debug option. (print out the points of the app)
@@ -95,6 +98,7 @@ func (a *Application) KeyHandler() {
 			DebugPrint = true
 			fmt.Printf("app.camera: %s\n", a.camera.Log())
 			fmt.Printf("app.cube: %v\n", a.cube)
+			fmt.Printf("app.cubePosition: %v\n", a.cubePosition)
 		}
 	} else {
 		DebugPrint = false
@@ -166,6 +170,10 @@ func (a *Application) KeyHandler() {
 	if vertical != 0 {
 		a.camera.Lift(vertical)
 	}
+	t := a.camera.GetTranslation()
+	if t.Dot(t) > a.epsilon*a.epsilon {
+		a.camera.SetTranslation(t.MultiplyScalar(0.95))
+	}
 }
 
 func initGlfw() *glfw.Window {
@@ -233,13 +241,16 @@ func main() {
 	app.GenerateCube()
 
 	mvpLocation := gl.GetUniformLocation(app.program, gl.Str("MVP\x00"))
+	CubePosition := app.cubePosition
+	M := (primitives.UnitMatrix4x4()).Dot(primitives.TranslationMatrix4x4(float32(CubePosition.X), float32(CubePosition.Y), float32(CubePosition.Z)))
 
 	for !app.window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		// mvp - modelview - projection matrix
-		MV := app.camera.GetViewMatrix()
+		//M := primitives.UnitMatrix4x4()
+		V := app.camera.GetViewMatrix()
 		P := app.camera.GetProjectionMatrix()
-		mvpValue := (P.Dot(MV)).Points
+		mvpValue := ((P.Dot(V)).Dot(M)).Points
 		gl.UniformMatrix4fv(mvpLocation, 1, false, &mvpValue[0])
 
 		app.cube.Draw()

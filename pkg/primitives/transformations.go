@@ -49,19 +49,26 @@ func YPR(yaw, pitch, roll float64) *Matrix4x4 {
 func LookAtV(right, up, forward, position Vector) *Matrix4x4 {
 	result := NullMatrix4x4()
 	result.Points[0] = float32(right.X)
-	result.Points[1] = float32(right.Y)
-	result.Points[2] = float32(right.Z)
-	result.Points[4] = float32(up.X)
+	result.Points[1] = float32(up.X)
+	result.Points[2] = float32(forward.X)
+	result.Points[4] = float32(right.Y)
 	result.Points[5] = float32(up.Y)
-	result.Points[6] = float32(up.Z)
-	result.Points[8] = float32(forward.X)
-	result.Points[9] = float32(forward.Y)
+	result.Points[6] = float32(forward.Y)
+	result.Points[8] = float32(right.Z)
+	result.Points[9] = float32(up.Z)
 	result.Points[10] = float32(forward.Z)
+
+	result.Points[12] = float32(-right.X*position.X - right.Y*position.Y - right.Z*position.Z)
+	result.Points[13] = float32(-up.X*position.X - up.Y*position.Y - up.Z*position.Z)
+	result.Points[14] = float32(-forward.X*position.X - forward.Y*position.Y - forward.Z*position.Z)
+
 	result.Points[15] = 1
-	translationMatrix := TranslationMatrix4x4(-float32(position.X), -float32(position.Y), -float32(position.Z))
-	return translationMatrix.Dot(result)
+	return result
+	//translationMatrix := TranslationMatrix4x4(-float32(position.X), -float32(position.Y), -float32(position.Z))
+	//return translationMatrix.Dot(result)
 }
 func LookAt(eye, lookAt, worldUp Vector) *Matrix4x4 {
+	// u - vizszintes,  v - fuggoleges, w - elore
 	w := eye.Subtract(lookAt)
 	wNorm := w.Length()
 	if wNorm > EPSILON {
