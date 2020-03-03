@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"runtime"
 	"time"
 
@@ -27,7 +26,7 @@ var (
 type Application struct {
 	cube             *primitives.Cube
 	cubePosition     primitives.Vector
-	camera           *primitives.CameraImpr
+	camera           *primitives.Camera
 	cameraLastUpdate int64
 	worldUpDirection *primitives.Vector
 	moveSpeed        float64
@@ -41,37 +40,14 @@ type Application struct {
 
 func NewApplication() *Application {
 	var app Application
+	app.GenerateCube()
 	app.moveSpeed = 1.0 / 1000.0
 	app.epsilon = 50.0
-	app.camera = primitives.NewCameraImpr()
+	app.camera = primitives.NewCamera(primitives.Vector{0, 0, 10.0}, primitives.Vector{0, 1, 0}, -90.0, 0.0)
 	fmt.Println("Camera state after new function")
 	fmt.Println(app.camera.Log())
-	app.camera.UpDirection = primitives.Vector{0, 1, 0}
-	app.camera.SetPosition(primitives.Vector{0, 0, 0})
-	fmt.Println("Camera state after setPosition function")
-	fmt.Println(app.camera.Log())
 	// Rotation related code comes here.
-	// how to calculate the lookVector. lookat point, camera position. lookatpoint - cameraposition = lookAt vector.
-	// lookAtPoint - the center of the cube. (10,10,10)
-	lookAtPoint := primitives.Vector{10, 10, 10}
-	lookVector := (lookAtPoint.Subtract(app.camera.GetPosition())).Normalize()
-	yaw := primitives.RadToDeg(math.Atan2(lookVector.Z, lookVector.X) + math.Pi)
-	pitch := primitives.RadToDeg(math.Asin(lookVector.Y))
-	app.camera.Rotate(yaw, pitch, 0)
-	fmt.Println("Camera state after Rotate function")
-	fmt.Println(app.camera.Log())
-	/*
-		glm::vec3 look =  glm::normalize(p);
-
-		//rotate the camera for proper orientation
-		float yaw = glm::degrees(float(atan2(look.z, look.x)+M_PI));
-		float pitch = glm::degrees(asin(look.y));
-		rX = yaw;
-		rY = pitch
-		cam.Rotate(rX,rY,0);
-
-	*/
-	app.camera.SetupProjection(45, float64(windowWidth/windowHeight))
+	app.camera.SetupProjection(45, float64(windowWidth/windowHeight), 0.1, 100.0)
 	fmt.Println("Camera state after setupProjection function")
 	fmt.Println(app.camera.Log())
 	app.cameraLastUpdate = time.Now().UnixNano()
@@ -87,8 +63,8 @@ func NewApplication() *Application {
 
 // It generates a cube.
 func (a *Application) GenerateCube() {
-	a.cube = primitives.NewCubeByVectorAndLength(primitives.Vector{-0.5, -0.5, -0.5}, 0.5)
-	a.cubePosition = primitives.Vector{10, 10, -10}
+	a.cube = primitives.NewCubeByVectorAndLength(primitives.Vector{-0.5, -0.5, -0.5}, 1.0)
+	a.cubePosition = primitives.Vector{0, 0, 1}
 }
 
 // Key handler function. it supports the debug option. (print out the points of the app)
@@ -145,9 +121,9 @@ func (a *Application) KeyHandler() {
 	// Move camera
 	forward := 0.0
 	if a.KeyDowns["W"] && !a.KeyDowns["S"] {
-		forward = -a.moveSpeed * moveTime
-	} else if a.KeyDowns["S"] && !a.KeyDowns["W"] {
 		forward = a.moveSpeed * moveTime
+	} else if a.KeyDowns["S"] && !a.KeyDowns["W"] {
+		forward = -a.moveSpeed * moveTime
 	}
 	if forward != 0 {
 		a.camera.Walk(forward)
@@ -169,10 +145,6 @@ func (a *Application) KeyHandler() {
 	}
 	if vertical != 0 {
 		a.camera.Lift(vertical)
-	}
-	t := a.camera.GetTranslation()
-	if t.Dot(t) > a.epsilon*a.epsilon {
-		a.camera.SetTranslation(t.MultiplyScalar(0.95))
 	}
 }
 
@@ -205,7 +177,7 @@ func initOpenGL() uint32 {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
 
-	vertexShader, err := shader.CompileShader(shader.VertexShaderBasicSource, gl.VERTEX_SHADER)
+	vertexShader, err := shader.CompileShader(shader.VertexShaderModelViewProjectionSource, gl.VERTEX_SHADER)
 	if err != nil {
 		panic(err)
 	}
@@ -238,20 +210,22 @@ func main() {
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
 
-	app.GenerateCube()
-
-	mvpLocation := gl.GetUniformLocation(app.program, gl.Str("MVP\x00"))
+	modelLocation := gl.GetUniformLocation(app.program, gl.Str("model\x00"))
+	// view aka camera
+	viewLocation := gl.GetUniformLocation(app.program, gl.Str("view\x00"))
+	projectionLocation := gl.GetUniformLocation(app.program, gl.Str("projection\x00"))
 	CubePosition := app.cubePosition
-	M := (primitives.UnitMatrix4x4()).Dot(primitives.TranslationMatrix4x4(float32(CubePosition.X), float32(CubePosition.Y), float32(CubePosition.Z)))
 
 	for !app.window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		// mvp - modelview - projection matrix
-		//M := primitives.UnitMatrix4x4()
-		V := app.camera.GetViewMatrix()
-		P := app.camera.GetProjectionMatrix()
-		mvpValue := ((P.Dot(V)).Dot(M)).Points
-		gl.UniformMatrix4fv(mvpLocation, 1, false, &mvpValue[0])
+		M := primitives.TranslationMatrix4x4(float32(CubePosition.X), float32(CubePosition.Y), float32(CubePosition.Z)).TransposeMatrix().GetMatrix()
+		gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
+		V := app.camera.GetViewMatrix().GetMatrix()
+		gl.UniformMatrix4fv(viewLocation, 1, false, &V[0])
+		// Should Be fine 'P'
+		P := app.camera.GetProjectionMatrix().GetMatrix()
+		gl.UniformMatrix4fv(projectionLocation, 1, false, &P[0])
 
 		app.cube.Draw()
 		app.KeyHandler()
