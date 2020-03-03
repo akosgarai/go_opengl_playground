@@ -26,14 +26,19 @@ var (
 
 type Application struct {
 	Points []primitives.Point
+
+	window  *glfw.Window
+	program uint32
+}
+
+func NewApplication() *Application {
+	return &Application{}
 }
 
 // AddPoint inserts a new point to the points.
 func (a *Application) AddPoint(point primitives.Point) {
 	a.Points = append(a.Points, point)
 }
-
-var app Application
 
 // Basic function for glfw initialization.
 func initGlfw() *glfw.Window {
@@ -86,10 +91,10 @@ func initOpenGL() uint32 {
 * - if the left mouse button is not pressed, and the button is just released, App.AddPoint(), clean up the temp.point.
 * - if the button is just pressed, set the point that needs to be added.
  */
-func mouseHandler(window *glfw.Window) {
-	x, y := window.GetCursorPos()
+func (a *Application) MouseHandler() {
+	x, y := a.window.GetCursorPos()
 
-	if window.GetMouseButton(glfw.MouseButtonMiddle) == glfw.Press {
+	if a.window.GetMouseButton(glfw.MouseButtonMiddle) == glfw.Press {
 		if !mouseButtonPressed {
 			mousePositionX = x
 			mousePositionY = y
@@ -99,7 +104,7 @@ func mouseHandler(window *glfw.Window) {
 		if mouseButtonPressed {
 			mouseButtonPressed = false
 			x, y := convertMouseCoordinates()
-			app.AddPoint(
+			a.AddPoint(
 				primitives.Point{
 					primitives.Vector{x, y, 0.0},
 					primitives.Vector{1, 1, 1},
@@ -109,11 +114,11 @@ func mouseHandler(window *glfw.Window) {
 }
 
 // Key handler function. it supports the debug option. (print out the points of the app)
-func keyHandler(window *glfw.Window) {
-	if window.GetKey(glfw.KeyD) == glfw.Press {
+func (a *Application) KeyHandler() {
+	if a.window.GetKey(glfw.KeyD) == glfw.Press {
 		if !DebugPrint {
 			DebugPrint = true
-			fmt.Println(app.Points)
+			fmt.Println(a.Points)
 		}
 	} else {
 		DebugPrint = false
@@ -126,20 +131,20 @@ func convertMouseCoordinates() (float64, float64) {
 	y := (halfHeight - mousePositionY) / (halfHeight)
 	return x, y
 }
-func buildVAO() []float32 {
+func (a *Application) buildVAO() []float32 {
 	var vao []float32
-	for _, item := range app.Points {
+	for _, item := range a.Points {
 		vao = append(vao, float32(item.Coordinate.X))
 		vao = append(vao, float32(item.Coordinate.Y))
 		vao = append(vao, float32(item.Coordinate.Z))
 	}
 	return vao
 }
-func Draw() {
-	if len(app.Points) < 1 {
+func (a *Application) Draw() {
+	if len(a.Points) < 1 {
 		return
 	}
-	points := buildVAO()
+	points := a.buildVAO()
 	var vertexBufferObject uint32
 	gl.GenBuffers(1, &vertexBufferObject)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
@@ -155,26 +160,26 @@ func Draw() {
 	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 4*3, gl.PtrOffset(0))
 
 	gl.BindVertexArray(vertexArrayObject)
-	gl.DrawArrays(gl.POINTS, 0, int32(len(app.Points)))
+	gl.DrawArrays(gl.POINTS, 0, int32(len(a.Points)))
 }
 
 func main() {
 	runtime.LockOSThread()
-
-	window := initGlfw()
+	app := NewApplication()
+	app.window = initGlfw()
 	defer glfw.Terminate()
-	program := initOpenGL()
+	app.program = initOpenGL()
 
-	gl.UseProgram(program)
+	gl.UseProgram(app.program)
 
 	gl.Enable(gl.PROGRAM_POINT_SIZE)
 
-	for !window.ShouldClose() {
+	for !app.window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
-		mouseHandler(window)
-		keyHandler(window)
-		Draw()
+		app.MouseHandler()
+		app.KeyHandler()
+		app.Draw()
 		glfw.PollEvents()
-		window.SwapBuffers()
+		app.window.SwapBuffers()
 	}
 }
