@@ -45,6 +45,11 @@ func (c *Camera) Log() string {
 	return logString
 }
 
+// Returns a new camera with the given setup
+// position - the camera or eye position
+// worldUp - the up direction in the world coordinate system
+// yaw - the rotation in z
+// pitch - the rotatio in y
 func NewCamera(position, worldUp Vector, yaw, pitch float64) *Camera {
 	cam := Camera{
 		pitch:   pitch,
@@ -58,25 +63,29 @@ func NewCamera(position, worldUp Vector, yaw, pitch float64) *Camera {
 	return &cam
 }
 
-// Walk updates the translation for the transformation (forward, back directions)
+// Walk updates the position (forward, back directions)
 func (c *Camera) Walk(amount float64) {
 	c.pos = c.pos.Add(c.front.MultiplyScalar(amount))
 	c.updateVectors()
 }
 
-// Strafe updates the translation for the transformation (left, right directions)
+// Strafe updates the position (left, right directions)
 func (c *Camera) Strafe(amount float64) {
 	c.pos = c.pos.Add(c.front.Cross(c.up).Normalize().MultiplyScalar(amount))
 	c.updateVectors()
 }
 
-// Lift updates the translation for the transformation (up, down directions)
+// Lift updates the position (up, down directions)
 func (c *Camera) Lift(amount float64) {
 	c.pos = c.pos.Add(c.right.Cross(c.front).Normalize().MultiplyScalar((amount)))
 	c.updateVectors()
 }
 
-// SetupProjection creates the projection matrix and setups the fow and the aspect_ration
+// SetupProjection sets the projection related variables
+// fov - field of view
+// aspectRation - windowWidth/windowHeight
+// near - near clip plane
+// far - far clip plane
 func (c *Camera) SetupProjection(fov, aspRatio, near, far float64) {
 	c.projectionOptions.fov = fov
 	c.projectionOptions.aspectRatio = aspRatio
@@ -84,8 +93,8 @@ func (c *Camera) SetupProjection(fov, aspRatio, near, far float64) {
 	c.projectionOptions.far = far
 }
 
-// GetProjectionMatrix returns the viewMatrix of the camera
-// SHOULD BE FINE : https://github.com/go-gl/mathgl/blob/95de7b3a016a8324097da95ad4417cc2caccb071/mgl32/project.go
+// GetProjectionMatrix returns the projectionMatrix of the camera
+// based on the following solution: https://github.com/go-gl/mathgl/blob/95de7b3a016a8324097da95ad4417cc2caccb071/mgl32/project.go
 func (c *Camera) GetProjectionMatrix() *Matrix4x4 {
 	return Perspective(float32(c.projectionOptions.fov), float32(c.projectionOptions.aspectRatio), float32(c.projectionOptions.near), float32(c.projectionOptions.far))
 }
