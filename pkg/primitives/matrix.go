@@ -8,6 +8,28 @@ type Matrix4x4 struct {
 	Points [16]float32
 }
 
+// GetMatrix returns the points of the matrix
+func (m *Matrix4x4) GetMatrix() [16]float32 {
+	return m.Points
+}
+
+// GetMatrix returns the points of the transpose matrix
+func (m *Matrix4x4) GetTransposeMatrix() [16]float32 {
+	var result [16]float32
+	// i: col, j: row.
+	for i := 0; i < 4; i++ {
+		for j := 0; j < 4; j++ {
+			result[4*i+j] = m.Points[4*j+i]
+		}
+	}
+	return result
+}
+
+// TransposeMatrix returns the transposed matrix
+func (m *Matrix4x4) TransposeMatrix() *Matrix4x4 {
+	return &Matrix4x4{m.GetTransposeMatrix()}
+}
+
 func NullMatrix4x4() *Matrix4x4 {
 	return &Matrix4x4{
 		[16]float32{
