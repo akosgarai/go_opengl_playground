@@ -16,11 +16,11 @@ Basic function for glfw initialization.
 
 It is responsible for openGL initialization. It uses the `shader.FragmentShaderConstantSource` fragment shader and the `shader.VertexShaderPointSource` vertex shader.
 
-- `mouseHandler`
+- `app.MouseHandler`
 
 This logic is responsible for handling the mouse events. It maintains 3 global variable. The `mousePositionX` is for storing the x coordinate of the mouse click, `mousePositionY` is for storing the y coordinate of the mouse click, `mouseButtonPressed` is for handling the button state. If the button is released, then the selected point (coordinates of the click event) is converted then inserted to the app.Points. The converter function is the `convertMouseCoordinates`.
 
-- `keyHandler`
+- `app.KeyHandler`
 
 This is a basic function for supporting the debug. In case of the `d` button is clicked, it prints out the app.Points.
 
@@ -28,10 +28,10 @@ This is a basic function for supporting the debug. In case of the `d` button is 
 
 This function is responsible for the window mouse coordinate -> screen mouse coordinate transformation.
 
-- `buildVAO`
+- `app.buildVAO`
 
 This function builds the `[]float32`, that can be used as vertex data object. Currently it only inserts the coordinates to the vao.
 
-- `Draw`
+- `app.Draw`
 
 This function is responsible for drawing the points to the screen. It creates the vao, sets the buffer data, enables and sets the attribute arrays and then draw the points.
