@@ -35,7 +35,7 @@ func Perspective(angle, ratio, near, far float32) *Matrix4x4 {
 
 // https://github.com/go-gl/mathgl/blob/95de7b3a016a8324097da95ad4417cc2caccb071/mgl32/project.go#L48-L61
 // updates based on the link above.
-func LookAt_v4(eye, center, up Vector) *Matrix4x4 {
+func LookAt(eye, center, up Vector) *Matrix4x4 {
 	f := center.Subtract(eye).Normalize()
 	s := f.Cross(up.Normalize()).Normalize()
 	u := s.Cross(f)

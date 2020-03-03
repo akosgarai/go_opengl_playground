@@ -94,7 +94,7 @@ func (c *Camera) GetProjectionMatrix() *Matrix4x4 {
 // this camera's coordinates.
 // GetViewMatrix returns the viewMatrix of the camera
 func (c *Camera) GetViewMatrix() *Matrix4x4 {
-	return LookAt_v4(c.pos, c.pos.Add(c.front), c.up)
+	return LookAt(c.pos, c.pos.Add(c.front), c.up)
 }
 func (c *Camera) updateVectors() {
 	c.front = Vector{
