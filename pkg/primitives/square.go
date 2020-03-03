@@ -51,62 +51,29 @@ func (s *Square) buildVaoWithoutColor() []float32 {
 
 	return points
 }
-func (s *Square) buildVao() []float32 {
+func (s *Square) appendPointToVao(currentVao []float32, p Point) []float32 {
+	currentVao = append(currentVao, float32(p.Coordinate.X))
+	currentVao = append(currentVao, float32(p.Coordinate.Y))
+	currentVao = append(currentVao, float32(p.Coordinate.Z))
+	currentVao = append(currentVao, float32(p.Color.X))
+	currentVao = append(currentVao, float32(p.Color.Y))
+	currentVao = append(currentVao, float32(p.Color.Z))
+	return currentVao
+}
+func (s *Square) setupVao() []float32 {
 	var points []float32
-	// Coordinates
-	points = append(points, float32(s.A.Coordinate.X))
-	points = append(points, float32(s.A.Coordinate.Y))
-	points = append(points, float32(s.A.Coordinate.Z))
 
-	points = append(points, float32(s.B.Coordinate.X))
-	points = append(points, float32(s.B.Coordinate.Y))
-	points = append(points, float32(s.B.Coordinate.Z))
-
-	points = append(points, float32(s.C.Coordinate.X))
-	points = append(points, float32(s.C.Coordinate.Y))
-	points = append(points, float32(s.C.Coordinate.Z))
-
-	points = append(points, float32(s.A.Coordinate.X))
-	points = append(points, float32(s.A.Coordinate.Y))
-	points = append(points, float32(s.A.Coordinate.Z))
-
-	points = append(points, float32(s.C.Coordinate.X))
-	points = append(points, float32(s.C.Coordinate.Y))
-	points = append(points, float32(s.C.Coordinate.Z))
-
-	points = append(points, float32(s.D.Coordinate.X))
-	points = append(points, float32(s.D.Coordinate.Y))
-	points = append(points, float32(s.D.Coordinate.Z))
-
-	// Colors
-	points = append(points, float32(s.A.Color.X))
-	points = append(points, float32(s.A.Color.Y))
-	points = append(points, float32(s.A.Color.Z))
-
-	points = append(points, float32(s.B.Color.X))
-	points = append(points, float32(s.B.Color.Y))
-	points = append(points, float32(s.B.Color.Z))
-
-	points = append(points, float32(s.C.Color.X))
-	points = append(points, float32(s.C.Color.Y))
-	points = append(points, float32(s.C.Color.Z))
-
-	points = append(points, float32(s.A.Color.X))
-	points = append(points, float32(s.A.Color.Y))
-	points = append(points, float32(s.A.Color.Z))
-
-	points = append(points, float32(s.C.Color.X))
-	points = append(points, float32(s.C.Color.Y))
-	points = append(points, float32(s.C.Color.Z))
-
-	points = append(points, float32(s.D.Color.X))
-	points = append(points, float32(s.D.Color.Y))
-	points = append(points, float32(s.D.Color.Z))
+	points = s.appendPointToVao(points, s.A)
+	points = s.appendPointToVao(points, s.B)
+	points = s.appendPointToVao(points, s.C)
+	points = s.appendPointToVao(points, s.A)
+	points = s.appendPointToVao(points, s.C)
+	points = s.appendPointToVao(points, s.D)
 
 	return points
 }
 func (s *Square) buildAndSetupVao() uint32 {
-	points := s.buildVao()
+	points := s.setupVao()
 
 	var vertexBufferObject uint32
 	gl.GenBuffers(1, &vertexBufferObject)
@@ -120,10 +87,10 @@ func (s *Square) buildAndSetupVao() uint32 {
 	gl.BindVertexArray(vertexArrayObject)
 	// setup points
 	gl.EnableVertexAttribArray(0)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 4*3, gl.PtrOffset(0))
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(0))
 	// setup color
 	gl.EnableVertexAttribArray(1)
-	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*3, gl.PtrOffset(4*3*6))
+	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(4*3))
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
 
 	return vertexArrayObject
