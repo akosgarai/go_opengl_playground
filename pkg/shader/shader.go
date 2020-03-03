@@ -45,6 +45,22 @@ var (
 	vSmoothColor = vec4(vColor,1);
     }
     ` + "\x00"
+	VertexShaderPointWithColorModelViewProjectionSource = `
+    #version 410
+    layout(location = 0) in vec3 vVertex;
+    layout(location = 1) in vec3 vColor;
+    const float pointSize = 20.0;
+    smooth out vec4 vSmoothColor;
+    uniform mat4 model;
+    uniform mat4 view;
+    uniform mat4 projection;
+    void main()
+    {
+	gl_Position = projection * view * model * vec4(vVertex,1);
+	gl_PointSize = pointSize;
+	vSmoothColor = vec4(vColor,1);
+    }
+    ` + "\x00"
 	VertexShaderDirectOutputSource = `
     #version 410
     layout(location = 0) in vec3 vVertex;
