@@ -3,6 +3,7 @@ package primitives
 import (
 	"math"
 	"math/rand"
+	"strconv"
 )
 
 type Vector struct {
@@ -21,6 +22,13 @@ func VectorInUnitSphere(rnd *rand.Rand) Vector {
 	}
 }
 
+// ToString returns the string representation of the vector
+func (v Vector) ToString() string {
+	x := strconv.FormatFloat(v.X, 'f', 6, 64)
+	y := strconv.FormatFloat(v.Y, 'f', 6, 64)
+	z := strconv.FormatFloat(v.Z, 'f', 6, 64)
+	return "X : " + x + ", Y : " + y + ", Z : " + z
+}
 func (v Vector) Length() float64 {
 	return math.Sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
 }

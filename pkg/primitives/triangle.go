@@ -19,35 +19,27 @@ func (t *Triangle) SetColor(color Vector) {
 	t.B.SetColor(color)
 	t.C.SetColor(color)
 }
-
-func (t *Triangle) buildVao() uint32 {
+func (t *Triangle) appendPointToVao(currentVao []float32, p Point) []float32 {
+	currentVao = append(currentVao, float32(p.Coordinate.X))
+	currentVao = append(currentVao, float32(p.Coordinate.Y))
+	currentVao = append(currentVao, float32(p.Coordinate.Z))
+	currentVao = append(currentVao, float32(p.Color.X))
+	currentVao = append(currentVao, float32(p.Color.Y))
+	currentVao = append(currentVao, float32(p.Color.Z))
+	return currentVao
+}
+func (t *Triangle) setupVao() []float32 {
 	var points []float32
 
-	// Coordinates
-	points = append(points, float32(t.A.Coordinate.X))
-	points = append(points, float32(t.A.Coordinate.Y))
-	points = append(points, float32(t.A.Coordinate.Z))
+	points = t.appendPointToVao(points, t.A)
+	points = t.appendPointToVao(points, t.B)
+	points = t.appendPointToVao(points, t.C)
 
-	points = append(points, float32(t.B.Coordinate.X))
-	points = append(points, float32(t.B.Coordinate.Y))
-	points = append(points, float32(t.B.Coordinate.Z))
+	return points
+}
 
-	points = append(points, float32(t.C.Coordinate.X))
-	points = append(points, float32(t.C.Coordinate.Y))
-	points = append(points, float32(t.C.Coordinate.Z))
-
-	// Colors
-	points = append(points, float32(t.A.Color.X))
-	points = append(points, float32(t.A.Color.Y))
-	points = append(points, float32(t.A.Color.Z))
-
-	points = append(points, float32(t.B.Color.X))
-	points = append(points, float32(t.B.Color.Y))
-	points = append(points, float32(t.B.Color.Z))
-
-	points = append(points, float32(t.C.Color.X))
-	points = append(points, float32(t.C.Color.Y))
-	points = append(points, float32(t.C.Color.Z))
+func (t *Triangle) buildVao() uint32 {
+	points := t.setupVao()
 
 	var vertexBufferObject uint32
 	gl.GenBuffers(1, &vertexBufferObject)
@@ -61,10 +53,10 @@ func (t *Triangle) buildVao() uint32 {
 	gl.BindVertexArray(vertexArrayObject)
 	// setup points
 	gl.EnableVertexAttribArray(0)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 4*3, gl.PtrOffset(0))
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(0))
 	// setup color
 	gl.EnableVertexAttribArray(1)
-	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*3, gl.PtrOffset(4*3*3))
+	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(4*3))
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
 
 	return vertexArrayObject
