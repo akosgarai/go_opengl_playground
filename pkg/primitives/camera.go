@@ -13,11 +13,11 @@ type Camera struct {
 	yaw   float64
 
 	// Camera attributes
-	pos     Vector
-	front   Vector
-	up      Vector
-	right   Vector
-	worldUp Vector
+	cameraPosition       Vector
+	cameraFrontDirection Vector
+	cameraUpDirection    Vector
+	cameraRightDirection Vector
+	worldUp              Vector
 	// Projection options.
 	projectionOptions struct {
 		fov         float64
@@ -30,11 +30,11 @@ type Camera struct {
 
 // Log returns the string representation of this object.
 func (c *Camera) Log() string {
-	logString := "Pos: Vector{" + c.pos.ToString() + "}\n"
+	logString := "cameraPosition: Vector{" + c.cameraPosition.ToString() + "}\n"
 	logString += "worldUp: Vector{" + c.worldUp.ToString() + "}\n"
-	logString += "front: Vector{" + c.front.ToString() + "}\n"
-	logString += "up: Vector{" + c.up.ToString() + "}\n"
-	logString += "right: Vector{" + c.right.ToString() + "}\n"
+	logString += "cameraFrontDirection: Vector{" + c.cameraFrontDirection.ToString() + "}\n"
+	logString += "cameraUpDirection: Vector{" + c.cameraUpDirection.ToString() + "}\n"
+	logString += "cameraRightDirection: Vector{" + c.cameraRightDirection.ToString() + "}\n"
 	logString += "yaw : " + strconv.FormatFloat(c.yaw, 'f', 6, 64) + "\n"
 	logString += "pitch : " + strconv.FormatFloat(c.pitch, 'f', 6, 64) + "\n"
 	logString += "ProjectionOptions:\n"
@@ -52,11 +52,11 @@ func (c *Camera) Log() string {
 // pitch - the rotatio in y
 func NewCamera(position, worldUp Vector, yaw, pitch float64) *Camera {
 	cam := Camera{
-		pitch:   pitch,
-		yaw:     yaw,
-		pos:     position,
-		up:      Vector{0, 1, 0},
-		worldUp: worldUp,
+		pitch:             pitch,
+		yaw:               yaw,
+		cameraPosition:    position,
+		cameraUpDirection: Vector{0, 1, 0},
+		worldUp:           worldUp,
 	}
 
 	cam.updateVectors()
@@ -65,19 +65,19 @@ func NewCamera(position, worldUp Vector, yaw, pitch float64) *Camera {
 
 // Walk updates the position (forward, back directions)
 func (c *Camera) Walk(amount float64) {
-	c.pos = c.pos.Add(c.front.MultiplyScalar(amount))
+	c.cameraPosition = c.cameraPosition.Add(c.cameraFrontDirection.MultiplyScalar(amount))
 	c.updateVectors()
 }
 
 // Strafe updates the position (left, right directions)
 func (c *Camera) Strafe(amount float64) {
-	c.pos = c.pos.Add(c.front.Cross(c.up).Normalize().MultiplyScalar(amount))
+	c.cameraPosition = c.cameraPosition.Add(c.cameraFrontDirection.Cross(c.cameraUpDirection).Normalize().MultiplyScalar(amount))
 	c.updateVectors()
 }
 
 // Lift updates the position (up, down directions)
 func (c *Camera) Lift(amount float64) {
-	c.pos = c.pos.Add(c.right.Cross(c.front).Normalize().MultiplyScalar((amount)))
+	c.cameraPosition = c.cameraPosition.Add(c.cameraRightDirection.Cross(c.cameraFrontDirection).Normalize().MultiplyScalar((amount)))
 	c.updateVectors()
 }
 
@@ -103,16 +103,16 @@ func (c *Camera) GetProjectionMatrix() *Matrix4x4 {
 // this camera's coordinates.
 // GetViewMatrix returns the viewMatrix of the camera
 func (c *Camera) GetViewMatrix() *Matrix4x4 {
-	return LookAt(c.pos, c.pos.Add(c.front), c.up)
+	return LookAt(c.cameraPosition, c.cameraPosition.Add(c.cameraFrontDirection), c.cameraUpDirection)
 }
 func (c *Camera) updateVectors() {
-	c.front = Vector{
+	c.cameraFrontDirection = Vector{
 		math.Cos(DegToRad(c.pitch)) * math.Cos(DegToRad(c.yaw)),
 		math.Sin(DegToRad(c.pitch)),
 		math.Cos(DegToRad(c.pitch)) * math.Sin(DegToRad(c.yaw)),
 	}
-	c.front = c.front.Normalize()
+	c.cameraFrontDirection = c.cameraFrontDirection.Normalize()
 	// Gram-Schmidt process to figure out right and up vectors
-	c.right = c.worldUp.Cross(c.front).Normalize()
-	c.up = c.right.Cross(c.front).Normalize()
+	c.cameraRightDirection = c.worldUp.Cross(c.cameraFrontDirection).Normalize()
+	c.cameraUpDirection = c.cameraRightDirection.Cross(c.cameraFrontDirection).Normalize()
 }
