@@ -152,3 +152,27 @@ func (m *Matrix4x4) MultiVector(v Vector) *Vector {
 	h := float64(m.Points[12])*v.X + float64(m.Points[13])*v.Y + float64(m.Points[14])*v.Z + float64(m.Points[15])
 	return &Vector{Xh / h, Yh / h, Zh / h}
 }
+
+// Solution from here : https://github.com/go-gl/mathgl/blob/95de7b3a016a8324097da95ad4417cc2caccb071/mgl32/matrix.go#L2143-L2166
+func (m1 *Matrix4x4) Mul4(m2 *Matrix4x4) *Matrix4x4 {
+	return &Matrix4x4{
+		[16]float32{
+			m1.Points[0]*m2.Points[0] + m1.Points[4]*m2.Points[1] + m1.Points[8]*m2.Points[2] + m1.Points[12]*m2.Points[3],
+			m1.Points[1]*m2.Points[0] + m1.Points[5]*m2.Points[1] + m1.Points[9]*m2.Points[2] + m1.Points[13]*m2.Points[3],
+			m1.Points[2]*m2.Points[0] + m1.Points[6]*m2.Points[1] + m1.Points[10]*m2.Points[2] + m1.Points[14]*m2.Points[3],
+			m1.Points[3]*m2.Points[0] + m1.Points[7]*m2.Points[1] + m1.Points[11]*m2.Points[2] + m1.Points[15]*m2.Points[3],
+			m1.Points[0]*m2.Points[4] + m1.Points[4]*m2.Points[5] + m1.Points[8]*m2.Points[6] + m1.Points[12]*m2.Points[7],
+			m1.Points[1]*m2.Points[4] + m1.Points[5]*m2.Points[5] + m1.Points[9]*m2.Points[6] + m1.Points[13]*m2.Points[7],
+			m1.Points[2]*m2.Points[4] + m1.Points[6]*m2.Points[5] + m1.Points[10]*m2.Points[6] + m1.Points[14]*m2.Points[7],
+			m1.Points[3]*m2.Points[4] + m1.Points[7]*m2.Points[5] + m1.Points[11]*m2.Points[6] + m1.Points[15]*m2.Points[7],
+			m1.Points[0]*m2.Points[8] + m1.Points[4]*m2.Points[9] + m1.Points[8]*m2.Points[10] + m1.Points[12]*m2.Points[11],
+			m1.Points[1]*m2.Points[8] + m1.Points[5]*m2.Points[9] + m1.Points[9]*m2.Points[10] + m1.Points[13]*m2.Points[11],
+			m1.Points[2]*m2.Points[8] + m1.Points[6]*m2.Points[9] + m1.Points[10]*m2.Points[10] + m1.Points[14]*m2.Points[11],
+			m1.Points[3]*m2.Points[8] + m1.Points[7]*m2.Points[9] + m1.Points[11]*m2.Points[10] + m1.Points[15]*m2.Points[11],
+			m1.Points[0]*m2.Points[12] + m1.Points[4]*m2.Points[13] + m1.Points[8]*m2.Points[14] + m1.Points[12]*m2.Points[15],
+			m1.Points[1]*m2.Points[12] + m1.Points[5]*m2.Points[13] + m1.Points[9]*m2.Points[14] + m1.Points[13]*m2.Points[15],
+			m1.Points[2]*m2.Points[12] + m1.Points[6]*m2.Points[13] + m1.Points[10]*m2.Points[14] + m1.Points[14]*m2.Points[15],
+			m1.Points[3]*m2.Points[12] + m1.Points[7]*m2.Points[13] + m1.Points[11]*m2.Points[14] + m1.Points[15]*m2.Points[15],
+		},
+	}
+}
