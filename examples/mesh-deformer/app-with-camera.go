@@ -29,11 +29,19 @@ type Application struct {
 	defaultTriangleLength int
 	triangleColorFront    primitives.Vector
 	triangleColorBack     primitives.Vector
-	camera                *primitives.CameraImpr
-	worldWidth            int
-	worldHeight           int
-	worldDepth            int
-	worldUpDirection      *primitives.Vector
+
+	cameraLastUpdate int64
+	camera           *primitives.Camera
+	moveSpeed        float64
+	epsilon          float64
+
+	worldWidth       int
+	worldHeight      int
+	worldDepth       int
+	worldUpDirection *primitives.Vector
+
+	window  *glfw.Window
+	program uint32
 
 	KeyDowns map[string]bool
 }
@@ -46,17 +54,15 @@ func NewApplication() *Application {
 	app.defaultTriangleLength = 10
 	app.triangleColorFront = primitives.Vector{0, 0, 1}
 	app.triangleColorBack = primitives.Vector{0, 0.5, 1}
-	app.camera = primitives.NewCameraImpr()
+	app.GenerateTriangles()
+
+	app.moveSpeed = 10.0 / 1000.0
+	app.epsilon = 50.0
+
+	app.camera = primitives.NewCamera(primitives.Vector{100.0, 100.0, 100.0}, primitives.Vector{0, 1, 0}, -180.0, 0.0)
 	fmt.Println("Camera state after new function")
 	fmt.Println(app.camera.Log())
-	app.camera.UpDirection = primitives.Vector{0, 1, 0}
-	app.camera.SetPosition(primitives.Vector{0, 0, 0})
-	fmt.Println("Camera state after setPosition function")
-	fmt.Println(app.camera.Log())
-	app.camera.TargetCameraSetTarget(primitives.Vector{10, 0, 0})
-	fmt.Println("Camera state after setTarget function")
-	fmt.Println(app.camera.Log())
-	app.camera.SetupProjection(45, float64(windowWidth/windowHeight))
+	app.camera.SetupProjection(45, float64(windowWidth/windowHeight), 0.1, 150.0)
 	fmt.Println("Camera state after setupProjection function")
 	fmt.Println(app.camera.Log())
 	app.KeyDowns = make(map[string]bool)
@@ -64,6 +70,8 @@ func NewApplication() *Application {
 	app.KeyDowns["A"] = false
 	app.KeyDowns["S"] = false
 	app.KeyDowns["D"] = false
+	app.KeyDowns["Q"] = false
+	app.KeyDowns["E"] = false
 	return &app
 }
 
@@ -101,8 +109,8 @@ func (a *Application) GenerateTriangles() {
 }
 
 // Key handler function. it supports the debug option. (print out the points of the app)
-func (a *Application) KeyHandler(window *glfw.Window) {
-	if window.GetKey(glfw.KeyH) == glfw.Press {
+func (a *Application) KeyHandler() {
+	if a.window.GetKey(glfw.KeyH) == glfw.Press {
 		if !DebugPrint {
 			DebugPrint = true
 			fmt.Printf("app.camera: %s\n", a.camera.Log())
@@ -110,53 +118,72 @@ func (a *Application) KeyHandler(window *glfw.Window) {
 	} else {
 		DebugPrint = false
 	}
-	if window.GetKey(glfw.KeyW) == glfw.Press {
+	if a.window.GetKey(glfw.KeyW) == glfw.Press {
 		a.KeyDowns["W"] = true
 	} else {
 		a.KeyDowns["W"] = false
 	}
-	if window.GetKey(glfw.KeyA) == glfw.Press {
+	if a.window.GetKey(glfw.KeyA) == glfw.Press {
 		a.KeyDowns["A"] = true
 	} else {
 		a.KeyDowns["A"] = false
 	}
-	if window.GetKey(glfw.KeyS) == glfw.Press {
+	if a.window.GetKey(glfw.KeyS) == glfw.Press {
 		a.KeyDowns["S"] = true
 	} else {
 		a.KeyDowns["S"] = false
 	}
-	if window.GetKey(glfw.KeyD) == glfw.Press {
+	if a.window.GetKey(glfw.KeyD) == glfw.Press {
 		a.KeyDowns["D"] = true
 	} else {
 		a.KeyDowns["D"] = false
 	}
+	if a.window.GetKey(glfw.KeyQ) == glfw.Press {
+		a.KeyDowns["Q"] = true
+	} else {
+		a.KeyDowns["Q"] = false
+	}
+	if a.window.GetKey(glfw.KeyE) == glfw.Press {
+		a.KeyDowns["E"] = true
+	} else {
+		a.KeyDowns["E"] = false
+	}
+	//calculate delta
+	nowUnix := time.Now().UnixNano()
+	delta := nowUnix - a.cameraLastUpdate
+	moveTime := float64(delta / int64(time.Millisecond))
+	// if the camera has been updated recently, we can skip now
+	if a.epsilon > moveTime {
+		return
+	}
+	a.cameraLastUpdate = nowUnix
 	// Move camera
 	forward := 0.0
 	if a.KeyDowns["W"] && !a.KeyDowns["S"] {
-		forward = -moveSpeed
+		forward = a.moveSpeed * moveTime
 	} else if a.KeyDowns["S"] && !a.KeyDowns["W"] {
-		forward = moveSpeed
+		forward = -a.moveSpeed * moveTime
 	}
 	if forward != 0 {
 		a.camera.Walk(forward)
 	}
 	horisontal := 0.0
 	if a.KeyDowns["A"] && !a.KeyDowns["D"] {
-		horisontal = -moveSpeed
+		horisontal = -a.moveSpeed * moveTime
 	} else if a.KeyDowns["D"] && !a.KeyDowns["A"] {
-		horisontal = moveSpeed
+		horisontal = a.moveSpeed * moveTime
 	}
 	if horisontal != 0 {
 		a.camera.Strafe(horisontal)
 	}
 	vertical := 0.0
 	if a.KeyDowns["Q"] && !a.KeyDowns["E"] {
-		vertical = -moveSpeed
+		vertical = -a.moveSpeed * moveTime
 	} else if a.KeyDowns["E"] && !a.KeyDowns["Q"] {
-		vertical = moveSpeed
+		vertical = a.moveSpeed * moveTime
 	}
 	if vertical != 0 {
-		a.camera.Strafe(vertical)
+		a.camera.Lift(vertical)
 	}
 }
 func (a *Application) MouseHandler(window *glfw.Window) {
@@ -209,7 +236,7 @@ func initOpenGL() uint32 {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
 
-	vertexShader, err := shader.CompileShader(shader.VertexShaderDeformVertexPositionSource, gl.VERTEX_SHADER)
+	vertexShader, err := shader.CompileShader(shader.VertexShaderDeformVertexPositionModelViewProjectionSource, gl.VERTEX_SHADER)
 	if err != nil {
 		panic(err)
 	}
@@ -230,39 +257,41 @@ func main() {
 
 	app := NewApplication()
 
-	window := initGlfw()
+	app.window = initGlfw()
 	defer glfw.Terminate()
-	program := initOpenGL()
+	app.program = initOpenGL()
 
 	// Configure global settings
-	gl.UseProgram(program)
+	gl.UseProgram(app.program)
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
 
-	app.GenerateTriangles()
-
 	nowUnix := time.Now().UnixNano()
 
-	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
+	modelLocation := gl.GetUniformLocation(app.program, gl.Str("model\x00"))
+	viewLocation := gl.GetUniformLocation(app.program, gl.Str("view\x00"))
+	projectionLocation := gl.GetUniformLocation(app.program, gl.Str("projection\x00"))
 
-	for !window.ShouldClose() {
+	for !app.window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		// time
 		elapsedTimeNano := time.Now().UnixNano() - nowUnix
-		time := gl.GetUniformLocation(program, gl.Str("time\x00"))
+		time := gl.GetUniformLocation(app.program, gl.Str("time\x00"))
 		gl.Uniform1f(time, float32(elapsedTimeNano/10000000))
-		// mvp - modelview - projection matrix
-		MV := app.camera.GetViewMatrix()
-		P := app.camera.GetProjectionMatrix()
-		mvpValue := (P.Dot(MV)).Points
-		gl.UniformMatrix4fv(mvpLocation, 1, false, &mvpValue[0])
+
+		M := primitives.UnitMatrix4x4().GetMatrix()
+		gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
+		V := app.camera.GetViewMatrix().GetMatrix()
+		gl.UniformMatrix4fv(viewLocation, 1, false, &V[0])
+		P := app.camera.GetProjectionMatrix().GetMatrix()
+		gl.UniformMatrix4fv(projectionLocation, 1, false, &P[0])
 
 		for _, item := range app.triangles {
 			item.Draw()
 		}
-		app.KeyHandler(window)
+		app.KeyHandler()
 		glfw.PollEvents()
-		window.SwapBuffers()
+		app.window.SwapBuffers()
 	}
 }
