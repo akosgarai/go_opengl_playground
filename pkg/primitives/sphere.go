@@ -14,7 +14,7 @@ type Sphere struct {
 }
 
 func NewSphere() *Sphere {
-	return &Sphere{Vector{0, 0, 0}, 1, Vector{1, 1, 1}, 80, 80}
+	return &Sphere{Vector{0, 0, 0}, 1, Vector{1, 1, 1}, 10, 10}
 }
 
 // SetCenter updates the center of the sphere
@@ -55,13 +55,15 @@ func (s *Sphere) appendPointToVao(currentVao []float32, p Point) []float32 {
 	currentVao = append(currentVao, float32(p.Color.Z))
 	return currentVao
 }
-func (s *Sphere) sideByPointToVao(currentVao []float32, pa, pb, pc, pd Point) []float32 {
+func (s *Sphere) triangleByPointToVao(currentVao []float32, pa, pb, pc Point) []float32 {
 	currentVao = s.appendPointToVao(currentVao, pa)
 	currentVao = s.appendPointToVao(currentVao, pb)
 	currentVao = s.appendPointToVao(currentVao, pc)
-	currentVao = s.appendPointToVao(currentVao, pa)
-	currentVao = s.appendPointToVao(currentVao, pc)
-	currentVao = s.appendPointToVao(currentVao, pd)
+	return currentVao
+}
+func (s *Sphere) sideByPointToVao(currentVao []float32, pa, pb, pc, pd Point) []float32 {
+	currentVao = s.triangleByPointToVao(currentVao, pa, pb, pc)
+	currentVao = s.triangleByPointToVao(currentVao, pa, pc, pd)
 	return currentVao
 }
 func (s *Sphere) setupVao() []float32 {
@@ -71,16 +73,26 @@ func (s *Sphere) setupVao() []float32 {
 	// Idea : start drawing triangles from both direction (top, bottom). step the coordinates and calculate the triangles, add them to vao.
 	// - step for y coord, : radius * 2 / numOfRows
 	RefPoint := &Vector{0, 1, 0}
-	unitXRotation := (float64(360.0 / s.numOfItemsInRow))
-	unitYRotation := (float64(360.0 / s.numOfRows))
+	step_Z := -(float64(360.0 / s.numOfItemsInRow))
+	step_Y := -(float64(360.0 / s.numOfRows))
 	for i := 0; i < s.numOfRows; i++ {
+		i_Rotation := RotationZMatrix4x4(float64(i) * step_Z)
+		i1_Rotation := RotationZMatrix4x4(float64(i+1) * step_Z)
 		for j := 0; j < s.numOfItemsInRow; j++ {
-			// define 4 points. ref.rotate?(i*?).rotate(j*?), ref.rotate((i+1)*?).rotate(j*?), ref.rotate((i+1)*?).rotate((j+1)*?), ref.rotate(i*?).rateate((j+1)*?)
-			p1 := Point{*(RotationXMatrix4x4(float64(i) * unitXRotation).Mul4(RotationYMatrix4x4(float64(j) * unitYRotation)).MultiVector(*RefPoint)), s.color}
-			p2 := Point{*(RotationXMatrix4x4(float64(i+1) * unitXRotation).Mul4(RotationYMatrix4x4(float64(j) * unitYRotation)).MultiVector(*RefPoint)), s.color}
-			p3 := Point{*(RotationXMatrix4x4(float64(i+1) * unitXRotation).Mul4(RotationYMatrix4x4(float64(j+1) * unitYRotation)).MultiVector(*RefPoint)), s.color}
-			p4 := Point{*(RotationXMatrix4x4(float64(i) * unitXRotation).Mul4(RotationYMatrix4x4(float64(j+1) * unitYRotation)).MultiVector(*RefPoint)), s.color}
-			vao = s.sideByPointToVao(vao, p1, p4, p3, p2)
+			j1_Rotation := RotationYMatrix4x4(float64(j+1) * step_Y)
+			j_Rotation := RotationYMatrix4x4(float64(j) * step_Y)
+			if i == 0 {
+				p1 := Point{*RefPoint, s.color}
+				p2 := Point{*(i1_Rotation.Mul4(j_Rotation).MultiVector(*RefPoint)), s.color}
+				p3 := Point{*(i1_Rotation.Mul4(j1_Rotation).MultiVector(*RefPoint)), s.color}
+				vao = s.triangleByPointToVao(vao, p1, p2, p3)
+			} else {
+				p1 := Point{*(i_Rotation.Mul4(j_Rotation).MultiVector(*RefPoint)), s.color}
+				p2 := Point{*(i1_Rotation.Mul4(j_Rotation).MultiVector(*RefPoint)), s.color}
+				p3 := Point{*(i1_Rotation.Mul4(j1_Rotation).MultiVector(*RefPoint)), s.color}
+				p4 := Point{*(i_Rotation.TransposeMatrix().Mul4(j1_Rotation.TransposeMatrix()).MultiVector(*RefPoint)), s.color}
+				vao = s.sideByPointToVao(vao, p1, p2, p3, p4)
+			}
 		}
 	}
 	return vao
