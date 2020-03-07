@@ -178,3 +178,51 @@ func TestMultiVector(t *testing.T) {
 		}
 	}
 }
+func TestDotVsMul4Transformation(t *testing.T) {
+	testData := []struct {
+		M1 *Matrix4x4
+		M2 *Matrix4x4
+	}{
+		{
+			UnitMatrix4x4(),
+			UnitMatrix4x4(),
+		},
+		{
+			UnitMatrix4x4(),
+			NullMatrix4x4(),
+		},
+		{
+			NullMatrix4x4(),
+			UnitMatrix4x4(),
+		},
+		{
+			UnitMatrix4x4(),
+			&Matrix4x4{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
+		},
+		{
+			&Matrix4x4{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
+			UnitMatrix4x4(),
+		},
+		{
+			&Matrix4x4{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
+			&Matrix4x4{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
+		},
+		{
+			&Matrix4x4{[16]float32{0.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
+			&Matrix4x4{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
+		},
+	}
+	for _, tt := range testData {
+		dotProduct := tt.M1.Dot(tt.M2)
+		mulProduct := tt.M1.Mul4(tt.M2)
+		for i := 0; i < 16; i++ {
+			if dotProduct.Points[i] != mulProduct.Points[i] {
+				t.Log(tt.M1)
+				t.Log(tt.M2)
+				t.Log(dotProduct)
+				t.Log(mulProduct)
+				t.Error("Dot vs Mul4 difference", i)
+			}
+		}
+	}
+}
