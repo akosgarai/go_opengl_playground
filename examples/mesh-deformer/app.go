@@ -132,7 +132,7 @@ func main() {
 	// rotationmatrix - rotate on the Z coord.
 	rotationMatrix := primitives.RotationZMatrix4x4(90)
 	MV := (scaleMatrix.Dot(translationMatrix)).Dot(rotationMatrix)
-	mvpPoints := (P.Dot(MV)).Points
+	mvpPoints := (MV.Dot(P)).Points
 
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
