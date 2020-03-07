@@ -117,10 +117,10 @@ func (m *Matrix4x4) Dot(m2 *Matrix4x4) *Matrix4x4 {
 	result := NullMatrix4x4()
 	for i := 0; i < 4; i++ {
 		for j := 0; j < 4; j++ {
-			result.Points[4*i+j] = m.Points[4*i+0]*m2.Points[4*0+j] +
-				m.Points[4*i+1]*m2.Points[4*1+j] +
-				m.Points[4*i+2]*m2.Points[4*2+j] +
-				m.Points[4*i+3]*m2.Points[4*3+j]
+			result.Points[4*i+j] = m2.Points[4*i+0]*m.Points[4*0+j] +
+				m2.Points[4*i+1]*m.Points[4*1+j] +
+				m2.Points[4*i+2]*m.Points[4*2+j] +
+				m2.Points[4*i+3]*m.Points[4*3+j]
 		}
 	}
 	return result
