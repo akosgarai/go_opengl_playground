@@ -128,10 +128,10 @@ func (m *Matrix4x4) Dot(m2 *Matrix4x4) *Matrix4x4 {
 
 // MultiVector returns a new Vector. this is the multiplication of a vector - matrix element.
 func (m *Matrix4x4) MultiVector(v Vector) *Vector {
-	Xh := float64(m.Points[0])*v.X + float64(m.Points[1])*v.Y + float64(m.Points[2])*v.Z + float64(m.Points[3])
-	Yh := float64(m.Points[4])*v.X + float64(m.Points[5])*v.Y + float64(m.Points[6])*v.Z + float64(m.Points[7])
-	Zh := float64(m.Points[8])*v.X + float64(m.Points[9])*v.Y + float64(m.Points[10])*v.Z + float64(m.Points[11])
-	h := float64(m.Points[12])*v.X + float64(m.Points[13])*v.Y + float64(m.Points[14])*v.Z + float64(m.Points[15])
+	Xh := float64(m.Points[0])*v.X + float64(m.Points[4])*v.Y + float64(m.Points[8])*v.Z + float64(m.Points[12])
+	Yh := float64(m.Points[1])*v.X + float64(m.Points[5])*v.Y + float64(m.Points[9])*v.Z + float64(m.Points[13])
+	Zh := float64(m.Points[2])*v.X + float64(m.Points[6])*v.Y + float64(m.Points[10])*v.Z + float64(m.Points[14])
+	h := float64(m.Points[3])*v.X + float64(m.Points[7])*v.Y + float64(m.Points[11])*v.Z + float64(m.Points[15])
 	return &Vector{Xh / h, Yh / h, Zh / h}
 }
 
