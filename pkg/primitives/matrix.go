@@ -70,6 +70,9 @@ func TranslationMatrix4x4(translationX, translationY, translationZ float32) *Mat
 		},
 	}
 }
+
+// RotationXMatrix4x4 is the transformation matrix for the 'x' axis based rotation.
+// The input 'rotationAngle' is in radiant.
 func RotationXMatrix4x4(rotationAngle float64) *Matrix4x4 {
 	return &Matrix4x4{
 		[16]float32{
@@ -80,6 +83,9 @@ func RotationXMatrix4x4(rotationAngle float64) *Matrix4x4 {
 		},
 	}
 }
+
+// RotationYMatrix4x4 is the transformation matrix for the 'y' axis based rotation.
+// The input 'rotationAngle' is in radiant.
 func RotationYMatrix4x4(rotationAngle float64) *Matrix4x4 {
 	return &Matrix4x4{
 		[16]float32{
@@ -90,6 +96,9 @@ func RotationYMatrix4x4(rotationAngle float64) *Matrix4x4 {
 		},
 	}
 }
+
+// RotationZMatrix4x4 is the transformation matrix for the 'z' axis based rotation.
+// The input 'rotationAngle' is in radiant.
 func RotationZMatrix4x4(rotationAngle float64) *Matrix4x4 {
 	return &Matrix4x4{
 		[16]float32{
