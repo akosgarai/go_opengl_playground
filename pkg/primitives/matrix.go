@@ -70,6 +70,9 @@ func TranslationMatrix4x4(translationX, translationY, translationZ float32) *Mat
 		},
 	}
 }
+
+// RotationXMatrix4x4 is the transformation matrix for the 'x' axis based rotation.
+// The input 'rotationAngle' is in radiant.
 func RotationXMatrix4x4(rotationAngle float64) *Matrix4x4 {
 	return &Matrix4x4{
 		[16]float32{
@@ -80,6 +83,9 @@ func RotationXMatrix4x4(rotationAngle float64) *Matrix4x4 {
 		},
 	}
 }
+
+// RotationYMatrix4x4 is the transformation matrix for the 'y' axis based rotation.
+// The input 'rotationAngle' is in radiant.
 func RotationYMatrix4x4(rotationAngle float64) *Matrix4x4 {
 	return &Matrix4x4{
 		[16]float32{
@@ -90,6 +96,9 @@ func RotationYMatrix4x4(rotationAngle float64) *Matrix4x4 {
 		},
 	}
 }
+
+// RotationZMatrix4x4 is the transformation matrix for the 'z' axis based rotation.
+// The input 'rotationAngle' is in radiant.
 func RotationZMatrix4x4(rotationAngle float64) *Matrix4x4 {
 	return &Matrix4x4{
 		[16]float32{
@@ -117,10 +126,10 @@ func (m *Matrix4x4) Dot(m2 *Matrix4x4) *Matrix4x4 {
 	result := NullMatrix4x4()
 	for i := 0; i < 4; i++ {
 		for j := 0; j < 4; j++ {
-			result.Points[4*i+j] = m.Points[4*i+0]*m2.Points[4*0+j] +
-				m.Points[4*i+1]*m2.Points[4*1+j] +
-				m.Points[4*i+2]*m2.Points[4*2+j] +
-				m.Points[4*i+3]*m2.Points[4*3+j]
+			result.Points[4*i+j] = m2.Points[4*i+0]*m.Points[4*0+j] +
+				m2.Points[4*i+1]*m.Points[4*1+j] +
+				m2.Points[4*i+2]*m.Points[4*2+j] +
+				m2.Points[4*i+3]*m.Points[4*3+j]
 		}
 	}
 	return result
@@ -128,10 +137,10 @@ func (m *Matrix4x4) Dot(m2 *Matrix4x4) *Matrix4x4 {
 
 // MultiVector returns a new Vector. this is the multiplication of a vector - matrix element.
 func (m *Matrix4x4) MultiVector(v Vector) *Vector {
-	Xh := float64(m.Points[0])*v.X + float64(m.Points[1])*v.Y + float64(m.Points[2])*v.Z + float64(m.Points[3])
-	Yh := float64(m.Points[4])*v.X + float64(m.Points[5])*v.Y + float64(m.Points[6])*v.Z + float64(m.Points[7])
-	Zh := float64(m.Points[8])*v.X + float64(m.Points[9])*v.Y + float64(m.Points[10])*v.Z + float64(m.Points[11])
-	h := float64(m.Points[12])*v.X + float64(m.Points[13])*v.Y + float64(m.Points[14])*v.Z + float64(m.Points[15])
+	Xh := float64(m.Points[0])*v.X + float64(m.Points[4])*v.Y + float64(m.Points[8])*v.Z + float64(m.Points[12])
+	Yh := float64(m.Points[1])*v.X + float64(m.Points[5])*v.Y + float64(m.Points[9])*v.Z + float64(m.Points[13])
+	Zh := float64(m.Points[2])*v.X + float64(m.Points[6])*v.Y + float64(m.Points[10])*v.Z + float64(m.Points[14])
+	h := float64(m.Points[3])*v.X + float64(m.Points[7])*v.Y + float64(m.Points[11])*v.Z + float64(m.Points[15])
 	return &Vector{Xh / h, Yh / h, Zh / h}
 }
 
