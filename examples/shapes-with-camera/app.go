@@ -45,7 +45,7 @@ func NewApplication() *Application {
 	app.GenerateSphere()
 	app.moveSpeed = 1.0 / 1000.0
 	app.epsilon = 50.0
-	app.camera = primitives.NewCamera(primitives.Vector{0, 0, 10.0}, primitives.Vector{0, 1, 0}, -90.0, 0.0)
+	app.camera = primitives.NewCamera(primitives.Vector{-3, -5, 18.0}, primitives.Vector{0, 1, 0}, -90.0, 0.0)
 	fmt.Println("Camera state after new function")
 	fmt.Println(app.camera.Log())
 	// Rotation related code comes here.
@@ -72,7 +72,7 @@ func (a *Application) GenerateCube() {
 // It generates a Sphere.
 func (a *Application) GenerateSphere() {
 	a.sphere = primitives.NewSphere()
-	a.sphere.SetCenter(primitives.Vector{0, 0, 1})
+	a.sphere.SetCenter(primitives.Vector{0, 0, 5})
 	a.sphere.SetColor(primitives.Vector{0, 0, 1})
 	a.sphere.SetRadius(2.0)
 }
@@ -234,14 +234,17 @@ func main() {
 		// Should Be fine 'P'
 		P := app.camera.GetProjectionMatrix().GetMatrix()
 		gl.UniformMatrix4fv(projectionLocation, 1, false, &P[0])
-		//M := primitives.TranslationMatrix4x4(float32(CubePosition.X), float32(CubePosition.Y), float32(CubePosition.Z)).TransposeMatrix().GetMatrix()
-		//gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
-		//app.cube.Draw()
+		M := primitives.TranslationMatrix4x4(float32(app.cubePosition.X), float32(app.cubePosition.Y), float32(app.cubePosition.Z)).TransposeMatrix().GetMatrix()
+		gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
+		app.cube.Draw()
 		// Update M for the sphere
-		M := primitives.TranslationMatrix4x4(
+		M = primitives.TranslationMatrix4x4(
 			float32(app.sphere.GetCenter().X),
 			float32(app.sphere.GetCenter().Y),
-			float32(app.sphere.GetCenter().Z)).TransposeMatrix().GetMatrix()
+			float32(app.sphere.GetCenter().Z)).Dot(primitives.ScaleMatrix4x4(
+			float32(app.sphere.GetRadius()),
+			float32(app.sphere.GetRadius()),
+			float32(app.sphere.GetRadius()))).TransposeMatrix().GetMatrix()
 		gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
 		app.sphere.Draw()
 		app.KeyHandler()
