@@ -47,3 +47,11 @@ func LookAt(eye, center, up Vector) *Matrix4x4 {
 	}}
 	return M.Mul4(TranslationMatrix4x4(float32(-eye.X), float32(-eye.Y), float32(-eye.Z)).TransposeMatrix())
 }
+
+func MouseCoordinates(currentX, currentY, windowWidth, windowHeight float64) (float64, float64) {
+	halfWidth := windowWidth / 2.0
+	halfHeight := windowHeight / 2.0
+	x := (currentX - halfWidth) / (halfWidth)
+	y := (halfHeight - currentY) / (halfHeight)
+	return x, y
+}
