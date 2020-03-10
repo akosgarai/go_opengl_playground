@@ -116,3 +116,9 @@ func (c *Camera) updateVectors() {
 	c.cameraRightDirection = c.worldUp.Cross(c.cameraFrontDirection).Normalize()
 	c.cameraUpDirection = c.cameraRightDirection.Cross(c.cameraFrontDirection).Normalize()
 }
+
+func (c *Camera) UpdateDirection(amountX, amountY float64) {
+	c.pitch = math.Mod(c.pitch+amountY, 360)
+	c.yaw = math.Mod(c.yaw+amountX, 360)
+	c.updateVectors()
+}

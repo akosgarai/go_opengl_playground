@@ -24,13 +24,15 @@ var (
 )
 
 type Application struct {
-	cube             *primitives.Cube
-	cubePosition     primitives.Vector
-	camera           *primitives.Camera
-	cameraLastUpdate int64
-	worldUpDirection *primitives.Vector
-	moveSpeed        float64
-	epsilon          float64
+	cube                 *primitives.Cube
+	cubePosition         primitives.Vector
+	camera               *primitives.Camera
+	cameraLastUpdate     int64
+	cameraDirection      float64
+	cameraDirectionSpeed float64
+	worldUpDirection     *primitives.Vector
+	moveSpeed            float64
+	epsilon              float64
 
 	window  *glfw.Window
 	program uint32
@@ -44,6 +46,8 @@ func NewApplication() *Application {
 	app.moveSpeed = 1.0 / 1000.0
 	app.epsilon = 50.0
 	app.camera = primitives.NewCamera(primitives.Vector{0, 0, 10.0}, primitives.Vector{0, 1, 0}, -90.0, 0.0)
+	app.cameraDirection = 0.1
+	app.cameraDirectionSpeed = 5
 	fmt.Println("Camera state after new function")
 	fmt.Println(app.camera.Log())
 	// Rotation related code comes here.
@@ -58,6 +62,10 @@ func NewApplication() *Application {
 	app.KeyDowns["D"] = false
 	app.KeyDowns["Q"] = false
 	app.KeyDowns["E"] = false
+	app.KeyDowns["dLeft"] = false
+	app.KeyDowns["dRight"] = false
+	app.KeyDowns["dUp"] = false
+	app.KeyDowns["dDown"] = false
 	return &app
 }
 
@@ -148,6 +156,53 @@ func (a *Application) KeyHandler() {
 	}
 }
 
+/*
+* Mouse click handler logic:
+* - if the mouse moved - call the function with the delta values.
+ */
+func (a *Application) MouseHandler() {
+	currX, currY := a.window.GetCursorPos()
+	x, y := primitives.MouseCoordinates(currX, currY, windowWidth, windowHeight)
+	// dUp
+	if y > 1.0-a.cameraDirection && y < 1.0 {
+		a.KeyDowns["dUp"] = true
+	} else {
+		a.KeyDowns["dUp"] = false
+	}
+	// dDown
+	if y < -1.0+a.cameraDirection && y > -1.0 {
+		a.KeyDowns["dDown"] = true
+	} else {
+		a.KeyDowns["dDown"] = false
+	}
+	// dLeft
+	if x < -1.0+a.cameraDirection && x > -1.0 {
+		a.KeyDowns["dLeft"] = true
+	} else {
+		a.KeyDowns["dLeft"] = false
+	}
+	// dRight
+	if x > 1.0-a.cameraDirection && x < 1.0 {
+		a.KeyDowns["dRight"] = true
+	} else {
+		a.KeyDowns["dRight"] = false
+	}
+
+	dX := 0.0
+	dY := 0.0
+	if a.KeyDowns["dUp"] && !a.KeyDowns["dDown"] {
+		dY = 0.01 * a.cameraDirectionSpeed
+	} else if a.KeyDowns["dDown"] && !a.KeyDowns["dUp"] {
+		dY = -0.01 * a.cameraDirectionSpeed
+	}
+	if a.KeyDowns["dLeft"] && !a.KeyDowns["dRight"] {
+		dX = -0.01 * a.cameraDirectionSpeed
+	} else if a.KeyDowns["dRight"] && !a.KeyDowns["dLeft"] {
+		dX = 0.01 * a.cameraDirectionSpeed
+	}
+	a.camera.UpdateDirection(dX, dY)
+}
+
 func initGlfw() *glfw.Window {
 	if err := glfw.Init(); err != nil {
 		panic(fmt.Errorf("could not initialize glfw: %v", err))
@@ -229,6 +284,7 @@ func main() {
 
 		app.cube.Draw()
 		app.KeyHandler()
+		app.MouseHandler()
 		glfw.PollEvents()
 		app.window.SwapBuffers()
 	}
