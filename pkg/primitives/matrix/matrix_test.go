@@ -1,8 +1,9 @@
-package primitives
+package matrix
 
 import (
-	"math"
 	"testing"
+
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 )
 
 func TestGetMatrix(t *testing.T) {
@@ -15,7 +16,7 @@ func TestGetMatrix(t *testing.T) {
 		{3, 3},
 	}
 	for _, tt := range testData {
-		var m Matrix4x4
+		var m Matrix
 		for i := 0; i < 16; i++ {
 			m.Points[i] = tt.Input
 		}
@@ -37,7 +38,7 @@ func TestGetTransposeMatrix(t *testing.T) {
 		{3, 3},
 	}
 	for _, tt := range testData {
-		var m Matrix4x4
+		var m Matrix
 		for i := 0; i < 16; i++ {
 			m.Points[i] = tt.Input
 		}
@@ -51,18 +52,18 @@ func TestGetTransposeMatrix(t *testing.T) {
 }
 func TestTransposeMatrix(t *testing.T) {
 	testData := []struct {
-		Input    Matrix4x4
-		Expected Matrix4x4
+		Input    Matrix
+		Expected Matrix
 	}{
 		{
-			Matrix4x4{
+			Matrix{
 				[16]float32{
 					1.0, 2.0, 3.0, 4.0,
 					5.0, 6.0, 7.0, 8.0,
 					9.0, 10.0, 11.0, 12.0,
 					13.0, 14.0, 15.0, 16.0},
 			},
-			Matrix4x4{
+			Matrix{
 				[16]float32{
 					1.0, 5.0, 9.0, 13.0,
 					2.0, 6.0, 10.0, 14.0,
@@ -82,38 +83,7 @@ func TestTransposeMatrix(t *testing.T) {
 		}
 	}
 }
-func TestTranslationMatrix4x4(t *testing.T) {
-	testData := []struct {
-		Translation Vector
-		Expected    Matrix4x4
-	}{
-		{
-			Vector{0, 0, 0},
-			*UnitMatrix4x4(),
-		},
-		{
-			Vector{1, 2, 3},
-			Matrix4x4{
-				[16]float32{
-					1.0, 0.0, 0.0, 1.0,
-					0.0, 1.0, 0.0, 2.0,
-					0.0, 0.0, 1.0, 3.0,
-					0.0, 0.0, 0.0, 1.0},
-			},
-		},
-	}
-	for _, tt := range testData {
-		translated := TranslationMatrix4x4(float32(tt.Translation.X), float32(tt.Translation.Y), float32(tt.Translation.Z))
-		for i := 0; i < 16; i++ {
-			if translated.Points[i] != tt.Expected.Points[i] {
-				t.Log(translated)
-				t.Log(tt.Expected)
-				t.Error("Value mismatch - TranslationMatrix4x4")
-			}
-		}
-	}
-}
-func Test_Dot(t *testing.T) {
+func TestDot(t *testing.T) {
 	testData := []struct {
 		m1Input  float32
 		m2Input  float32
@@ -122,8 +92,8 @@ func Test_Dot(t *testing.T) {
 		{0, 0, 0},
 	}
 	for _, tt := range testData {
-		var m1 Matrix4x4
-		var m2 Matrix4x4
+		var m1 Matrix
+		var m2 Matrix
 		for i := 0; i < 16; i++ {
 			m1.Points[i] = tt.m1Input
 			m2.Points[i] = tt.m2Input
@@ -136,38 +106,38 @@ func Test_Dot(t *testing.T) {
 		}
 	}
 }
-func TestNullMatrix4x4(t *testing.T) {
-	nullMatrix := NullMatrix4x4()
+func TestNullMatrix(t *testing.T) {
+	nullMatrix := NullMatrix()
 	for i := 0; i < 16; i++ {
 		if nullMatrix.Points[i] != 0.0 {
-			t.Error("Invalid value - NullMatrix4x4")
+			t.Error("Invalid value - NullMatrix")
 		}
 	}
 
 }
-func TestUnitMatrix4x4(t *testing.T) {
-	unitMatrix := UnitMatrix4x4()
+func TestUnitMatrix(t *testing.T) {
+	unitMatrix := UnitMatrix()
 	for i := 0; i < 16; i++ {
 		expected := 0.0
 		if i == 0 || i == 5 || i == 10 || i == 15 {
 			expected = 1.0
 		}
 		if unitMatrix.Points[i] != float32(expected) {
-			t.Error("Invalid value - UnitMatrix4x4")
+			t.Error("Invalid value - UnitMatrix")
 		}
 	}
 
 }
 func TestMultiVector(t *testing.T) {
 	testData := []struct {
-		M        *Matrix4x4
-		V        Vector
-		Expected Vector
+		M        *Matrix
+		V        vec.Vector
+		Expected vec.Vector
 	}{
 		{
-			UnitMatrix4x4(),
-			Vector{0.0, 0.0, 0.0},
-			Vector{0.0, 0.0, 0.0},
+			UnitMatrix(),
+			vec.Vector{0.0, 0.0, 0.0},
+			vec.Vector{0.0, 0.0, 0.0},
 		},
 	}
 	for _, tt := range testData {
@@ -181,36 +151,36 @@ func TestMultiVector(t *testing.T) {
 }
 func TestDotVsMul4Transformation(t *testing.T) {
 	testData := []struct {
-		M1 *Matrix4x4
-		M2 *Matrix4x4
+		M1 *Matrix
+		M2 *Matrix
 	}{
 		{
-			UnitMatrix4x4(),
-			UnitMatrix4x4(),
+			UnitMatrix(),
+			UnitMatrix(),
 		},
 		{
-			UnitMatrix4x4(),
-			NullMatrix4x4(),
+			UnitMatrix(),
+			NullMatrix(),
 		},
 		{
-			NullMatrix4x4(),
-			UnitMatrix4x4(),
+			NullMatrix(),
+			UnitMatrix(),
 		},
 		{
-			UnitMatrix4x4(),
-			&Matrix4x4{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
+			UnitMatrix(),
+			&Matrix{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
 		},
 		{
-			&Matrix4x4{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
-			UnitMatrix4x4(),
+			&Matrix{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
+			UnitMatrix(),
 		},
 		{
-			&Matrix4x4{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
-			&Matrix4x4{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
+			&Matrix{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
+			&Matrix{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
 		},
 		{
-			&Matrix4x4{[16]float32{0.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
-			&Matrix4x4{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
+			&Matrix{[16]float32{0.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
+			&Matrix{[16]float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0}},
 		},
 	}
 	for _, tt := range testData {
@@ -224,123 +194,6 @@ func TestDotVsMul4Transformation(t *testing.T) {
 				t.Log(mulProduct)
 				t.Error("Dot vs Mul4 difference", i)
 			}
-		}
-	}
-}
-func TestRotationTransformationXAxis(t *testing.T) {
-	testData := []struct {
-		Point         *Vector
-		RotationAngle float64
-		RotatedPoint  *Vector
-	}{
-		{&Vector{0, 0, 0}, 0.0, &Vector{0, 0, 0}},
-		{&Vector{1, 0, 0}, 0.0, &Vector{1, 0, 0}},
-		{&Vector{1, 1, 0}, 0.0, &Vector{1, 1, 0}},
-		{&Vector{1, 1, 1}, 0.0, &Vector{1, 1, 1}},
-		{&Vector{0, 0, 0}, 90.0, &Vector{0, 0, 0}},
-		{&Vector{1, 0, 0}, 90.0, &Vector{1, 0, 0}},
-		{&Vector{0, 1, 0}, math.Pi / 2, &Vector{0, 0, 1}},
-		{&Vector{0, 0, 1}, math.Pi / 2, &Vector{1, 0, 0}},
-	}
-	for _, tt := range testData {
-		rotationMatrix := RotationXMatrix4x4(tt.RotationAngle).TransposeMatrix()
-		sinAngle, cosAngle := float32(math.Sin(tt.RotationAngle)), float32(math.Cos(tt.RotationAngle))
-		points := rotationMatrix.Points
-		if points[0] != 1.0 ||
-			points[1] != 0.0 ||
-			points[2] != 0.0 ||
-			points[3] != 0.0 ||
-			points[4] != 0.0 ||
-			points[5] != cosAngle ||
-			points[6] != sinAngle ||
-			points[7] != 0.0 ||
-			points[8] != 0.0 ||
-			points[9] != -sinAngle ||
-			points[10] != cosAngle ||
-			points[11] != 0.0 ||
-			points[12] != 0.0 ||
-			points[13] != 0.0 ||
-			points[14] != 0.0 ||
-			points[15] != 1.0 {
-			t.Error("Invalid rotationX matrix", points, sinAngle, cosAngle)
-		}
-	}
-}
-func TestRotationTransformationYAxis(t *testing.T) {
-	testData := []struct {
-		Point         *Vector
-		RotationAngle float64
-		RotatedPoint  *Vector
-	}{
-		{&Vector{0, 0, 0}, 0.0, &Vector{0, 0, 0}},
-		{&Vector{1, 0, 0}, 0.0, &Vector{1, 0, 0}},
-		{&Vector{1, 1, 0}, 0.0, &Vector{1, 1, 0}},
-		{&Vector{1, 1, 1}, 0.0, &Vector{1, 1, 1}},
-		{&Vector{0, 0, 0}, 90.0, &Vector{0, 0, 0}},
-		{&Vector{0, 1, 0}, 90.0, &Vector{0, 1, 0}},
-		{&Vector{1, 0, 0}, math.Pi / 2, &Vector{0, 0, 1}},
-		{&Vector{0, 0, 1}, math.Pi / 2, &Vector{1, 0, 0}},
-	}
-	for _, tt := range testData {
-		rotationMatrix := RotationYMatrix4x4(tt.RotationAngle).TransposeMatrix()
-		sinAngle, cosAngle := float32(math.Sin(tt.RotationAngle)), float32(math.Cos(tt.RotationAngle))
-		points := rotationMatrix.Points
-		if points[0] != cosAngle ||
-			points[1] != 0.0 ||
-			points[2] != -sinAngle ||
-			points[3] != 0.0 ||
-			points[4] != 0.0 ||
-			points[5] != 1.0 ||
-			points[6] != 0.0 ||
-			points[7] != 0.0 ||
-			points[8] != sinAngle ||
-			points[9] != 0.0 ||
-			points[10] != cosAngle ||
-			points[11] != 0.0 ||
-			points[12] != 0.0 ||
-			points[13] != 0.0 ||
-			points[14] != 0.0 ||
-			points[15] != 1.0 {
-			t.Error("Invalid rotationY matrix", points, sinAngle, cosAngle)
-		}
-	}
-}
-func TestRotationTransformationZAxis(t *testing.T) {
-	testData := []struct {
-		Point         *Vector
-		RotationAngle float64
-		RotatedPoint  *Vector
-	}{
-		{&Vector{0, 0, 0}, 0.0, &Vector{0, 0, 0}},
-		{&Vector{1, 0, 0}, 0.0, &Vector{1, 0, 0}},
-		{&Vector{1, 1, 0}, 0.0, &Vector{1, 1, 0}},
-		{&Vector{1, 1, 1}, 0.0, &Vector{1, 1, 1}},
-		{&Vector{0, 0, 0}, 90.0, &Vector{0, 0, 0}},
-		{&Vector{0, 0, 1}, 90.0, &Vector{0, 0, 1}},
-		{&Vector{1, 0, 0}, math.Pi / 2, &Vector{0, 1, 0}},
-		{&Vector{0, 1, 0}, math.Pi / 2, &Vector{1, 0, 0}},
-	}
-	for _, tt := range testData {
-		rotationMatrix := RotationZMatrix4x4(tt.RotationAngle).TransposeMatrix()
-		sinAngle, cosAngle := float32(math.Sin(tt.RotationAngle)), float32(math.Cos(tt.RotationAngle))
-		points := rotationMatrix.Points
-		if points[0] != cosAngle ||
-			points[1] != sinAngle ||
-			points[2] != 0.0 ||
-			points[3] != 0.0 ||
-			points[4] != -sinAngle ||
-			points[5] != cosAngle ||
-			points[6] != 0.0 ||
-			points[7] != 0.0 ||
-			points[8] != 0.0 ||
-			points[9] != 0.0 ||
-			points[10] != 1.0 ||
-			points[11] != 0.0 ||
-			points[12] != 0.0 ||
-			points[13] != 0.0 ||
-			points[14] != 0.0 ||
-			points[15] != 1.0 {
-			t.Error("Invalid rotationY matrix", points, sinAngle, cosAngle)
 		}
 	}
 }
