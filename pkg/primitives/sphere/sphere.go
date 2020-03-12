@@ -4,6 +4,7 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 
 	P "github.com/akosgarai/opengl_playground/pkg/primitives/point"
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 )
 
@@ -76,24 +77,24 @@ func (s *Sphere) setupVao() []float32 {
 	// Idea : start drawing triangles from both direction (top, bottom). step the coordinates and calculate the triangles, add them to vao.
 	// - step for y coord, : radius * 2 / numOfRows
 	RefPoint := &vec.Vector{0, 1, 0}
-	step_Z := -DegToRad(float64(360.0 / s.numOfItemsInRow))
-	step_Y := -DegToRad(float64(360.0 / s.numOfRows))
+	step_Z := -trans.DegToRad(float64(360.0 / s.numOfItemsInRow))
+	step_Y := -trans.DegToRad(float64(360.0 / s.numOfRows))
 	for i := 0; i < s.numOfRows; i++ {
-		i_Rotation := RotationZMatrix4x4(float64(i) * step_Z).TransposeMatrix()
-		i1_Rotation := RotationZMatrix4x4(float64(i+1) * step_Z).TransposeMatrix()
+		i_Rotation := trans.RotationZMatrix(float64(i) * step_Z).TransposeMatrix()
+		i1_Rotation := trans.RotationZMatrix(float64(i+1) * step_Z).TransposeMatrix()
 		for j := 0; j < s.numOfItemsInRow; j++ {
-			j1_Rotation := RotationYMatrix4x4(float64(j+1) * step_Y).TransposeMatrix()
-			j_Rotation := RotationYMatrix4x4(float64(j) * step_Y).TransposeMatrix()
+			j1_Rotation := trans.RotationYMatrix(float64(j+1) * step_Y).TransposeMatrix()
+			j_Rotation := trans.RotationYMatrix(float64(j) * step_Y).TransposeMatrix()
 			if i == 0 {
 				p1 := P.Point{*RefPoint, s.color}
 				p2 := P.Point{*(j_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
 				p3 := P.Point{*(j1_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
 				vao = s.triangleByPointToVao(vao, p1, p2, p3)
 			} else {
-				p1 := P.Point{*(j_Rotation.Mul4(i_Rotation).MultiVector(*RefPoint)), s.color}
-				p2 := P.Point{*(j1_Rotation.Mul4(i_Rotation).MultiVector(*RefPoint)), s.color}
-				p3 := P.Point{*(j1_Rotation.Mul4(i1_Rotation).MultiVector(*RefPoint)), s.color}
-				p4 := P.Point{*(j_Rotation.Mul4(i1_Rotation).MultiVector(*RefPoint)), s.color}
+				p1 := P.Point{*(j_Rotation.Dot(i_Rotation).MultiVector(*RefPoint)), s.color}
+				p2 := P.Point{*(j1_Rotation.Dot(i_Rotation).MultiVector(*RefPoint)), s.color}
+				p3 := P.Point{*(j1_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
+				p4 := P.Point{*(j_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
 				vao = s.sideByPointToVao(vao, p1, p2, p3, p4)
 			}
 		}
