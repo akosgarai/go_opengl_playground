@@ -6,6 +6,29 @@ import (
 	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 )
 
+func Mul4(m1, m2 *Matrix) *Matrix {
+	return &Matrix{
+		[16]float32{
+			m1.Points[0]*m2.Points[0] + m1.Points[4]*m2.Points[1] + m1.Points[8]*m2.Points[2] + m1.Points[12]*m2.Points[3],
+			m1.Points[1]*m2.Points[0] + m1.Points[5]*m2.Points[1] + m1.Points[9]*m2.Points[2] + m1.Points[13]*m2.Points[3],
+			m1.Points[2]*m2.Points[0] + m1.Points[6]*m2.Points[1] + m1.Points[10]*m2.Points[2] + m1.Points[14]*m2.Points[3],
+			m1.Points[3]*m2.Points[0] + m1.Points[7]*m2.Points[1] + m1.Points[11]*m2.Points[2] + m1.Points[15]*m2.Points[3],
+			m1.Points[0]*m2.Points[4] + m1.Points[4]*m2.Points[5] + m1.Points[8]*m2.Points[6] + m1.Points[12]*m2.Points[7],
+			m1.Points[1]*m2.Points[4] + m1.Points[5]*m2.Points[5] + m1.Points[9]*m2.Points[6] + m1.Points[13]*m2.Points[7],
+			m1.Points[2]*m2.Points[4] + m1.Points[6]*m2.Points[5] + m1.Points[10]*m2.Points[6] + m1.Points[14]*m2.Points[7],
+			m1.Points[3]*m2.Points[4] + m1.Points[7]*m2.Points[5] + m1.Points[11]*m2.Points[6] + m1.Points[15]*m2.Points[7],
+			m1.Points[0]*m2.Points[8] + m1.Points[4]*m2.Points[9] + m1.Points[8]*m2.Points[10] + m1.Points[12]*m2.Points[11],
+			m1.Points[1]*m2.Points[8] + m1.Points[5]*m2.Points[9] + m1.Points[9]*m2.Points[10] + m1.Points[13]*m2.Points[11],
+			m1.Points[2]*m2.Points[8] + m1.Points[6]*m2.Points[9] + m1.Points[10]*m2.Points[10] + m1.Points[14]*m2.Points[11],
+			m1.Points[3]*m2.Points[8] + m1.Points[7]*m2.Points[9] + m1.Points[11]*m2.Points[10] + m1.Points[15]*m2.Points[11],
+			m1.Points[0]*m2.Points[12] + m1.Points[4]*m2.Points[13] + m1.Points[8]*m2.Points[14] + m1.Points[12]*m2.Points[15],
+			m1.Points[1]*m2.Points[12] + m1.Points[5]*m2.Points[13] + m1.Points[9]*m2.Points[14] + m1.Points[13]*m2.Points[15],
+			m1.Points[2]*m2.Points[12] + m1.Points[6]*m2.Points[13] + m1.Points[10]*m2.Points[14] + m1.Points[14]*m2.Points[15],
+			m1.Points[3]*m2.Points[12] + m1.Points[7]*m2.Points[13] + m1.Points[11]*m2.Points[14] + m1.Points[15]*m2.Points[15],
+		},
+	}
+}
+
 func TestGetMatrix(t *testing.T) {
 	testData := []struct {
 		Input    float32
@@ -185,7 +208,7 @@ func TestDotVsMul4Transformation(t *testing.T) {
 	}
 	for _, tt := range testData {
 		dotProduct := tt.M1.Dot(tt.M2)
-		mulProduct := tt.M1.Mul4(tt.M2)
+		mulProduct := Mul4(tt.M1, tt.M2)
 		for i := 0; i < 16; i++ {
 			if dotProduct.Points[i] != mulProduct.Points[i] {
 				t.Log(tt.M1)
