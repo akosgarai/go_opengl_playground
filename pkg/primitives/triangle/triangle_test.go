@@ -1,0 +1,5 @@
+package triangle
+
+import (
+	"testing"
+)
