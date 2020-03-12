@@ -1,0 +1,1 @@
+# Static triangle and square
