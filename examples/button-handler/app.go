@@ -5,7 +5,10 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/pkg/primitives"
+	mat "github.com/akosgarai/opengl_playground/pkg/primitives/matrix"
+	sq "github.com/akosgarai/opengl_playground/pkg/primitives/square"
+	tr "github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -20,16 +23,16 @@ const (
 )
 
 var (
-	triangle = primitives.NewTriangle(
-		primitives.Vector{-0.75, 0.75, 0}, // top
-		primitives.Vector{-0.75, 0.25, 0}, // left
-		primitives.Vector{-0.25, 0.25, 0}, // right
+	triangle = tr.NewTriangle(
+		vec.Vector{-0.75, 0.75, 0}, // top
+		vec.Vector{-0.75, 0.25, 0}, // left
+		vec.Vector{-0.25, 0.25, 0}, // right
 	)
-	square = primitives.NewSquare(
-		primitives.Vector{0.25, -0.25, 0}, // top-left
-		primitives.Vector{0.25, -0.75, 0}, // bottom-left
-		primitives.Vector{0.75, -0.75, 0}, // bottom-right
-		primitives.Vector{0.75, -0.25, 0}, // top-right
+	square = sq.NewSquare(
+		vec.Vector{0.25, -0.25, 0}, // top-left
+		vec.Vector{0.25, -0.75, 0}, // bottom-left
+		vec.Vector{0.75, -0.75, 0}, // bottom-right
+		vec.Vector{0.75, -0.25, 0}, // top-right
 	)
 	lastUpdate = time.Now().UnixNano() / 1000000
 )
@@ -81,11 +84,11 @@ func initOpenGL() uint32 {
 
 func keyHandler(window *glfw.Window) {
 	if window.GetKey(glfw.KeyT) == glfw.Press {
-		triangle.SetColor(primitives.Vector{0, 1, 0})
-		square.SetColor(primitives.Vector{1, 0, 0})
+		triangle.SetColor(vec.Vector{0, 1, 0})
+		square.SetColor(vec.Vector{1, 0, 0})
 	} else {
-		triangle.SetColor(primitives.Vector{1, 0, 0})
-		square.SetColor(primitives.Vector{0, 1, 0})
+		triangle.SetColor(vec.Vector{1, 0, 0})
+		square.SetColor(vec.Vector{0, 1, 0})
 	}
 	nowUnixM := time.Now().UnixNano() / 1000000
 	if lastUpdate+epsilon > nowUnixM {
@@ -145,10 +148,9 @@ func main() {
 
 	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
 
-	P := primitives.UnitMatrix4x4()
-	MV := primitives.UnitMatrix4x4()
-	mvpMatrix := P.Dot(MV)
-	mvp := mvpMatrix.Points
+	P := mat.UnitMatrix()
+	MV := mat.UnitMatrix()
+	mvp := P.Dot(MV).GetMatrix()
 	gl.UniformMatrix4fv(mvpLocation, 1, false, &mvp[0])
 
 	gl.Enable(gl.DEPTH_TEST)
