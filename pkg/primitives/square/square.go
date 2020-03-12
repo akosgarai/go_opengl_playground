@@ -54,7 +54,7 @@ func (s *Square) buildVaoWithoutColor() []float32 {
 
 	return points
 }
-func (s *Square) appendPointToVao(currentVao []float32, p Point) []float32 {
+func (s *Square) appendPointToVao(currentVao []float32, p P.Point) []float32 {
 	currentVao = append(currentVao, float32(p.Coordinate.X))
 	currentVao = append(currentVao, float32(p.Coordinate.Y))
 	currentVao = append(currentVao, float32(p.Coordinate.Z))
