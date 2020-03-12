@@ -1,18 +1,20 @@
-package primitives
+package point
 
 import (
 	"testing"
+
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 )
 
 func TestSetColor(t *testing.T) {
 	testData := []struct {
-		Color Vector
+		Color vec.Vector
 	}{
-		{Vector{0, 0, 0}},
-		{Vector{1, 0, 0}},
-		{Vector{0, 1, 0}},
-		{Vector{0, 1, 0}},
-		{Vector{1, 1, 1}},
+		{vec.Vector{0, 0, 0}},
+		{vec.Vector{1, 0, 0}},
+		{vec.Vector{0, 1, 0}},
+		{vec.Vector{0, 1, 0}},
+		{vec.Vector{1, 1, 1}},
 	}
 
 	for _, tt := range testData {
