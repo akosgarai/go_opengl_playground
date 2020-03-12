@@ -24,10 +24,6 @@ This logic is responsible for handling the mouse events. It maintains 3 global v
 
 This is a basic function for supporting the debug. In case of the `d` button is clicked, it prints out the app.Points.
 
-- `convertMouseCoordinates`
-
-This function is responsible for the window mouse coordinate -> screen mouse coordinate transformation.
-
 - `app.buildVAO`
 
 This function builds the `[]float32`, that can be used as vertex data object. Currently it only inserts the coordinates to the vao.
