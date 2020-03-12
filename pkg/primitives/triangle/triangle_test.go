@@ -1,5 +1,1 @@
 package triangle
-
-import (
-	"testing"
-)

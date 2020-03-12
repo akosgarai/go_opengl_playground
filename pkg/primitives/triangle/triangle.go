@@ -2,24 +2,27 @@ package triangle
 
 import (
 	"github.com/go-gl/gl/v4.1-core/gl"
+
+	P "github.com/akosgarai/opengl_playground/pkg/primitives/point"
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 )
 
 type Triangle struct {
-	A Point
-	B Point
-	C Point
+	A P.Point
+	B P.Point
+	C P.Point
 }
 
-func NewTriangle(v1, v2, v3 Vector) *Triangle {
-	return &Triangle{Point{v1, Vector{1, 1, 1}}, Point{v2, Vector{1, 1, 1}}, Point{v3, Vector{1, 1, 1}}}
+func NewTriangle(v1, v2, v3 vec.Vector) *Triangle {
+	return &Triangle{P.Point{v1, vec.Vector{1, 1, 1}}, P.Point{v2, vec.Vector{1, 1, 1}}, P.Point{v3, vec.Vector{1, 1, 1}}}
 }
 
-func (t *Triangle) SetColor(color Vector) {
+func (t *Triangle) SetColor(color vec.Vector) {
 	t.A.SetColor(color)
 	t.B.SetColor(color)
 	t.C.SetColor(color)
 }
-func (t *Triangle) appendPointToVao(currentVao []float32, p Point) []float32 {
+func (t *Triangle) appendPointToVao(currentVao []float32, p P.Point) []float32 {
 	currentVao = append(currentVao, float32(p.Coordinate.X))
 	currentVao = append(currentVao, float32(p.Coordinate.Y))
 	currentVao = append(currentVao, float32(p.Coordinate.Z))
