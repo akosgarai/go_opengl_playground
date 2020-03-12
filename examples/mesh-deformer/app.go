@@ -5,7 +5,9 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/pkg/primitives"
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
+	tr "github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -19,7 +21,7 @@ const (
 )
 
 var (
-	triangles []primitives.Triangle
+	triangles []tr.Triangle
 )
 
 func initGlfw() *glfw.Window {
@@ -78,22 +80,22 @@ func generateTrianglesModelCoordinates() {
 			topY := (float64(i) * length)
 			topZ := 0.0
 
-			triangle := *primitives.NewTriangle(
-				primitives.Vector{topX, topY, topZ},
-				primitives.Vector{topX, topY - length, topZ},
-				primitives.Vector{topX - length, topY - length, topZ},
+			triangle := *tr.NewTriangle(
+				vec.Vector{topX, topY, topZ},
+				vec.Vector{topX, topY - length, topZ},
+				vec.Vector{topX - length, topY - length, topZ},
 			)
-			triangle.SetColor(primitives.Vector{0, 0, 1})
+			triangle.SetColor(vec.Vector{0, 0, 1})
 			triangles = append(
 				triangles,
 				triangle,
 			)
-			triangle = *primitives.NewTriangle(
-				primitives.Vector{topX, topY, topZ},
-				primitives.Vector{topX - length, topY - length, topZ},
-				primitives.Vector{topX - length, topY, topZ},
+			triangle = *tr.NewTriangle(
+				vec.Vector{topX, topY, topZ},
+				vec.Vector{topX - length, topY - length, topZ},
+				vec.Vector{topX - length, topY, topZ},
 			)
-			triangle.SetColor(primitives.Vector{0, 0.5, 1})
+			triangle.SetColor(vec.Vector{0, 0.5, 1})
 			triangles = append(
 				triangles,
 				triangle,
@@ -124,24 +126,24 @@ func main() {
 	near := float64(0.1)
 	far := float64(1000)
 	// projection matrix
-	P := primitives.ProjectionMatrix4x4(angelOfView, near, far)
+	P := trans.ProjectionMatrix(angelOfView, near, far)
 	// scalematrix - coord / 100
-	scaleMatrix := primitives.ScaleMatrix4x4(0.01, 0.01, 0.01)
+	scaleMatrix := trans.ScaleMatrix(0.01, 0.01, 0.01)
 	// translation matrix
-	translationMatrix := primitives.TranslationMatrix4x4(-1, -1, -50)
+	translationMatrix := trans.TranslationMatrix(-1, -1, -50)
 	// rotationmatrix - rotate on the Z coord.
-	rotationMatrix := primitives.RotationZMatrix4x4(90)
+	rotationMatrix := trans.RotationZMatrix(90)
 	MV := (scaleMatrix.Dot(translationMatrix)).Dot(rotationMatrix)
-	mvpPoints := (MV.Dot(P)).Points
+	mvpPoints := MV.Dot(P).GetMatrix()
+	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
+	timeLocation := gl.GetUniformLocation(program, gl.Str("time\x00"))
 
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		// time
 		elapsedTimeNano := time.Now().UnixNano() - nowUnix
-		time := gl.GetUniformLocation(program, gl.Str("time\x00"))
-		gl.Uniform1f(time, float32(elapsedTimeNano/10000000))
-		mvp := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
-		gl.UniformMatrix4fv(mvp, 1, false, &mvpPoints[0])
+		gl.Uniform1f(timeLocation, float32(elapsedTimeNano/10000000))
+		gl.UniformMatrix4fv(mvpLocation, 1, false, &mvpPoints[0])
 
 		for _, item := range triangles {
 			item.Draw()
