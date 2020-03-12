@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/akosgarai/opengl_playground/pkg/primitives"
+	mat "github.com/akosgarai/opengl_playground/pkg/primitives/matrix"
+	tr "github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -18,11 +20,11 @@ const (
 )
 
 type Application struct {
-	Triangles []primitives.Triangle
+	Triangles []tr.Triangle
 }
 
 // AddTriangle inserts a new triangle to the application.
-func (a *Application) AddTriangle(t primitives.Triangle) {
+func (a *Application) AddTriangle(t tr.Triangle) {
 	a.Triangles = append(a.Triangles, t)
 }
 
@@ -88,10 +90,10 @@ func generateTriangles() {
 			topZ := 0.0
 
 			app.AddTriangle(
-				*primitives.NewTriangle(
-					primitives.Vector{topX, topY, topZ},
-					primitives.Vector{topX, topY - length, topZ},
-					primitives.Vector{topX - length, topY - length, topZ},
+				*tr.NewTriangle(
+					vec.Vector{topX, topY, topZ},
+					vec.Vector{topX, topY - length, topZ},
+					vec.Vector{topX - length, topY - length, topZ},
 				))
 		}
 	}
@@ -109,10 +111,9 @@ func main() {
 	// mvp - modelview - projection matrix
 	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
 
-	P := primitives.UnitMatrix4x4()
-	MV := primitives.UnitMatrix4x4()
-	mvpMatrix := P.Dot(MV)
-	mvp := mvpMatrix.Points
+	P := mat.UnitMatrix()
+	MV := mat.UnitMatrix()
+	mvp := P.Dot(MV).GetMatrix()
 	gl.UniformMatrix4fv(mvpLocation, 1, false, &mvp[0])
 
 	gl.Enable(gl.DEPTH_TEST)
