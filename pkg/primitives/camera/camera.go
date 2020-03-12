@@ -1,10 +1,11 @@
-package primitives
+package camera
 
 import (
 	"math"
 	"strconv"
 
 	mat "github.com/akosgarai/opengl_playground/pkg/primitives/matrix"
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 )
 
@@ -99,20 +100,20 @@ func (c *Camera) SetupProjection(fov, aspRatio, near, far float64) {
 // GetProjectionMatrix returns the projectionMatrix of the camera
 // based on the following solution: https://github.com/go-gl/mathgl/blob/95de7b3a016a8324097da95ad4417cc2caccb071/mgl32/project.go
 func (c *Camera) GetProjectionMatrix() *mat.Matrix {
-	return Perspective(float32(c.projectionOptions.fov), float32(c.projectionOptions.aspectRatio), float32(c.projectionOptions.near), float32(c.projectionOptions.far))
+	return trans.Perspective(float32(c.projectionOptions.fov), float32(c.projectionOptions.aspectRatio), float32(c.projectionOptions.near), float32(c.projectionOptions.far))
 }
 
 // GetViewMatrix gets the matrix to transform from world coordinates to
 // this camera's coordinates.
 // GetViewMatrix returns the viewMatrix of the camera
 func (c *Camera) GetViewMatrix() *mat.Matrix {
-	return LookAt(c.cameraPosition, c.cameraPosition.Add(c.cameraFrontDirection), c.cameraUpDirection)
+	return trans.LookAt(c.cameraPosition, c.cameraPosition.Add(c.cameraFrontDirection), c.cameraUpDirection)
 }
 func (c *Camera) updateVectors() {
 	c.cameraFrontDirection = vec.Vector{
-		math.Cos(DegToRad(c.pitch)) * math.Cos(DegToRad(c.yaw)),
-		math.Sin(DegToRad(c.pitch)),
-		math.Cos(DegToRad(c.pitch)) * math.Sin(DegToRad(c.yaw)),
+		math.Cos(trans.DegToRad(c.pitch)) * math.Cos(trans.DegToRad(c.yaw)),
+		math.Sin(trans.DegToRad(c.pitch)),
+		math.Cos(trans.DegToRad(c.pitch)) * math.Sin(trans.DegToRad(c.yaw)),
 	}
 	c.cameraFrontDirection = c.cameraFrontDirection.Normalize()
 	// Gram-Schmidt process to figure out right and up vectors
