@@ -126,13 +126,6 @@ func (a *Application) KeyHandler() {
 		DebugPrint = false
 	}
 }
-func convertMouseCoordinates() (float64, float64) {
-	halfWidth := windowWidth / 2.0
-	halfHeight := windowHeight / 2.0
-	x := (mousePositionX - halfWidth) / (halfWidth)
-	y := (halfHeight - mousePositionY) / (halfHeight)
-	return x, y
-}
 func (a *Application) buildVAO() []float32 {
 	var vao []float32
 	for _, item := range a.Points {
