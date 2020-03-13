@@ -20,15 +20,55 @@ const (
 )
 
 type Application struct {
-	Triangles []tr.Triangle
+	triangles []tr.Triangle
+	rows      int
+	length    float64
+
+	window  *glfw.Window
+	program uint32
 }
 
-// AddTriangle inserts a new triangle to the application.
-func (a *Application) AddTriangle(t tr.Triangle) {
-	a.Triangles = append(a.Triangles, t)
+// addTriangle inserts a new triangle to the application.
+func (a *Application) addTriangle(t tr.Triangle) {
+	a.triangles = append(a.triangles, t)
 }
 
-var app Application
+// GenerateTriangles fills up the triangles.
+func (a *Application) GenerateTriangles() {
+	for i := 0; i <= a.rows; i++ {
+		for j := 0; j <= a.rows; j++ {
+			topX := 1.0 - (float64(j) * a.length)
+			topY := -1.0 + (float64(i) * a.length)
+			topZ := 0.0
+
+			a.addTriangle(
+				*tr.NewTriangle(
+					vec.Vector{topX, topY, topZ},
+					vec.Vector{topX, topY - a.length, topZ},
+					vec.Vector{topX - a.length, topY - a.length, topZ},
+				))
+		}
+	}
+}
+
+// Draw calls the traingle draw.
+func (a *Application) Draw() {
+	for _, item := range a.triangles {
+		item.Draw()
+	}
+}
+
+func NewApplication(rows int) *Application {
+	var app Application
+	app.rows = rows
+	/*
+	 * The goal is to draw triangles to the screen. The screen will contain rows * rows triangles.
+	 * The screen [-1, 1] -> rows part, one part : 2.0 / rows
+	 */
+	app.length = 2.0 / float64(app.rows)
+	app.GenerateTriangles()
+	return &app
+}
 
 func initGlfw() *glfw.Window {
 	if err := glfw.Init(); err != nil {
@@ -75,41 +115,16 @@ func initOpenGL() uint32 {
 	return program
 }
 
-func generateTriangles() {
-	/*
-	 * The goal is to draw triangles to the screen. The screen will contain 20 * 20 triangles.
-	 * The screen [-1, 1] -> 20 part, one part : 0.10
-	 */
-	rows := 20
-	cols := 20
-	length := 0.10
-	for i := 0; i <= rows; i++ {
-		for j := 0; j <= cols; j++ {
-			topX := 1.0 - (float64(j) * length)
-			topY := -1.0 + (float64(i) * length)
-			topZ := 0.0
-
-			app.AddTriangle(
-				*tr.NewTriangle(
-					vec.Vector{topX, topY, topZ},
-					vec.Vector{topX, topY - length, topZ},
-					vec.Vector{topX - length, topY - length, topZ},
-				))
-		}
-	}
-}
-
 func main() {
 	runtime.LockOSThread()
 
-	window := initGlfw()
+	app := NewApplication(50)
+	app.window = initGlfw()
 	defer glfw.Terminate()
-	program := initOpenGL()
+	app.program = initOpenGL()
 
-	// Configure global settings
-	gl.UseProgram(program)
-	// mvp - modelview - projection matrix
-	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
+	gl.UseProgram(app.program)
+	mvpLocation := gl.GetUniformLocation(app.program, gl.Str("MVP\x00"))
 
 	P := mat.UnitMatrix()
 	MV := mat.UnitMatrix()
@@ -119,15 +134,11 @@ func main() {
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
 
-	generateTriangles()
-
-	for !window.ShouldClose() {
+	for !app.window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		for _, item := range app.Triangles {
-			item.Draw()
-		}
+		app.Draw()
 		glfw.PollEvents()
-		window.SwapBuffers()
+		app.window.SwapBuffers()
 	}
 }
