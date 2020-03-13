@@ -85,8 +85,7 @@ func main() {
 
 	P := mat.UnitMatrix()
 	MV := mat.UnitMatrix()
-	mvpMatrix := P.Dot(MV)
-	mvp := mvpMatrix.GetMatrix()
+	mvp := P.Dot(MV).GetMatrix()
 	gl.UniformMatrix4fv(mvpLocation, 1, false, &mvp[0])
 
 	gl.Enable(gl.DEPTH_TEST)
