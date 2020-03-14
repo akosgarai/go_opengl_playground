@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/akosgarai/opengl_playground/pkg/primitives"
+	P "github.com/akosgarai/opengl_playground/pkg/primitives/point"
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -25,7 +27,7 @@ var (
 )
 
 type Application struct {
-	Points []primitives.Point
+	Points []P.Point
 
 	window  *glfw.Window
 	program uint32
@@ -36,7 +38,7 @@ func NewApplication() *Application {
 }
 
 // AddPoint inserts a new point to the points.
-func (a *Application) AddPoint(point primitives.Point) {
+func (a *Application) AddPoint(point P.Point) {
 	a.Points = append(a.Points, point)
 }
 
@@ -103,11 +105,11 @@ func (a *Application) MouseHandler() {
 	} else {
 		if mouseButtonPressed {
 			mouseButtonPressed = false
-			x, y := convertMouseCoordinates()
+			mX, mY := trans.MouseCoordinates(x, y, windowWidth, windowHeight)
 			a.AddPoint(
-				primitives.Point{
-					primitives.Vector{x, y, 0.0},
-					primitives.Vector{1, 1, 1},
+				P.Point{
+					vec.Vector{mX, mY, 0.0},
+					vec.Vector{1, 1, 1},
 				})
 		}
 	}
@@ -123,13 +125,6 @@ func (a *Application) KeyHandler() {
 	} else {
 		DebugPrint = false
 	}
-}
-func convertMouseCoordinates() (float64, float64) {
-	halfWidth := windowWidth / 2.0
-	halfHeight := windowHeight / 2.0
-	x := (mousePositionX - halfWidth) / (halfWidth)
-	y := (halfHeight - mousePositionY) / (halfHeight)
-	return x, y
 }
 func (a *Application) buildVAO() []float32 {
 	var vao []float32

@@ -5,7 +5,10 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/pkg/primitives"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/cube"
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -24,13 +27,13 @@ var (
 )
 
 type Application struct {
-	cube                 *primitives.Cube
-	cubePosition         primitives.Vector
-	camera               *primitives.Camera
+	cube                 *cube.Cube
+	cubePosition         vec.Vector
+	camera               *camera.Camera
 	cameraLastUpdate     int64
 	cameraDirection      float64
 	cameraDirectionSpeed float64
-	worldUpDirection     *primitives.Vector
+	worldUpDirection     *vec.Vector
 	moveSpeed            float64
 	epsilon              float64
 
@@ -45,7 +48,7 @@ func NewApplication() *Application {
 	app.GenerateCube()
 	app.moveSpeed = 1.0 / 1000.0
 	app.epsilon = 50.0
-	app.camera = primitives.NewCamera(primitives.Vector{0, 0, 10.0}, primitives.Vector{0, 1, 0}, -90.0, 0.0)
+	app.camera = camera.NewCamera(vec.Vector{0, 0, 10.0}, vec.Vector{0, 1, 0}, -90.0, 0.0)
 	app.cameraDirection = 0.1
 	app.cameraDirectionSpeed = 5
 	fmt.Println("Camera state after new function")
@@ -71,8 +74,8 @@ func NewApplication() *Application {
 
 // It generates a cube.
 func (a *Application) GenerateCube() {
-	a.cube = primitives.NewCubeByVectorAndLength(primitives.Vector{-0.5, -0.5, -0.5}, 1.0)
-	a.cubePosition = primitives.Vector{0, 0, 1}
+	a.cube = cube.NewCubeByVectorAndLength(vec.Vector{-0.5, -0.5, -0.5}, 1.0)
+	a.cubePosition = vec.Vector{0, 0, 1}
 }
 
 // Key handler function. it supports the debug option. (print out the points of the app)
@@ -162,7 +165,7 @@ func (a *Application) KeyHandler() {
  */
 func (a *Application) MouseHandler() {
 	currX, currY := a.window.GetCursorPos()
-	x, y := primitives.MouseCoordinates(currX, currY, windowWidth, windowHeight)
+	x, y := trans.MouseCoordinates(currX, currY, windowWidth, windowHeight)
 	// dUp
 	if y > 1.0-a.cameraDirection && y < 1.0 {
 		a.KeyDowns["dUp"] = true
@@ -274,7 +277,7 @@ func main() {
 	for !app.window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		// mvp - modelview - projection matrix
-		M := primitives.TranslationMatrix4x4(float32(CubePosition.X), float32(CubePosition.Y), float32(CubePosition.Z)).TransposeMatrix().GetMatrix()
+		M := trans.TranslationMatrix(float32(CubePosition.X), float32(CubePosition.Y), float32(CubePosition.Z)).TransposeMatrix().GetMatrix()
 		gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
 		V := app.camera.GetViewMatrix().GetMatrix()
 		gl.UniformMatrix4fv(viewLocation, 1, false, &V[0])

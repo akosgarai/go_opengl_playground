@@ -1,39 +1,43 @@
-package primitives
+package sphere
 
 import (
 	"github.com/go-gl/gl/v4.1-core/gl"
+
+	P "github.com/akosgarai/opengl_playground/pkg/primitives/point"
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 )
 
 type Sphere struct {
-	center Vector
+	center vec.Vector
 	radius float64
-	color  Vector
+	color  vec.Vector
 
 	numOfRows       int
 	numOfItemsInRow int
 }
 
 func NewSphere() *Sphere {
-	return &Sphere{Vector{0, 0, 0}, 1, Vector{1, 1, 1}, 20, 20}
+	return &Sphere{vec.Vector{0, 0, 0}, 1, vec.Vector{1, 1, 1}, 20, 20}
 }
 
 // SetCenter updates the center of the sphere
-func (s *Sphere) SetCenter(c Vector) {
+func (s *Sphere) SetCenter(c vec.Vector) {
 	s.center = c
 }
 
 // GetCenter returns the center of the sphere
-func (s *Sphere) GetCenter() Vector {
+func (s *Sphere) GetCenter() vec.Vector {
 	return s.center
 }
 
 // SetColor updates the color of the sphere
-func (s *Sphere) SetColor(c Vector) {
+func (s *Sphere) SetColor(c vec.Vector) {
 	s.color = c
 }
 
 // GetColor returns the color of the sphere
-func (s *Sphere) GetColor() Vector {
+func (s *Sphere) GetColor() vec.Vector {
 	return s.color
 }
 
@@ -46,7 +50,7 @@ func (s *Sphere) SetRadius(r float64) {
 func (s *Sphere) GetRadius() float64 {
 	return s.radius
 }
-func (s *Sphere) appendPointToVao(currentVao []float32, p Point) []float32 {
+func (s *Sphere) appendPointToVao(currentVao []float32, p P.Point) []float32 {
 	currentVao = append(currentVao, float32(p.Coordinate.X))
 	currentVao = append(currentVao, float32(p.Coordinate.Y))
 	currentVao = append(currentVao, float32(p.Coordinate.Z))
@@ -55,13 +59,13 @@ func (s *Sphere) appendPointToVao(currentVao []float32, p Point) []float32 {
 	currentVao = append(currentVao, float32(p.Color.Z))
 	return currentVao
 }
-func (s *Sphere) triangleByPointToVao(currentVao []float32, pa, pb, pc Point) []float32 {
+func (s *Sphere) triangleByPointToVao(currentVao []float32, pa, pb, pc P.Point) []float32 {
 	currentVao = s.appendPointToVao(currentVao, pa)
 	currentVao = s.appendPointToVao(currentVao, pb)
 	currentVao = s.appendPointToVao(currentVao, pc)
 	return currentVao
 }
-func (s *Sphere) sideByPointToVao(currentVao []float32, pa, pb, pc, pd Point) []float32 {
+func (s *Sphere) sideByPointToVao(currentVao []float32, pa, pb, pc, pd P.Point) []float32 {
 	currentVao = s.triangleByPointToVao(currentVao, pa, pb, pc)
 	currentVao = s.triangleByPointToVao(currentVao, pa, pc, pd)
 	return currentVao
@@ -72,25 +76,25 @@ func (s *Sphere) setupVao() []float32 {
 	// Sphere top: center + v{0,radius,0}, bottom: center + v{0,-radius,0}, left: center + v{-radius,0,0}, right: center + v{radius,0,0}
 	// Idea : start drawing triangles from both direction (top, bottom). step the coordinates and calculate the triangles, add them to vao.
 	// - step for y coord, : radius * 2 / numOfRows
-	RefPoint := &Vector{0, 1, 0}
-	step_Z := -DegToRad(float64(360.0 / s.numOfItemsInRow))
-	step_Y := -DegToRad(float64(360.0 / s.numOfRows))
+	RefPoint := &vec.Vector{0, 1, 0}
+	step_Z := -trans.DegToRad(float64(360.0 / s.numOfItemsInRow))
+	step_Y := -trans.DegToRad(float64(360.0 / s.numOfRows))
 	for i := 0; i < s.numOfRows; i++ {
-		i_Rotation := RotationZMatrix4x4(float64(i) * step_Z).TransposeMatrix()
-		i1_Rotation := RotationZMatrix4x4(float64(i+1) * step_Z).TransposeMatrix()
+		i_Rotation := trans.RotationZMatrix(float64(i) * step_Z).TransposeMatrix()
+		i1_Rotation := trans.RotationZMatrix(float64(i+1) * step_Z).TransposeMatrix()
 		for j := 0; j < s.numOfItemsInRow; j++ {
-			j1_Rotation := RotationYMatrix4x4(float64(j+1) * step_Y).TransposeMatrix()
-			j_Rotation := RotationYMatrix4x4(float64(j) * step_Y).TransposeMatrix()
+			j1_Rotation := trans.RotationYMatrix(float64(j+1) * step_Y).TransposeMatrix()
+			j_Rotation := trans.RotationYMatrix(float64(j) * step_Y).TransposeMatrix()
 			if i == 0 {
-				p1 := Point{*RefPoint, s.color}
-				p2 := Point{*(j_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
-				p3 := Point{*(j1_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
+				p1 := P.Point{*RefPoint, s.color}
+				p2 := P.Point{*(j_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
+				p3 := P.Point{*(j1_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
 				vao = s.triangleByPointToVao(vao, p1, p2, p3)
 			} else {
-				p1 := Point{*(j_Rotation.Mul4(i_Rotation).MultiVector(*RefPoint)), s.color}
-				p2 := Point{*(j1_Rotation.Mul4(i_Rotation).MultiVector(*RefPoint)), s.color}
-				p3 := Point{*(j1_Rotation.Mul4(i1_Rotation).MultiVector(*RefPoint)), s.color}
-				p4 := Point{*(j_Rotation.Mul4(i1_Rotation).MultiVector(*RefPoint)), s.color}
+				p1 := P.Point{*(j_Rotation.Dot(i_Rotation).MultiVector(*RefPoint)), s.color}
+				p2 := P.Point{*(j1_Rotation.Dot(i_Rotation).MultiVector(*RefPoint)), s.color}
+				p3 := P.Point{*(j1_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
+				p4 := P.Point{*(j_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
 				vao = s.sideByPointToVao(vao, p1, p2, p3, p4)
 			}
 		}

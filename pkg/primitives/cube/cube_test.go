@@ -1,17 +1,19 @@
-package primitives
+package cube
 
 import (
 	"testing"
+
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 )
 
 func TestNewCubeByVectorAndLength(t *testing.T) {
 	testData := []struct {
-		V Vector
+		V vec.Vector
 		L float64
 	}{
-		{Vector{0, 0, 0}, 1.0},
-		{Vector{0, 0, 0}, 0.5},
-		{Vector{1, 1, 1}, 0.5},
+		{vec.Vector{0, 0, 0}, 1.0},
+		{vec.Vector{0, 0, 0}, 0.5},
+		{vec.Vector{1, 1, 1}, 0.5},
 	}
 	for _, tt := range testData {
 		cube := NewCubeByVectorAndLength(tt.V, tt.L)
@@ -66,14 +68,14 @@ func TestNewCubeByVectorAndLength(t *testing.T) {
 	}
 }
 func TestSetupVao(t *testing.T) {
-	cube := NewCubeByVectorAndLength(Vector{0, 0, 0}, 1.0)
+	cube := NewCubeByVectorAndLength(vec.Vector{0, 0, 0}, 1.0)
 	// back (a,b,c,d -> abc, acd)
 	// right (b,g,f,c -> bgf, bfc)
 	// top (c,f,e,d -> cfe, ced)
 	// front (g,f,e,h -> gfe, geh)
 	// left (e,d,a,h -> eda, eah)
 	// bottom (a,b,g,h -> abg, agh)
-	expected := []Vector{
+	expected := []vec.Vector{
 		cube.A.Coordinate,
 		cube.B.Coordinate,
 		cube.C.Coordinate,

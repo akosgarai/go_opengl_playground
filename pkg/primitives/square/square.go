@@ -1,21 +1,24 @@
-package primitives
+package square
 
 import (
 	"github.com/go-gl/gl/v4.1-core/gl"
+
+	P "github.com/akosgarai/opengl_playground/pkg/primitives/point"
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 )
 
 type Square struct {
-	A Point
-	B Point
-	C Point
-	D Point
+	A P.Point
+	B P.Point
+	C P.Point
+	D P.Point
 }
 
-func NewSquare(v1, v2, v3, v4 Vector) *Square {
-	return &Square{Point{v1, Vector{1, 1, 1}}, Point{v2, Vector{1, 1, 1}}, Point{v3, Vector{1, 1, 1}}, Point{v4, Vector{1, 1, 1}}}
+func NewSquare(v1, v2, v3, v4 vec.Vector) *Square {
+	return &Square{P.Point{v1, vec.Vector{1, 1, 1}}, P.Point{v2, vec.Vector{1, 1, 1}}, P.Point{v3, vec.Vector{1, 1, 1}}, P.Point{v4, vec.Vector{1, 1, 1}}}
 }
 
-func (s *Square) SetColor(color Vector) {
+func (s *Square) SetColor(color vec.Vector) {
 	s.A.SetColor(color)
 	s.B.SetColor(color)
 	s.C.SetColor(color)
@@ -51,7 +54,7 @@ func (s *Square) buildVaoWithoutColor() []float32 {
 
 	return points
 }
-func (s *Square) appendPointToVao(currentVao []float32, p Point) []float32 {
+func (s *Square) appendPointToVao(currentVao []float32, p P.Point) []float32 {
 	currentVao = append(currentVao, float32(p.Coordinate.X))
 	currentVao = append(currentVao, float32(p.Coordinate.Y))
 	currentVao = append(currentVao, float32(p.Coordinate.Z))

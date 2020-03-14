@@ -5,7 +5,11 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/pkg/primitives"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/cube"
+	sp "github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -23,14 +27,14 @@ var (
 )
 
 type Application struct {
-	sphere               *primitives.Sphere
-	cube                 *primitives.Cube
-	cubePosition         primitives.Vector
-	camera               *primitives.Camera
+	sphere               *sp.Sphere
+	cube                 *cube.Cube
+	cubePosition         vec.Vector
+	camera               *camera.Camera
 	cameraDirection      float64
 	cameraDirectionSpeed float64
 	cameraLastUpdate     int64
-	worldUpDirection     *primitives.Vector
+	worldUpDirection     *vec.Vector
 	moveSpeed            float64
 	epsilon              float64
 
@@ -46,7 +50,7 @@ func NewApplication() *Application {
 	app.GenerateSphere()
 	app.moveSpeed = 1.0 / 1000.0
 	app.epsilon = 50.0
-	app.camera = primitives.NewCamera(primitives.Vector{-3, -5, 18.0}, primitives.Vector{0, 1, 0}, -90.0, 0.0)
+	app.camera = camera.NewCamera(vec.Vector{-3, -5, 18.0}, vec.Vector{0, 1, 0}, -90.0, 0.0)
 	app.cameraDirection = 0.1
 	app.cameraDirectionSpeed = 5
 	fmt.Println("Camera state after new function")
@@ -73,15 +77,15 @@ func NewApplication() *Application {
 
 // It generates a cube.
 func (a *Application) GenerateCube() {
-	a.cube = primitives.NewCubeByVectorAndLength(primitives.Vector{-0.5, -0.5, -0.5}, 1.0)
-	a.cubePosition = primitives.Vector{0, 0, 1}
+	a.cube = cube.NewCubeByVectorAndLength(vec.Vector{-0.5, -0.5, -0.5}, 1.0)
+	a.cubePosition = vec.Vector{0, 0, 1}
 }
 
 // It generates a Sphere.
 func (a *Application) GenerateSphere() {
-	a.sphere = primitives.NewSphere()
-	a.sphere.SetCenter(primitives.Vector{0, 0, 5})
-	a.sphere.SetColor(primitives.Vector{0, 0, 1})
+	a.sphere = sp.NewSphere()
+	a.sphere.SetCenter(vec.Vector{0, 0, 5})
+	a.sphere.SetColor(vec.Vector{0, 0, 1})
 	a.sphere.SetRadius(2.0)
 }
 
@@ -172,7 +176,7 @@ func (a *Application) KeyHandler() {
  */
 func (a *Application) MouseHandler() {
 	currX, currY := a.window.GetCursorPos()
-	x, y := primitives.MouseCoordinates(currX, currY, windowWidth, windowHeight)
+	x, y := trans.MouseCoordinates(currX, currY, windowWidth, windowHeight)
 	// dUp
 	if y > 1.0-a.cameraDirection && y < 1.0 {
 		a.KeyDowns["dUp"] = true
@@ -289,14 +293,14 @@ func main() {
 		// Should Be fine 'P'
 		P := app.camera.GetProjectionMatrix().GetMatrix()
 		gl.UniformMatrix4fv(projectionLocation, 1, false, &P[0])
-		M := primitives.TranslationMatrix4x4(float32(app.cubePosition.X), float32(app.cubePosition.Y), float32(app.cubePosition.Z)).TransposeMatrix().GetMatrix()
+		M := trans.TranslationMatrix(float32(app.cubePosition.X), float32(app.cubePosition.Y), float32(app.cubePosition.Z)).TransposeMatrix().GetMatrix()
 		gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
 		app.cube.Draw()
 		// Update M for the sphere
-		M = primitives.TranslationMatrix4x4(
+		M = trans.TranslationMatrix(
 			float32(app.sphere.GetCenter().X),
 			float32(app.sphere.GetCenter().Y),
-			float32(app.sphere.GetCenter().Z)).Dot(primitives.ScaleMatrix4x4(
+			float32(app.sphere.GetCenter().Z)).Dot(trans.ScaleMatrix(
 			float32(app.sphere.GetRadius()),
 			float32(app.sphere.GetRadius()),
 			float32(app.sphere.GetRadius()))).TransposeMatrix().GetMatrix()

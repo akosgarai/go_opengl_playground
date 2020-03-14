@@ -5,7 +5,11 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/pkg/primitives"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
+	mat "github.com/akosgarai/opengl_playground/pkg/primitives/matrix"
+	P "github.com/akosgarai/opengl_playground/pkg/primitives/point"
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -29,11 +33,11 @@ var (
 )
 
 type Application struct {
-	Points []primitives.Point
+	Points []P.Point
 
-	camera           *primitives.Camera
+	camera           *camera.Camera
 	cameraLastUpdate int64
-	worldUpDirection *primitives.Vector
+	worldUpDirection *vec.Vector
 	moveSpeed        float64
 	epsilon          float64
 	modelSize        int
@@ -50,7 +54,7 @@ func NewApplication() *Application {
 	app.modelSize = 10
 	app.moveSpeed = 1.0 / 1000.0
 	app.epsilon = 50.0
-	app.camera = primitives.NewCamera(primitives.Vector{0, 0, 10.0}, primitives.Vector{0, 1, 0}, -90.0, 0.0)
+	app.camera = camera.NewCamera(vec.Vector{0, 0, 10.0}, vec.Vector{0, 1, 0}, -90.0, 0.0)
 	app.camera.SetupProjection(45, float64(windowWidth/windowHeight), 0.1, 1000.0)
 
 	app.cameraLastUpdate = time.Now().UnixNano()
@@ -65,7 +69,7 @@ func NewApplication() *Application {
 }
 
 // AddPoint inserts a new point to the points.
-func (a *Application) AddPoint(point primitives.Point) {
+func (a *Application) AddPoint(point P.Point) {
 	a.Points = append(a.Points, point)
 }
 
@@ -132,14 +136,14 @@ func (a *Application) MouseHandler() {
 	} else {
 		if mouseButtonPressed {
 			mouseButtonPressed = false
-			x, y := convertMouseCoordinates()
-			positionVector := primitives.Vector{x, y, -1.0}
+			mX, mY := trans.MouseCoordinates(x, y, windowWidth, windowHeight)
+			positionVector := vec.Vector{mX, mY, -1.0}
 			scalarPart := float64(a.modelSize / 2)
 			modelPositionVector := (positionVector.MultiplyScalar(scalarPart)).AddScalar(scalarPart)
 			a.AddPoint(
-				primitives.Point{
+				P.Point{
 					modelPositionVector,
-					primitives.Vector{colorR, colorG, colorB},
+					vec.Vector{colorR, colorG, colorB},
 				})
 		}
 	}
@@ -240,13 +244,6 @@ func (a *Application) KeyHandler() {
 		a.camera.Lift(vertical)
 	}
 }
-func convertMouseCoordinates() (float64, float64) {
-	halfWidth := windowWidth / 2.0
-	halfHeight := windowHeight / 2.0
-	x := (mousePositionX - halfWidth) / (halfWidth)
-	y := (halfHeight - mousePositionY) / (halfHeight)
-	return x, y
-}
 func (a *Application) buildVAO() []float32 {
 	var vao []float32
 	for _, item := range a.Points {
@@ -313,7 +310,7 @@ func main() {
 		app.KeyHandler()
 		app.MouseHandler()
 
-		M := primitives.UnitMatrix4x4().GetMatrix()
+		M := mat.UnitMatrix().GetMatrix()
 		gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
 		V := app.camera.GetViewMatrix().GetMatrix()
 		gl.UniformMatrix4fv(viewLocation, 1, false, &V[0])

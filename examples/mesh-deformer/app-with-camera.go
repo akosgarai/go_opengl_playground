@@ -5,7 +5,11 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/pkg/primitives"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
+	mat "github.com/akosgarai/opengl_playground/pkg/primitives/matrix"
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
+	tr "github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -25,13 +29,13 @@ var (
 )
 
 type Application struct {
-	triangles             []primitives.Triangle
+	triangles             []tr.Triangle
 	defaultTriangleLength int
-	triangleColorFront    primitives.Vector
-	triangleColorBack     primitives.Vector
+	triangleColorFront    vec.Vector
+	triangleColorBack     vec.Vector
 
 	cameraLastUpdate     int64
-	camera               *primitives.Camera
+	camera               *camera.Camera
 	cameraDirection      float64
 	cameraDirectionSpeed float64
 	moveSpeed            float64
@@ -40,7 +44,7 @@ type Application struct {
 	worldWidth       int
 	worldHeight      int
 	worldDepth       int
-	worldUpDirection *primitives.Vector
+	worldUpDirection *vec.Vector
 
 	window  *glfw.Window
 	program uint32
@@ -54,14 +58,14 @@ func NewApplication() *Application {
 	app.worldHeight = 1000
 	app.worldDepth = 1000
 	app.defaultTriangleLength = 10
-	app.triangleColorFront = primitives.Vector{0, 0, 1}
-	app.triangleColorBack = primitives.Vector{0, 0.5, 1}
+	app.triangleColorFront = vec.Vector{0, 0, 1}
+	app.triangleColorBack = vec.Vector{0, 0.5, 1}
 	app.GenerateTriangles()
 
 	app.moveSpeed = 10.0 / 1000.0
 	app.epsilon = 50.0
 
-	app.camera = primitives.NewCamera(primitives.Vector{100.0, 100.0, 100.0}, primitives.Vector{0, 1, 0}, -180.0, 0.0)
+	app.camera = camera.NewCamera(vec.Vector{100.0, 100.0, 100.0}, vec.Vector{0, 1, 0}, -180.0, 0.0)
 	app.cameraDirection = 0.1
 	app.cameraDirectionSpeed = 50
 	fmt.Println("Camera state after new function")
@@ -83,7 +87,7 @@ func NewApplication() *Application {
 	return &app
 }
 
-func (a *Application) AddTriangle(triangle primitives.Triangle) {
+func (a *Application) AddTriangle(triangle tr.Triangle) {
 	a.triangles = append(a.triangles, triangle)
 }
 
@@ -98,17 +102,17 @@ func (a *Application) GenerateTriangles() {
 			topY := float64(i * length)
 			topZ := 0.0
 
-			triangle := *primitives.NewTriangle(
-				primitives.Vector{topX, topY, topZ},
-				primitives.Vector{topX, topY - float64(length), topZ},
-				primitives.Vector{topX - float64(length), topY - float64(length), topZ},
+			triangle := *tr.NewTriangle(
+				vec.Vector{topX, topY, topZ},
+				vec.Vector{topX, topY - float64(length), topZ},
+				vec.Vector{topX - float64(length), topY - float64(length), topZ},
 			)
 			triangle.SetColor(a.triangleColorFront)
 			a.AddTriangle(triangle)
-			triangle = *primitives.NewTriangle(
-				primitives.Vector{topX, topY, topZ},
-				primitives.Vector{topX - float64(length), topY - float64(length), topZ},
-				primitives.Vector{topX - float64(length), topY, topZ},
+			triangle = *tr.NewTriangle(
+				vec.Vector{topX, topY, topZ},
+				vec.Vector{topX - float64(length), topY - float64(length), topZ},
+				vec.Vector{topX - float64(length), topY, topZ},
 			)
 			triangle.SetColor(a.triangleColorBack)
 			a.AddTriangle(triangle)
@@ -201,7 +205,7 @@ func (a *Application) KeyHandler() {
  */
 func (a *Application) MouseHandler() {
 	currX, currY := a.window.GetCursorPos()
-	x, y := primitives.MouseCoordinates(currX, currY, windowWidth, windowHeight)
+	x, y := trans.MouseCoordinates(currX, currY, windowWidth, windowHeight)
 	// dUp
 	if y > 1.0-a.cameraDirection && y < 1.0 {
 		a.KeyDowns["dUp"] = true
@@ -307,15 +311,15 @@ func main() {
 	modelLocation := gl.GetUniformLocation(app.program, gl.Str("model\x00"))
 	viewLocation := gl.GetUniformLocation(app.program, gl.Str("view\x00"))
 	projectionLocation := gl.GetUniformLocation(app.program, gl.Str("projection\x00"))
+	timeLocation := gl.GetUniformLocation(app.program, gl.Str("time\x00"))
 
 	for !app.window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		// time
 		elapsedTimeNano := time.Now().UnixNano() - nowUnix
-		time := gl.GetUniformLocation(app.program, gl.Str("time\x00"))
-		gl.Uniform1f(time, float32(elapsedTimeNano/10000000))
+		gl.Uniform1f(timeLocation, float32(elapsedTimeNano/10000000))
 
-		M := primitives.UnitMatrix4x4().GetMatrix()
+		M := mat.UnitMatrix().GetMatrix()
 		gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
 		V := app.camera.GetViewMatrix().GetMatrix()
 		gl.UniformMatrix4fv(viewLocation, 1, false, &V[0])

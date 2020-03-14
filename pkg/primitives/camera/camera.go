@@ -1,8 +1,12 @@
-package primitives
+package camera
 
 import (
 	"math"
 	"strconv"
+
+	mat "github.com/akosgarai/opengl_playground/pkg/primitives/matrix"
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
+	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 )
 
 type Camera struct {
@@ -13,11 +17,11 @@ type Camera struct {
 	yaw   float64
 
 	// Camera attributes
-	cameraPosition       Vector
-	cameraFrontDirection Vector
-	cameraUpDirection    Vector
-	cameraRightDirection Vector
-	worldUp              Vector
+	cameraPosition       vec.Vector
+	cameraFrontDirection vec.Vector
+	cameraUpDirection    vec.Vector
+	cameraRightDirection vec.Vector
+	worldUp              vec.Vector
 	// Projection options.
 	projectionOptions struct {
 		fov         float64
@@ -49,13 +53,13 @@ func (c *Camera) Log() string {
 // position - the camera or eye position
 // worldUp - the up direction in the world coordinate system
 // yaw - the rotation in z
-// pitch - the rotatio in y
-func NewCamera(position, worldUp Vector, yaw, pitch float64) *Camera {
+// pitch - the rotation in y
+func NewCamera(position, worldUp vec.Vector, yaw, pitch float64) *Camera {
 	cam := Camera{
 		pitch:             pitch,
 		yaw:               yaw,
 		cameraPosition:    position,
-		cameraUpDirection: Vector{0, 1, 0},
+		cameraUpDirection: vec.Vector{0, 1, 0},
 		worldUp:           worldUp,
 	}
 
@@ -95,21 +99,21 @@ func (c *Camera) SetupProjection(fov, aspRatio, near, far float64) {
 
 // GetProjectionMatrix returns the projectionMatrix of the camera
 // based on the following solution: https://github.com/go-gl/mathgl/blob/95de7b3a016a8324097da95ad4417cc2caccb071/mgl32/project.go
-func (c *Camera) GetProjectionMatrix() *Matrix4x4 {
-	return Perspective(float32(c.projectionOptions.fov), float32(c.projectionOptions.aspectRatio), float32(c.projectionOptions.near), float32(c.projectionOptions.far))
+func (c *Camera) GetProjectionMatrix() *mat.Matrix {
+	return trans.Perspective(float32(c.projectionOptions.fov), float32(c.projectionOptions.aspectRatio), float32(c.projectionOptions.near), float32(c.projectionOptions.far))
 }
 
 // GetViewMatrix gets the matrix to transform from world coordinates to
 // this camera's coordinates.
 // GetViewMatrix returns the viewMatrix of the camera
-func (c *Camera) GetViewMatrix() *Matrix4x4 {
-	return LookAt(c.cameraPosition, c.cameraPosition.Add(c.cameraFrontDirection), c.cameraUpDirection)
+func (c *Camera) GetViewMatrix() *mat.Matrix {
+	return trans.LookAt(c.cameraPosition, c.cameraPosition.Add(c.cameraFrontDirection), c.cameraUpDirection)
 }
 func (c *Camera) updateVectors() {
-	c.cameraFrontDirection = Vector{
-		math.Cos(DegToRad(c.pitch)) * math.Cos(DegToRad(c.yaw)),
-		math.Sin(DegToRad(c.pitch)),
-		math.Cos(DegToRad(c.pitch)) * math.Sin(DegToRad(c.yaw)),
+	c.cameraFrontDirection = vec.Vector{
+		math.Cos(trans.DegToRad(c.pitch)) * math.Cos(trans.DegToRad(c.yaw)),
+		math.Sin(trans.DegToRad(c.pitch)),
+		math.Cos(trans.DegToRad(c.pitch)) * math.Sin(trans.DegToRad(c.yaw)),
 	}
 	c.cameraFrontDirection = c.cameraFrontDirection.Normalize()
 	// Gram-Schmidt process to figure out right and up vectors
@@ -117,6 +121,7 @@ func (c *Camera) updateVectors() {
 	c.cameraUpDirection = c.cameraRightDirection.Cross(c.cameraFrontDirection).Normalize()
 }
 
+// UpdateDirection updates the pitch and yaw values.
 func (c *Camera) UpdateDirection(amountX, amountY float64) {
 	c.pitch = math.Mod(c.pitch+amountY, 360)
 	c.yaw = math.Mod(c.yaw+amountX, 360)
