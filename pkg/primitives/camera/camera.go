@@ -53,7 +53,7 @@ func (c *Camera) Log() string {
 // position - the camera or eye position
 // worldUp - the up direction in the world coordinate system
 // yaw - the rotation in z
-// pitch - the rotatio in y
+// pitch - the rotation in y
 func NewCamera(position, worldUp vec.Vector, yaw, pitch float64) *Camera {
 	cam := Camera{
 		pitch:             pitch,
@@ -121,6 +121,7 @@ func (c *Camera) updateVectors() {
 	c.cameraUpDirection = c.cameraRightDirection.Cross(c.cameraFrontDirection).Normalize()
 }
 
+// UpdateDirection updates the pitch and yaw values.
 func (c *Camera) UpdateDirection(amountX, amountY float64) {
 	c.pitch = math.Mod(c.pitch+amountY, 360)
 	c.yaw = math.Mod(c.yaw+amountX, 360)
