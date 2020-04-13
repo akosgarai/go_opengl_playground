@@ -28,6 +28,11 @@ func (a *Application) KeyCallback(w *glfw.Window, key glfw.Key, scancode int, ac
 	fmt.Printf("KeyCallback has been called with the following options: key: '%d', scancode: '%d', action: '%d'!, mods: '%d'\n", key, scancode, action, mods)
 }
 
+// MouseButtonCallback is responsible for the keyboard event handling.
+func (a *Application) MouseButtonCallback(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
+	fmt.Printf("MouseButtonCallback has been called with the following options: button: '%d', action: '%d'!, mods: '%d'\n", button, action, mods)
+}
+
 func initGlfw() *glfw.Window {
 	if err := glfw.Init(); err != nil {
 		panic(fmt.Errorf("could not initialize glfw: %v", err))
@@ -72,7 +77,10 @@ func main() {
 	app.program = initOpenGL()
 
 	gl.UseProgram(app.program)
+	// register keyboard button callback
 	app.window.SetKeyCallback(app.KeyCallback)
+	// register mouse button callback
+	app.window.SetMouseButtonCallback(app.MouseButtonCallback)
 
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
 
