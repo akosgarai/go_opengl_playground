@@ -23,6 +23,7 @@ func NewApplication() *Application {
 	return &Application{}
 }
 
+// KeyCallback is responsible for the keyboard event handling.
 func (a *Application) KeyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	fmt.Printf("KeyCallback has been called with the following options: key: '%d', scancode: '%d', action: '%d'!, mods: '%d'\n", key, scancode, action, mods)
 }
@@ -58,7 +59,6 @@ func initOpenGL() uint32 {
 
 	program := gl.CreateProgram()
 	gl.LinkProgram(program)
-	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
 	return program
 }
 
@@ -71,9 +71,10 @@ func main() {
 	defer glfw.Terminate()
 	app.program = initOpenGL()
 
-	// Configure global settings
 	gl.UseProgram(app.program)
 	app.window.SetKeyCallback(app.KeyCallback)
+
+	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	for !app.window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
