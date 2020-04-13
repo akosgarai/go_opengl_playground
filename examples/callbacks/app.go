@@ -28,7 +28,7 @@ func (a *Application) KeyCallback(w *glfw.Window, key glfw.Key, scancode int, ac
 	fmt.Printf("KeyCallback has been called with the following options: key: '%d', scancode: '%d', action: '%d'!, mods: '%d'\n", key, scancode, action, mods)
 }
 
-// MouseButtonCallback is responsible for the keyboard event handling.
+// MouseButtonCallback is responsible for the mouse button event handling.
 func (a *Application) MouseButtonCallback(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
 	fmt.Printf("MouseButtonCallback has been called with the following options: button: '%d', action: '%d'!, mods: '%d'\n", button, action, mods)
 }
