@@ -31,8 +31,28 @@ type Application struct {
 	epsilon              float64
 
 	square *primitives.Square
+	sphere *primitives.Sphere
 
 	KeyDowns map[string]bool
+}
+
+// It generates a Sphere.
+func (a *Application) GenerateSphere() {
+	a.sphere = primitives.NewSphere()
+	a.sphere.SetCenter(mgl32.Vec3{0, -5, 0})
+	a.sphere.SetColor(mgl32.Vec3{1, 0, 0})
+	a.sphere.SetRadius(2.0)
+}
+
+// It generates a square.
+func (a *Application) GenerateSquare() {
+	squareColor := mgl32.Vec3{0, 1, 0}
+	a.square = primitives.NewSquare(
+		primitives.Point{mgl32.Vec3{-20, 0, -20}, squareColor},
+		primitives.Point{mgl32.Vec3{20, 0, -20}, squareColor},
+		primitives.Point{mgl32.Vec3{20, 0, 20}, squareColor},
+		primitives.Point{mgl32.Vec3{-20, 0, 20}, squareColor})
+	a.square.SetPrecision(10)
 }
 
 func NewApplication() *Application {
@@ -55,14 +75,9 @@ func NewApplication() *Application {
 	app.cameraDirectionSpeed = 5
 	app.cameraLastUpdate = time.Now().UnixNano()
 
-	// square
-	squareColor := mgl32.Vec3{0, 1, 0}
-	app.square = primitives.NewSquare(
-		primitives.Point{mgl32.Vec3{-20, 0, -20}, squareColor},
-		primitives.Point{mgl32.Vec3{20, 0, -20}, squareColor},
-		primitives.Point{mgl32.Vec3{20, 0, 20}, squareColor},
-		primitives.Point{mgl32.Vec3{-20, 0, 20}, squareColor})
-	app.square.SetPrecision(10)
+	// objects
+	app.GenerateSquare()
+	app.GenerateSphere()
 
 	app.KeyDowns = make(map[string]bool)
 	app.KeyDowns["W"] = false
@@ -233,6 +248,16 @@ func (a *Application) Draw() {
 	M := mgl32.Ident4()
 	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
 	a.square.Draw()
+	// Update M for the sphere
+	M = mgl32.Translate3D(
+		a.sphere.GetCenter().X(),
+		a.sphere.GetCenter().Y(),
+		a.sphere.GetCenter().Z()).Mul4(mgl32.Scale3D(
+		float32(a.sphere.GetRadius()),
+		float32(a.sphere.GetRadius()),
+		float32(a.sphere.GetRadius())))
+	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
+	a.sphere.Draw()
 }
 
 func initGlfw() *glfw.Window {
