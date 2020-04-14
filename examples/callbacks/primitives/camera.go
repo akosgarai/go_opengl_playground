@@ -32,26 +32,26 @@ type Camera struct {
 
 // Vec3ToString helper function for the string representation of a vector. It is for the log.
 func Vec3ToString(v mgl32.Vec3) string {
-	x := strconv.FormatFloat(v.X, 'f', 6, 32)
-	y := strconv.FormatFloat(v.Y, 'f', 6, 32)
-	z := strconv.FormatFloat(v.Z, 'f', 6, 32)
+	x := strconv.FormatFloat(float64(v.X()), 'f', 6, 32)
+	y := strconv.FormatFloat(float64(v.Y()), 'f', 6, 32)
+	z := strconv.FormatFloat(float64(v.Z()), 'f', 6, 32)
 	return "X : " + x + ", Y : " + y + ", Z : " + z
 }
 
 // Log returns the string representation of this object.
 func (c *Camera) Log() string {
 	logString := "cameraPosition: Vector{" + Vec3ToString(c.cameraPosition) + "}\n"
-	logString += "worldUp: Vector{" + Vec3ToString(c.worldUp.ToString() + "}\n"
+	logString += "worldUp: Vector{" + Vec3ToString(c.worldUp) + "}\n"
 	logString += "cameraFrontDirection: Vector{" + Vec3ToString(c.cameraFrontDirection) + "}\n"
 	logString += "cameraUpDirection: Vector{" + Vec3ToString(c.cameraUpDirection) + "}\n"
 	logString += "cameraRightDirection: Vector{" + Vec3ToString(c.cameraRightDirection) + "}\n"
-	logString += "yaw : " + strconv.FormatFloat(c.yaw, 'f', 6, 32) + "\n"
-	logString += "pitch : " + strconv.FormatFloat(c.pitch, 'f', 6, 32) + "\n"
+	logString += "yaw : " + strconv.FormatFloat(float64(c.yaw), 'f', 6, 32) + "\n"
+	logString += "pitch : " + strconv.FormatFloat(float64(c.pitch), 'f', 6, 32) + "\n"
 	logString += "ProjectionOptions:\n"
-	logString += " - fov : " + strconv.FormatFloat(c.projectionOptions.fov, 'f', 6, 32) + "\n"
-	logString += " - aspectRatio : " + strconv.FormatFloat(c.projectionOptions.aspectRatio, 'f', 6, 32) + "\n"
-	logString += " - far : " + strconv.FormatFloat(c.projectionOptions.far, 'f', 6, 32) + "\n"
-	logString += " - near : " + strconv.FormatFloat(c.projectionOptions.near, 'f', 6, 32) + "\n"
+	logString += " - fov : " + strconv.FormatFloat(float64(c.projectionOptions.fov), 'f', 6, 32) + "\n"
+	logString += " - aspectRatio : " + strconv.FormatFloat(float64(c.projectionOptions.aspectRatio), 'f', 6, 32) + "\n"
+	logString += " - far : " + strconv.FormatFloat(float64(c.projectionOptions.far), 'f', 6, 32) + "\n"
+	logString += " - near : " + strconv.FormatFloat(float64(c.projectionOptions.near), 'f', 6, 32) + "\n"
 	return logString
 }
 
@@ -104,22 +104,24 @@ func (c *Camera) SetupProjection(fov, aspRatio, near, far float32) {
 }
 
 // GetProjectionMatrix returns the projectionMatrix of the camera
-func (c *Camera) GetProjectionMatrix() *mat.Matrix {
+func (c *Camera) GetProjectionMatrix() mgl32.Mat4 {
 	return mgl32.Perspective(c.projectionOptions.fov, c.projectionOptions.aspectRatio, c.projectionOptions.near, c.projectionOptions.far)
 }
 
 // GetViewMatrix gets the matrix to transform from world coordinates to
 // this camera's coordinates.
 // GetViewMatrix returns the viewMatrix of the camera
-func (c *Camera) GetViewMatrix() *mat.Matrix {
+func (c *Camera) GetViewMatrix() mgl32.Mat4 {
 	return mgl32.LookAtV(c.cameraPosition, c.cameraPosition.Add(c.cameraFrontDirection), c.cameraUpDirection)
 }
 
 func (c *Camera) updateVectors() {
-	c.cameraFrontDirection = vec.Vector{
-		math.Cos(mgl32.DegToRad(c.pitch)) * math.Cos(mgl32.DegToRad(c.yaw)),
-		math.Sin(mgl32.DegToRad(c.pitch)),
-		math.Cos(mgl32.DegToRad(c.pitch)) * math.Sin(mgl32.DegToRad(c.yaw)),
+	radPitch := float64(mgl32.DegToRad(c.pitch))
+	radYaw := float64(mgl32.DegToRad(c.yaw))
+	c.cameraFrontDirection = mgl32.Vec3{
+		float32(math.Cos(radPitch) * math.Cos(radYaw)),
+		float32(math.Sin(radPitch)),
+		float32(math.Cos(radPitch) * math.Sin(radYaw)),
 	}
 	c.cameraFrontDirection = c.cameraFrontDirection.Normalize()
 	// Gram-Schmidt process to figure out right and up vectors
