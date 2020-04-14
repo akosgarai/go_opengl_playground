@@ -22,24 +22,24 @@ func NewCubeByPoints(a, b, c, d, e, f, g, h Point) *Cube {
 func NewCubeByVectorAndLength(in mgl32.Vec3, sideLength float32) *Cube {
 	color1 := mgl32.Vec3{1, 0, 0}
 	color2 := mgl32.Vec3{0, 1, 0}
-	a := P.Point{in, color1}
-	b := P.Point{a.Coordinate.Add(mgl32.Vec3{sideLength, 0, 0}), color1}
-	c := P.Point{b.Coordinate.Add(mgl32.Vec3{0, sideLength, 0}), color1}
-	d := P.Point{a.Coordinate.Add(mgl32.Vec3{0, sideLength, 0}), color1}
-	e := P.Point{d.Coordinate.Add(mgl32.Vec3{0, 0, sideLength}), color2}
-	f := P.Point{e.Coordinate.Add(mgl32.Vec3{sideLength, 0, 0}), color2}
-	g := P.Point{b.Coordinate.Add(mgl32.Vec3{0, 0, sideLength}), color2}
-	h := P.Point{a.Coordinate.Add(mgl32.Vec3{0, 0, sideLength}), color2}
+	a := Point{in, color1}
+	b := Point{a.Coordinate.Add(mgl32.Vec3{sideLength, 0, 0}), color1}
+	c := Point{b.Coordinate.Add(mgl32.Vec3{0, sideLength, 0}), color1}
+	d := Point{a.Coordinate.Add(mgl32.Vec3{0, sideLength, 0}), color1}
+	e := Point{d.Coordinate.Add(mgl32.Vec3{0, 0, sideLength}), color2}
+	f := Point{e.Coordinate.Add(mgl32.Vec3{sideLength, 0, 0}), color2}
+	g := Point{b.Coordinate.Add(mgl32.Vec3{0, 0, sideLength}), color2}
+	h := Point{a.Coordinate.Add(mgl32.Vec3{0, 0, sideLength}), color2}
 	return &Cube{a, b, c, d, e, f, g, h}
 }
 
 func (c *Cube) appendPointToVao(currentVao []float32, p Point) []float32 {
-	currentVao = append(currentVao, p.Coordinate.X)
-	currentVao = append(currentVao, p.Coordinate.Y)
-	currentVao = append(currentVao, p.Coordinate.Z)
-	currentVao = append(currentVao, p.Color.X)
-	currentVao = append(currentVao, p.Color.Y)
-	currentVao = append(currentVao, p.Color.Z)
+	currentVao = append(currentVao, p.Coordinate.X())
+	currentVao = append(currentVao, p.Coordinate.Y())
+	currentVao = append(currentVao, p.Coordinate.Z())
+	currentVao = append(currentVao, p.Color.X())
+	currentVao = append(currentVao, p.Color.Y())
+	currentVao = append(currentVao, p.Color.Z())
 	return currentVao
 }
 func (c *Cube) sideByPointToVao(currentVao []float32, pa, pb, pc, pd Point) []float32 {
