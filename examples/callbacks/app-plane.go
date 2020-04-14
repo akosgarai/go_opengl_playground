@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"runtime"
+	"time"
 
 	"github.com/akosgarai/opengl_playground/examples/callbacks/primitives"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -22,22 +23,38 @@ type Application struct {
 	window  *glfw.Window
 	program uint32
 	// camera related parameters
-	camera *primitives.Camera
+	camera               *primitives.Camera
+	cameraDirection      float64
+	cameraDirectionSpeed float32
+	cameraLastUpdate     int64
+	moveSpeed            float64
+	epsilon              float64
+
 	square *primitives.Square
+
+	KeyDowns map[string]bool
 }
 
 func NewApplication() *Application {
 	var app Application
+
+	app.moveSpeed = 1.0 / 1000.0
+	app.epsilon = 50.0
+
 	app.camera = primitives.NewCamera(
-		mgl32.Vec3{-10, -5, 20.0},
+		mgl32.Vec3{-10, -4, 22.0},
 		mgl32.Vec3{0, 1, 0},
-		-90.0,
-		0.0)
+		300.0,
+		16.0)
 	app.camera.SetupProjection(
 		45,
 		float32(windowWidth)/float32(windowHeight),
 		0.1,
 		100.0)
+	app.cameraDirection = 0.1
+	app.cameraDirectionSpeed = 5
+	app.cameraLastUpdate = time.Now().UnixNano()
+
 	// square
 	squareColor := mgl32.Vec3{0, 1, 0}
 	app.square = primitives.NewSquare(
@@ -46,12 +63,73 @@ func NewApplication() *Application {
 		primitives.Point{mgl32.Vec3{20, 0, 20}, squareColor},
 		primitives.Point{mgl32.Vec3{-20, 0, 20}, squareColor})
 	app.square.SetPrecision(10)
+
+	app.KeyDowns = make(map[string]bool)
+	app.KeyDowns["W"] = false
+	app.KeyDowns["A"] = false
+	app.KeyDowns["S"] = false
+	app.KeyDowns["D"] = false
+	app.KeyDowns["Q"] = false
+	app.KeyDowns["E"] = false
+	app.KeyDowns["dLeft"] = false
+	app.KeyDowns["dRight"] = false
+	app.KeyDowns["dUp"] = false
+	app.KeyDowns["dDown"] = false
 	return &app
 }
 
 // KeyCallback is responsible for the keyboard event handling.
 func (a *Application) KeyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-	fmt.Printf("KeyCallback has been called with the following options: key: '%d', scancode: '%d', action: '%d'!, mods: '%d'\n", key, scancode, action, mods)
+	switch key {
+	case glfw.KeyH:
+		if action != glfw.Release {
+			fmt.Printf("app.camera: %s\n", a.camera.Log())
+			fmt.Printf("app.square: %v\n", a.square)
+		}
+		break
+	case glfw.KeyW:
+		if action != glfw.Release {
+			a.KeyDowns["W"] = true
+		} else {
+			a.KeyDowns["W"] = false
+		}
+		break
+	case glfw.KeyA:
+		if action != glfw.Release {
+			a.KeyDowns["A"] = true
+		} else {
+			a.KeyDowns["A"] = false
+		}
+		break
+	case glfw.KeyS:
+		if action != glfw.Release {
+			a.KeyDowns["S"] = true
+		} else {
+			a.KeyDowns["S"] = false
+		}
+		break
+	case glfw.KeyD:
+		if action != glfw.Release {
+			a.KeyDowns["D"] = true
+		} else {
+			a.KeyDowns["D"] = false
+		}
+		break
+	case glfw.KeyQ:
+		if action != glfw.Release {
+			a.KeyDowns["Q"] = true
+		} else {
+			a.KeyDowns["Q"] = false
+		}
+		break
+	case glfw.KeyE:
+		if action != glfw.Release {
+			a.KeyDowns["E"] = true
+		} else {
+			a.KeyDowns["E"] = false
+		}
+		break
+	}
 }
 
 // MouseButtonCallback is responsible for the mouse button event handling.
@@ -59,8 +137,90 @@ func (a *Application) MouseButtonCallback(w *glfw.Window, button glfw.MouseButto
 	fmt.Printf("MouseButtonCallback has been called with the following options: button: '%d', action: '%d'!, mods: '%d'\n", button, action, mods)
 }
 
+// Update is responsible for the camera movement.
+func (a *Application) Update() {
+	//calculate delta
+	nowUnix := time.Now().UnixNano()
+	delta := nowUnix - a.cameraLastUpdate
+	moveTime := float64(delta / int64(time.Millisecond))
+	// rotate camera
+	currX, currY := a.window.GetCursorPos()
+	x, y := primitives.MouseCoordinates(currX, currY, windowWidth, windowHeight)
+	// dUp
+	if y > 1.0-a.cameraDirection && y < 1.0 {
+		a.KeyDowns["dUp"] = true
+	} else {
+		a.KeyDowns["dUp"] = false
+	}
+	// dDown
+	if y < -1.0+a.cameraDirection && y > -1.0 {
+		a.KeyDowns["dDown"] = true
+	} else {
+		a.KeyDowns["dDown"] = false
+	}
+	// dLeft
+	if x < -1.0+a.cameraDirection && x > -1.0 {
+		a.KeyDowns["dLeft"] = true
+	} else {
+		a.KeyDowns["dLeft"] = false
+	}
+	// dRight
+	if x > 1.0-a.cameraDirection && x < 1.0 {
+		a.KeyDowns["dRight"] = true
+	} else {
+		a.KeyDowns["dRight"] = false
+	}
+
+	var dX, dY float32
+	if a.KeyDowns["dUp"] && !a.KeyDowns["dDown"] {
+		dY = 0.01 * a.cameraDirectionSpeed
+	} else if a.KeyDowns["dDown"] && !a.KeyDowns["dUp"] {
+		dY = -0.01 * a.cameraDirectionSpeed
+	}
+	if a.KeyDowns["dLeft"] && !a.KeyDowns["dRight"] {
+		dX = -0.01 * a.cameraDirectionSpeed
+	} else if a.KeyDowns["dRight"] && !a.KeyDowns["dLeft"] {
+		dX = 0.01 * a.cameraDirectionSpeed
+	}
+	a.camera.UpdateDirection(dX, dY)
+	// if the camera has been updated recently, we can skip now
+	if a.epsilon > moveTime {
+		return
+	}
+	a.cameraLastUpdate = nowUnix
+	// Move camera
+	forward := 0.0
+	if a.KeyDowns["W"] && !a.KeyDowns["S"] {
+		forward = a.moveSpeed * moveTime
+	} else if a.KeyDowns["S"] && !a.KeyDowns["W"] {
+		forward = -a.moveSpeed * moveTime
+	}
+	if forward != 0 {
+		a.camera.Walk(float32(forward))
+	}
+	horisontal := 0.0
+	if a.KeyDowns["A"] && !a.KeyDowns["D"] {
+		horisontal = -a.moveSpeed * moveTime
+	} else if a.KeyDowns["D"] && !a.KeyDowns["A"] {
+		horisontal = a.moveSpeed * moveTime
+	}
+	if horisontal != 0 {
+		a.camera.Strafe(float32(horisontal))
+	}
+	vertical := 0.0
+	if a.KeyDowns["Q"] && !a.KeyDowns["E"] {
+		vertical = -a.moveSpeed * moveTime
+	} else if a.KeyDowns["E"] && !a.KeyDowns["Q"] {
+		vertical = a.moveSpeed * moveTime
+	}
+	if vertical != 0 {
+		a.camera.Lift(float32(vertical))
+	}
+}
+
 // Draw is responsible for drawing the screen.
 func (a *Application) Draw() {
+	a.Update()
 	modelLocation := gl.GetUniformLocation(a.program, gl.Str("model\x00"))
 	viewLocation := gl.GetUniformLocation(a.program, gl.Str("view\x00"))
 	projectionLocation := gl.GetUniformLocation(a.program, gl.Str("projection\x00"))
