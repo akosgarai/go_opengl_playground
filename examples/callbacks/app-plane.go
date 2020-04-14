@@ -30,8 +30,9 @@ type Application struct {
 	moveSpeed            float64
 	epsilon              float64
 
-	square *primitives.Square
-	sphere *primitives.Sphere
+	square                *primitives.Square
+	sphere                *primitives.Sphere
+	sphereDirectionVector mgl32.Vec3 // currently it only has to be up or down.
 
 	KeyDowns map[string]bool
 }
@@ -42,6 +43,24 @@ func (a *Application) GenerateSphere() {
 	a.sphere.SetCenter(mgl32.Vec3{0, -5, 0})
 	a.sphere.SetColor(mgl32.Vec3{1, 0, 0})
 	a.sphere.SetRadius(2.0)
+}
+
+// MoveSphere updates the sphere position.
+func (a *Application) MoveSphere(delta float64) {
+	moveVector := a.sphereDirectionVector.Mul(float32(delta * a.moveSpeed / 5.0))
+	newCenter := a.sphere.GetCenter().Add(moveVector)
+	if a.sphereDirectionVector.Y() == -1.0 {
+		if newCenter.Y() < -5 {
+			newCenter = mgl32.Vec3{newCenter.X(), -5, newCenter.Z()}
+			a.sphereDirectionVector = a.sphereDirectionVector.Mul(-1.0)
+		}
+	} else {
+		if newCenter.Y() > -2 {
+			newCenter = mgl32.Vec3{newCenter.X(), -2, newCenter.Z()}
+			a.sphereDirectionVector = a.sphereDirectionVector.Mul(-1.0)
+		}
+	}
+	a.sphere.SetCenter(newCenter)
 }
 
 // It generates a square.
@@ -78,6 +97,7 @@ func NewApplication() *Application {
 	// objects
 	app.GenerateSquare()
 	app.GenerateSphere()
+	app.sphereDirectionVector = mgl32.Vec3{0, -1, 0}
 
 	app.KeyDowns = make(map[string]bool)
 	app.KeyDowns["W"] = false
@@ -100,6 +120,7 @@ func (a *Application) KeyCallback(w *glfw.Window, key glfw.Key, scancode int, ac
 		if action != glfw.Release {
 			fmt.Printf("app.camera: %s\n", a.camera.Log())
 			fmt.Printf("app.square: %v\n", a.square)
+			fmt.Printf("app.sphere: %v\n", a.sphere)
 		}
 		break
 	case glfw.KeyW:
@@ -158,46 +179,8 @@ func (a *Application) Update() {
 	nowUnix := time.Now().UnixNano()
 	delta := nowUnix - a.cameraLastUpdate
 	moveTime := float64(delta / int64(time.Millisecond))
-	// rotate camera
-	currX, currY := a.window.GetCursorPos()
-	x, y := primitives.MouseCoordinates(currX, currY, windowWidth, windowHeight)
-	// dUp
-	if y > 1.0-a.cameraDirection && y < 1.0 {
-		a.KeyDowns["dUp"] = true
-	} else {
-		a.KeyDowns["dUp"] = false
-	}
-	// dDown
-	if y < -1.0+a.cameraDirection && y > -1.0 {
-		a.KeyDowns["dDown"] = true
-	} else {
-		a.KeyDowns["dDown"] = false
-	}
-	// dLeft
-	if x < -1.0+a.cameraDirection && x > -1.0 {
-		a.KeyDowns["dLeft"] = true
-	} else {
-		a.KeyDowns["dLeft"] = false
-	}
-	// dRight
-	if x > 1.0-a.cameraDirection && x < 1.0 {
-		a.KeyDowns["dRight"] = true
-	} else {
-		a.KeyDowns["dRight"] = false
-	}
-
-	var dX, dY float32
-	if a.KeyDowns["dUp"] && !a.KeyDowns["dDown"] {
-		dY = 0.01 * a.cameraDirectionSpeed
-	} else if a.KeyDowns["dDown"] && !a.KeyDowns["dUp"] {
-		dY = -0.01 * a.cameraDirectionSpeed
-	}
-	if a.KeyDowns["dLeft"] && !a.KeyDowns["dRight"] {
-		dX = -0.01 * a.cameraDirectionSpeed
-	} else if a.KeyDowns["dRight"] && !a.KeyDowns["dLeft"] {
-		dX = 0.01 * a.cameraDirectionSpeed
-	}
-	a.camera.UpdateDirection(dX, dY)
+	// Update the ball's position. It's center has to be < -2, > -5. It's current move direction also has to be known.
+	a.MoveSphere(moveTime)
 	// if the camera has been updated recently, we can skip now
 	if a.epsilon > moveTime {
 		return
