@@ -142,7 +142,6 @@ func (a *Application) KeyCallback(w *glfw.Window, key glfw.Key, scancode int, ac
 		}
 		break
 	}
-	//a.Draw()
 }
 func (a *Application) Update() {
 	//calculate delta
