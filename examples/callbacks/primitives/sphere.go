@@ -48,12 +48,12 @@ func (s *Sphere) GetRadius() float64 {
 	return s.radius
 }
 func (s *Sphere) appendPointToVao(currentVao []float32, p Point) []float32 {
-	currentVao = append(currentVao, p.Coordinate.X)
-	currentVao = append(currentVao, p.Coordinate.Y)
-	currentVao = append(currentVao, p.Coordinate.Z)
-	currentVao = append(currentVao, p.Color.X)
-	currentVao = append(currentVao, p.Color.Y)
-	currentVao = append(currentVao, p.Color.Z)
+	currentVao = append(currentVao, p.Coordinate.X())
+	currentVao = append(currentVao, p.Coordinate.Y())
+	currentVao = append(currentVao, p.Coordinate.Z())
+	currentVao = append(currentVao, p.Color.X())
+	currentVao = append(currentVao, p.Color.Y())
+	currentVao = append(currentVao, p.Color.Z())
 	return currentVao
 }
 func (s *Sphere) triangleByPointToVao(currentVao []float32, pa, pb, pc Point) []float32 {
@@ -82,14 +82,14 @@ func (s *Sphere) setupVao() []float32 {
 			j_Rotation := mgl32.HomogRotate3DY(float32(j) * step_Y).Transpose()
 			if i == 0 {
 				p1 := Point{*RefPoint, s.color}
-				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Dot(i1_Rotation), s.color}
-				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Dot(i1_Rotation), s.color}
+				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation)), s.color}
+				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation)), s.color}
 				vao = s.triangleByPointToVao(vao, p1, p2, p3)
 			} else {
-				p1 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Dot(i_Rotation), s.color}
-				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Dot(i_Rotation), s.color}
-				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Dot(i1_Rotation), s.color}
-				p4 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Dot(i1_Rotation)., s.color}
+				p1 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i_Rotation)), s.color}
+				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i_Rotation)), s.color}
+				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation)), s.color}
+				p4 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation)), s.color}
 				vao = s.sideByPointToVao(vao, p1, p2, p3, p4)
 			}
 		}
