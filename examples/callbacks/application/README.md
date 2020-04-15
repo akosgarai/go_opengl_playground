@@ -6,3 +6,7 @@ The purpose of this package to implement the aplication related functions in thi
 
 In the first iteration the most obvious getter and setter functions were implemented (window, program, camera, keymap).
 Now i'm thinking about the drawable items. To make it general, i will define a drawable interface, and every drawable object will implement it.
+
+### Draw
+
+This function calls the Draw function for every drawable item in the application.
