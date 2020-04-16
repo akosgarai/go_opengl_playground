@@ -20,7 +20,7 @@ type Application struct {
 	window   *glfw.Window
 	program  uint32
 	camera   *primitives.Camera
-	keyDowns map[string]bool
+	keyDowns map[glfw.Key]bool
 
 	items []Drawable
 }
@@ -28,7 +28,7 @@ type Application struct {
 // New returns an application instance
 func New() *Application {
 	return &Application{
-		keyDowns: make(map[string]bool),
+		keyDowns: make(map[glfw.Key]bool),
 		items:    []Drawable{},
 	}
 }
@@ -64,12 +64,12 @@ func (a *Application) GetCamera() *primitives.Camera {
 }
 
 // SetKeys updates the keyDowns with the new one.
-func (a *Application) SetKeys(m map[string]bool) {
+func (a *Application) SetKeys(m map[glfw.Key]bool) {
 	a.keyDowns = m
 }
 
 // GetKeys returns the current keyDowns of the application.
-func (a *Application) GetKeys() map[string]bool {
+func (a *Application) GetKeys() map[glfw.Key]bool {
 	return a.keyDowns
 }
 
