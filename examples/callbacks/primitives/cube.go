@@ -35,27 +35,19 @@ func NewCubeByVectorAndLength(in mgl32.Vec3, sideLength float32) *Cube {
 	return &Cube{a, b, c, d, e, f, g, h, NewVAO()}
 }
 
-func (c *Cube) sideByPointToVao(pa, pb, pc, pd Point) {
-	c.vao.AppendPoint(pa)
-	c.vao.AppendPoint(pb)
-	c.vao.AppendPoint(pc)
-	c.vao.AppendPoint(pa)
-	c.vao.AppendPoint(pc)
-	c.vao.AppendPoint(pd)
-}
 func (c *Cube) setupVao() {
 	// back
-	c.sideByPointToVao(c.A, c.B, c.C, c.D)
+	c.vao.AppendSquarePoints(c.A, c.B, c.C, c.D)
 	// right
-	c.sideByPointToVao(c.B, c.G, c.F, c.C)
+	c.vao.AppendSquarePoints(c.B, c.G, c.F, c.C)
 	// top
-	c.sideByPointToVao(c.C, c.F, c.E, c.D)
+	c.vao.AppendSquarePoints(c.C, c.F, c.E, c.D)
 	// front
-	c.sideByPointToVao(c.G, c.F, c.E, c.H)
+	c.vao.AppendSquarePoints(c.G, c.F, c.E, c.H)
 	// left
-	c.sideByPointToVao(c.E, c.D, c.A, c.H)
+	c.vao.AppendSquarePoints(c.E, c.D, c.A, c.H)
 	// bottom
-	c.sideByPointToVao(c.A, c.B, c.G, c.H)
+	c.vao.AppendSquarePoints(c.A, c.B, c.G, c.H)
 }
 func (c *Cube) setupVaoWithColor() {
 	// back - 1,0,0
@@ -64,42 +56,42 @@ func (c *Cube) setupVaoWithColor() {
 	c.B.Color = red
 	c.C.Color = red
 	c.D.Color = red
-	c.sideByPointToVao(c.A, c.B, c.C, c.D)
+	c.vao.AppendSquarePoints(c.A, c.B, c.C, c.D)
 	// right - 0,1,0
 	green := mgl32.Vec3{0.0, 1.0, 0.0}
 	c.B.Color = green
 	c.G.Color = green
 	c.F.Color = green
 	c.C.Color = green
-	c.sideByPointToVao(c.B, c.G, c.F, c.C)
+	c.vao.AppendSquarePoints(c.B, c.G, c.F, c.C)
 	// top - 0,0,1
 	blue := mgl32.Vec3{0.0, 0.0, 1.0}
 	c.C.Color = blue
 	c.F.Color = blue
 	c.E.Color = blue
 	c.D.Color = blue
-	c.sideByPointToVao(c.C, c.F, c.E, c.D)
+	c.vao.AppendSquarePoints(c.C, c.F, c.E, c.D)
 	// front 0,1,1
 	redI := mgl32.Vec3{0.0, 1.0, 1.0}
 	c.G.Color = redI
 	c.F.Color = redI
 	c.E.Color = redI
 	c.H.Color = redI
-	c.sideByPointToVao(c.G, c.F, c.E, c.H)
+	c.vao.AppendSquarePoints(c.G, c.F, c.E, c.H)
 	// left 1,0,1
 	greenI := mgl32.Vec3{1.0, 0.0, 1.0}
 	c.E.Color = greenI
 	c.D.Color = greenI
 	c.A.Color = greenI
 	c.H.Color = greenI
-	c.sideByPointToVao(c.E, c.D, c.A, c.H)
+	c.vao.AppendSquarePoints(c.E, c.D, c.A, c.H)
 	// bottom 1,1,0
 	blueI := mgl32.Vec3{1.0, 1.0, 0.0}
 	c.A.Color = blueI
 	c.B.Color = blueI
 	c.G.Color = blueI
 	c.H.Color = blueI
-	c.sideByPointToVao(c.A, c.B, c.G, c.H)
+	c.vao.AppendSquarePoints(c.A, c.B, c.G, c.H)
 }
 
 func (c *Cube) buildVao() uint32 {

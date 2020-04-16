@@ -48,11 +48,6 @@ func (s *Sphere) SetRadius(r float64) {
 func (s *Sphere) GetRadius() float64 {
 	return s.radius
 }
-func (s *Sphere) triangleByPointToVao(pa, pb, pc Point) {
-	s.vao.AppendPoint(pa)
-	s.vao.AppendPoint(pb)
-	s.vao.AppendPoint(pc)
-}
 func (s *Sphere) setupVao() {
 	s.vao.Clear()
 	// the coordinates will be set as a following: origo as center, 1 as radius, for drawing, the translation and scale could be done later in the model transformation.
@@ -70,14 +65,14 @@ func (s *Sphere) setupVao() {
 				p1 := Point{*RefPoint, s.color}
 				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation)), s.color}
 				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation)), s.color}
-				s.triangleByPointToVao(p1, p2, p3)
+				s.vao.AppendTrianglePoints(p1, p2, p3)
 			} else {
 				p1 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i_Rotation)), s.color}
 				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i_Rotation)), s.color}
 				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation)), s.color}
 				p4 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation)), s.color}
-				s.triangleByPointToVao(p1, p2, p3)
-				s.triangleByPointToVao(p1, p3, p4)
+				s.vao.AppendTrianglePoints(p1, p2, p3)
+				s.vao.AppendTrianglePoints(p1, p3, p4)
 			}
 		}
 	}
