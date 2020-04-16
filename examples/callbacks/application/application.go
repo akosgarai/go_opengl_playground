@@ -14,6 +14,7 @@ type Drawable interface {
 	Draw()
 	DrawWithUniforms(mgl32.Mat4, mgl32.Mat4)
 	Update(float64)
+	Log() string
 }
 
 type Application struct {
@@ -31,6 +32,17 @@ func New() *Application {
 		keyDowns: make(map[glfw.Key]bool),
 		items:    []Drawable{},
 	}
+}
+
+// Log returns the string representation of this object.
+func (a *Application) Log() string {
+	logString := "Application:\n"
+	logString += " - camera : " + a.camera.Log() + "\n"
+	logString += " - items :\n"
+	for _, item := range a.items {
+		logString += item.Log()
+	}
+	return logString
 }
 
 // SetWindow updates the window with the new one.
@@ -137,4 +149,21 @@ func (a *Application) DummyKeyCallback(w *glfw.Window, key glfw.Key, scancode in
 // So this function does nothing but printing out the input parameters.
 func (a *Application) DummyMouseButtonCallback(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
 	fmt.Printf("MouseButtonCallback has been called with the following options: button: '%d', action: '%d'!, mods: '%d'\n", button, action, mods)
+}
+
+// SetKeyState setups the keyDowns based on the key and action
+func (a *Application) SetKeyState(key glfw.Key, action glfw.Action) {
+	var isButtonPressed bool
+	if action != glfw.Release {
+		isButtonPressed = true
+	} else {
+		isButtonPressed = false
+	}
+	a.keyDowns[key] = isButtonPressed
+	fmt.Print(key)
+}
+
+// SetKeyState returns the state of the given key
+func (a *Application) GetKeyState(key glfw.Key) bool {
+	return a.keyDowns[key]
 }
