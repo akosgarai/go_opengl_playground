@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	"github.com/akosgarai/opengl_playground/examples/callbacks/primitives"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -101,4 +103,13 @@ func InitGlfw(windowWidth, windowHeight int, windowTitle string) *glfw.Window {
 	window.MakeContextCurrent()
 
 	return window
+}
+
+// InitOpenGL is for initializing the gl lib. It also prints out the gl version.
+func InitOpenGL() {
+	if err := gl.Init(); err != nil {
+		panic(err)
+	}
+	version := gl.GoStr(gl.GetString(gl.VERSION))
+	fmt.Println("OpenGL version", version)
 }
