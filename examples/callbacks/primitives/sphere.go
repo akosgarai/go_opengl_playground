@@ -27,6 +27,17 @@ func NewSphere() *Sphere {
 	}
 }
 
+// Log returns the string representation of this object.
+func (s *Sphere) Log() string {
+	logString := "Sphere:\n"
+	logString += " - center : Vector{" + Vec3ToString(s.center) + "}\n"
+	logString += " - radius : " + Float64ToString(s.radius) + "\n"
+	logString += " - color : Vector{" + Vec3ToString(s.color) + "}\n"
+	logString += " - numOfRows : " + IntegerToString(s.numOfRows) + "\n"
+	logString += " - numOfItemsInRow : " + IntegerToString(s.numOfItemsInRow) + "\n"
+	return logString
+}
+
 // SetCenter updates the center of the sphere
 func (s *Sphere) SetCenter(c mgl32.Vec3) {
 	s.center = c
@@ -135,5 +146,7 @@ func (s *Sphere) DrawWithUniforms(view, projection mgl32.Mat4) {
 	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
 
 	s.setupVao()
-	gl.DrawArrays(gl.TRIANGLES, 0, 3*12)
+	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(s.vao.Get())/6))
+}
+func (s *Sphere) Update(delta float64) {
 }

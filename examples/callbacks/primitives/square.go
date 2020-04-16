@@ -26,6 +26,17 @@ func NewSquare(a, b, c, d Point) *Square {
 	}
 }
 
+// Log returns the string representation of this object.
+func (s *Square) Log() string {
+	logString := "Square:\n"
+	logString += " - A : Vector{" + Vec3ToString(s.A.Coordinate) + "}\n"
+	logString += " - B : Vector{" + Vec3ToString(s.B.Coordinate) + "}\n"
+	logString += " - C : Vector{" + Vec3ToString(s.C.Coordinate) + "}\n"
+	logString += " - D : Vector{" + Vec3ToString(s.D.Coordinate) + "}\n"
+	logString += " - precision : " + string(s.precision) + "\n"
+	return logString
+}
+
 func (s *Square) SetColor(color mgl32.Vec3) {
 	s.A.SetColor(color)
 	s.B.SetColor(color)

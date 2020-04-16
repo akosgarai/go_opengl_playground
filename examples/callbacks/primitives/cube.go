@@ -56,6 +56,20 @@ func NewCubeByVectorAndLength(in mgl32.Vec3, sideLength float32) *Cube {
 	}
 }
 
+// Log returns the string representation of this object.
+func (c *Cube) Log() string {
+	logString := "Square:\n"
+	logString += " - A : Vector{" + Vec3ToString(c.A.Coordinate) + " }\n"
+	logString += " - B : Vector{" + Vec3ToString(c.B.Coordinate) + " }\n"
+	logString += " - C : Vector{" + Vec3ToString(c.C.Coordinate) + " }\n"
+	logString += " - D : Vector{" + Vec3ToString(c.D.Coordinate) + " }\n"
+	logString += " - E : Vector{" + Vec3ToString(c.E.Coordinate) + " }\n"
+	logString += " - F : Vector{" + Vec3ToString(c.F.Coordinate) + " }\n"
+	logString += " - G : Vector{" + Vec3ToString(c.G.Coordinate) + " }\n"
+	logString += " - H : Vector{" + Vec3ToString(c.H.Coordinate) + " }\n"
+	return logString
+}
+
 // SetShaderProgram updates the shaderProgram of the sphere.
 func (c *Cube) SetShaderProgram(p uint32) {
 	c.shaderProgram = p
@@ -165,4 +179,6 @@ func (c *Cube) DrawWithUniforms(view, projection mgl32.Mat4) {
 
 	c.buildVao()
 	gl.DrawArrays(gl.TRIANGLES, 0, 3*12)
+}
+func (c *Cube) Update(delta float64) {
 }
