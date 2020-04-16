@@ -101,8 +101,7 @@ func (s *Sphere) setupVao() {
 		}
 	}
 }
-
-func (s *Sphere) Draw() {
+func (s *Sphere) buildVao() {
 	s.setupVao()
 	gl.UseProgram(s.shaderProgram)
 
@@ -123,7 +122,9 @@ func (s *Sphere) Draw() {
 	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(4*3))
 	gl.EnableVertexAttribArray(1)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
-	// The sphere is represented by triangles, so we have TODO points here.
+}
+func (s *Sphere) Draw() {
+	s.buildVao()
 	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(s.vao.Get())/6))
 }
 func (s *Sphere) DrawWithUniforms(view, projection mgl32.Mat4) {
@@ -145,8 +146,7 @@ func (s *Sphere) DrawWithUniforms(view, projection mgl32.Mat4) {
 		float32(s.radius)))
 	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
 
-	s.setupVao()
-	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(s.vao.Get())/6))
+	s.Draw()
 }
 func (s *Sphere) Update(delta float64) {
 }
