@@ -12,10 +12,11 @@ type Sphere struct {
 
 	numOfRows       int
 	numOfItemsInRow int
+	vao             *VAO
 }
 
 func NewSphere() *Sphere {
-	return &Sphere{mgl32.Vec3{0, 0, 0}, 1, mgl32.Vec3{1, 1, 1}, 20, 20}
+	return &Sphere{mgl32.Vec3{0, 0, 0}, 1, mgl32.Vec3{1, 1, 1}, 20, 20, NewVAO()}
 }
 
 // SetCenter updates the center of the sphere
@@ -47,28 +48,13 @@ func (s *Sphere) SetRadius(r float64) {
 func (s *Sphere) GetRadius() float64 {
 	return s.radius
 }
-func (s *Sphere) appendPointToVao(currentVao []float32, p Point) []float32 {
-	currentVao = append(currentVao, p.Coordinate.X())
-	currentVao = append(currentVao, p.Coordinate.Y())
-	currentVao = append(currentVao, p.Coordinate.Z())
-	currentVao = append(currentVao, p.Color.X())
-	currentVao = append(currentVao, p.Color.Y())
-	currentVao = append(currentVao, p.Color.Z())
-	return currentVao
+func (s *Sphere) triangleByPointToVao(pa, pb, pc Point) {
+	s.vao.AppendPoint(pa)
+	s.vao.AppendPoint(pb)
+	s.vao.AppendPoint(pc)
 }
-func (s *Sphere) triangleByPointToVao(currentVao []float32, pa, pb, pc Point) []float32 {
-	currentVao = s.appendPointToVao(currentVao, pa)
-	currentVao = s.appendPointToVao(currentVao, pb)
-	currentVao = s.appendPointToVao(currentVao, pc)
-	return currentVao
-}
-func (s *Sphere) sideByPointToVao(currentVao []float32, pa, pb, pc, pd Point) []float32 {
-	currentVao = s.triangleByPointToVao(currentVao, pa, pb, pc)
-	currentVao = s.triangleByPointToVao(currentVao, pa, pc, pd)
-	return currentVao
-}
-func (s *Sphere) setupVao() []float32 {
-	var vao []float32
+func (s *Sphere) setupVao() {
+	s.vao.Clear()
 	// the coordinates will be set as a following: origo as center, 1 as radius, for drawing, the translation and scale could be done later in the model transformation.
 	// Sphere top: center + v{0,radius,0}, bottom: center + v{0,-radius,0}, left: center + v{-radius,0,0}, right: center + v{radius,0,0}
 	RefPoint := &mgl32.Vec3{0, 1, 0}
@@ -84,28 +70,28 @@ func (s *Sphere) setupVao() []float32 {
 				p1 := Point{*RefPoint, s.color}
 				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation)), s.color}
 				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation)), s.color}
-				vao = s.triangleByPointToVao(vao, p1, p2, p3)
+				s.triangleByPointToVao(p1, p2, p3)
 			} else {
 				p1 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i_Rotation)), s.color}
 				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i_Rotation)), s.color}
 				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation)), s.color}
 				p4 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation)), s.color}
-				vao = s.sideByPointToVao(vao, p1, p2, p3, p4)
+				s.triangleByPointToVao(p1, p2, p3)
+				s.triangleByPointToVao(p1, p3, p4)
 			}
 		}
 	}
-	return vao
 }
 
 func (s *Sphere) Draw() {
-	points := s.setupVao()
+	s.setupVao()
 
 	var vertexBufferObject uint32
 	gl.GenBuffers(1, &vertexBufferObject)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
 	// a 32-bit float has 4 bytes, so we are saying the size of the buffer,
 	// in bytes, is 4 times the number of points
-	gl.BufferData(gl.ARRAY_BUFFER, 4*len(points), gl.Ptr(points), gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, 4*len(s.vao.Get()), gl.Ptr(s.vao.Get()), gl.STATIC_DRAW)
 
 	var vertexArrayObject uint32
 	gl.GenVertexArrays(1, &vertexArrayObject)
@@ -118,5 +104,5 @@ func (s *Sphere) Draw() {
 	gl.EnableVertexAttribArray(1)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
 	// The sphere is represented by triangles, so we have TODO points here.
-	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(points)/6))
+	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(s.vao.Get())/6))
 }
