@@ -6,12 +6,13 @@ import (
 )
 
 type Square struct {
-	A         Point
-	B         Point
-	C         Point
-	D         Point
-	precision int
-	vao       *VAO
+	A             Point
+	B             Point
+	C             Point
+	D             Point
+	precision     int
+	vao           *VAO
+	shaderProgram uint32
 }
 
 func NewSquare(a, b, c, d Point) *Square {
@@ -33,6 +34,11 @@ func (s *Square) SetColor(color mgl32.Vec3) {
 }
 func (s *Square) SetPrecision(p int) {
 	s.precision = p
+}
+
+// SetShaderProgram updates the shaderProgram of the square.
+func (s *Square) SetShaderProgram(p uint32) {
+	s.shaderProgram = p
 }
 
 func (s *Square) setupVao() {

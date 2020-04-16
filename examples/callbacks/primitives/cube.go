@@ -15,7 +15,8 @@ type Cube struct {
 	G Point // bottom-right-front
 	H Point // bottom-left-front
 
-	vao *VAO
+	vao           *VAO
+	shaderProgram uint32
 }
 
 func NewCubeByPoints(a, b, c, d, e, f, g, h Point) *Cube {
@@ -33,6 +34,11 @@ func NewCubeByVectorAndLength(in mgl32.Vec3, sideLength float32) *Cube {
 	g := Point{b.Coordinate.Add(mgl32.Vec3{0, 0, sideLength}), color2}
 	h := Point{a.Coordinate.Add(mgl32.Vec3{0, 0, sideLength}), color2}
 	return &Cube{a, b, c, d, e, f, g, h, NewVAO()}
+}
+
+// SetShaderProgram updates the shaderProgram of the sphere.
+func (c *Cube) SetShaderProgram(p uint32) {
+	c.shaderProgram = p
 }
 
 func (c *Cube) setupVao() {

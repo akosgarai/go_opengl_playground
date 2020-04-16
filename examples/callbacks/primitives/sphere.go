@@ -13,6 +13,7 @@ type Sphere struct {
 	numOfRows       int
 	numOfItemsInRow int
 	vao             *VAO
+	shaderProgram   uint32
 }
 
 func NewSphere() *Sphere {
@@ -47,6 +48,11 @@ func (s *Sphere) SetRadius(r float64) {
 // GetRadius returns the radius of the sphere
 func (s *Sphere) GetRadius() float64 {
 	return s.radius
+}
+
+// SetShaderProgram updates the shaderProgram of the sphere.
+func (s *Sphere) SetShaderProgram(p uint32) {
+	s.shaderProgram = p
 }
 func (s *Sphere) setupVao() {
 	s.vao.Clear()
