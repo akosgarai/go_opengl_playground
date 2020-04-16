@@ -17,7 +17,14 @@ type Sphere struct {
 }
 
 func NewSphere() *Sphere {
-	return &Sphere{mgl32.Vec3{0, 0, 0}, 1, mgl32.Vec3{1, 1, 1}, 20, 20, NewVAO()}
+	return &Sphere{
+		center:          mgl32.Vec3{0, 0, 0},
+		radius:          1,
+		color:           mgl32.Vec3{1, 1, 1},
+		numOfRows:       20,
+		numOfItemsInRow: 20,
+		vao:             NewVAO(),
+	}
 }
 
 // SetCenter updates the center of the sphere
@@ -86,6 +93,7 @@ func (s *Sphere) setupVao() {
 
 func (s *Sphere) Draw() {
 	s.setupVao()
+	gl.UseProgram(s.shaderProgram)
 
 	var vertexBufferObject uint32
 	gl.GenBuffers(1, &vertexBufferObject)
@@ -106,4 +114,26 @@ func (s *Sphere) Draw() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
 	// The sphere is represented by triangles, so we have TODO points here.
 	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(s.vao.Get())/6))
+}
+func (s *Sphere) DrawWithUniforms(view, projection mgl32.Mat4) {
+	gl.UseProgram(s.shaderProgram)
+
+	viewLocation := gl.GetUniformLocation(s.shaderProgram, gl.Str("view\x00"))
+	gl.UniformMatrix4fv(viewLocation, 1, false, &view[0])
+	projectionLocation := gl.GetUniformLocation(s.shaderProgram, gl.Str("projection\x00"))
+	gl.UniformMatrix4fv(projectionLocation, 1, false, &projection[0])
+
+	modelLocation := gl.GetUniformLocation(s.shaderProgram, gl.Str("model\x00"))
+
+	M := mgl32.Translate3D(
+		s.center.X(),
+		s.center.Y(),
+		s.center.Z()).Mul4(mgl32.Scale3D(
+		float32(s.radius),
+		float32(s.radius),
+		float32(s.radius)))
+	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
+
+	s.setupVao()
+	gl.DrawArrays(gl.TRIANGLES, 0, 3*12)
 }

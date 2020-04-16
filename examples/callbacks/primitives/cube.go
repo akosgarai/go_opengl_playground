@@ -20,7 +20,17 @@ type Cube struct {
 }
 
 func NewCubeByPoints(a, b, c, d, e, f, g, h Point) *Cube {
-	return &Cube{a, b, c, d, e, f, g, h, NewVAO()}
+	return &Cube{
+		A:   a,
+		B:   b,
+		C:   c,
+		D:   d,
+		E:   e,
+		F:   f,
+		G:   g,
+		H:   h,
+		vao: NewVAO(),
+	}
 }
 func NewCubeByVectorAndLength(in mgl32.Vec3, sideLength float32) *Cube {
 	color1 := mgl32.Vec3{1, 0, 0}
@@ -33,7 +43,17 @@ func NewCubeByVectorAndLength(in mgl32.Vec3, sideLength float32) *Cube {
 	f := Point{e.Coordinate.Add(mgl32.Vec3{sideLength, 0, 0}), color2}
 	g := Point{b.Coordinate.Add(mgl32.Vec3{0, 0, sideLength}), color2}
 	h := Point{a.Coordinate.Add(mgl32.Vec3{0, 0, sideLength}), color2}
-	return &Cube{a, b, c, d, e, f, g, h, NewVAO()}
+	return &Cube{
+		A:   a,
+		B:   b,
+		C:   c,
+		D:   d,
+		E:   e,
+		F:   f,
+		G:   g,
+		H:   h,
+		vao: NewVAO(),
+	}
 }
 
 // SetShaderProgram updates the shaderProgram of the sphere.
@@ -126,6 +146,23 @@ func (c *Cube) buildVao() uint32 {
 }
 
 func (c *Cube) Draw() {
+	gl.UseProgram(c.shaderProgram)
+	c.buildVao()
+	gl.DrawArrays(gl.TRIANGLES, 0, 3*12)
+}
+func (c *Cube) DrawWithUniforms(view, projection mgl32.Mat4) {
+	gl.UseProgram(c.shaderProgram)
+
+	viewLocation := gl.GetUniformLocation(c.shaderProgram, gl.Str("view\x00"))
+	gl.UniformMatrix4fv(viewLocation, 1, false, &view[0])
+	projectionLocation := gl.GetUniformLocation(c.shaderProgram, gl.Str("projection\x00"))
+	gl.UniformMatrix4fv(projectionLocation, 1, false, &projection[0])
+
+	modelLocation := gl.GetUniformLocation(c.shaderProgram, gl.Str("model\x00"))
+
+	M := mgl32.Translate3D(c.H.Coordinate.X(), c.H.Coordinate.Y(), c.H.Coordinate.Z())
+	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
+
 	c.buildVao()
 	gl.DrawArrays(gl.TRIANGLES, 0, 3*12)
 }

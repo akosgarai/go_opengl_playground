@@ -82,6 +82,16 @@ func (a *Application) Draw() {
 	}
 }
 
+// DrawWithUniforms calls DrawWithUniforms function in every drawable item with the calculated V & P.
+func (a *Application) DrawWithUniforms() {
+	V := a.camera.GetViewMatrix()
+	P := a.camera.GetProjectionMatrix()
+
+	for _, item := range a.items {
+		item.DrawWithUniforms(V, P)
+	}
+}
+
 // InitGlfw returns a *glfw.Windows instance.
 func InitGlfw(windowWidth, windowHeight int, windowTitle string) *glfw.Window {
 	if err := glfw.Init(); err != nil {

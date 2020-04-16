@@ -83,7 +83,11 @@ func (s *Square) setupVao() {
 }
 
 func (s *Square) Draw() {
+	// Create the vao object
 	s.setupVao()
+	// setup shader program during draw.
+	gl.UseProgram(s.shaderProgram)
+
 	var vertexBufferObject uint32
 	gl.GenBuffers(1, &vertexBufferObject)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
@@ -101,5 +105,23 @@ func (s *Square) Draw() {
 	gl.EnableVertexAttribArray(1)
 	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(4*3))
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
+	// draw the stuff.
 	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(s.vao.Get())/6))
+}
+
+func (s *Square) DrawWithUniforms(view, projection mgl32.Mat4) {
+	gl.UseProgram(s.shaderProgram)
+
+	viewLocation := gl.GetUniformLocation(s.shaderProgram, gl.Str("view\x00"))
+	gl.UniformMatrix4fv(viewLocation, 1, false, &view[0])
+	projectionLocation := gl.GetUniformLocation(s.shaderProgram, gl.Str("projection\x00"))
+	gl.UniformMatrix4fv(projectionLocation, 1, false, &projection[0])
+
+	modelLocation := gl.GetUniformLocation(s.shaderProgram, gl.Str("model\x00"))
+
+	M := mgl32.Translate3D(s.D.Coordinate.X(), s.D.Coordinate.Y(), s.D.Coordinate.Z())
+	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
+
+	s.setupVao()
+	gl.DrawArrays(gl.TRIANGLES, 0, 3*12)
 }
