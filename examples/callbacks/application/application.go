@@ -5,11 +5,14 @@ import (
 
 	"github.com/akosgarai/opengl_playground/examples/callbacks/primitives"
 
+	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type Drawable interface {
 	Draw()
+	DrawWithUniforms(mgl32.Mat4, mgl32.Mat4)
 	Update(float64)
 }
 
@@ -122,4 +125,16 @@ func InitOpenGL() {
 	}
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
+}
+
+// DummyKeyCallback is responsible for the keyboard event handling with log.
+// So this function does nothing but printing out the input parameters.
+func (a *Application) DummyKeyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+	fmt.Printf("KeyCallback has been called with the following options: key: '%d', scancode: '%d', action: '%d'!, mods: '%d'\n", key, scancode, action, mods)
+}
+
+// DummyMouseButtonCallback is responsible for the mouse button event handling with log.
+// So this function does nothing but printing out the input parameters.
+func (a *Application) DummyMouseButtonCallback(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
+	fmt.Printf("MouseButtonCallback has been called with the following options: button: '%d', action: '%d'!, mods: '%d'\n", button, action, mods)
 }
