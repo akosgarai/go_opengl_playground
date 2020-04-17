@@ -10,6 +10,10 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+const (
+	DEBUG = glfw.KeyH
+)
+
 type Drawable interface {
 	Draw()
 	DrawWithUniforms(mgl32.Mat4, mgl32.Mat4)
@@ -149,6 +153,20 @@ func (a *Application) DummyKeyCallback(w *glfw.Window, key glfw.Key, scancode in
 // So this function does nothing but printing out the input parameters.
 func (a *Application) DummyMouseButtonCallback(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
 	fmt.Printf("MouseButtonCallback has been called with the following options: button: '%d', action: '%d'!, mods: '%d'\n", button, action, mods)
+}
+
+// KeyCallback is responsible for the keyboard event handling.
+func (a *Application) KeyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+	switch key {
+	case DEBUG:
+		if action != glfw.Release {
+			fmt.Printf("%s\n", a.Log())
+		}
+		break
+	default:
+		a.SetKeyState(key, action)
+		break
+	}
 }
 
 // SetKeyState setups the keyDowns based on the key and action
