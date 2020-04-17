@@ -160,7 +160,6 @@ func (a *Application) SetKeyState(key glfw.Key, action glfw.Action) {
 		isButtonPressed = false
 	}
 	a.keyDowns[key] = isButtonPressed
-	fmt.Print(key)
 }
 
 // SetKeyState returns the state of the given key
