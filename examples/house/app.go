@@ -4,8 +4,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/examples/callbacks/application"
-	"github.com/akosgarai/opengl_playground/examples/callbacks/primitives"
+	"github.com/akosgarai/opengl_playground/examples/house/application"
+	"github.com/akosgarai/opengl_playground/examples/house/primitives"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -18,7 +18,7 @@ const (
 	windowHeight         = 800
 	windowTitle          = "Example - the house"
 	moveSpeed            = 1.0 / 1000.0
-	epsilon              = 50.0
+	epsilon              = 1000.0
 	cameraDirection      = 0.1
 	cameraDirectionSpeed = 5
 	// buttons
@@ -53,7 +53,7 @@ func CreateShader() uint32 {
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *primitives.Camera {
-	camera := primitives.NewCamera(mgl32.Vec3{8, 3, 2.0}, mgl32.Vec3{0, 1, 0}, 0.0, 0.0)
+	camera := primitives.NewCamera(mgl32.Vec3{7.5, 3, 0.0}, mgl32.Vec3{0, 1, 0}, 90.0, 0.0)
 	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
 	return camera
 }
@@ -69,7 +69,38 @@ func SetupKeyMap() map[glfw.Key]bool {
 	return keyDowns
 }
 
+// the path
+func Path(shaderProgId uint32) {
+	floorCoordinates := [4]mgl32.Vec3{
+		mgl32.Vec3{6, 0, 3},
+		mgl32.Vec3{9, 0, 3},
+		mgl32.Vec3{6, 0, 8},
+		mgl32.Vec3{9, 0, 8},
+	}
+	floorColor := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
+	app.AddItem(primitives.NewRectangle(floorCoordinates, floorColor, 20, shaderProgId))
+}
+
 func Update() {
+	//calculate delta
+	nowUnix := time.Now().UnixNano()
+	delta := nowUnix - cameraLastUpdate
+	moveTime := float64(delta / int64(time.Millisecond))
+
+	if epsilon > moveTime {
+		return
+	}
+	cameraLastUpdate = nowUnix
+
+	forward := 0.0
+	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
+		forward = moveSpeed * moveTime
+	} else if app.GetKeyState(BACKWARD) && !app.GetKeyState(FORWARD) {
+		forward = -moveSpeed * moveTime
+	}
+	if forward != 0 {
+		app.GetCamera().Walk(float32(forward))
+	}
 }
 func main() {
 	runtime.LockOSThread()
@@ -80,12 +111,13 @@ func main() {
 	defer glfw.Terminate()
 	application.InitOpenGL()
 
-	//	shaderProgramId := CreateShader()
+	shaderProgramId := CreateShader()
 
 	app.SetCamera(CreateCamera())
 	cameraLastUpdate = time.Now().UnixNano()
 
 	app.SetKeys(SetupKeyMap())
+	Path(shaderProgramId)
 
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
 	gl.Viewport(0, 0, windowWidth, windowHeight)
