@@ -116,10 +116,64 @@ func PathRoof(shaderProgramId uint32) {
 }
 
 // the floor of the room
+func RoomFloor(shaderProgramId uint32) {
+	coordinates := [4]mgl32.Vec3{
+		mgl32.Vec3{10, 0, 30},
+		mgl32.Vec3{10, 0, 80},
+		mgl32.Vec3{60, 0, 80},
+		mgl32.Vec3{60, 0, 30},
+	}
+	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
+	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+}
+
 // the roof of the room
+func RoomRoof(shaderProgramId uint32) {
+	coordinates := [4]mgl32.Vec3{
+		mgl32.Vec3{10, 50, 30},
+		mgl32.Vec3{10, 50, 80},
+		mgl32.Vec3{60, 50, 80},
+		mgl32.Vec3{60, 50, 30},
+	}
+	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
+	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+}
+
 // the front wall of the room
+func RoomFront(shaderProgramId uint32) {
+	coordinates := [4]mgl32.Vec3{
+		mgl32.Vec3{60, 50, 80},
+		mgl32.Vec3{60, 0, 80},
+		mgl32.Vec3{10, 0, 80},
+		mgl32.Vec3{10, 50, 80},
+	}
+	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
+	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+}
+
 // the back wall of the room
+func RoomBack(shaderProgramId uint32) {
+	coordinates := [4]mgl32.Vec3{
+		mgl32.Vec3{60, 50, 30},
+		mgl32.Vec3{60, 0, 30},
+		mgl32.Vec3{10, 0, 30},
+		mgl32.Vec3{10, 50, 30},
+	}
+	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
+	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+}
+
 // the left wall of the room
+func RoomLeft(shaderProgramId uint32) {
+	coordinates := [4]mgl32.Vec3{
+		mgl32.Vec3{10, 50, 30},
+		mgl32.Vec3{10, 0, 30},
+		mgl32.Vec3{10, 0, 80},
+		mgl32.Vec3{10, 50, 80},
+	}
+	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
+	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+}
 
 // The Sphere.
 func Sphere(shaderProgId uint32) {
@@ -154,9 +208,9 @@ func Update() {
 	dX := float32(0.0)
 	dY := float32(0.0)
 	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
-		dX = 90
-	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
 		dX = -90
+	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
+		dX = 90
 	}
 	if dX != 0.0 {
 		app.GetCamera().UpdateDirection(dX, dY)
@@ -181,6 +235,11 @@ func main() {
 	LeftFullWall(shaderProgramId)
 	FrontPathWall(shaderProgramId)
 	PathRoof(shaderProgramId)
+	RoomFloor(shaderProgramId)
+	RoomRoof(shaderProgramId)
+	RoomFront(shaderProgramId)
+	RoomBack(shaderProgramId)
+	RoomLeft(shaderProgramId)
 	//Sphere(shaderProgramId)
 
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
