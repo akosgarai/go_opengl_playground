@@ -2,7 +2,6 @@ package primitives
 
 import (
 	"math"
-	"strconv"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -30,14 +29,6 @@ type Camera struct {
 	}
 }
 
-// Vec3ToString helper function for the string representation of a vector. It is for the log.
-func Vec3ToString(v mgl32.Vec3) string {
-	x := strconv.FormatFloat(float64(v.X()), 'f', 6, 32)
-	y := strconv.FormatFloat(float64(v.Y()), 'f', 6, 32)
-	z := strconv.FormatFloat(float64(v.Z()), 'f', 6, 32)
-	return "X : " + x + ", Y : " + y + ", Z : " + z
-}
-
 // Log returns the string representation of this object.
 func (c *Camera) Log() string {
 	logString := "cameraPosition: Vector{" + Vec3ToString(c.cameraPosition) + "}\n"
@@ -45,13 +36,13 @@ func (c *Camera) Log() string {
 	logString += "cameraFrontDirection: Vector{" + Vec3ToString(c.cameraFrontDirection) + "}\n"
 	logString += "cameraUpDirection: Vector{" + Vec3ToString(c.cameraUpDirection) + "}\n"
 	logString += "cameraRightDirection: Vector{" + Vec3ToString(c.cameraRightDirection) + "}\n"
-	logString += "yaw : " + strconv.FormatFloat(float64(c.yaw), 'f', 6, 32) + "\n"
-	logString += "pitch : " + strconv.FormatFloat(float64(c.pitch), 'f', 6, 32) + "\n"
+	logString += "yaw : " + Float32ToString(c.yaw) + "\n"
+	logString += "pitch : " + Float32ToString(c.pitch) + "\n"
 	logString += "ProjectionOptions:\n"
-	logString += " - fov : " + strconv.FormatFloat(float64(c.projectionOptions.fov), 'f', 6, 32) + "\n"
-	logString += " - aspectRatio : " + strconv.FormatFloat(float64(c.projectionOptions.aspectRatio), 'f', 6, 32) + "\n"
-	logString += " - far : " + strconv.FormatFloat(float64(c.projectionOptions.far), 'f', 6, 32) + "\n"
-	logString += " - near : " + strconv.FormatFloat(float64(c.projectionOptions.near), 'f', 6, 32) + "\n"
+	logString += " - fov : " + Float32ToString(c.projectionOptions.fov) + "\n"
+	logString += " - aspectRatio : " + Float32ToString(c.projectionOptions.aspectRatio) + "\n"
+	logString += " - far : " + Float32ToString(c.projectionOptions.far) + "\n"
+	logString += " - near : " + Float32ToString(c.projectionOptions.near) + "\n"
 	return logString
 }
 

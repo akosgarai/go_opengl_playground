@@ -6,15 +6,35 @@ import (
 )
 
 type Square struct {
-	A         Point
-	B         Point
-	C         Point
-	D         Point
-	precision int
+	A             Point
+	B             Point
+	C             Point
+	D             Point
+	precision     int
+	vao           *VAO
+	shaderProgram uint32
 }
 
 func NewSquare(a, b, c, d Point) *Square {
-	return &Square{a, b, c, d, 10}
+	return &Square{
+		A:         a,
+		B:         b,
+		C:         c,
+		D:         d,
+		precision: 10,
+		vao:       NewVAO(),
+	}
+}
+
+// Log returns the string representation of this object.
+func (s *Square) Log() string {
+	logString := "Square:\n"
+	logString += " - A : Vector{" + Vec3ToString(s.A.Coordinate) + "}\n"
+	logString += " - B : Vector{" + Vec3ToString(s.B.Coordinate) + "}\n"
+	logString += " - C : Vector{" + Vec3ToString(s.C.Coordinate) + "}\n"
+	logString += " - D : Vector{" + Vec3ToString(s.D.Coordinate) + "}\n"
+	logString += " - precision : " + string(s.precision) + "\n"
+	return logString
 }
 
 func (s *Square) SetColor(color mgl32.Vec3) {
@@ -27,17 +47,13 @@ func (s *Square) SetPrecision(p int) {
 	s.precision = p
 }
 
-func (s *Square) appendPointToVao(currentVao []float32, p Point) []float32 {
-	currentVao = append(currentVao, p.Coordinate.X())
-	currentVao = append(currentVao, p.Coordinate.Y())
-	currentVao = append(currentVao, p.Coordinate.Z())
-	currentVao = append(currentVao, p.Color.X())
-	currentVao = append(currentVao, p.Color.Y())
-	currentVao = append(currentVao, p.Color.Z())
-	return currentVao
+// SetShaderProgram updates the shaderProgram of the square.
+func (s *Square) SetShaderProgram(p uint32) {
+	s.shaderProgram = p
 }
-func (s *Square) setupVao() []float32 {
-	var points []float32
+
+func (s *Square) setupVao() {
+	s.vao.Clear()
 	verticalStep := s.B.Coordinate.Sub(s.A.Coordinate).Mul(1.0 / float32(s.precision))
 	horisontalStep := s.D.Coordinate.Sub(s.A.Coordinate).Mul(1.0 / float32(s.precision))
 
@@ -67,26 +83,28 @@ func (s *Square) setupVao() []float32 {
 					horisontalStep.Mul(float32(horisontalLoopIndex))),
 				s.D.Color,
 			}
-			points = s.appendPointToVao(points, a)
-			points = s.appendPointToVao(points, b)
-			points = s.appendPointToVao(points, c)
-			points = s.appendPointToVao(points, a)
-			points = s.appendPointToVao(points, c)
-			points = s.appendPointToVao(points, d)
+			s.vao.AppendPoint(a)
+			s.vao.AppendPoint(b)
+			s.vao.AppendPoint(c)
+			s.vao.AppendPoint(a)
+			s.vao.AppendPoint(c)
+			s.vao.AppendPoint(d)
 		}
 	}
-
-	return points
 }
 
 func (s *Square) Draw() {
-	points := s.setupVao()
+	// Create the vao object
+	s.setupVao()
+	// setup shader program during draw.
+	gl.UseProgram(s.shaderProgram)
+
 	var vertexBufferObject uint32
 	gl.GenBuffers(1, &vertexBufferObject)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
 	// a 32-bit float has 4 bytes, so we are saying the size of the buffer,
 	// in bytes, is 4 times the number of points
-	gl.BufferData(gl.ARRAY_BUFFER, 4*len(points), gl.Ptr(points), gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, 4*len(s.vao.Get()), gl.Ptr(s.vao.Get()), gl.STATIC_DRAW)
 
 	var vertexArrayObject uint32
 	gl.GenVertexArrays(1, &vertexArrayObject)
@@ -98,5 +116,23 @@ func (s *Square) Draw() {
 	gl.EnableVertexAttribArray(1)
 	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(4*3))
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
-	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(points)/6))
+	// draw the stuff.
+	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(s.vao.Get())/6))
+}
+
+func (s *Square) DrawWithUniforms(view, projection mgl32.Mat4) {
+	gl.UseProgram(s.shaderProgram)
+
+	viewLocation := gl.GetUniformLocation(s.shaderProgram, gl.Str("view\x00"))
+	gl.UniformMatrix4fv(viewLocation, 1, false, &view[0])
+	projectionLocation := gl.GetUniformLocation(s.shaderProgram, gl.Str("projection\x00"))
+	gl.UniformMatrix4fv(projectionLocation, 1, false, &projection[0])
+
+	modelLocation := gl.GetUniformLocation(s.shaderProgram, gl.Str("model\x00"))
+
+	M := mgl32.Translate3D(s.D.Coordinate.X(), s.D.Coordinate.Y(), s.D.Coordinate.Z())
+	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
+
+	s.setupVao()
+	gl.DrawArrays(gl.TRIANGLES, 0, 3*12)
 }
