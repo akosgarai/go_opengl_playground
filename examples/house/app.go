@@ -14,13 +14,11 @@ import (
 )
 
 const (
-	windowWidth          = 800
-	windowHeight         = 800
-	windowTitle          = "Example - the house"
-	moveSpeed            = 1.0 / 1000.0
-	epsilon              = 1000.0
-	cameraDirection      = 0.1
-	cameraDirectionSpeed = 5
+	windowWidth  = 800
+	windowHeight = 800
+	windowTitle  = "Example - the house"
+	moveSpeed    = 1.0 / 100.0
+	epsilon      = 1000.0
 	// buttons
 	FORWARD  = glfw.KeyW // Go forward
 	BACKWARD = glfw.KeyS // Go backward
@@ -53,8 +51,8 @@ func CreateShader() uint32 {
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *primitives.Camera {
-	camera := primitives.NewCamera(mgl32.Vec3{7.5, 3, 0.0}, mgl32.Vec3{0, -1, 0}, 90.0, 0.0)
-	camera.SetupProjection(90, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
+	camera := primitives.NewCamera(mgl32.Vec3{75, 30, 0.0}, mgl32.Vec3{0, -1, 0}, 90.0, 0.0)
+	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
 	return camera
 }
 
@@ -72,21 +70,63 @@ func SetupKeyMap() map[glfw.Key]bool {
 // the path
 func Path(shaderProgId uint32) {
 	floorCoordinates := [4]mgl32.Vec3{
-		mgl32.Vec3{6, 0, 3},
-		mgl32.Vec3{9, 0, 3},
-		mgl32.Vec3{6, 0, 8},
-		mgl32.Vec3{9, 0, 8},
+		mgl32.Vec3{60, 0, 30},
+		mgl32.Vec3{60, 0, 80},
+		mgl32.Vec3{90, 0, 80},
+		mgl32.Vec3{90, 0, 30},
 	}
-	floorColor := mgl32.Vec3{1.0, 42.0 / 255.0, 42.0 / 255.0}
+	floorColor := mgl32.Vec3{215.0 / 255.0, 100.0 / 255.0, 30.0 / 255.0}
 	app.AddItem(primitives.NewRectangle(floorCoordinates, floorColor, 20, shaderProgId))
 }
+
+// the wall left of the path
+func LeftFullWall(shaderProgramId uint32) {
+	coordinates := [4]mgl32.Vec3{
+		mgl32.Vec3{90, 50, 80},
+		mgl32.Vec3{90, 0, 80},
+		mgl32.Vec3{90, 0, 30},
+		mgl32.Vec3{90, 50, 30},
+	}
+	color := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
+	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+}
+
+// the wall front of the path
+func FrontPathWall(shaderProgramId uint32) {
+	coordinates := [4]mgl32.Vec3{
+		mgl32.Vec3{60, 50, 80},
+		mgl32.Vec3{60, 0, 80},
+		mgl32.Vec3{90, 0, 80},
+		mgl32.Vec3{90, 50, 80},
+	}
+	color := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
+	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+}
+
+// the roof of the path
+func PathRoof(shaderProgramId uint32) {
+	coordinates := [4]mgl32.Vec3{
+		mgl32.Vec3{60, 50, 80},
+		mgl32.Vec3{60, 50, 30},
+		mgl32.Vec3{90, 50, 30},
+		mgl32.Vec3{90, 50, 80},
+	}
+	color := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
+	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+}
+
+// the floor of the room
+// the roof of the room
+// the front wall of the room
+// the back wall of the room
+// the left wall of the room
 
 // The Sphere.
 func Sphere(shaderProgId uint32) {
 	sphere := primitives.NewSphere()
-	sphere.SetCenter(mgl32.Vec3{7.5, 2, 3})
+	sphere.SetCenter(mgl32.Vec3{75, 5, 35})
 	sphere.SetColor(mgl32.Vec3{0, 0, 1})
-	sphere.SetRadius(0.5)
+	sphere.SetRadius(1)
 	sphere.SetShaderProgram(shaderProgId)
 	app.AddItem(sphere)
 }
@@ -138,6 +178,9 @@ func main() {
 
 	app.SetKeys(SetupKeyMap())
 	Path(shaderProgramId)
+	LeftFullWall(shaderProgramId)
+	FrontPathWall(shaderProgramId)
+	PathRoof(shaderProgramId)
 	//Sphere(shaderProgramId)
 
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
