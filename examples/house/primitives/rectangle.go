@@ -14,6 +14,16 @@ type Rectangle struct {
 	points [4]mgl32.Vec3
 }
 
+func NewRectangle(points [4]mgl32.Vec3, color mgl32.Vec3, prec int, shaderProgId uint32) *Rectangle {
+	return &Rectangle{
+		precision:     prec,
+		color:         color,
+		points:        points,
+		shaderProgram: shaderProgId,
+		vao:           NewVAO(),
+	}
+}
+
 // Log returns the string representation of this object.
 func (r *Rectangle) Log() string {
 	logString := "Rectangle:\n"
@@ -77,12 +87,12 @@ func (r *Rectangle) setupVao() {
 					horisontalStep.Mul(float32(horisontalLoopIndex))),
 				r.color,
 			}
-			s.vao.AppendPoint(a)
-			s.vao.AppendPoint(b)
-			s.vao.AppendPoint(c)
-			s.vao.AppendPoint(a)
-			s.vao.AppendPoint(c)
-			s.vao.AppendPoint(d)
+			r.vao.AppendPoint(a)
+			r.vao.AppendPoint(b)
+			r.vao.AppendPoint(c)
+			r.vao.AppendPoint(a)
+			r.vao.AppendPoint(c)
+			r.vao.AppendPoint(d)
 		}
 	}
 }
@@ -133,4 +143,6 @@ func (r *Rectangle) DrawWithUniforms(view, projection mgl32.Mat4) {
 
 	r.buildVao()
 	gl.DrawArrays(gl.TRIANGLES, 0, 3*12)
+}
+func (r *Rectangle) Update(dt float64) {
 }
