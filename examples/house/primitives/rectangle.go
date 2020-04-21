@@ -32,7 +32,7 @@ func (r *Rectangle) Log() string {
 	logString += " - C : Vector{" + Vec3ToString(r.points[2]) + "}\n"
 	logString += " - D : Vector{" + Vec3ToString(r.points[3]) + "}\n"
 	logString += " - color : Vector{" + Vec3ToString(r.color) + "}\n"
-	logString += " - precision : " + string(r.precision) + "\n"
+	logString += " - precision : " + IntegerToString(r.precision) + "\n"
 	return logString
 }
 
