@@ -175,6 +175,42 @@ func RoomLeft(shaderProgramId uint32) {
 	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
 }
 
+// the right wall of the room 1x5
+func RoomRight1(shaderProgramId uint32) {
+	coordinates := [4]mgl32.Vec3{
+		mgl32.Vec3{60, 50, 80},
+		mgl32.Vec3{60, 0, 80},
+		mgl32.Vec3{60, 0, 70},
+		mgl32.Vec3{60, 50, 70},
+	}
+	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
+	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+}
+
+// the right wall of the room 2x5
+func RoomRight2(shaderProgramId uint32) {
+	coordinates := [4]mgl32.Vec3{
+		mgl32.Vec3{60, 50, 50},
+		mgl32.Vec3{60, 0, 50},
+		mgl32.Vec3{60, 0, 30},
+		mgl32.Vec3{60, 50, 30},
+	}
+	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
+	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+}
+
+// the right wall of the room 2x2
+func RoomRight3(shaderProgramId uint32) {
+	coordinates := [4]mgl32.Vec3{
+		mgl32.Vec3{60, 50, 70},
+		mgl32.Vec3{60, 30, 70},
+		mgl32.Vec3{60, 30, 50},
+		mgl32.Vec3{60, 50, 50},
+	}
+	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
+	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+}
+
 // The Sphere.
 func Sphere(shaderProgId uint32) {
 	sphere := primitives.NewSphere()
@@ -240,6 +276,9 @@ func main() {
 	RoomFront(shaderProgramId)
 	RoomBack(shaderProgramId)
 	RoomLeft(shaderProgramId)
+	RoomRight1(shaderProgramId)
+	RoomRight2(shaderProgramId)
+	RoomRight3(shaderProgramId)
 	//Sphere(shaderProgramId)
 
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
