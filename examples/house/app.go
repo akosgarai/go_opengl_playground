@@ -53,8 +53,8 @@ func CreateShader() uint32 {
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *primitives.Camera {
-	camera := primitives.NewCamera(mgl32.Vec3{7.5, 3, 0.0}, mgl32.Vec3{0, 1, 0}, 90.0, 0.0)
-	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
+	camera := primitives.NewCamera(mgl32.Vec3{7.5, 3, 0.0}, mgl32.Vec3{0, -1, 0}, 90.0, 0.0)
+	camera.SetupProjection(90, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
 	return camera
 }
 
@@ -77,8 +77,18 @@ func Path(shaderProgId uint32) {
 		mgl32.Vec3{6, 0, 8},
 		mgl32.Vec3{9, 0, 8},
 	}
-	floorColor := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
+	floorColor := mgl32.Vec3{1.0, 42.0 / 255.0, 42.0 / 255.0}
 	app.AddItem(primitives.NewRectangle(floorCoordinates, floorColor, 20, shaderProgId))
+}
+
+// The Sphere.
+func Sphere(shaderProgId uint32) {
+	sphere := primitives.NewSphere()
+	sphere.SetCenter(mgl32.Vec3{7.5, 2, 3})
+	sphere.SetColor(mgl32.Vec3{0, 0, 1})
+	sphere.SetRadius(0.5)
+	sphere.SetShaderProgram(shaderProgId)
+	app.AddItem(sphere)
 }
 
 func Update() {
@@ -101,6 +111,16 @@ func Update() {
 	if forward != 0 {
 		app.GetCamera().Walk(float32(forward))
 	}
+	dX := float32(0.0)
+	dY := float32(0.0)
+	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
+		dX = 90
+	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
+		dX = -90
+	}
+	if dX != 0.0 {
+		app.GetCamera().UpdateDirection(dX, dY)
+	}
 }
 func main() {
 	runtime.LockOSThread()
@@ -118,6 +138,7 @@ func main() {
 
 	app.SetKeys(SetupKeyMap())
 	Path(shaderProgramId)
+	//Sphere(shaderProgramId)
 
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
 	gl.Viewport(0, 0, windowWidth, windowHeight)
