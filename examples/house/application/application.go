@@ -3,7 +3,7 @@ package application
 import (
 	"fmt"
 
-	"github.com/akosgarai/opengl_playground/examples/callbacks/primitives"
+	"github.com/akosgarai/opengl_playground/examples/house/primitives"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
