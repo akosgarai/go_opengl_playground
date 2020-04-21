@@ -138,7 +138,8 @@ func (r *Rectangle) DrawWithUniforms(view, projection mgl32.Mat4) {
 
 	modelLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("model\x00"))
 
-	M := mgl32.Translate3D(r.points[0].X(), r.points[0].Y(), r.points[0].Z())
+	// The vao is based on the coordinates, so that the model transformation matrix is ident. matrix.
+	M := mgl32.Ident4()
 	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
 
 	r.buildVao()
