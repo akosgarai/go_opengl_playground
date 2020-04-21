@@ -58,8 +58,8 @@ func (r *Rectangle) SetShaderProgram(p uint32) {
 
 func (r *Rectangle) setupVao() {
 	r.vao.Clear()
-	verticalStep := r.points[1].Sub(r.points[0]).Mul(1.0 / float32(r.precision))
-	horisontalStep := r.points[3].Sub(r.points[0]).Mul(1.0 / float32(r.precision))
+	verticalStep := (r.points[1].Sub(r.points[0])).Mul(1.0 / float32(r.precision))
+	horisontalStep := (r.points[3].Sub(r.points[0])).Mul(1.0 / float32(r.precision))
 
 	for horisontalLoopIndex := 0; horisontalLoopIndex < r.precision; horisontalLoopIndex++ {
 		for verticalLoopIndex := 0; verticalLoopIndex < r.precision; verticalLoopIndex++ {
@@ -143,7 +143,7 @@ func (r *Rectangle) DrawWithUniforms(view, projection mgl32.Mat4) {
 	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
 
 	r.buildVao()
-	gl.DrawArrays(gl.TRIANGLES, 0, 3*12)
+	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(r.vao.Get())/6))
 }
 func (r *Rectangle) Update(dt float64) {
 }
