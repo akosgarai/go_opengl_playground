@@ -87,12 +87,12 @@ func (r *Rectangle) setupVao() {
 					horisontalStep.Mul(float32(horisontalLoopIndex))),
 				r.color,
 			}
-			r.vao.AppendPoint(a)
-			r.vao.AppendPoint(b)
-			r.vao.AppendPoint(c)
-			r.vao.AppendPoint(a)
-			r.vao.AppendPoint(c)
-			r.vao.AppendPoint(d)
+			r.vao.AppendVectors(a.Coordinate, a.Color)
+			r.vao.AppendVectors(b.Coordinate, b.Color)
+			r.vao.AppendVectors(c.Coordinate, c.Color)
+			r.vao.AppendVectors(a.Coordinate, a.Color)
+			r.vao.AppendVectors(c.Coordinate, c.Color)
+			r.vao.AppendVectors(d.Coordinate, d.Color)
 		}
 	}
 }
