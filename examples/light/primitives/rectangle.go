@@ -10,8 +10,9 @@ type Rectangle struct {
 	vao           *VAO
 	shaderProgram uint32
 
-	color  mgl32.Vec3
-	points [4]mgl32.Vec3
+	color    mgl32.Vec3
+	points   [4]mgl32.Vec3
+	material *Material
 }
 
 func NewRectangle(points [4]mgl32.Vec3, color mgl32.Vec3, prec int, shaderProgId uint32) *Rectangle {
@@ -33,6 +34,7 @@ func (r *Rectangle) Log() string {
 	logString += " - D : Vector{" + Vec3ToString(r.points[3]) + "}\n"
 	logString += " - color : Vector{" + Vec3ToString(r.color) + "}\n"
 	logString += " - precision : " + IntegerToString(r.precision) + "\n"
+	logString += " - " + r.material.Log() + "\n"
 	return logString
 }
 
@@ -54,6 +56,11 @@ func (r *Rectangle) SetPrecision(p int) {
 // SetShaderProgram updates the shaderProgram of the rectangle.
 func (r *Rectangle) SetShaderProgram(p uint32) {
 	r.shaderProgram = p
+}
+
+// SetMaterial updates the material of the rectangle
+func (r *Rectangle) SetMaterial(m *Material) {
+	r.material = m
 }
 
 func (r *Rectangle) setupVao() {
