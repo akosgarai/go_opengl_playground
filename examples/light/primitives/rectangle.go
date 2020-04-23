@@ -63,36 +63,24 @@ func (r *Rectangle) setupVao() {
 
 	for horisontalLoopIndex := 0; horisontalLoopIndex < r.precision; horisontalLoopIndex++ {
 		for verticalLoopIndex := 0; verticalLoopIndex < r.precision; verticalLoopIndex++ {
-			a := Point{
-				r.points[0].Add(
-					verticalStep.Mul(float32(verticalLoopIndex))).Add(
-					horisontalStep.Mul(float32(horisontalLoopIndex))),
-				r.color,
-			}
-			b := Point{
-				r.points[0].Add(
-					verticalStep.Mul(float32(verticalLoopIndex))).Add(
-					horisontalStep.Mul(float32(horisontalLoopIndex + 1))),
-				r.color,
-			}
-			c := Point{
-				r.points[0].Add(
-					verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
-					horisontalStep.Mul(float32(horisontalLoopIndex + 1))),
-				r.color,
-			}
-			d := Point{
-				r.points[0].Add(
-					verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
-					horisontalStep.Mul(float32(horisontalLoopIndex))),
-				r.color,
-			}
-			r.vao.AppendVectors(a.Coordinate, a.Color)
-			r.vao.AppendVectors(b.Coordinate, b.Color)
-			r.vao.AppendVectors(c.Coordinate, c.Color)
-			r.vao.AppendVectors(a.Coordinate, a.Color)
-			r.vao.AppendVectors(c.Coordinate, c.Color)
-			r.vao.AppendVectors(d.Coordinate, d.Color)
+			a := r.points[0].Add(
+				verticalStep.Mul(float32(verticalLoopIndex))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex)))
+			b := r.points[0].Add(
+				verticalStep.Mul(float32(verticalLoopIndex))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex + 1)))
+			c := r.points[0].Add(
+				verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex + 1)))
+			d := r.points[0].Add(
+				verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex)))
+			r.vao.AppendVectors(a, r.color)
+			r.vao.AppendVectors(b, r.color)
+			r.vao.AppendVectors(c, r.color)
+			r.vao.AppendVectors(a, r.color)
+			r.vao.AppendVectors(c, r.color)
+			r.vao.AppendVectors(d, r.color)
 		}
 	}
 }
