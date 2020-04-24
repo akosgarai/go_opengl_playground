@@ -15,10 +15,10 @@ type Rectangle struct {
 	material *Material
 }
 
-func NewRectangle(points [4]mgl32.Vec3, color mgl32.Vec3, prec int, shaderProgId uint32) *Rectangle {
+func NewRectangle(points [4]mgl32.Vec3, mat *Material, prec int, shaderProgId uint32) *Rectangle {
 	return &Rectangle{
 		precision:     prec,
-		color:         color,
+		material:      mat,
 		points:        points,
 		shaderProgram: shaderProgId,
 		vao:           NewVAO(),
@@ -32,20 +32,9 @@ func (r *Rectangle) Log() string {
 	logString += " - B : Vector{" + Vec3ToString(r.points[1]) + "}\n"
 	logString += " - C : Vector{" + Vec3ToString(r.points[2]) + "}\n"
 	logString += " - D : Vector{" + Vec3ToString(r.points[3]) + "}\n"
-	logString += " - color : Vector{" + Vec3ToString(r.color) + "}\n"
 	logString += " - precision : " + IntegerToString(r.precision) + "\n"
 	logString += " - " + r.material.Log() + "\n"
 	return logString
-}
-
-// SetColor updates the color of the rectangle
-func (r *Rectangle) SetColor(c mgl32.Vec3) {
-	r.color = c
-}
-
-// GetColor returns the color of the rectangle
-func (r *Rectangle) GetColor() mgl32.Vec3 {
-	return r.color
 }
 
 // SetPrecision updates the precision of the rectangle
@@ -62,12 +51,18 @@ func (r *Rectangle) SetShaderProgram(p uint32) {
 func (r *Rectangle) SetMaterial(m *Material) {
 	r.material = m
 }
+func (r *Rectangle) GetNormal() mgl32.Vec3 {
+	v1 := r.points[1].Sub(r.points[0])
+	v2 := r.points[3].Sub(r.points[0])
+	return v1.Cross(v2).Normalize()
+}
 
 func (r *Rectangle) setupVao() {
 	r.vao.Clear()
 	verticalStep := (r.points[1].Sub(r.points[0])).Mul(1.0 / float32(r.precision))
 	horisontalStep := (r.points[3].Sub(r.points[0])).Mul(1.0 / float32(r.precision))
 
+	normal := r.GetNormal()
 	for horisontalLoopIndex := 0; horisontalLoopIndex < r.precision; horisontalLoopIndex++ {
 		for verticalLoopIndex := 0; verticalLoopIndex < r.precision; verticalLoopIndex++ {
 			a := r.points[0].Add(
@@ -82,12 +77,12 @@ func (r *Rectangle) setupVao() {
 			d := r.points[0].Add(
 				verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
 				horisontalStep.Mul(float32(horisontalLoopIndex)))
-			r.vao.AppendVectors(a, r.color)
-			r.vao.AppendVectors(b, r.color)
-			r.vao.AppendVectors(c, r.color)
-			r.vao.AppendVectors(a, r.color)
-			r.vao.AppendVectors(c, r.color)
-			r.vao.AppendVectors(d, r.color)
+			r.vao.AppendVectors(a, normal)
+			r.vao.AppendVectors(b, normal)
+			r.vao.AppendVectors(c, normal)
+			r.vao.AppendVectors(a, normal)
+			r.vao.AppendVectors(c, normal)
+			r.vao.AppendVectors(d, normal)
 		}
 	}
 }
@@ -114,31 +109,40 @@ func (r *Rectangle) buildVao() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
 }
 
-// Draw is for drawing the rectangle to the screen.
-func (r *Rectangle) Draw() {
-	gl.UseProgram(r.shaderProgram)
-	r.buildVao()
-	// draw the stuff.
-	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(r.vao.Get())/6))
+func (r *Rectangle) Update(dt float64) {
 }
 
-// DrawWithUniforms is for drawing the rectangle to the screen. It setups the
-func (r *Rectangle) DrawWithUniforms(view, projection mgl32.Mat4) {
+// DrawWithLight is for drawing the rectangle to the screen. but with lightsource.
+func (r *Rectangle) DrawWithLight(view, projection mgl32.Mat4, lightPos mgl32.Vec3) {
 	gl.UseProgram(r.shaderProgram)
 
 	viewLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("view\x00"))
 	gl.UniformMatrix4fv(viewLocation, 1, false, &view[0])
 	projectionLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("projection\x00"))
 	gl.UniformMatrix4fv(projectionLocation, 1, false, &projection[0])
-
 	modelLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("model\x00"))
-
-	// The vao is based on the coordinates, so that the model transformation matrix is ident. matrix.
 	M := mgl32.Ident4()
 	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
 
+	// diffuse color
+	diffuseLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("diffuseColor\x00"))
+	diffCol := r.material.GetDiffuse()
+	gl.Uniform3f(diffuseLocation, diffCol.X(), diffCol.Y(), diffCol.Z())
+	// specular color
+	specularLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("specularColor\x00"))
+	specCol := r.material.GetSpecular()
+	gl.Uniform3f(specularLocation, specCol.X(), specCol.Y(), specCol.Z())
+	// shininess
+	shininessLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("shininess\x00"))
+	gl.Uniform1f(shininessLocation, r.material.GetShininess())
+	// light position
+	lightPosLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("lightPosition\x00"))
+	gl.Uniform3f(lightPosLocation, lightPos.X(), lightPos.Y(), lightPos.Z())
+	// normal matrix
+	normalMatLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("normal\x00"))
+	N := mgl32.Mat4Normal(M.Mul4(view))
+	gl.UniformMatrix3fv(normalMatLocation, 1, false, &N[0])
+
 	r.buildVao()
 	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(r.vao.Get())/6))
-}
-func (r *Rectangle) Update(dt float64) {
 }
