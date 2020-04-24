@@ -97,7 +97,7 @@ func (a *Application) AddItem(d Drawable) {
 func (a *Application) Draw() {
 	V := a.camera.GetViewMatrix()
 	P := a.camera.GetProjectionMatrix()
-	lightPos := mgl32.Vec3{100, 1000, 100}
+	lightPos := mgl32.Vec3{100, 500, 100}
 
 	for _, item := range a.items {
 		item.DrawWithLight(V, P, lightPos)
