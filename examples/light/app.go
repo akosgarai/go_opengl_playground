@@ -70,15 +70,153 @@ func SetupKeyMap() map[glfw.Key]bool {
 // the ground
 func Ground(shaderProgramId uint32) {
 	coordinates := [4]mgl32.Vec3{
-		mgl32.Vec3{-1000, 0, 1000},
-		mgl32.Vec3{-1000, 0, -1000},
-		mgl32.Vec3{1000, 0, -1000},
-		mgl32.Vec3{1000, 0, 1000},
+		mgl32.Vec3{-1000, -0.02, 1000},
+		mgl32.Vec3{-1000, -0.02, -1000},
+		mgl32.Vec3{1000, -0.02, -1000},
+		mgl32.Vec3{1000, -0.02, 1000},
 	}
 	material := primitives.TestMaterialGreen
 	rect := primitives.NewRectangle(coordinates, material, 20, shaderProgramId)
 	rect.SetInvertNormal(true)
 	app.AddItem(rect)
+}
+
+// the Floor of the building
+func Floor(shaderProgramId uint32) {
+	coordinates := [4]mgl32.Vec3{
+		mgl32.Vec3{-40, 0, -20},
+		mgl32.Vec3{-40, 0, 80},
+		mgl32.Vec3{60, 0, 80},
+		mgl32.Vec3{60, 0, -20},
+	}
+	material := primitives.TestMaterialRed
+	rect := primitives.NewRectangle(coordinates, material, 20, shaderProgramId)
+	rect.SetInvertNormal(false)
+	app.AddItem(rect)
+}
+
+// the left wall of the building. 1 width.
+func LeftWall(shaderProgramId uint32) {
+	// left side 100x50
+	material := primitives.TestMaterialRed
+	leftSide := [4]mgl32.Vec3{
+		mgl32.Vec3{-40, 50, -20},
+		mgl32.Vec3{-40, 0, -20},
+		mgl32.Vec3{-40, 0, 80},
+		mgl32.Vec3{-40, 50, 80},
+	}
+	leftRect := primitives.NewRectangle(leftSide, material, 20, shaderProgramId)
+	leftRect.SetInvertNormal(false)
+	app.AddItem(leftRect)
+	// right side 100x50
+	rightSide := [4]mgl32.Vec3{
+		mgl32.Vec3{-39, 50, -20},
+		mgl32.Vec3{-39, 0, -20},
+		mgl32.Vec3{-39, 0, 80},
+		mgl32.Vec3{-39, 50, 80},
+	}
+	rightRect := primitives.NewRectangle(rightSide, material, 20, shaderProgramId)
+	rightRect.SetInvertNormal(true)
+	app.AddItem(rightRect)
+	// top 100x1
+	topSide := [4]mgl32.Vec3{
+		mgl32.Vec3{-40, 50, -20},
+		mgl32.Vec3{-39, 50, -20},
+		mgl32.Vec3{-39, 50, 80},
+		mgl32.Vec3{-40, 50, 80},
+	}
+	topRect := primitives.NewRectangle(topSide, material, 20, shaderProgramId)
+	app.AddItem(topRect)
+	// bottom 100x1
+	bottomSide := [4]mgl32.Vec3{
+		mgl32.Vec3{-40, 0, -20},
+		mgl32.Vec3{-39, 0, -20},
+		mgl32.Vec3{-39, 0, 80},
+		mgl32.Vec3{-40, 0, 80},
+	}
+	bottomRect := primitives.NewRectangle(bottomSide, material, 20, shaderProgramId)
+	app.AddItem(bottomRect)
+	// front 50x1
+	frontSide := [4]mgl32.Vec3{
+		mgl32.Vec3{-40, 0, -20},
+		mgl32.Vec3{-40, 50, -20},
+		mgl32.Vec3{-39, 50, -20},
+		mgl32.Vec3{-39, 0, -20},
+	}
+	frontRect := primitives.NewRectangle(frontSide, material, 20, shaderProgramId)
+	app.AddItem(frontRect)
+	// back 50x1
+	backSide := [4]mgl32.Vec3{
+		mgl32.Vec3{-40, 0, 80},
+		mgl32.Vec3{-40, 50, 80},
+		mgl32.Vec3{-39, 50, 80},
+		mgl32.Vec3{-39, 0, 80},
+	}
+	backRect := primitives.NewRectangle(backSide, material, 20, shaderProgramId)
+	backRect.SetInvertNormal(true)
+	app.AddItem(backRect)
+}
+
+// the right wall of the building. 1 width.
+func RightWall(shaderProgramId uint32) {
+	// left side 100x50
+	material := primitives.TestMaterialRed
+	leftSide := [4]mgl32.Vec3{
+		mgl32.Vec3{59, 50, -20},
+		mgl32.Vec3{59, 0, -20},
+		mgl32.Vec3{59, 0, 80},
+		mgl32.Vec3{59, 50, 80},
+	}
+	leftRect := primitives.NewRectangle(leftSide, material, 20, shaderProgramId)
+	leftRect.SetInvertNormal(false)
+	app.AddItem(leftRect)
+	// right side 100x50
+	rightSide := [4]mgl32.Vec3{
+		mgl32.Vec3{60, 50, -20},
+		mgl32.Vec3{60, 0, -20},
+		mgl32.Vec3{60, 0, 80},
+		mgl32.Vec3{60, 50, 80},
+	}
+	rightRect := primitives.NewRectangle(rightSide, material, 20, shaderProgramId)
+	rightRect.SetInvertNormal(true)
+	app.AddItem(rightRect)
+	// top 100x1
+	topSide := [4]mgl32.Vec3{
+		mgl32.Vec3{59, 50, -20},
+		mgl32.Vec3{60, 50, -20},
+		mgl32.Vec3{60, 50, 80},
+		mgl32.Vec3{59, 50, 80},
+	}
+	topRect := primitives.NewRectangle(topSide, material, 20, shaderProgramId)
+	app.AddItem(topRect)
+	// bottom 100x1
+	bottomSide := [4]mgl32.Vec3{
+		mgl32.Vec3{59, 0, -20},
+		mgl32.Vec3{60, 0, -20},
+		mgl32.Vec3{60, 0, 80},
+		mgl32.Vec3{59, 0, 80},
+	}
+	bottomRect := primitives.NewRectangle(bottomSide, material, 20, shaderProgramId)
+	app.AddItem(bottomRect)
+	// front 50x1
+	frontSide := [4]mgl32.Vec3{
+		mgl32.Vec3{59, 0, -20},
+		mgl32.Vec3{59, 50, -20},
+		mgl32.Vec3{60, 50, -20},
+		mgl32.Vec3{60, 0, -20},
+	}
+	frontRect := primitives.NewRectangle(frontSide, material, 20, shaderProgramId)
+	app.AddItem(frontRect)
+	// back 50x1
+	backSide := [4]mgl32.Vec3{
+		mgl32.Vec3{59, 0, 80},
+		mgl32.Vec3{59, 50, 80},
+		mgl32.Vec3{60, 50, 80},
+		mgl32.Vec3{60, 0, 80},
+	}
+	backRect := primitives.NewRectangle(backSide, material, 20, shaderProgramId)
+	backRect.SetInvertNormal(true)
+	app.AddItem(backRect)
 }
 
 func Update() {
@@ -128,6 +266,9 @@ func main() {
 
 	app.SetKeys(SetupKeyMap())
 	Ground(shaderProgramId)
+	Floor(shaderProgramId)
+	LeftWall(shaderProgramId)
+	RightWall(shaderProgramId)
 
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
 	gl.Viewport(0, 0, windowWidth, windowHeight)
