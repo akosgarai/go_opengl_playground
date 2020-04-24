@@ -33,7 +33,7 @@ var (
 
 // It creates the shader application for the items.
 func CreateShader() uint32 {
-	vertexShader, err := shader.CompileShader(shader.VertexShaderModelViewProjectionSource, gl.VERTEX_SHADER)
+	vertexShader, err := shader.CompileShader(shader.VertexShaderWithLightSource, gl.VERTEX_SHADER)
 	if err != nil {
 		panic(err)
 	}
@@ -68,15 +68,15 @@ func SetupKeyMap() map[glfw.Key]bool {
 }
 
 // the path
-func Path(shaderProgId uint32) {
-	floorCoordinates := [4]mgl32.Vec3{
+func Path(shaderProgramId uint32) {
+	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{60, 0, 30},
 		mgl32.Vec3{60, 0, 80},
 		mgl32.Vec3{90, 0, 80},
 		mgl32.Vec3{90, 0, 30},
 	}
-	floorColor := mgl32.Vec3{215.0 / 255.0, 100.0 / 255.0, 30.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(floorCoordinates, floorColor, 20, shaderProgId))
+	material := primitives.TestMaterialRed
+	app.AddItem(primitives.NewRectangle(coordinates, material, 20, shaderProgramId))
 }
 
 // the wall left of the path
@@ -87,8 +87,8 @@ func LeftFullWall(shaderProgramId uint32) {
 		mgl32.Vec3{90, 0, 30},
 		mgl32.Vec3{90, 50, 30},
 	}
-	color := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	material := primitives.TestMaterialRed
+	app.AddItem(primitives.NewRectangle(coordinates, material, 20, shaderProgramId))
 }
 
 // the wall front of the path
@@ -99,8 +99,8 @@ func FrontPathWall(shaderProgramId uint32) {
 		mgl32.Vec3{90, 0, 80},
 		mgl32.Vec3{90, 50, 80},
 	}
-	color := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	material := primitives.TestMaterialRed
+	app.AddItem(primitives.NewRectangle(coordinates, material, 20, shaderProgramId))
 }
 
 // the roof of the path
@@ -111,8 +111,8 @@ func PathRoof(shaderProgramId uint32) {
 		mgl32.Vec3{90, 50, 30},
 		mgl32.Vec3{90, 50, 80},
 	}
-	color := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	material := primitives.TestMaterialRed
+	app.AddItem(primitives.NewRectangle(coordinates, material, 20, shaderProgramId))
 }
 
 // the floor of the room
@@ -123,8 +123,8 @@ func RoomFloor(shaderProgramId uint32) {
 		mgl32.Vec3{60, 0, 80},
 		mgl32.Vec3{60, 0, 30},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	material := primitives.TestMaterialGreen
+	app.AddItem(primitives.NewRectangle(coordinates, material, 20, shaderProgramId))
 }
 
 // the roof of the room
@@ -135,8 +135,8 @@ func RoomRoof(shaderProgramId uint32) {
 		mgl32.Vec3{60, 50, 80},
 		mgl32.Vec3{60, 50, 30},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	material := primitives.TestMaterialGreen
+	app.AddItem(primitives.NewRectangle(coordinates, material, 20, shaderProgramId))
 }
 
 // the front wall of the room
@@ -147,8 +147,8 @@ func RoomFront(shaderProgramId uint32) {
 		mgl32.Vec3{10, 0, 80},
 		mgl32.Vec3{10, 50, 80},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	material := primitives.TestMaterialGreen
+	app.AddItem(primitives.NewRectangle(coordinates, material, 20, shaderProgramId))
 }
 
 // the back wall of the room
@@ -159,8 +159,8 @@ func RoomBack(shaderProgramId uint32) {
 		mgl32.Vec3{10, 0, 30},
 		mgl32.Vec3{10, 50, 30},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	material := primitives.TestMaterialGreen
+	app.AddItem(primitives.NewRectangle(coordinates, material, 20, shaderProgramId))
 }
 
 // the left wall of the room
@@ -171,8 +171,8 @@ func RoomLeft(shaderProgramId uint32) {
 		mgl32.Vec3{10, 0, 80},
 		mgl32.Vec3{10, 50, 80},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	material := primitives.TestMaterialGreen
+	app.AddItem(primitives.NewRectangle(coordinates, material, 20, shaderProgramId))
 }
 
 // the right wall of the room 1x5
@@ -183,8 +183,8 @@ func RoomRight1(shaderProgramId uint32) {
 		mgl32.Vec3{60, 0, 70},
 		mgl32.Vec3{60, 50, 70},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	material := primitives.TestMaterialGreen
+	app.AddItem(primitives.NewRectangle(coordinates, material, 20, shaderProgramId))
 }
 
 // the right wall of the room 2x5
@@ -195,8 +195,8 @@ func RoomRight2(shaderProgramId uint32) {
 		mgl32.Vec3{60, 0, 30},
 		mgl32.Vec3{60, 50, 30},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	material := primitives.TestMaterialGreen
+	app.AddItem(primitives.NewRectangle(coordinates, material, 20, shaderProgramId))
 }
 
 // the right wall of the room 2x2
@@ -207,11 +207,12 @@ func RoomRight3(shaderProgramId uint32) {
 		mgl32.Vec3{60, 30, 50},
 		mgl32.Vec3{60, 50, 50},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	material := primitives.TestMaterialGreen
+	app.AddItem(primitives.NewRectangle(coordinates, material, 20, shaderProgramId))
 }
 
 // The Sphere.
+/*
 func Sphere(shaderProgId uint32) {
 	sphere := primitives.NewSphere()
 	sphere.SetCenter(mgl32.Vec3{75, 5, 35})
@@ -220,6 +221,7 @@ func Sphere(shaderProgId uint32) {
 	sphere.SetShaderProgram(shaderProgId)
 	app.AddItem(sphere)
 }
+*/
 
 func Update() {
 	//calculate delta
@@ -296,7 +298,7 @@ func main() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
-		app.DrawWithUniforms()
+		app.Draw()
 		app.GetWindow().SwapBuffers()
 	}
 }
