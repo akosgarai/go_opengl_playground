@@ -10,9 +10,10 @@ type Rectangle struct {
 	vao           *VAO
 	shaderProgram uint32
 
-	color    mgl32.Vec3
-	points   [4]mgl32.Vec3
-	material *Material
+	color        mgl32.Vec3
+	points       [4]mgl32.Vec3
+	material     *Material
+	invertNormal bool
 }
 
 func NewRectangle(points [4]mgl32.Vec3, mat *Material, prec int, shaderProgId uint32) *Rectangle {
@@ -22,6 +23,7 @@ func NewRectangle(points [4]mgl32.Vec3, mat *Material, prec int, shaderProgId ui
 		points:        points,
 		shaderProgram: shaderProgId,
 		vao:           NewVAO(),
+		invertNormal:  false,
 	}
 }
 
@@ -56,6 +58,9 @@ func (r *Rectangle) GetNormal() mgl32.Vec3 {
 	v2 := r.points[3].Sub(r.points[0])
 	return v1.Cross(v2).Normalize()
 }
+func (r *Rectangle) SetInvertNormal(i bool) {
+	r.invertNormal = i
+}
 
 func (r *Rectangle) setupVao() {
 	r.vao.Clear()
@@ -63,6 +68,9 @@ func (r *Rectangle) setupVao() {
 	horisontalStep := (r.points[3].Sub(r.points[0])).Mul(1.0 / float32(r.precision))
 
 	normal := r.GetNormal()
+	if r.invertNormal {
+		normal = normal.Mul(-1)
+	}
 	for horisontalLoopIndex := 0; horisontalLoopIndex < r.precision; horisontalLoopIndex++ {
 		for verticalLoopIndex := 0; verticalLoopIndex < r.precision; verticalLoopIndex++ {
 			a := r.points[0].Add(
