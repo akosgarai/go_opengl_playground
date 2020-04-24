@@ -15,8 +15,7 @@ const (
 )
 
 type Drawable interface {
-	Draw()
-	DrawWithUniforms(mgl32.Mat4, mgl32.Mat4)
+	DrawWithLight(mgl32.Mat4, mgl32.Mat4, mgl32.Vec3)
 	Update(float64)
 	Log() string
 }
@@ -96,18 +95,12 @@ func (a *Application) AddItem(d Drawable) {
 
 // Draw calls Draw function in every drawable item.
 func (a *Application) Draw() {
-	for _, item := range a.items {
-		item.Draw()
-	}
-}
-
-// DrawWithUniforms calls DrawWithUniforms function in every drawable item with the calculated V & P.
-func (a *Application) DrawWithUniforms() {
 	V := a.camera.GetViewMatrix()
 	P := a.camera.GetProjectionMatrix()
+	lightPos := mgl32.Vec3{100, 1000, 100}
 
 	for _, item := range a.items {
-		item.DrawWithUniforms(V, P)
+		item.DrawWithLight(V, P, lightPos)
 	}
 }
 
