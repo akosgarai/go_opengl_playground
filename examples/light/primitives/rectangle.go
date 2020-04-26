@@ -35,6 +35,9 @@ func (r *Rectangle) Log() string {
 	logString += " - C : Vector{" + Vec3ToString(r.Points[2]) + "}\n"
 	logString += " - D : Vector{" + Vec3ToString(r.Points[3]) + "}\n"
 	logString += " - precision : " + IntegerToString(r.precision) + "\n"
+	if r.invertNormal {
+		logString += " - inverted normal vector\n"
+	}
 	logString += " - " + r.material.Log() + "\n"
 	return logString
 }
