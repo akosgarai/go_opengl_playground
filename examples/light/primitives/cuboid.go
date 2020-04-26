@@ -15,7 +15,7 @@ type Cuboid struct {
 }
 
 func NewCuboid(bottom *Rectangle, heightLength float32, mat *Material, prec int, shaderProgram uint32) *Cuboid {
-	height := bottom.GetNormal().Mul(-1 * heightLength)
+	height := bottom.GetNormal().Mul(-1.0 * heightLength)
 
 	var sides [6]*Rectangle
 	// bottom
@@ -78,7 +78,23 @@ func NewCuboid(bottom *Rectangle, heightLength float32, mat *Material, prec int,
 	}
 }
 func (c *Cuboid) Log() string {
-	return ""
+	logString := "Cuboid:\n"
+	logString += " - Top:\n"
+	logString += c.sides[1].Log()
+	logString += " - Bottom:\n"
+	logString += c.sides[0].Log()
+	logString += " - Front:\n"
+	logString += c.sides[2].Log()
+	logString += " - Back:\n"
+	logString += c.sides[3].Log()
+	logString += " - Left:\n"
+	logString += c.sides[4].Log()
+	logString += " - Right:\n"
+	logString += c.sides[5].Log()
+	logString += " - precision : " + IntegerToString(c.precision) + "\n"
+	logString += " - " + c.material.Log() + "\n"
+	return logString
+
 }
 func (c *Cuboid) Update(dt float64) {
 }
