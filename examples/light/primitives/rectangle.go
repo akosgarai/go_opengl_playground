@@ -11,7 +11,7 @@ type Rectangle struct {
 	shaderProgram uint32
 
 	color        mgl32.Vec3
-	points       [4]mgl32.Vec3
+	Points       [4]mgl32.Vec3
 	material     *Material
 	invertNormal bool
 }
@@ -20,7 +20,7 @@ func NewRectangle(points [4]mgl32.Vec3, mat *Material, prec int, shaderProgId ui
 	return &Rectangle{
 		precision:     prec,
 		material:      mat,
-		points:        points,
+		Points:        points,
 		shaderProgram: shaderProgId,
 		vao:           NewVAO(),
 		invertNormal:  false,
@@ -30,10 +30,10 @@ func NewRectangle(points [4]mgl32.Vec3, mat *Material, prec int, shaderProgId ui
 // Log returns the string representation of this object.
 func (r *Rectangle) Log() string {
 	logString := "Rectangle:\n"
-	logString += " - A : Vector{" + Vec3ToString(r.points[0]) + "}\n"
-	logString += " - B : Vector{" + Vec3ToString(r.points[1]) + "}\n"
-	logString += " - C : Vector{" + Vec3ToString(r.points[2]) + "}\n"
-	logString += " - D : Vector{" + Vec3ToString(r.points[3]) + "}\n"
+	logString += " - A : Vector{" + Vec3ToString(r.Points[0]) + "}\n"
+	logString += " - B : Vector{" + Vec3ToString(r.Points[1]) + "}\n"
+	logString += " - C : Vector{" + Vec3ToString(r.Points[2]) + "}\n"
+	logString += " - D : Vector{" + Vec3ToString(r.Points[3]) + "}\n"
 	logString += " - precision : " + IntegerToString(r.precision) + "\n"
 	logString += " - " + r.material.Log() + "\n"
 	return logString
@@ -54,35 +54,68 @@ func (r *Rectangle) SetMaterial(m *Material) {
 	r.material = m
 }
 func (r *Rectangle) GetNormal() mgl32.Vec3 {
-	v1 := r.points[1].Sub(r.points[0])
-	v2 := r.points[3].Sub(r.points[0])
-	return v1.Cross(v2).Normalize()
+	v1 := r.Points[1].Sub(r.Points[0])
+	v2 := r.Points[3].Sub(r.Points[0])
+	cp := v1.Cross(v2).Normalize()
+	if r.invertNormal {
+		cp = cp.Mul(-1)
+	}
+	return cp
+}
+func (r *Rectangle) IsNormalInverted() bool {
+	return r.invertNormal
 }
 func (r *Rectangle) SetInvertNormal(i bool) {
 	r.invertNormal = i
 }
+func (r *Rectangle) SetupExternalVao(v *VAO) *VAO {
+	verticalStep := (r.Points[1].Sub(r.Points[0])).Mul(1.0 / float32(r.precision))
+	horisontalStep := (r.Points[3].Sub(r.Points[0])).Mul(1.0 / float32(r.precision))
+
+	normal := r.GetNormal()
+	for horisontalLoopIndex := 0; horisontalLoopIndex < r.precision; horisontalLoopIndex++ {
+		for verticalLoopIndex := 0; verticalLoopIndex < r.precision; verticalLoopIndex++ {
+			a := r.Points[0].Add(
+				verticalStep.Mul(float32(verticalLoopIndex))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex)))
+			b := r.Points[0].Add(
+				verticalStep.Mul(float32(verticalLoopIndex))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex + 1)))
+			c := r.Points[0].Add(
+				verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex + 1)))
+			d := r.Points[0].Add(
+				verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex)))
+			v.AppendVectors(a, normal)
+			v.AppendVectors(b, normal)
+			v.AppendVectors(c, normal)
+			v.AppendVectors(a, normal)
+			v.AppendVectors(c, normal)
+			v.AppendVectors(d, normal)
+		}
+	}
+	return v
+}
 
 func (r *Rectangle) setupVao() {
 	r.vao.Clear()
-	verticalStep := (r.points[1].Sub(r.points[0])).Mul(1.0 / float32(r.precision))
-	horisontalStep := (r.points[3].Sub(r.points[0])).Mul(1.0 / float32(r.precision))
+	verticalStep := (r.Points[1].Sub(r.Points[0])).Mul(1.0 / float32(r.precision))
+	horisontalStep := (r.Points[3].Sub(r.Points[0])).Mul(1.0 / float32(r.precision))
 
 	normal := r.GetNormal()
-	if r.invertNormal {
-		normal = normal.Mul(-1)
-	}
 	for horisontalLoopIndex := 0; horisontalLoopIndex < r.precision; horisontalLoopIndex++ {
 		for verticalLoopIndex := 0; verticalLoopIndex < r.precision; verticalLoopIndex++ {
-			a := r.points[0].Add(
+			a := r.Points[0].Add(
 				verticalStep.Mul(float32(verticalLoopIndex))).Add(
 				horisontalStep.Mul(float32(horisontalLoopIndex)))
-			b := r.points[0].Add(
+			b := r.Points[0].Add(
 				verticalStep.Mul(float32(verticalLoopIndex))).Add(
 				horisontalStep.Mul(float32(horisontalLoopIndex + 1)))
-			c := r.points[0].Add(
+			c := r.Points[0].Add(
 				verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
 				horisontalStep.Mul(float32(horisontalLoopIndex + 1)))
-			d := r.points[0].Add(
+			d := r.Points[0].Add(
 				verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
 				horisontalStep.Mul(float32(horisontalLoopIndex)))
 			r.vao.AppendVectors(a, normal)
