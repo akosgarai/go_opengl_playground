@@ -12,6 +12,8 @@ type Cuboid struct {
 
 	material *Material
 	sides    [6]*Rectangle
+	static   bool
+	vaoIsSet bool
 }
 
 func NewCuboid(bottom *Rectangle, heightLength float32, mat *Material, prec int, shaderProgram uint32) *Cuboid {
@@ -75,6 +77,8 @@ func NewCuboid(bottom *Rectangle, heightLength float32, mat *Material, prec int,
 		shaderProgram: shaderProgram,
 		material:      mat,
 		sides:         sides,
+		static:        true,
+		vaoIsSet:      false,
 	}
 }
 func (c *Cuboid) Log() string {
@@ -99,10 +103,16 @@ func (c *Cuboid) Log() string {
 func (c *Cuboid) Update(dt float64) {
 }
 func (c *Cuboid) setupVao() {
+	if c.static {
+		if c.vaoIsSet {
+			return
+		}
+	}
 	c.vao.Clear()
 	for i := 0; i < 6; i++ {
 		c.vao = c.sides[i].SetupExternalVao(c.vao)
 	}
+	c.vaoIsSet = true
 }
 func (c *Cuboid) buildVao() {
 	// Create the vao object
@@ -160,4 +170,6 @@ func (c *Cuboid) DrawWithLight(view, projection mgl32.Mat4, lightPos mgl32.Vec3)
 
 	c.buildVao()
 	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(c.vao.Get())/6))
+	gl.DisableVertexAttribArray(0)
+	gl.DisableVertexAttribArray(1)
 }

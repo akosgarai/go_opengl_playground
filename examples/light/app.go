@@ -33,11 +33,19 @@ var (
 
 // It creates the shader application for the items.
 func CreateShader() uint32 {
-	vertexShader, err := shader.CompileShader(shader.VertexShaderWithLightSource, gl.VERTEX_SHADER)
+	vertesShaderSource, err := shader.LoadShaderFromFile("vertexshader.vert")
 	if err != nil {
 		panic(err)
 	}
-	fragmentShader, err := shader.CompileShader(shader.FragmentShaderBasicSource, gl.FRAGMENT_SHADER)
+	vertexShader, err := shader.CompileShader(vertesShaderSource, gl.VERTEX_SHADER)
+	if err != nil {
+		panic(err)
+	}
+	fragmentShaderSource, err := shader.LoadShaderFromFile("fragmentshader.frag")
+	if err != nil {
+		panic(err)
+	}
+	fragmentShader, err := shader.CompileShader(fragmentShaderSource, gl.FRAGMENT_SHADER)
 	if err != nil {
 		panic(err)
 	}
@@ -95,128 +103,46 @@ func Floor(shaderProgramId uint32) {
 	app.AddItem(rect)
 }
 
-// the left wall of the building. 1 width.
+// the left wall of the building. 1 width. 100 lenght, 50 height. I decided to draw it from 10 cuboids.
 func LeftWall(shaderProgramId uint32) {
-	// left side 100x50
 	material := primitives.TestMaterialRed
-	leftSide := [4]mgl32.Vec3{
-		mgl32.Vec3{-40, 50, -20},
-		mgl32.Vec3{-40, 0, -20},
-		mgl32.Vec3{-40, 0, 80},
-		mgl32.Vec3{-40, 50, 80},
+	farest := -20
+	step := 10
+	for i := 0; i < 10; i++ {
+		// cuboid is based on the bottom rect.
+		z0 := float32(farest + (step * i))
+		z1 := float32(farest + (step * (i + 1)))
+		bottomSide := [4]mgl32.Vec3{
+			mgl32.Vec3{-40, 0, z0},
+			mgl32.Vec3{-39, 0, z0},
+			mgl32.Vec3{-39, 0, z1},
+			mgl32.Vec3{-40, 0, z1},
+		}
+		bottomRect := primitives.NewRectangle(bottomSide, material, 10, shaderProgramId)
+		wall := primitives.NewCuboid(bottomRect, 50.0, material, 10, shaderProgramId)
+		app.AddItem(wall)
 	}
-	leftRect := primitives.NewRectangle(leftSide, material, 20, shaderProgramId)
-	leftRect.SetInvertNormal(false)
-	app.AddItem(leftRect)
-	// right side 100x50
-	rightSide := [4]mgl32.Vec3{
-		mgl32.Vec3{-39, 50, -20},
-		mgl32.Vec3{-39, 0, -20},
-		mgl32.Vec3{-39, 0, 80},
-		mgl32.Vec3{-39, 50, 80},
-	}
-	rightRect := primitives.NewRectangle(rightSide, material, 20, shaderProgramId)
-	rightRect.SetInvertNormal(true)
-	app.AddItem(rightRect)
-	// top 100x1
-	topSide := [4]mgl32.Vec3{
-		mgl32.Vec3{-40, 50, -20},
-		mgl32.Vec3{-39, 50, -20},
-		mgl32.Vec3{-39, 50, 80},
-		mgl32.Vec3{-40, 50, 80},
-	}
-	topRect := primitives.NewRectangle(topSide, material, 20, shaderProgramId)
-	app.AddItem(topRect)
-	// bottom 100x1
-	bottomSide := [4]mgl32.Vec3{
-		mgl32.Vec3{-40, 0, -20},
-		mgl32.Vec3{-39, 0, -20},
-		mgl32.Vec3{-39, 0, 80},
-		mgl32.Vec3{-40, 0, 80},
-	}
-	bottomRect := primitives.NewRectangle(bottomSide, material, 20, shaderProgramId)
-	app.AddItem(bottomRect)
-	// front 50x1
-	frontSide := [4]mgl32.Vec3{
-		mgl32.Vec3{-40, 0, -20},
-		mgl32.Vec3{-40, 50, -20},
-		mgl32.Vec3{-39, 50, -20},
-		mgl32.Vec3{-39, 0, -20},
-	}
-	frontRect := primitives.NewRectangle(frontSide, material, 20, shaderProgramId)
-	app.AddItem(frontRect)
-	// back 50x1
-	backSide := [4]mgl32.Vec3{
-		mgl32.Vec3{-40, 0, 80},
-		mgl32.Vec3{-40, 50, 80},
-		mgl32.Vec3{-39, 50, 80},
-		mgl32.Vec3{-39, 0, 80},
-	}
-	backRect := primitives.NewRectangle(backSide, material, 20, shaderProgramId)
-	backRect.SetInvertNormal(true)
-	app.AddItem(backRect)
 }
 
 // the right wall of the building. 1 width.
 func RightWall(shaderProgramId uint32) {
-	// left side 100x50
 	material := primitives.TestMaterialRed
-	leftSide := [4]mgl32.Vec3{
-		mgl32.Vec3{59, 50, -20},
-		mgl32.Vec3{59, 0, -20},
-		mgl32.Vec3{59, 0, 80},
-		mgl32.Vec3{59, 50, 80},
+	farest := -20
+	step := 10
+	for i := 0; i < 10; i++ {
+		// cuboid is based on the bottom rect.
+		z0 := float32(farest + (step * i))
+		z1 := float32(farest + (step * (i + 1)))
+		bottomSide := [4]mgl32.Vec3{
+			mgl32.Vec3{59, 0, z0},
+			mgl32.Vec3{60, 0, z0},
+			mgl32.Vec3{60, 0, z1},
+			mgl32.Vec3{59, 0, z1},
+		}
+		bottomRect := primitives.NewRectangle(bottomSide, material, 10, shaderProgramId)
+		wall := primitives.NewCuboid(bottomRect, 50.0, material, 10, shaderProgramId)
+		app.AddItem(wall)
 	}
-	leftRect := primitives.NewRectangle(leftSide, material, 20, shaderProgramId)
-	leftRect.SetInvertNormal(false)
-	app.AddItem(leftRect)
-	// right side 100x50
-	rightSide := [4]mgl32.Vec3{
-		mgl32.Vec3{60, 50, -20},
-		mgl32.Vec3{60, 0, -20},
-		mgl32.Vec3{60, 0, 80},
-		mgl32.Vec3{60, 50, 80},
-	}
-	rightRect := primitives.NewRectangle(rightSide, material, 20, shaderProgramId)
-	rightRect.SetInvertNormal(true)
-	app.AddItem(rightRect)
-	// top 100x1
-	topSide := [4]mgl32.Vec3{
-		mgl32.Vec3{59, 50, -20},
-		mgl32.Vec3{60, 50, -20},
-		mgl32.Vec3{60, 50, 80},
-		mgl32.Vec3{59, 50, 80},
-	}
-	topRect := primitives.NewRectangle(topSide, material, 20, shaderProgramId)
-	app.AddItem(topRect)
-	// bottom 100x1
-	bottomSide := [4]mgl32.Vec3{
-		mgl32.Vec3{59, 0, -20},
-		mgl32.Vec3{60, 0, -20},
-		mgl32.Vec3{60, 0, 80},
-		mgl32.Vec3{59, 0, 80},
-	}
-	bottomRect := primitives.NewRectangle(bottomSide, material, 20, shaderProgramId)
-	app.AddItem(bottomRect)
-	// front 50x1
-	frontSide := [4]mgl32.Vec3{
-		mgl32.Vec3{59, 0, -20},
-		mgl32.Vec3{59, 50, -20},
-		mgl32.Vec3{60, 50, -20},
-		mgl32.Vec3{60, 0, -20},
-	}
-	frontRect := primitives.NewRectangle(frontSide, material, 20, shaderProgramId)
-	app.AddItem(frontRect)
-	// back 50x1
-	backSide := [4]mgl32.Vec3{
-		mgl32.Vec3{59, 0, 80},
-		mgl32.Vec3{59, 50, 80},
-		mgl32.Vec3{60, 50, 80},
-		mgl32.Vec3{60, 0, 80},
-	}
-	backRect := primitives.NewRectangle(backSide, material, 20, shaderProgramId)
-	backRect.SetInvertNormal(true)
-	app.AddItem(backRect)
 }
 
 func Update() {
@@ -267,7 +193,7 @@ func main() {
 	app.SetKeys(SetupKeyMap())
 	Ground(shaderProgramId)
 	Floor(shaderProgramId)
-	LeftWall(shaderProgramId)
+	//LeftWall(shaderProgramId)
 	RightWall(shaderProgramId)
 
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)

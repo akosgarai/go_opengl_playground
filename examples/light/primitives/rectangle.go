@@ -34,6 +34,7 @@ func (r *Rectangle) Log() string {
 	logString += " - B : Vector{" + Vec3ToString(r.Points[1]) + "}\n"
 	logString += " - C : Vector{" + Vec3ToString(r.Points[2]) + "}\n"
 	logString += " - D : Vector{" + Vec3ToString(r.Points[3]) + "}\n"
+	logString += " - Normal : Vector{" + Vec3ToString(r.GetNormal()) + "}\n"
 	logString += " - precision : " + IntegerToString(r.precision) + "\n"
 	if r.invertNormal {
 		logString += " - inverted normal vector\n"
