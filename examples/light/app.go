@@ -31,32 +31,6 @@ var (
 	app              *application.Application
 )
 
-// It creates the shader application for the items.
-func CreateShader() uint32 {
-	vertesShaderSource, err := shader.LoadShaderFromFile("vertexshader.vert")
-	if err != nil {
-		panic(err)
-	}
-	vertexShader, err := shader.CompileShader(vertesShaderSource, gl.VERTEX_SHADER)
-	if err != nil {
-		panic(err)
-	}
-	fragmentShaderSource, err := shader.LoadShaderFromFile("fragmentshader.frag")
-	if err != nil {
-		panic(err)
-	}
-	fragmentShader, err := shader.CompileShader(fragmentShaderSource, gl.FRAGMENT_SHADER)
-	if err != nil {
-		panic(err)
-	}
-
-	program := gl.CreateProgram()
-	gl.AttachShader(program, vertexShader)
-	gl.AttachShader(program, fragmentShader)
-	gl.LinkProgram(program)
-	return program
-}
-
 // It creates a new camera with the necessary setup
 func CreateCamera() *primitives.Camera {
 	camera := primitives.NewCamera(mgl32.Vec3{75, 30, 0.0}, mgl32.Vec3{0, -1, 0}, 90.0, 0.0)
@@ -76,7 +50,7 @@ func SetupKeyMap() map[glfw.Key]bool {
 }
 
 // the ground
-func Ground(shaderProgramId uint32) {
+func Ground(shaderProgram *shader.Shader) {
 	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{-1000, -0.02, 1000},
 		mgl32.Vec3{-1000, -0.02, -1000},
@@ -84,13 +58,13 @@ func Ground(shaderProgramId uint32) {
 		mgl32.Vec3{1000, -0.02, 1000},
 	}
 	material := primitives.TestMaterialGreen
-	rect := primitives.NewRectangle(coordinates, material, 20, shaderProgramId)
+	rect := primitives.NewRectangle(coordinates, material, 20, shaderProgram)
 	rect.SetInvertNormal(true)
 	app.AddItem(rect)
 }
 
 // the Floor of the building
-func Floor(shaderProgramId uint32) {
+func Floor(shaderProgram *shader.Shader) {
 	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{-40, 0, -20},
 		mgl32.Vec3{-40, 0, 80},
@@ -98,13 +72,13 @@ func Floor(shaderProgramId uint32) {
 		mgl32.Vec3{60, 0, -20},
 	}
 	material := primitives.TestMaterialRed
-	rect := primitives.NewRectangle(coordinates, material, 20, shaderProgramId)
+	rect := primitives.NewRectangle(coordinates, material, 20, shaderProgram)
 	rect.SetInvertNormal(false)
 	app.AddItem(rect)
 }
 
 // the left wall of the building. 1 width. 100 lenght, 50 height. I decided to draw it from 10 cuboids.
-func LeftWall(shaderProgramId uint32) {
+func LeftWall(shaderProgram *shader.Shader) {
 	material := primitives.TestMaterialRed
 	farest := -20
 	step := 10
@@ -118,14 +92,14 @@ func LeftWall(shaderProgramId uint32) {
 			mgl32.Vec3{-39, 0, z1},
 			mgl32.Vec3{-40, 0, z1},
 		}
-		bottomRect := primitives.NewRectangle(bottomSide, material, 10, shaderProgramId)
-		wall := primitives.NewCuboid(bottomRect, 50.0, material, 10, shaderProgramId)
+		bottomRect := primitives.NewRectangle(bottomSide, material, 10, shaderProgram)
+		wall := primitives.NewCuboid(bottomRect, 50.0, material, 10, shaderProgram)
 		app.AddItem(wall)
 	}
 }
 
 // the right wall of the building. 1 width.
-func RightWall(shaderProgramId uint32) {
+func RightWall(shaderProgram *shader.Shader) {
 	material := primitives.TestMaterialRed
 	farest := -20
 	step := 10
@@ -139,8 +113,8 @@ func RightWall(shaderProgramId uint32) {
 			mgl32.Vec3{60, 0, z1},
 			mgl32.Vec3{59, 0, z1},
 		}
-		bottomRect := primitives.NewRectangle(bottomSide, material, 10, shaderProgramId)
-		wall := primitives.NewCuboid(bottomRect, 50.0, material, 10, shaderProgramId)
+		bottomRect := primitives.NewRectangle(bottomSide, material, 10, shaderProgram)
+		wall := primitives.NewCuboid(bottomRect, 50.0, material, 10, shaderProgram)
 		app.AddItem(wall)
 	}
 }
@@ -185,16 +159,16 @@ func main() {
 	defer glfw.Terminate()
 	application.InitOpenGL()
 
-	shaderProgramId := CreateShader()
+	shaderProgram := shader.NewShader("examples/light/vertexshader.vert", "examples/light/fragmentshader.frag")
 
 	app.SetCamera(CreateCamera())
 	cameraLastUpdate = time.Now().UnixNano()
 
 	app.SetKeys(SetupKeyMap())
-	Ground(shaderProgramId)
-	Floor(shaderProgramId)
-	//LeftWall(shaderProgramId)
-	RightWall(shaderProgramId)
+	Ground(shaderProgram)
+	Floor(shaderProgram)
+	LeftWall(shaderProgram)
+	RightWall(shaderProgram)
 
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
 	gl.Viewport(0, 0, windowWidth, windowHeight)
