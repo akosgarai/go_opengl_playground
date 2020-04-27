@@ -2,6 +2,7 @@ package shader
 
 import (
 	"fmt"
+	"io/ioutil"
 	"strings"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -225,6 +226,17 @@ var (
     ` + "\x00"
 )
 
+// LoadShaderFromFile takes a filepath string arguments.
+// It loads the file and returns it as a '\x00' terminated string.
+// It returns an error also.
+func LoadShaderFromFile(path string) (string, error) {
+	shaderCode, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	result := string(shaderCode) + "\x00"
+	return result, nil
+}
 func CompileShader(source string, shaderType uint32) (uint32, error) {
 	shader := gl.CreateShader(shaderType)
 
