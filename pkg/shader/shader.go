@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 var (
@@ -258,4 +259,74 @@ func CompileShader(source string, shaderType uint32) (uint32, error) {
 	}
 
 	return shader, nil
+}
+
+type Shader struct {
+	shaderProgramId uint32
+}
+
+// NewShader returns a Shader. It's inputs are the filenames of the shaders.
+// It reads the files and compiles them. The shaders are attached to the shader program.
+func NewShader(vertexShaderPath, fragmentShaderPath string) *Shader {
+	vertexShaderSource, err := LoadShaderFromFile(vertexShaderPath)
+	if err != nil {
+		panic(err)
+	}
+	vertexShader, err := CompileShader(vertexShaderSource, gl.VERTEX_SHADER)
+	if err != nil {
+		panic(err)
+	}
+	fragmentShaderSource, err := LoadShaderFromFile(fragmentShaderPath)
+	if err != nil {
+		panic(err)
+	}
+	fragmentShader, err := CompileShader(fragmentShaderSource, gl.FRAGMENT_SHADER)
+	if err != nil {
+		panic(err)
+	}
+
+	program := gl.CreateProgram()
+	gl.AttachShader(program, vertexShader)
+	gl.AttachShader(program, fragmentShader)
+	gl.LinkProgram(program)
+
+	return &Shader{
+		shaderProgramId: program,
+	}
+}
+
+// Use is a wrapper for gl.UseProgram
+func (s *Shader) Use() {
+	gl.UseProgram(s.shaderProgramId)
+}
+
+// SetUniformMat4 gets an uniform name string and the value matrix as input and
+// calls the gl.UniformMatrix4fv function
+func (s *Shader) SetUniformMat4(uniformName string, mat mgl32.Mat4) {
+	location := s.getUniformLocation(uniformName)
+	gl.UniformMatrix4fv(location, 1, false, &mat[0])
+}
+
+// SetUniformMat3 gets an uniform name string and the value matrix as input and
+// calls the gl.UniformMatrix3fv function
+func (s *Shader) SetUniformMat3(uniformName string, mat mgl32.Mat3) {
+	location := s.getUniformLocation(uniformName)
+	gl.UniformMatrix3fv(location, 1, false, &mat[0])
+}
+
+// SetUniform3f gets an uniform name string and 3 float values as input and
+// calls the gl.Uniform3f function
+func (s *Shader) SetUniform3f(uniformName string, v1, v2, v3 float32) {
+	location := s.getUniformLocation(uniformName)
+	gl.Uniform3f(location, v1, v2, v3)
+}
+
+// SetUniform1f gets an uniform name string and a float value as input and
+// calls the gl.Uniform1f function
+func (s *Shader) SetUniform1f(uniformName string, v1 float32) {
+	location := s.getUniformLocation(uniformName)
+	gl.Uniform1f(location, v1)
+}
+func (s *Shader) getUniformLocation(uniformName string) int32 {
+	return gl.GetUniformLocation(s.shaderProgramId, gl.Str(uniformName+"\x00"))
 }
