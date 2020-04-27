@@ -3,12 +3,14 @@ package primitives
 import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
+
+	"github.com/akosgarai/opengl_playground/pkg/shader"
 )
 
 type Cuboid struct {
-	precision     int
-	vao           *VAO
-	shaderProgram uint32
+	precision int
+	vao       *VAO
+	shader    *shader.Shader
 
 	material *Material
 	sides    [6]*Rectangle
@@ -16,7 +18,7 @@ type Cuboid struct {
 	vaoIsSet bool
 }
 
-func NewCuboid(bottom *Rectangle, heightLength float32, mat *Material, prec int, shaderProgram uint32) *Cuboid {
+func NewCuboid(bottom *Rectangle, heightLength float32, mat *Material, prec int, shader *shader.Shader) *Cuboid {
 	height := bottom.GetNormal().Mul(-1.0 * heightLength)
 
 	var sides [6]*Rectangle
@@ -29,7 +31,7 @@ func NewCuboid(bottom *Rectangle, heightLength float32, mat *Material, prec int,
 		bottom.Points[2].Add(height),
 		bottom.Points[3].Add(height),
 	}
-	top := NewRectangle(topSide, mat, prec, shaderProgram)
+	top := NewRectangle(topSide, mat, prec, shader)
 	top.SetInvertNormal(!bottom.IsNormalInverted())
 	sides[1] = top
 	// front
@@ -39,7 +41,7 @@ func NewCuboid(bottom *Rectangle, heightLength float32, mat *Material, prec int,
 		bottom.Points[1],
 		top.Points[1],
 	}
-	front := NewRectangle(frontSide, mat, prec, shaderProgram)
+	front := NewRectangle(frontSide, mat, prec, shader)
 	front.SetInvertNormal(true)
 	sides[2] = front
 	// back
@@ -49,7 +51,7 @@ func NewCuboid(bottom *Rectangle, heightLength float32, mat *Material, prec int,
 		bottom.Points[2],
 		top.Points[2],
 	}
-	back := NewRectangle(backSide, mat, prec, shaderProgram)
+	back := NewRectangle(backSide, mat, prec, shader)
 	sides[3] = back
 	// left
 	leftSide := [4]mgl32.Vec3{
@@ -58,7 +60,7 @@ func NewCuboid(bottom *Rectangle, heightLength float32, mat *Material, prec int,
 		bottom.Points[0],
 		top.Points[0],
 	}
-	left := NewRectangle(leftSide, mat, prec, shaderProgram)
+	left := NewRectangle(leftSide, mat, prec, shader)
 	sides[4] = left
 	// right
 	rightSide := [4]mgl32.Vec3{
@@ -67,18 +69,18 @@ func NewCuboid(bottom *Rectangle, heightLength float32, mat *Material, prec int,
 		bottom.Points[2],
 		top.Points[2],
 	}
-	right := NewRectangle(rightSide, mat, prec, shaderProgram)
+	right := NewRectangle(rightSide, mat, prec, shader)
 	right.SetInvertNormal(true)
 	sides[5] = right
 
 	return &Cuboid{
-		precision:     prec,
-		vao:           NewVAO(),
-		shaderProgram: shaderProgram,
-		material:      mat,
-		sides:         sides,
-		static:        true,
-		vaoIsSet:      false,
+		precision: prec,
+		vao:       NewVAO(),
+		shader:    shader,
+		material:  mat,
+		sides:     sides,
+		static:    true,
+		vaoIsSet:  false,
 	}
 }
 func (c *Cuboid) Log() string {
@@ -139,34 +141,26 @@ func (c *Cuboid) buildVao() {
 
 // DrawWithLight is for drawing the rectangle to the screen. but with lightsource.
 func (c *Cuboid) DrawWithLight(view, projection mgl32.Mat4, lightPos mgl32.Vec3) {
-	gl.UseProgram(c.shaderProgram)
+	c.shader.Use()
 
-	viewLocation := gl.GetUniformLocation(c.shaderProgram, gl.Str("view\x00"))
-	gl.UniformMatrix4fv(viewLocation, 1, false, &view[0])
-	projectionLocation := gl.GetUniformLocation(c.shaderProgram, gl.Str("projection\x00"))
-	gl.UniformMatrix4fv(projectionLocation, 1, false, &projection[0])
-	modelLocation := gl.GetUniformLocation(c.shaderProgram, gl.Str("model\x00"))
+	c.shader.SetUniformMat4("view", view)
+	c.shader.SetUniformMat4("projection", projection)
 	M := mgl32.Ident4()
-	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
+	c.shader.SetUniformMat4("model", M)
 
 	// diffuse color
-	diffuseLocation := gl.GetUniformLocation(c.shaderProgram, gl.Str("diffuseColor\x00"))
 	diffCol := c.material.GetDiffuse()
-	gl.Uniform3f(diffuseLocation, diffCol.X(), diffCol.Y(), diffCol.Z())
+	c.shader.SetUniform3f("diffuseColor", diffCol.X(), diffCol.Y(), diffCol.Z())
 	// specular color
-	specularLocation := gl.GetUniformLocation(c.shaderProgram, gl.Str("specularColor\x00"))
 	specCol := c.material.GetSpecular()
-	gl.Uniform3f(specularLocation, specCol.X(), specCol.Y(), specCol.Z())
+	c.shader.SetUniform3f("specularColor", specCol.X(), specCol.Y(), specCol.Z())
 	// shininess
-	shininessLocation := gl.GetUniformLocation(c.shaderProgram, gl.Str("shininess\x00"))
-	gl.Uniform1f(shininessLocation, c.material.GetShininess())
+	c.shader.SetUniform1f("shininess", c.material.GetShininess())
 	// light position
-	lightPosLocation := gl.GetUniformLocation(c.shaderProgram, gl.Str("lightPosition\x00"))
-	gl.Uniform3f(lightPosLocation, lightPos.X(), lightPos.Y(), lightPos.Z())
+	c.shader.SetUniform3f("lightPosition", lightPos.X(), lightPos.Y(), lightPos.Z())
 	// normal matrix
-	normalMatLocation := gl.GetUniformLocation(c.shaderProgram, gl.Str("normal\x00"))
 	N := mgl32.Mat4Normal(M.Mul4(view))
-	gl.UniformMatrix3fv(normalMatLocation, 1, false, &N[0])
+	c.shader.SetUniformMat3("normal", N)
 
 	c.buildVao()
 	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(c.vao.Get())/6))

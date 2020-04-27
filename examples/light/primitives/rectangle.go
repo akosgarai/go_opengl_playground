@@ -3,12 +3,14 @@ package primitives
 import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
+
+	"github.com/akosgarai/opengl_playground/pkg/shader"
 )
 
 type Rectangle struct {
-	precision     int
-	vao           *VAO
-	shaderProgram uint32
+	precision int
+	vao       *VAO
+	shader    *shader.Shader
 
 	color        mgl32.Vec3
 	Points       [4]mgl32.Vec3
@@ -16,14 +18,14 @@ type Rectangle struct {
 	invertNormal bool
 }
 
-func NewRectangle(points [4]mgl32.Vec3, mat *Material, prec int, shaderProgId uint32) *Rectangle {
+func NewRectangle(points [4]mgl32.Vec3, mat *Material, prec int, shader *shader.Shader) *Rectangle {
 	return &Rectangle{
-		precision:     prec,
-		material:      mat,
-		Points:        points,
-		shaderProgram: shaderProgId,
-		vao:           NewVAO(),
-		invertNormal:  false,
+		precision:    prec,
+		material:     mat,
+		Points:       points,
+		shader:       shader,
+		vao:          NewVAO(),
+		invertNormal: false,
 	}
 }
 
@@ -48,9 +50,9 @@ func (r *Rectangle) SetPrecision(p int) {
 	r.precision = p
 }
 
-// SetShaderProgram updates the shaderProgram of the rectangle.
-func (r *Rectangle) SetShaderProgram(p uint32) {
-	r.shaderProgram = p
+// SetShader updates the shader of the rectangle.
+func (r *Rectangle) SetShader(s *shader.Shader) {
+	r.shader = s
 }
 
 // SetMaterial updates the material of the rectangle
@@ -159,34 +161,26 @@ func (r *Rectangle) Update(dt float64) {
 
 // DrawWithLight is for drawing the rectangle to the screen. but with lightsource.
 func (r *Rectangle) DrawWithLight(view, projection mgl32.Mat4, lightPos mgl32.Vec3) {
-	gl.UseProgram(r.shaderProgram)
+	r.shader.Use()
 
-	viewLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("view\x00"))
-	gl.UniformMatrix4fv(viewLocation, 1, false, &view[0])
-	projectionLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("projection\x00"))
-	gl.UniformMatrix4fv(projectionLocation, 1, false, &projection[0])
-	modelLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("model\x00"))
+	r.shader.SetUniformMat4("view", view)
+	r.shader.SetUniformMat4("projection", projection)
 	M := mgl32.Ident4()
-	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
+	r.shader.SetUniformMat4("model", M)
 
 	// diffuse color
-	diffuseLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("diffuseColor\x00"))
 	diffCol := r.material.GetDiffuse()
-	gl.Uniform3f(diffuseLocation, diffCol.X(), diffCol.Y(), diffCol.Z())
+	r.shader.SetUniform3f("diffuseColor", diffCol.X(), diffCol.Y(), diffCol.Z())
 	// specular color
-	specularLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("specularColor\x00"))
 	specCol := r.material.GetSpecular()
-	gl.Uniform3f(specularLocation, specCol.X(), specCol.Y(), specCol.Z())
+	r.shader.SetUniform3f("specularColor", specCol.X(), specCol.Y(), specCol.Z())
 	// shininess
-	shininessLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("shininess\x00"))
-	gl.Uniform1f(shininessLocation, r.material.GetShininess())
+	r.shader.SetUniform1f("shininess", r.material.GetShininess())
 	// light position
-	lightPosLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("lightPosition\x00"))
-	gl.Uniform3f(lightPosLocation, lightPos.X(), lightPos.Y(), lightPos.Z())
+	r.shader.SetUniform3f("lightPosition", lightPos.X(), lightPos.Y(), lightPos.Z())
 	// normal matrix
-	normalMatLocation := gl.GetUniformLocation(r.shaderProgram, gl.Str("normal\x00"))
 	N := mgl32.Mat4Normal(M.Mul4(view))
-	gl.UniformMatrix3fv(normalMatLocation, 1, false, &N[0])
+	r.shader.SetUniformMat3("normal", N)
 
 	r.buildVao()
 	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(r.vao.Get())/6))
