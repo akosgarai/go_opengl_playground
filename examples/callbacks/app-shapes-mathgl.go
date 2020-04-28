@@ -221,30 +221,10 @@ func (a *Application) Update() {
 }
 func (a *Application) Draw() {
 	a.Update()
-	modelLocation := gl.GetUniformLocation(a.program, gl.Str("model\x00"))
-	// view aka camera
-	viewLocation := gl.GetUniformLocation(a.program, gl.Str("view\x00"))
-	projectionLocation := gl.GetUniformLocation(a.program, gl.Str("projection\x00"))
-
-	// mvp - modelview - projection matrix
 	V := a.camera.GetViewMatrix()
-	gl.UniformMatrix4fv(viewLocation, 1, false, &V[0])
-	// Should Be fine 'P'
 	P := a.camera.GetProjectionMatrix()
-	gl.UniformMatrix4fv(projectionLocation, 1, false, &P[0])
-	M := mgl32.Translate3D(a.cubePosition.X(), a.cubePosition.Y(), a.cubePosition.Z())
-	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
-	a.cube.Draw()
-	// Update M for the sphere
-	M = mgl32.Translate3D(
-		a.sphere.GetCenter().X(),
-		a.sphere.GetCenter().Y(),
-		a.sphere.GetCenter().Z()).Mul4(mgl32.Scale3D(
-		float32(a.sphere.GetRadius()),
-		float32(a.sphere.GetRadius()),
-		float32(a.sphere.GetRadius())))
-	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
-	a.sphere.Draw()
+	a.cube.DrawWithUniforms(V, P)
+	a.sphere.DrawWithUniforms(V, P)
 }
 
 // MouseButtonCallback is responsible for the mouse button event handling.
@@ -310,6 +290,8 @@ func main() {
 
 	// Configure global settings
 	gl.UseProgram(app.program)
+	app.cube.SetShaderProgram(app.program)
+	app.sphere.SetShaderProgram(app.program)
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)

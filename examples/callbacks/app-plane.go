@@ -219,28 +219,10 @@ func (a *Application) Update() {
 // Draw is responsible for drawing the screen.
 func (a *Application) Draw() {
 	a.Update()
-	modelLocation := gl.GetUniformLocation(a.program, gl.Str("model\x00"))
-	viewLocation := gl.GetUniformLocation(a.program, gl.Str("view\x00"))
-	projectionLocation := gl.GetUniformLocation(a.program, gl.Str("projection\x00"))
-
-	// mvp - modelview - projection matrix
 	V := a.camera.GetViewMatrix()
-	gl.UniformMatrix4fv(viewLocation, 1, false, &V[0])
 	P := a.camera.GetProjectionMatrix()
-	gl.UniformMatrix4fv(projectionLocation, 1, false, &P[0])
-	M := mgl32.Ident4()
-	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
-	a.square.Draw()
-	// Update M for the sphere
-	M = mgl32.Translate3D(
-		a.sphere.GetCenter().X(),
-		a.sphere.GetCenter().Y(),
-		a.sphere.GetCenter().Z()).Mul4(mgl32.Scale3D(
-		float32(a.sphere.GetRadius()),
-		float32(a.sphere.GetRadius()),
-		float32(a.sphere.GetRadius())))
-	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
-	a.sphere.Draw()
+	a.sphere.DrawWithUniforms(V, P)
+	a.square.DrawWithUniforms(V, P)
 }
 
 func initGlfw() *glfw.Window {
@@ -298,6 +280,8 @@ func main() {
 	app.window = initGlfw()
 	defer glfw.Terminate()
 	app.program = initOpenGL()
+	app.square.SetShaderProgram(app.program)
+	app.sphere.SetShaderProgram(app.program)
 
 	gl.UseProgram(app.program)
 
