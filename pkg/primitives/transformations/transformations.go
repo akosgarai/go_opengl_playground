@@ -2,9 +2,12 @@ package transformations
 
 import (
 	"math"
+	"strconv"
 
 	mat "github.com/akosgarai/opengl_playground/pkg/primitives/matrix"
 	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
+
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 var (
@@ -128,4 +131,27 @@ func ProjectionMatrix(angleOfView, near, far float64) *mat.Matrix {
 	projection.Points[11] = -1
 	projection.Points[15] = 0
 	return projection
+}
+
+// Vec3ToString helper function for the string representation of a vector. It is for the log.
+func Vec3ToString(v mgl32.Vec3) string {
+	x := strconv.FormatFloat(float64(v.X()), 'f', 6, 32)
+	y := strconv.FormatFloat(float64(v.Y()), 'f', 6, 32)
+	z := strconv.FormatFloat(float64(v.Z()), 'f', 6, 32)
+	return "X : " + x + ", Y : " + y + ", Z : " + z
+}
+
+// Float64ToString returns the given float number in string format.
+func Float64ToString(num float64) string {
+	return strconv.FormatFloat(num, 'f', 6, 32)
+}
+
+// Float32ToString returns the given float number in string format.
+func Float32ToString(num float32) string {
+	return Float64ToString(float64(num))
+}
+
+// IntegerToString returns the string representation of the given integer
+func IntegerToString(num int) string {
+	return strconv.Itoa(num)
 }
