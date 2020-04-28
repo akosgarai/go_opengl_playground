@@ -3,11 +3,13 @@ package primitives
 import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
+
+	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
 type Rectangle struct {
 	precision     int
-	vao           *VAO
+	vao           *vao.VAO
 	shaderProgram uint32
 
 	color  mgl32.Vec3
@@ -20,7 +22,7 @@ func NewRectangle(points [4]mgl32.Vec3, color mgl32.Vec3, prec int, shaderProgId
 		color:         color,
 		points:        points,
 		shaderProgram: shaderProgId,
-		vao:           NewVAO(),
+		vao:           vao.NewVAO(),
 	}
 }
 
@@ -63,36 +65,24 @@ func (r *Rectangle) setupVao() {
 
 	for horisontalLoopIndex := 0; horisontalLoopIndex < r.precision; horisontalLoopIndex++ {
 		for verticalLoopIndex := 0; verticalLoopIndex < r.precision; verticalLoopIndex++ {
-			a := Point{
-				r.points[0].Add(
-					verticalStep.Mul(float32(verticalLoopIndex))).Add(
-					horisontalStep.Mul(float32(horisontalLoopIndex))),
-				r.color,
-			}
-			b := Point{
-				r.points[0].Add(
-					verticalStep.Mul(float32(verticalLoopIndex))).Add(
-					horisontalStep.Mul(float32(horisontalLoopIndex + 1))),
-				r.color,
-			}
-			c := Point{
-				r.points[0].Add(
-					verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
-					horisontalStep.Mul(float32(horisontalLoopIndex + 1))),
-				r.color,
-			}
-			d := Point{
-				r.points[0].Add(
-					verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
-					horisontalStep.Mul(float32(horisontalLoopIndex))),
-				r.color,
-			}
-			r.vao.AppendPoint(a)
-			r.vao.AppendPoint(b)
-			r.vao.AppendPoint(c)
-			r.vao.AppendPoint(a)
-			r.vao.AppendPoint(c)
-			r.vao.AppendPoint(d)
+			a := r.points[0].Add(
+				verticalStep.Mul(float32(verticalLoopIndex))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex)))
+			b := r.points[0].Add(
+				verticalStep.Mul(float32(verticalLoopIndex))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex + 1)))
+			c := r.points[0].Add(
+				verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex + 1)))
+			d := r.points[0].Add(
+				verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex)))
+			r.vao.AppendVectors(a, r.color)
+			r.vao.AppendVectors(b, r.color)
+			r.vao.AppendVectors(c, r.color)
+			r.vao.AppendVectors(a, r.color)
+			r.vao.AppendVectors(c, r.color)
+			r.vao.AppendVectors(d, r.color)
 		}
 	}
 }
