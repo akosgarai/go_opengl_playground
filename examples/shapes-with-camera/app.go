@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 const (
@@ -50,13 +51,13 @@ func NewApplication() *Application {
 	app.GenerateSphere()
 	app.moveSpeed = 1.0 / 1000.0
 	app.epsilon = 50.0
-	app.camera = camera.NewCamera(vec.Vector{-3, -5, 18.0}, vec.Vector{0, 1, 0}, -90.0, 0.0)
+	app.camera = camera.NewCamera(mgl32.Vec3{-3, -5, 18.0}, mgl32.Vec3{0, 1, 0}, -90.0, 0.0)
 	app.cameraDirection = 0.1
 	app.cameraDirectionSpeed = 5
 	fmt.Println("Camera state after new function")
 	fmt.Println(app.camera.Log())
 	// Rotation related code comes here.
-	app.camera.SetupProjection(45, float64(windowWidth/windowHeight), 0.1, 100.0)
+	app.camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
 	fmt.Println("Camera state after setupProjection function")
 	fmt.Println(app.camera.Log())
 	app.cameraLastUpdate = time.Now().UnixNano()
@@ -148,7 +149,7 @@ func (a *Application) KeyHandler() {
 		forward = -a.moveSpeed * moveTime
 	}
 	if forward != 0 {
-		a.camera.Walk(forward)
+		a.camera.Walk(float32(forward))
 	}
 	horisontal := 0.0
 	if a.KeyDowns["A"] && !a.KeyDowns["D"] {
@@ -157,7 +158,7 @@ func (a *Application) KeyHandler() {
 		horisontal = a.moveSpeed * moveTime
 	}
 	if horisontal != 0 {
-		a.camera.Strafe(horisontal)
+		a.camera.Strafe(float32(horisontal))
 	}
 	vertical := 0.0
 	if a.KeyDowns["Q"] && !a.KeyDowns["E"] {
@@ -166,7 +167,7 @@ func (a *Application) KeyHandler() {
 		vertical = a.moveSpeed * moveTime
 	}
 	if vertical != 0 {
-		a.camera.Lift(vertical)
+		a.camera.Lift(float32(vertical))
 	}
 }
 
@@ -214,7 +215,7 @@ func (a *Application) MouseHandler() {
 	} else if a.KeyDowns["dRight"] && !a.KeyDowns["dLeft"] {
 		dX = 0.01 * a.cameraDirectionSpeed
 	}
-	a.camera.UpdateDirection(dX, dY)
+	a.camera.UpdateDirection(float32(dX), float32(dY))
 }
 
 func initGlfw() *glfw.Window {
@@ -288,10 +289,10 @@ func main() {
 	for !app.window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		// mvp - modelview - projection matrix
-		V := app.camera.GetViewMatrix().GetMatrix()
+		V := app.camera.GetViewMatrix()
 		gl.UniformMatrix4fv(viewLocation, 1, false, &V[0])
 		// Should Be fine 'P'
-		P := app.camera.GetProjectionMatrix().GetMatrix()
+		P := app.camera.GetProjectionMatrix()
 		gl.UniformMatrix4fv(projectionLocation, 1, false, &P[0])
 		M := trans.TranslationMatrix(float32(app.cubePosition.X), float32(app.cubePosition.Y), float32(app.cubePosition.Z)).TransposeMatrix().GetMatrix()
 		gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
