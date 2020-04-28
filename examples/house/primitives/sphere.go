@@ -75,10 +75,10 @@ func (s *Sphere) GetRadius() float32 {
 func (s *Sphere) SetShaderProgram(p uint32) {
 	s.shaderProgram = p
 }
-func (s *Sphere) trianglePointsToVao(pa, pb, pc Point) {
-	s.vao.AppendVectors(pa.Coordinate, pa.Color)
-	s.vao.AppendVectors(pb.Coordinate, pb.Color)
-	s.vao.AppendVectors(pc.Coordinate, pc.Color)
+func (s *Sphere) trianglePointsToVao(pa, pb, pc, color mgl32.Vec3) {
+	s.vao.AppendVectors(pa, color)
+	s.vao.AppendVectors(pb, color)
+	s.vao.AppendVectors(pc, color)
 }
 func (s *Sphere) setupVao() {
 	s.vao.Clear()
@@ -92,17 +92,17 @@ func (s *Sphere) setupVao() {
 			j1_Rotation := mgl32.HomogRotate3DY(float32(j+1) * step_Y).Transpose()
 			j_Rotation := mgl32.HomogRotate3DY(float32(j) * step_Y).Transpose()
 			if i == 0 {
-				p1 := Point{*RefPoint, s.color}
-				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation)), s.color}
-				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation)), s.color}
-				s.trianglePointsToVao(p1, p2, p3)
+				p1 := *RefPoint
+				p2 := mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation))
+				p3 := mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation))
+				s.trianglePointsToVao(p1, p2, p3, s.color)
 			} else {
-				p1 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i_Rotation)), s.color}
-				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i_Rotation)), s.color}
-				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation)), s.color}
-				p4 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation)), s.color}
-				s.trianglePointsToVao(p1, p2, p3)
-				s.trianglePointsToVao(p1, p3, p4)
+				p1 := mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i_Rotation))
+				p2 := mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i_Rotation))
+				p3 := mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation))
+				p4 := mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation))
+				s.trianglePointsToVao(p1, p2, p3, s.color)
+				s.trianglePointsToVao(p1, p3, p4, s.color)
 			}
 		}
 	}
