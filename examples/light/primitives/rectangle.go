@@ -4,6 +4,7 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
@@ -33,12 +34,12 @@ func NewRectangle(points [4]mgl32.Vec3, mat *Material, prec int, shader *shader.
 // Log returns the string representation of this object.
 func (r *Rectangle) Log() string {
 	logString := "Rectangle:\n"
-	logString += " - A : Vector{" + Vec3ToString(r.Points[0]) + "}\n"
-	logString += " - B : Vector{" + Vec3ToString(r.Points[1]) + "}\n"
-	logString += " - C : Vector{" + Vec3ToString(r.Points[2]) + "}\n"
-	logString += " - D : Vector{" + Vec3ToString(r.Points[3]) + "}\n"
-	logString += " - Normal : Vector{" + Vec3ToString(r.GetNormal()) + "}\n"
-	logString += " - precision : " + IntegerToString(r.precision) + "\n"
+	logString += " - A : Vector{" + trans.Vec3ToString(r.Points[0]) + "}\n"
+	logString += " - B : Vector{" + trans.Vec3ToString(r.Points[1]) + "}\n"
+	logString += " - C : Vector{" + trans.Vec3ToString(r.Points[2]) + "}\n"
+	logString += " - D : Vector{" + trans.Vec3ToString(r.Points[3]) + "}\n"
+	logString += " - Normal : Vector{" + trans.Vec3ToString(r.GetNormal()) + "}\n"
+	logString += " - precision : " + trans.IntegerToString(r.precision) + "\n"
 	if r.invertNormal {
 		logString += " - inverted normal vector\n"
 	}
