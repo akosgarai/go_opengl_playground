@@ -4,6 +4,7 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
@@ -29,12 +30,12 @@ func NewRectangle(points [4]mgl32.Vec3, color mgl32.Vec3, prec int, shaderProgId
 // Log returns the string representation of this object.
 func (r *Rectangle) Log() string {
 	logString := "Rectangle:\n"
-	logString += " - A : Vector{" + Vec3ToString(r.points[0]) + "}\n"
-	logString += " - B : Vector{" + Vec3ToString(r.points[1]) + "}\n"
-	logString += " - C : Vector{" + Vec3ToString(r.points[2]) + "}\n"
-	logString += " - D : Vector{" + Vec3ToString(r.points[3]) + "}\n"
-	logString += " - color : Vector{" + Vec3ToString(r.color) + "}\n"
-	logString += " - precision : " + IntegerToString(r.precision) + "\n"
+	logString += " - A : Vector{" + trans.Vec3ToString(r.points[0]) + "}\n"
+	logString += " - B : Vector{" + trans.Vec3ToString(r.points[1]) + "}\n"
+	logString += " - C : Vector{" + trans.Vec3ToString(r.points[2]) + "}\n"
+	logString += " - D : Vector{" + trans.Vec3ToString(r.points[3]) + "}\n"
+	logString += " - color : Vector{" + trans.Vec3ToString(r.color) + "}\n"
+	logString += " - precision : " + trans.IntegerToString(r.precision) + "\n"
 	return logString
 }
 
