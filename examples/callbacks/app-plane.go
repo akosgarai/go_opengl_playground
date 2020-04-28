@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/akosgarai/opengl_playground/examples/callbacks/primitives"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -23,7 +24,7 @@ type Application struct {
 	window  *glfw.Window
 	program uint32
 	// camera related parameters
-	camera               *primitives.Camera
+	camera               *camera.Camera
 	cameraDirection      float64
 	cameraDirectionSpeed float32
 	cameraLastUpdate     int64
@@ -80,7 +81,7 @@ func NewApplication() *Application {
 	app.moveSpeed = 1.0 / 1000.0
 	app.epsilon = 50.0
 
-	app.camera = primitives.NewCamera(
+	app.camera = camera.NewCamera(
 		mgl32.Vec3{-10, -4, 22.0},
 		mgl32.Vec3{0, 1, 0},
 		300.0,

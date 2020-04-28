@@ -6,6 +6,7 @@ import (
 
 	"github.com/akosgarai/opengl_playground/examples/callbacks/application"
 	"github.com/akosgarai/opengl_playground/examples/callbacks/primitives"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -67,8 +68,8 @@ func CreateSphere() *primitives.Sphere {
 	return sphere
 }
 
-func CreateCamera() *primitives.Camera {
-	camera := primitives.NewCamera(mgl32.Vec3{-3, -5, 18.0}, mgl32.Vec3{0, 1, 0}, -90.0, 0.0)
+func CreateCamera() *camera.Camera {
+	camera := camera.NewCamera(mgl32.Vec3{-3, -5, 18.0}, mgl32.Vec3{0, 1, 0}, -90.0, 0.0)
 	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
 	return camera
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/akosgarai/opengl_playground/examples/callbacks/primitives"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -27,7 +28,7 @@ type Application struct {
 	sphere               *primitives.Sphere
 	cube                 *primitives.Cube
 	cubePosition         mgl32.Vec3
-	camera               *primitives.Camera
+	camera               *camera.Camera
 	cameraDirection      float64
 	cameraDirectionSpeed float32
 	cameraLastUpdate     int64
@@ -47,7 +48,7 @@ func NewApplication() *Application {
 	app.GenerateSphere()
 	app.moveSpeed = 1.0 / 1000.0
 	app.epsilon = 50.0
-	app.camera = primitives.NewCamera(mgl32.Vec3{-3, -5, 18.0}, mgl32.Vec3{0, 1, 0}, -90.0, 0.0)
+	app.camera = camera.NewCamera(mgl32.Vec3{-3, -5, 18.0}, mgl32.Vec3{0, 1, 0}, -90.0, 0.0)
 	app.cameraDirection = 0.1
 	app.cameraDirectionSpeed = 5
 	fmt.Println("Camera state after new function")

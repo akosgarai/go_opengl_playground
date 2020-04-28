@@ -3,7 +3,7 @@ package application
 import (
 	"fmt"
 
-	"github.com/akosgarai/opengl_playground/examples/callbacks/primitives"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -24,7 +24,7 @@ type Drawable interface {
 type Application struct {
 	window   *glfw.Window
 	program  uint32
-	camera   *primitives.Camera
+	camera   *camera.Camera
 	keyDowns map[glfw.Key]bool
 
 	items []Drawable
@@ -70,12 +70,12 @@ func (a *Application) GetProgram() uint32 {
 }
 
 // SetCamera updates the camera with the new one.
-func (a *Application) SetCamera(c *primitives.Camera) {
+func (a *Application) SetCamera(c *camera.Camera) {
 	a.camera = c
 }
 
 // GetCamera returns the current camera of the application.
-func (a *Application) GetCamera() *primitives.Camera {
+func (a *Application) GetCamera() *camera.Camera {
 	return a.camera
 }
 
