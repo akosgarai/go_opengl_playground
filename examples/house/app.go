@@ -4,8 +4,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/examples/house/application"
 	"github.com/akosgarai/opengl_playground/examples/house/primitives"
+	"github.com/akosgarai/opengl_playground/pkg/application"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
