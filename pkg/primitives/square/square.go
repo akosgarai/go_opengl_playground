@@ -2,88 +2,68 @@ package square
 
 import (
 	"github.com/go-gl/gl/v4.1-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
 
-	P "github.com/akosgarai/opengl_playground/pkg/primitives/point"
-	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
+	"github.com/akosgarai/opengl_playground/pkg/shader"
+	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
 type Square struct {
-	A P.Point
-	B P.Point
-	C P.Point
-	D P.Point
+	vao    *vao.VAO
+	shader *shader.Shader
+
+	points [4]mgl32.Vec3
+	colors [4]mgl32.Vec3
 }
 
-func NewSquare(v1, v2, v3, v4 vec.Vector) *Square {
-	return &Square{P.Point{v1, vec.Vector{1, 1, 1}}, P.Point{v2, vec.Vector{1, 1, 1}}, P.Point{v3, vec.Vector{1, 1, 1}}, P.Point{v4, vec.Vector{1, 1, 1}}}
+func NewSquare(points, colors [4]mgl32.Vec3, shader *shader.Shader) *Square {
+	return &Square{
+		shader: shader,
+		vao:    vao.NewVAO(),
+		points: points,
+		colors: colors,
+	}
 }
 
-func (s *Square) SetColor(color vec.Vector) {
-	s.A.SetColor(color)
-	s.B.SetColor(color)
-	s.C.SetColor(color)
-	s.D.SetColor(color)
+// Log returns the string representation of this object.
+func (s *Square) Log() string {
+	logString := "Triangle:\n"
+	logString += " - A : Coordinate: Vector{" + trans.Vec3ToString(s.points[0]) + "}, color: Vector{" + trans.Vec3ToString(s.colors[0]) + "}\n"
+	logString += " - B : Coordinate: Vector{" + trans.Vec3ToString(s.points[1]) + "}, color: Vector{" + trans.Vec3ToString(s.colors[1]) + "}\n"
+	logString += " - C : Coordinate: Vector{" + trans.Vec3ToString(s.points[2]) + "}, color: Vector{" + trans.Vec3ToString(s.colors[2]) + "}\n"
+	logString += " - D : Coordinate: Vector{" + trans.Vec3ToString(s.points[3]) + "}, color: Vector{" + trans.Vec3ToString(s.colors[3]) + "}\n"
+	return logString
 }
 
-func (s *Square) buildVaoWithoutColor() []float32 {
-	var points []float32
-	// Coordinates
-	points = append(points, float32(s.A.Coordinate.X))
-	points = append(points, float32(s.A.Coordinate.Y))
-	points = append(points, float32(s.A.Coordinate.Z))
-
-	points = append(points, float32(s.B.Coordinate.X))
-	points = append(points, float32(s.B.Coordinate.Y))
-	points = append(points, float32(s.B.Coordinate.Z))
-
-	points = append(points, float32(s.C.Coordinate.X))
-	points = append(points, float32(s.C.Coordinate.Y))
-	points = append(points, float32(s.C.Coordinate.Z))
-
-	points = append(points, float32(s.A.Coordinate.X))
-	points = append(points, float32(s.A.Coordinate.Y))
-	points = append(points, float32(s.A.Coordinate.Z))
-
-	points = append(points, float32(s.C.Coordinate.X))
-	points = append(points, float32(s.C.Coordinate.Y))
-	points = append(points, float32(s.C.Coordinate.Z))
-
-	points = append(points, float32(s.D.Coordinate.X))
-	points = append(points, float32(s.D.Coordinate.Y))
-	points = append(points, float32(s.D.Coordinate.Z))
-
-	return points
+// SetColor updates every color with the given one.
+func (s *Square) SetColor(color mgl32.Vec3) {
+	for i := 0; i < 4; i++ {
+		s.colors[i] = color
+	}
 }
-func (s *Square) appendPointToVao(currentVao []float32, p P.Point) []float32 {
-	currentVao = append(currentVao, float32(p.Coordinate.X))
-	currentVao = append(currentVao, float32(p.Coordinate.Y))
-	currentVao = append(currentVao, float32(p.Coordinate.Z))
-	currentVao = append(currentVao, float32(p.Color.X))
-	currentVao = append(currentVao, float32(p.Color.Y))
-	currentVao = append(currentVao, float32(p.Color.Z))
-	return currentVao
-}
-func (s *Square) setupVao() []float32 {
-	var points []float32
 
-	points = s.appendPointToVao(points, s.A)
-	points = s.appendPointToVao(points, s.B)
-	points = s.appendPointToVao(points, s.C)
-	points = s.appendPointToVao(points, s.A)
-	points = s.appendPointToVao(points, s.C)
-	points = s.appendPointToVao(points, s.D)
-
-	return points
+// SetIndexColor updates the color of the given index.
+func (s *Square) SetIndexColor(index int, color mgl32.Vec3) {
+	s.colors[index] = color
 }
-func (s *Square) buildAndSetupVao() uint32 {
-	points := s.setupVao()
+
+func (s *Square) setupVao() {
+	s.vao.Clear()
+	indicies := [6]int{0, 1, 2, 0, 2, 3}
+	for i := 0; i < 6; i++ {
+		s.vao.AppendVectors(s.points[indicies[i]], s.colors[indicies[i]])
+	}
+}
+func (s *Square) buildVao() uint32 {
+	s.setupVao()
 
 	var vertexBufferObject uint32
 	gl.GenBuffers(1, &vertexBufferObject)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
 	// a 32-bit float has 4 bytes, so we are saying the size of the buffer,
 	// in bytes, is 4 times the number of points
-	gl.BufferData(gl.ARRAY_BUFFER, 4*len(points), gl.Ptr(points), gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, 4*len(s.vao.Get()), gl.Ptr(s.vao.Get()), gl.STATIC_DRAW)
 
 	var vertexArrayObject uint32
 	gl.GenVertexArrays(1, &vertexArrayObject)
@@ -100,28 +80,26 @@ func (s *Square) buildAndSetupVao() uint32 {
 }
 
 func (s *Square) Draw() {
-	vertexArrayObject := s.buildAndSetupVao()
-	gl.BindVertexArray(vertexArrayObject)
-	// The square is represented by 2 triangle, so we have 2 * 3 points here.
+	s.shader.Use()
+	// setup MVP to ident4 matrix
+	MVP := mgl32.Ident4()
+	s.shader.SetUniformMat4("MVP", MVP)
+	s.draw()
+}
+func (s *Square) draw() {
+	s.buildVao()
 	gl.DrawArrays(gl.TRIANGLES, 0, 6)
 }
 
-func (s *Square) SetupVaoPoligonMode() {
-	vao := s.buildVaoWithoutColor()
-	var vertexBufferObject uint32
-	gl.GenBuffers(1, &vertexBufferObject)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
-	// a 32-bit float has 4 bytes, so we are saying the size of the buffer,
-	// in bytes, is 4 times the number of points
-	gl.BufferData(gl.ARRAY_BUFFER, 4*len(vao), gl.Ptr(vao), gl.STATIC_DRAW)
+// DrawWithUniforms is for drawing the rectangle to the screen. It setups the
+func (s *Square) DrawWithUniforms(view, projection mgl32.Mat4) {
+	s.shader.Use()
+	s.shader.SetUniformMat4("view", view)
+	s.shader.SetUniformMat4("projection", projection)
+	M := mgl32.Ident4()
+	s.shader.SetUniformMat4("model", M)
 
-	var vertexArrayObject uint32
-	gl.GenVertexArrays(1, &vertexArrayObject)
-	gl.BindVertexArray(vertexArrayObject)
-	// setup points
-	gl.EnableVertexAttribArray(0)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0, gl.PtrOffset(0))
-
-	gl.BindVertexArray(vertexArrayObject)
-	gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
+	s.draw()
+}
+func (s *Square) Update(dt float64) {
 }
