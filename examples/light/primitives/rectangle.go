@@ -5,11 +5,12 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 
 	"github.com/akosgarai/opengl_playground/pkg/shader"
+	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
 type Rectangle struct {
 	precision int
-	vao       *VAO
+	vao       *vao.VAO
 	shader    *shader.Shader
 
 	color        mgl32.Vec3
@@ -24,7 +25,7 @@ func NewRectangle(points [4]mgl32.Vec3, mat *Material, prec int, shader *shader.
 		material:     mat,
 		Points:       points,
 		shader:       shader,
-		vao:          NewVAO(),
+		vao:          vao.NewVAO(),
 		invertNormal: false,
 	}
 }
@@ -74,7 +75,7 @@ func (r *Rectangle) IsNormalInverted() bool {
 func (r *Rectangle) SetInvertNormal(i bool) {
 	r.invertNormal = i
 }
-func (r *Rectangle) SetupExternalVao(v *VAO) *VAO {
+func (r *Rectangle) SetupExternalVao(v *vao.VAO) *vao.VAO {
 	verticalStep := (r.Points[1].Sub(r.Points[0])).Mul(1.0 / float32(r.precision))
 	horisontalStep := (r.Points[3].Sub(r.Points[0])).Mul(1.0 / float32(r.precision))
 
