@@ -5,11 +5,12 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 
 	"github.com/akosgarai/opengl_playground/pkg/shader"
+	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
 type Cuboid struct {
 	precision int
-	vao       *VAO
+	vao       *vao.VAO
 	shader    *shader.Shader
 
 	material *Material
@@ -75,7 +76,7 @@ func NewCuboid(bottom *Rectangle, heightLength float32, mat *Material, prec int,
 
 	return &Cuboid{
 		precision: prec,
-		vao:       NewVAO(),
+		vao:       vao.NewVAO(),
 		shader:    shader,
 		material:  mat,
 		sides:     sides,
