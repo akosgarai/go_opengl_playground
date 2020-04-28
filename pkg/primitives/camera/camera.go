@@ -4,6 +4,8 @@ import (
 	"math"
 
 	"github.com/go-gl/mathgl/mgl32"
+
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 )
 
 type Camera struct {
@@ -31,18 +33,18 @@ type Camera struct {
 
 // Log returns the string representation of this object.
 func (c *Camera) Log() string {
-	logString := "cameraPosition: Vector{" + Vec3ToString(c.cameraPosition) + "}\n"
-	logString += "worldUp: Vector{" + Vec3ToString(c.worldUp) + "}\n"
-	logString += "cameraFrontDirection: Vector{" + Vec3ToString(c.cameraFrontDirection) + "}\n"
-	logString += "cameraUpDirection: Vector{" + Vec3ToString(c.cameraUpDirection) + "}\n"
-	logString += "cameraRightDirection: Vector{" + Vec3ToString(c.cameraRightDirection) + "}\n"
-	logString += "yaw : " + Float32ToString(c.yaw) + "\n"
-	logString += "pitch : " + Float32ToString(c.pitch) + "\n"
+	logString := "cameraPosition: Vector{" + trans.Vec3ToString(c.cameraPosition) + "}\n"
+	logString += "worldUp: Vector{" + trans.Vec3ToString(c.worldUp) + "}\n"
+	logString += "cameraFrontDirection: Vector{" + trans.Vec3ToString(c.cameraFrontDirection) + "}\n"
+	logString += "cameraUpDirection: Vector{" + trans.Vec3ToString(c.cameraUpDirection) + "}\n"
+	logString += "cameraRightDirection: Vector{" + trans.Vec3ToString(c.cameraRightDirection) + "}\n"
+	logString += "yaw : " + trans.Float32ToString(c.yaw) + "\n"
+	logString += "pitch : " + trans.Float32ToString(c.pitch) + "\n"
 	logString += "ProjectionOptions:\n"
-	logString += " - fov : " + Float32ToString(c.projectionOptions.fov) + "\n"
-	logString += " - aspectRatio : " + Float32ToString(c.projectionOptions.aspectRatio) + "\n"
-	logString += " - far : " + Float32ToString(c.projectionOptions.far) + "\n"
-	logString += " - near : " + Float32ToString(c.projectionOptions.near) + "\n"
+	logString += " - fov : " + trans.Float32ToString(c.projectionOptions.fov) + "\n"
+	logString += " - aspectRatio : " + trans.Float32ToString(c.projectionOptions.aspectRatio) + "\n"
+	logString += " - far : " + trans.Float32ToString(c.projectionOptions.far) + "\n"
+	logString += " - near : " + trans.Float32ToString(c.projectionOptions.near) + "\n"
 	return logString
 }
 
