@@ -3,6 +3,8 @@ package primitives
 import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
+
+	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
 type Square struct {
@@ -11,7 +13,7 @@ type Square struct {
 	C             Point
 	D             Point
 	precision     int
-	vao           *VAO
+	vao           *vao.VAO
 	shaderProgram uint32
 }
 
@@ -22,7 +24,7 @@ func NewSquare(a, b, c, d Point) *Square {
 		C:         c,
 		D:         d,
 		precision: 10,
-		vao:       NewVAO(),
+		vao:       vao.NewVAO(),
 	}
 }
 
@@ -59,36 +61,24 @@ func (s *Square) setupVao() {
 
 	for horisontalLoopIndex := 0; horisontalLoopIndex < s.precision; horisontalLoopIndex++ {
 		for verticalLoopIndex := 0; verticalLoopIndex < s.precision; verticalLoopIndex++ {
-			a := Point{
-				s.A.Coordinate.Add(
-					verticalStep.Mul(float32(verticalLoopIndex))).Add(
-					horisontalStep.Mul(float32(horisontalLoopIndex))),
-				s.A.Color,
-			}
-			b := Point{
-				s.A.Coordinate.Add(
-					verticalStep.Mul(float32(verticalLoopIndex))).Add(
-					horisontalStep.Mul(float32(horisontalLoopIndex + 1))),
-				s.B.Color,
-			}
-			c := Point{
-				s.A.Coordinate.Add(
-					verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
-					horisontalStep.Mul(float32(horisontalLoopIndex + 1))),
-				s.C.Color,
-			}
-			d := Point{
-				s.A.Coordinate.Add(
-					verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
-					horisontalStep.Mul(float32(horisontalLoopIndex))),
-				s.D.Color,
-			}
-			s.vao.AppendPoint(a)
-			s.vao.AppendPoint(b)
-			s.vao.AppendPoint(c)
-			s.vao.AppendPoint(a)
-			s.vao.AppendPoint(c)
-			s.vao.AppendPoint(d)
+			a := s.A.Coordinate.Add(
+				verticalStep.Mul(float32(verticalLoopIndex))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex)))
+			b := s.A.Coordinate.Add(
+				verticalStep.Mul(float32(verticalLoopIndex))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex + 1)))
+			c := s.A.Coordinate.Add(
+				verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex + 1)))
+			d := s.A.Coordinate.Add(
+				verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
+				horisontalStep.Mul(float32(horisontalLoopIndex)))
+			s.vao.AppendVectors(a, s.A.Color)
+			s.vao.AppendVectors(b, s.B.Color)
+			s.vao.AppendVectors(c, s.C.Color)
+			s.vao.AppendVectors(a, s.A.Color)
+			s.vao.AppendVectors(c, s.C.Color)
+			s.vao.AppendVectors(d, s.D.Color)
 		}
 	}
 }
@@ -96,8 +86,6 @@ func (s *Square) setupVao() {
 func (s *Square) Draw() {
 	// Create the vao object
 	s.setupVao()
-	// setup shader program during draw.
-	gl.UseProgram(s.shaderProgram)
 
 	var vertexBufferObject uint32
 	gl.GenBuffers(1, &vertexBufferObject)
@@ -130,9 +118,8 @@ func (s *Square) DrawWithUniforms(view, projection mgl32.Mat4) {
 
 	modelLocation := gl.GetUniformLocation(s.shaderProgram, gl.Str("model\x00"))
 
-	M := mgl32.Translate3D(s.D.Coordinate.X(), s.D.Coordinate.Y(), s.D.Coordinate.Z())
+	M := mgl32.Ident4()
 	gl.UniformMatrix4fv(modelLocation, 1, false, &M[0])
 
-	s.setupVao()
-	gl.DrawArrays(gl.TRIANGLES, 0, 3*12)
+	s.Draw()
 }

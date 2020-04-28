@@ -3,6 +3,8 @@ package primitives
 import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
+
+	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
 type Sphere struct {
@@ -12,7 +14,7 @@ type Sphere struct {
 
 	numOfRows       int
 	numOfItemsInRow int
-	vao             *VAO
+	vao             *vao.VAO
 	shaderProgram   uint32
 }
 
@@ -23,7 +25,7 @@ func NewSphere() *Sphere {
 		color:           mgl32.Vec3{1, 1, 1},
 		numOfRows:       20,
 		numOfItemsInRow: 20,
-		vao:             NewVAO(),
+		vao:             vao.NewVAO(),
 	}
 }
 
@@ -72,6 +74,11 @@ func (s *Sphere) GetRadius() float64 {
 func (s *Sphere) SetShaderProgram(p uint32) {
 	s.shaderProgram = p
 }
+func (s *Sphere) trianglePointsToVao(pa, pb, pc Point) {
+	s.vao.AppendVectors(pa.Coordinate, pa.Color)
+	s.vao.AppendVectors(pb.Coordinate, pb.Color)
+	s.vao.AppendVectors(pc.Coordinate, pc.Color)
+}
 func (s *Sphere) setupVao() {
 	s.vao.Clear()
 	// the coordinates will be set as a following: origo as center, 1 as radius, for drawing, the translation and scale could be done later in the model transformation.
@@ -89,14 +96,14 @@ func (s *Sphere) setupVao() {
 				p1 := Point{*RefPoint, s.color}
 				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation)), s.color}
 				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation)), s.color}
-				s.vao.AppendTrianglePoints(p1, p2, p3)
+				s.trianglePointsToVao(p1, p2, p3)
 			} else {
 				p1 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i_Rotation)), s.color}
 				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i_Rotation)), s.color}
 				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation)), s.color}
 				p4 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation)), s.color}
-				s.vao.AppendTrianglePoints(p1, p2, p3)
-				s.vao.AppendTrianglePoints(p1, p3, p4)
+				s.trianglePointsToVao(p1, p2, p3)
+				s.trianglePointsToVao(p1, p3, p4)
 			}
 		}
 	}
