@@ -4,6 +4,7 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
@@ -31,10 +32,10 @@ func NewSquare(a, b, c, d Point) *Square {
 // Log returns the string representation of this object.
 func (s *Square) Log() string {
 	logString := "Square:\n"
-	logString += " - A : Vector{" + Vec3ToString(s.A.Coordinate) + "}\n"
-	logString += " - B : Vector{" + Vec3ToString(s.B.Coordinate) + "}\n"
-	logString += " - C : Vector{" + Vec3ToString(s.C.Coordinate) + "}\n"
-	logString += " - D : Vector{" + Vec3ToString(s.D.Coordinate) + "}\n"
+	logString += " - A : Vector{" + trans.Vec3ToString(s.A.Coordinate) + "}\n"
+	logString += " - B : Vector{" + trans.Vec3ToString(s.B.Coordinate) + "}\n"
+	logString += " - C : Vector{" + trans.Vec3ToString(s.C.Coordinate) + "}\n"
+	logString += " - D : Vector{" + trans.Vec3ToString(s.D.Coordinate) + "}\n"
 	logString += " - precision : " + string(s.precision) + "\n"
 	return logString
 }

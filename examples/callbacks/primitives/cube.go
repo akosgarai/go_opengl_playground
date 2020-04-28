@@ -4,6 +4,7 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
@@ -61,14 +62,14 @@ func NewCubeByVectorAndLength(in mgl32.Vec3, sideLength float32) *Cube {
 // Log returns the string representation of this object.
 func (c *Cube) Log() string {
 	logString := "Square:\n"
-	logString += " - A : Vector{" + Vec3ToString(c.A.Coordinate) + " }\n"
-	logString += " - B : Vector{" + Vec3ToString(c.B.Coordinate) + " }\n"
-	logString += " - C : Vector{" + Vec3ToString(c.C.Coordinate) + " }\n"
-	logString += " - D : Vector{" + Vec3ToString(c.D.Coordinate) + " }\n"
-	logString += " - E : Vector{" + Vec3ToString(c.E.Coordinate) + " }\n"
-	logString += " - F : Vector{" + Vec3ToString(c.F.Coordinate) + " }\n"
-	logString += " - G : Vector{" + Vec3ToString(c.G.Coordinate) + " }\n"
-	logString += " - H : Vector{" + Vec3ToString(c.H.Coordinate) + " }\n"
+	logString += " - A : Vector{" + trans.Vec3ToString(c.A.Coordinate) + " }\n"
+	logString += " - B : Vector{" + trans.Vec3ToString(c.B.Coordinate) + " }\n"
+	logString += " - C : Vector{" + trans.Vec3ToString(c.C.Coordinate) + " }\n"
+	logString += " - D : Vector{" + trans.Vec3ToString(c.D.Coordinate) + " }\n"
+	logString += " - E : Vector{" + trans.Vec3ToString(c.E.Coordinate) + " }\n"
+	logString += " - F : Vector{" + trans.Vec3ToString(c.F.Coordinate) + " }\n"
+	logString += " - G : Vector{" + trans.Vec3ToString(c.G.Coordinate) + " }\n"
+	logString += " - H : Vector{" + trans.Vec3ToString(c.H.Coordinate) + " }\n"
 	return logString
 }
 

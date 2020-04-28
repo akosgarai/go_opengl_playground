@@ -4,6 +4,7 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
@@ -32,11 +33,11 @@ func NewSphere() *Sphere {
 // Log returns the string representation of this object.
 func (s *Sphere) Log() string {
 	logString := "Sphere:\n"
-	logString += " - center : Vector{" + Vec3ToString(s.center) + "}\n"
-	logString += " - radius : " + Float64ToString(s.radius) + "\n"
-	logString += " - color : Vector{" + Vec3ToString(s.color) + "}\n"
-	logString += " - numOfRows : " + IntegerToString(s.numOfRows) + "\n"
-	logString += " - numOfItemsInRow : " + IntegerToString(s.numOfItemsInRow) + "\n"
+	logString += " - center : Vector{" + trans.Vec3ToString(s.center) + "}\n"
+	logString += " - radius : " + trans.Float64ToString(s.radius) + "\n"
+	logString += " - color : Vector{" + trans.Vec3ToString(s.color) + "}\n"
+	logString += " - numOfRows : " + trans.IntegerToString(s.numOfRows) + "\n"
+	logString += " - numOfItemsInRow : " + trans.IntegerToString(s.numOfItemsInRow) + "\n"
 	return logString
 }
 

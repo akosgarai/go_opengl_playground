@@ -7,6 +7,7 @@ import (
 
 	"github.com/akosgarai/opengl_playground/examples/callbacks/primitives"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -148,7 +149,7 @@ func (a *Application) Update() {
 	moveTime := float64(delta / int64(time.Millisecond))
 	// rotate camera
 	currX, currY := a.window.GetCursorPos()
-	x, y := primitives.MouseCoordinates(currX, currY, windowWidth, windowHeight)
+	x, y := trans.MouseCoordinates(currX, currY, windowWidth, windowHeight)
 	// dUp
 	if y > 1.0-a.cameraDirection && y < 1.0 {
 		a.KeyDowns["dUp"] = true
