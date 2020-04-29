@@ -31,3 +31,9 @@ func TestDrawWithUniforms(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	t.Skip()
 }
+func TestSetDirection(t *testing.T) {
+	t.Skip()
+}
+func TestSetSpeed(t *testing.T) {
+	t.Skip()
+}

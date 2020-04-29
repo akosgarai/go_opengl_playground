@@ -15,14 +15,19 @@ type Square struct {
 
 	points [4]mgl32.Vec3
 	colors [4]mgl32.Vec3
+
+	direction mgl32.Vec3
+	speed     float32
 }
 
 func NewSquare(points, colors [4]mgl32.Vec3, shader *shader.Shader) *Square {
 	return &Square{
-		shader: shader,
-		vao:    vao.NewVAO(),
-		points: points,
-		colors: colors,
+		shader:    shader,
+		vao:       vao.NewVAO(),
+		points:    points,
+		colors:    colors,
+		direction: mgl32.Vec3{0, 0, 0},
+		speed:     0,
 	}
 }
 
@@ -46,6 +51,16 @@ func (s *Square) SetColor(color mgl32.Vec3) {
 // SetIndexColor updates the color of the given index.
 func (s *Square) SetIndexColor(index int, color mgl32.Vec3) {
 	s.colors[index] = color
+}
+
+// SetDirection updates the direction vector.
+func (s *Square) SetDirection(dir mgl32.Vec3) {
+	s.direction = dir
+}
+
+// SetSpeed updates the speed.
+func (s *Square) SetSpeed(speed float32) {
+	s.speed = speed
 }
 
 func (s *Square) setupVao() {
@@ -102,4 +117,9 @@ func (s *Square) DrawWithUniforms(view, projection mgl32.Mat4) {
 	s.draw()
 }
 func (s *Square) Update(dt float64) {
+	delta := float32(dt)
+	motionVector := s.direction.Mul(delta * s.speed)
+	for i := 0; i < 4; i++ {
+		s.points[i] = s.points[i].Add(motionVector)
+	}
 }

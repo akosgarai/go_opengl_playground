@@ -15,14 +15,19 @@ type Triangle struct {
 
 	points [3]mgl32.Vec3
 	colors [3]mgl32.Vec3
+
+	direction mgl32.Vec3
+	speed     float32
 }
 
 func NewTriangle(points, colors [3]mgl32.Vec3, shader *shader.Shader) *Triangle {
 	return &Triangle{
-		shader: shader,
-		vao:    vao.NewVAO(),
-		points: points,
-		colors: colors,
+		shader:    shader,
+		vao:       vao.NewVAO(),
+		points:    points,
+		colors:    colors,
+		direction: mgl32.Vec3{0, 0, 0},
+		speed:     0,
 	}
 }
 
@@ -36,6 +41,16 @@ func (t *Triangle) SetColor(color mgl32.Vec3) {
 // SetIndexColor updates the color of the given index.
 func (t *Triangle) SetIndexColor(index int, color mgl32.Vec3) {
 	t.colors[index] = color
+}
+
+// SetDirection updates the direction vector.
+func (t *Triangle) SetDirection(dir mgl32.Vec3) {
+	t.direction = dir
+}
+
+// SetSpeed updates the speed.
+func (t *Triangle) SetSpeed(speed float32) {
+	t.speed = speed
 }
 
 // Log returns the string representation of this object.
@@ -99,4 +114,9 @@ func (t *Triangle) DrawWithUniforms(view, projection mgl32.Mat4) {
 	t.draw()
 }
 func (t *Triangle) Update(dt float64) {
+	delta := float32(dt)
+	motionVector := t.direction.Mul(delta * t.speed)
+	for i := 0; i < 3; i++ {
+		t.points[i] = t.points[i].Add(motionVector)
+	}
 }
