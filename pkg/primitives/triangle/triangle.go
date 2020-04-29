@@ -48,6 +48,11 @@ func (t *Triangle) SetDirection(dir mgl32.Vec3) {
 	t.direction = dir
 }
 
+// SetIndexDirection updates the direction vector.
+func (t *Triangle) SetIndexDirection(index int, value float32) {
+	t.direction[index] = value
+}
+
 // SetSpeed updates the speed.
 func (t *Triangle) SetSpeed(speed float32) {
 	t.speed = speed
@@ -115,7 +120,10 @@ func (t *Triangle) DrawWithUniforms(view, projection mgl32.Mat4) {
 }
 func (t *Triangle) Update(dt float64) {
 	delta := float32(dt)
-	motionVector := t.direction.Mul(delta * t.speed)
+	motionVector := t.direction
+	if motionVector.Len() > 0 {
+		motionVector = motionVector.Normalize().Mul(delta * t.speed)
+	}
 	for i := 0; i < 3; i++ {
 		t.points[i] = t.points[i].Add(motionVector)
 	}

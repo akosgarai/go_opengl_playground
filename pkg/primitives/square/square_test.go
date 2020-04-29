@@ -34,6 +34,9 @@ func TestUpdate(t *testing.T) {
 func TestSetDirection(t *testing.T) {
 	t.Skip()
 }
+func TestSetIndexDirection(t *testing.T) {
+	t.Skip()
+}
 func TestSetSpeed(t *testing.T) {
 	t.Skip()
 }

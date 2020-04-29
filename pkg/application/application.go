@@ -101,6 +101,13 @@ func (a *Application) Draw() {
 	}
 }
 
+// Update calls the Update function in every drawable item.
+func (a *Application) Update(dt float64) {
+	for _, item := range a.items {
+		item.Update(dt)
+	}
+}
+
 // DrawWithUniforms calls DrawWithUniforms function in every drawable item with the calculated V & P.
 func (a *Application) DrawWithUniforms() {
 	V := a.camera.GetViewMatrix()

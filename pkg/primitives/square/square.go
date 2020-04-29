@@ -58,6 +58,11 @@ func (s *Square) SetDirection(dir mgl32.Vec3) {
 	s.direction = dir
 }
 
+// SetIndexDirection updates the direction vector.
+func (s *Square) SetIndexDirection(index int, value float32) {
+	s.direction[index] = value
+}
+
 // SetSpeed updates the speed.
 func (s *Square) SetSpeed(speed float32) {
 	s.speed = speed
@@ -118,7 +123,10 @@ func (s *Square) DrawWithUniforms(view, projection mgl32.Mat4) {
 }
 func (s *Square) Update(dt float64) {
 	delta := float32(dt)
-	motionVector := s.direction.Mul(delta * s.speed)
+	motionVector := s.direction
+	if motionVector.Len() > 0 {
+		motionVector = motionVector.Normalize().Mul(delta * s.speed)
+	}
 	for i := 0; i < 4; i++ {
 		s.points[i] = s.points[i].Add(motionVector)
 	}
