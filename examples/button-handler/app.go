@@ -1,168 +1,143 @@
 package main
 
 import (
-	"fmt"
 	"runtime"
 	"time"
 
-	mat "github.com/akosgarai/opengl_playground/pkg/primitives/matrix"
+	"github.com/akosgarai/opengl_playground/pkg/application"
 	sq "github.com/akosgarai/opengl_playground/pkg/primitives/square"
 	tr "github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
-	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 const (
 	windowWidth  = 800
 	windowHeight = 600
 	windowTitle  = "Example - static button handler"
-	epsilon      = 300
+	epsilon      = 30
+	speed        = float32(0.15) / float32(1000.0)
+
+	FORWARD  = glfw.KeyW
+	BACKWARD = glfw.KeyS
+	LEFT     = glfw.KeyA
+	RIGHT    = glfw.KeyD
+	SWAP     = glfw.KeyT
+	DEBUG    = glfw.KeyH
 )
 
 var (
-	triangle = tr.NewTriangle(
-		vec.Vector{-0.75, 0.75, 0}, // top
-		vec.Vector{-0.75, 0.25, 0}, // left
-		vec.Vector{-0.25, 0.25, 0}, // right
-	)
-	square = sq.NewSquare(
-		vec.Vector{0.25, -0.25, 0}, // top-left
-		vec.Vector{0.25, -0.75, 0}, // bottom-left
-		vec.Vector{0.75, -0.75, 0}, // bottom-right
-		vec.Vector{0.75, -0.25, 0}, // top-right
-	)
+	triangleCoordinates = [3]mgl32.Vec3{
+		mgl32.Vec3{-0.75, 0.75, 0}, // top
+		mgl32.Vec3{-0.75, 0.25, 0}, // left
+		mgl32.Vec3{-0.25, 0.25, 0}, // right
+	}
+	triangleColors = [3]mgl32.Vec3{
+		mgl32.Vec3{0, 1, 0}, // top
+		mgl32.Vec3{0, 1, 0}, // left
+		mgl32.Vec3{0, 1, 0}, // right
+	}
+	squareCoordinates = [4]mgl32.Vec3{
+		mgl32.Vec3{0.25, -0.25, 0}, // top-left
+		mgl32.Vec3{0.25, -0.75, 0}, // bottom-left
+		mgl32.Vec3{0.75, -0.75, 0}, // bottom-right
+		mgl32.Vec3{0.75, -0.25, 0}, // top-right
+	}
+	squareColors = [4]mgl32.Vec3{
+		mgl32.Vec3{0, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
 	lastUpdate = time.Now().UnixNano() / 1000000
+
+	app *application.Application
+
+	triangle *tr.Triangle
+	square   *sq.Square
 )
 
-func initGlfw() *glfw.Window {
-	if err := glfw.Init(); err != nil {
-		panic(fmt.Errorf("could not initialize glfw: %v", err))
-	}
+func SetupKeyMap() map[glfw.Key]bool {
+	keyDowns := make(map[glfw.Key]bool)
+	keyDowns[FORWARD] = false
+	keyDowns[LEFT] = false
+	keyDowns[RIGHT] = false
+	keyDowns[BACKWARD] = false
+	keyDowns[SWAP] = false
+	keyDowns[DEBUG] = false
 
-	glfw.WindowHint(glfw.ContextVersionMajor, 4)
-	glfw.WindowHint(glfw.ContextVersionMinor, 1)
-	glfw.WindowHint(glfw.Resizable, glfw.True)
-	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-
-	window, err := glfw.CreateWindow(windowWidth, windowHeight, windowTitle, nil, nil)
-
-	if err != nil {
-		panic(fmt.Errorf("could not create opengl renderer: %v", err))
-	}
-
-	window.MakeContextCurrent()
-
-	return window
+	return keyDowns
 }
-
-func initOpenGL() uint32 {
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
-	version := gl.GoStr(gl.GetString(gl.VERSION))
-	fmt.Println("OpenGL version", version)
-
-	vertexShader, err := shader.CompileShader(shader.VertexShaderBasicSource, gl.VERTEX_SHADER)
-	if err != nil {
-		panic(err)
-	}
-	fragmentShader, err := shader.CompileShader(shader.FragmentShaderBasicSource, gl.FRAGMENT_SHADER)
-	if err != nil {
-		panic(err)
-	}
-
-	program := gl.CreateProgram()
-	gl.AttachShader(program, vertexShader)
-	gl.AttachShader(program, fragmentShader)
-	gl.LinkProgram(program)
-	return program
-}
-
-func keyHandler(window *glfw.Window) {
-	if window.GetKey(glfw.KeyT) == glfw.Press {
-		triangle.SetColor(vec.Vector{0, 1, 0})
-		square.SetColor(vec.Vector{1, 0, 0})
+func Update() {
+	if app.GetKeyState(SWAP) {
+		triangle.SetColor(mgl32.Vec3{0, 1, 0})
+		square.SetColor(mgl32.Vec3{1, 0, 0})
 	} else {
-		triangle.SetColor(vec.Vector{1, 0, 0})
-		square.SetColor(vec.Vector{0, 1, 0})
+		triangle.SetColor(mgl32.Vec3{1, 0, 0})
+		square.SetColor(mgl32.Vec3{0, 1, 0})
 	}
+	// now in milisec.
 	nowUnixM := time.Now().UnixNano() / 1000000
-	if lastUpdate+epsilon > nowUnixM {
+	delta := nowUnixM - lastUpdate
+	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
+		square.SetIndexDirection(1, 1.0)
+		triangle.SetIndexDirection(1, -1.0)
+	} else if app.GetKeyState(BACKWARD) && !app.GetKeyState(FORWARD) {
+		square.SetIndexDirection(1, -1.0)
+		triangle.SetIndexDirection(1, 1.0)
+	} else {
+		square.SetIndexDirection(1, 0.0)
+		triangle.SetIndexDirection(1, 0.0)
+	}
+	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
+		square.SetIndexDirection(0, -1.0)
+		triangle.SetIndexDirection(0, 1.0)
+	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
+		square.SetIndexDirection(0, 1.0)
+		triangle.SetIndexDirection(0, -1.0)
+	} else {
+		square.SetIndexDirection(0, 0.0)
+		triangle.SetIndexDirection(0, 0.0)
+	}
+	if epsilon > delta {
 		return
 	}
-	if window.GetKey(glfw.KeyW) == glfw.Press {
-		square.A.Coordinate.Y += 0.05
-		square.B.Coordinate.Y += 0.05
-		square.C.Coordinate.Y += 0.05
-		square.D.Coordinate.Y += 0.05
-		triangle.A.Coordinate.Y -= 0.05
-		triangle.B.Coordinate.Y -= 0.05
-		triangle.C.Coordinate.Y -= 0.05
-		lastUpdate = nowUnixM
-	}
-	if window.GetKey(glfw.KeyA) == glfw.Press {
-		square.A.Coordinate.X -= 0.05
-		square.B.Coordinate.X -= 0.05
-		square.C.Coordinate.X -= 0.05
-		square.D.Coordinate.X -= 0.05
-		triangle.A.Coordinate.X += 0.05
-		triangle.B.Coordinate.X += 0.05
-		triangle.C.Coordinate.X += 0.05
-		lastUpdate = nowUnixM
-	}
-	if window.GetKey(glfw.KeyS) == glfw.Press {
-		square.A.Coordinate.Y -= 0.05
-		square.B.Coordinate.Y -= 0.05
-		square.C.Coordinate.Y -= 0.05
-		square.D.Coordinate.Y -= 0.05
-		triangle.A.Coordinate.Y += 0.05
-		triangle.B.Coordinate.Y += 0.05
-		triangle.C.Coordinate.Y += 0.05
-		lastUpdate = nowUnixM
-	}
-	if window.GetKey(glfw.KeyD) == glfw.Press {
-		square.A.Coordinate.X += 0.05
-		square.B.Coordinate.X += 0.05
-		square.C.Coordinate.X += 0.05
-		square.D.Coordinate.X += 0.05
-		triangle.A.Coordinate.X -= 0.05
-		triangle.B.Coordinate.X -= 0.05
-		triangle.C.Coordinate.X -= 0.05
-		lastUpdate = nowUnixM
-	}
+	lastUpdate = nowUnixM
+	app.Update(float64(delta))
 }
 
 func main() {
 	runtime.LockOSThread()
 
-	window := initGlfw()
+	app = application.New()
+	app.SetWindow(application.InitGlfw(windowWidth, windowHeight, windowTitle))
 	defer glfw.Terminate()
-	program := initOpenGL()
+	application.InitOpenGL()
 
-	// Configure global settings
-	gl.UseProgram(program)
+	app.SetKeys(SetupKeyMap())
+	shaderProgram := shader.NewShader("examples/button-handler/vertexshader.vert", "examples/button-handler/fragmentshader.frag")
 
-	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
+	triangle = tr.NewTriangle(triangleCoordinates, triangleColors, shaderProgram)
+	triangle.SetSpeed(speed)
+	app.AddItem(triangle)
+	square = sq.NewSquare(squareCoordinates, squareColors, shaderProgram)
+	square.SetSpeed(speed)
+	app.AddItem(square)
 
-	P := mat.UnitMatrix()
-	MV := mat.UnitMatrix()
-	mvp := P.Dot(MV).GetMatrix()
-	gl.UniformMatrix4fv(mvpLocation, 1, false, &mvp[0])
+	// register keyboard button callback
+	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
 
-	for !window.ShouldClose() {
+	for !app.GetWindow().ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-		keyHandler(window)
-		gl.UseProgram(program)
-		triangle.Draw()
-		square.Draw()
 		glfw.PollEvents()
-		window.SwapBuffers()
+		Update()
+		app.Draw()
+		app.GetWindow().SwapBuffers()
 	}
 }
