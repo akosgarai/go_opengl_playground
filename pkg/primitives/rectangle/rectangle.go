@@ -37,6 +37,16 @@ func New(points, color [4]mgl32.Vec3, shader Shader) *Rectangle {
 	}
 }
 
+// Coordinates returns the points of the rectangle. It's necessary for the cuboid construction.
+func (r *Rectangle) Coordinates() [4]mgl32.Vec3 {
+	return r.points
+}
+
+// Colors returns the colors of the rectangle. It's necessary for the cuboid construction.
+func (r *Rectangle) Colors() [4]mgl32.Vec3 {
+	return r.colors
+}
+
 // Log returns the string representation of this object.
 func (r *Rectangle) Log() string {
 	logString := "Rectangle:\n"
@@ -87,8 +97,7 @@ func (r *Rectangle) appendRectangleToVao(coordinates, colors [4]mgl32.Vec3) {
 	}
 }
 
-func (r *Rectangle) setupVao() {
-	r.vao.Clear()
+func (r *Rectangle) insertEverythingToVao() {
 	verticalStep := (r.points[1].Sub(r.points[0])).Mul(1.0 / float32(r.precision))
 	horisontalStep := (r.points[3].Sub(r.points[0])).Mul(1.0 / float32(r.precision))
 
@@ -109,6 +118,18 @@ func (r *Rectangle) setupVao() {
 			r.appendRectangleToVao([4]mgl32.Vec3{a, b, c, d}, r.colors)
 		}
 	}
+}
+func (r *Rectangle) setupVao() {
+	r.vao.Clear()
+	r.insertEverythingToVao()
+}
+func (r *Rectangle) SetupExternalVao(v *vao.VAO) *vao.VAO {
+	tmpVao := r.vao
+	r.vao = v
+	r.insertEverythingToVao()
+	v = r.vao
+	r.vao = tmpVao
+	return v
 }
 func (r *Rectangle) buildVao() {
 	// Create the vao object

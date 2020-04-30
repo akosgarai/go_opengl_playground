@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"
+
+	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
 type testShader struct {
@@ -243,5 +245,71 @@ func TestSetSpeed(t *testing.T) {
 
 	if square.speed != 10.0 {
 		t.Error("Mismatch in the speed")
+	}
+}
+func TestCoordinates(t *testing.T) {
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	colors := [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+	var shader testShader
+	square := New(points, colors, shader)
+	coords := square.Coordinates()
+	if coords != points {
+		t.Error("Mismatch in coordinates")
+	}
+}
+func TestColors(t *testing.T) {
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	colors := [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+	var shader testShader
+	square := New(points, colors, shader)
+	cols := square.Colors()
+	if cols != colors {
+		t.Error("Mismatch in colors")
+	}
+}
+func TestSetupExternalVao(t *testing.T) {
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	colors := [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+	var shader testShader
+	square := New(points, colors, shader)
+	if len(square.vao.Get()) != 0 {
+		t.Error("VAO should be empty")
+	}
+	outerVao := square.SetupExternalVao(vao.NewVAO())
+	if len(square.vao.Get()) != 0 {
+		t.Error("VAO should be empty")
+	}
+	if len(outerVao.Get()) == 0 {
+		t.Error("VAO shouldn't be empty")
 	}
 }
