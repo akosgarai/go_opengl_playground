@@ -34,9 +34,6 @@ const (
 )
 
 var (
-	cameraRotate = false
-	DebugPrint   = false
-
 	app *application.Application
 
 	triangleColorFront = mgl32.Vec3{0, 0, 1}
