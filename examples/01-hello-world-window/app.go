@@ -12,7 +12,7 @@ import (
 const (
 	windowWidth  = 800
 	windowHeight = 800
-	windowTitle  = "Example - callbacks"
+	windowTitle  = "Example - Hello World Window"
 )
 
 func main() {
