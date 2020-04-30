@@ -118,7 +118,7 @@ func main() {
 	application.InitOpenGL()
 
 	app.SetKeys(SetupKeyMap())
-	shaderProgram := shader.NewShader("examples/button-handler/vertexshader.vert", "examples/button-handler/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/03-button-handler/vertexshader.vert", "examples/03-button-handler/fragmentshader.frag")
 
 	triangle = tr.NewTriangle(triangleCoordinates, triangleColors, shaderProgram)
 	triangle.SetSpeed(speed)
