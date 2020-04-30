@@ -43,7 +43,7 @@ func main() {
 	defer glfw.Terminate()
 	application.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/static-square/vertexshader.vert", "examples/static-square/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/02-static-square/vertexshader.vert", "examples/02-static-square/fragmentshader.frag")
 
 	square := rectangle.New(coordinates, colors, shaderProgram)
 	app.AddItem(square)

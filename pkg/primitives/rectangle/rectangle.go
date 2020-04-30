@@ -157,6 +157,8 @@ func (r *Rectangle) buildVao() {
 // Draw is for drawing the rectangle to the screen.
 func (r *Rectangle) Draw() {
 	r.shader.Use()
+	MVP := mgl32.Ident4()
+	r.shader.SetUniformMat4("MVP", MVP)
 	r.draw()
 }
 func (r *Rectangle) draw() {
