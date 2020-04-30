@@ -187,7 +187,7 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 
-	shaderProgram := shader.NewShader("examples/mesh-deformer/vertexshader.vert", "examples/mesh-deformer/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/04-mesh-deformer-with-camera/vertexshader.vert", "examples/04-mesh-deformer-with-camera/fragmentshader.frag")
 
 	GenerateTriangles(shaderProgram)
 
