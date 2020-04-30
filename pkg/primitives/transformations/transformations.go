@@ -135,15 +135,15 @@ func ProjectionMatrix(angleOfView, near, far float64) *mat.Matrix {
 
 // Vec3ToString helper function for the string representation of a vector. It is for the log.
 func Vec3ToString(v mgl32.Vec3) string {
-	x := strconv.FormatFloat(float64(v.X()), 'f', 6, 32)
-	y := strconv.FormatFloat(float64(v.Y()), 'f', 6, 32)
-	z := strconv.FormatFloat(float64(v.Z()), 'f', 6, 32)
+	x := strconv.FormatFloat(float64(v.X()), 'f', 10, 32)
+	y := strconv.FormatFloat(float64(v.Y()), 'f', 10, 32)
+	z := strconv.FormatFloat(float64(v.Z()), 'f', 10, 32)
 	return "X : " + x + ", Y : " + y + ", Z : " + z
 }
 
 // Float64ToString returns the given float number in string format.
 func Float64ToString(num float64) string {
-	return strconv.FormatFloat(num, 'f', 6, 32)
+	return strconv.FormatFloat(num, 'f', 10, 32)
 }
 
 // Float32ToString returns the given float number in string format.

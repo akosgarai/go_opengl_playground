@@ -64,6 +64,7 @@ func (t *Triangle) Log() string {
 	logString += " - A : Coordinate: Vector{" + trans.Vec3ToString(t.points[0]) + "}, color: Vector{" + trans.Vec3ToString(t.colors[0]) + "}\n"
 	logString += " - B : Coordinate: Vector{" + trans.Vec3ToString(t.points[1]) + "}, color: Vector{" + trans.Vec3ToString(t.colors[1]) + "}\n"
 	logString += " - C : Coordinate: Vector{" + trans.Vec3ToString(t.points[2]) + "}, color: Vector{" + trans.Vec3ToString(t.colors[2]) + "}\n"
+	logString += " - Movement : Direction: Vector{" + trans.Vec3ToString(t.direction) + "}, speed: " + trans.Float32ToString(t.speed) + "}\n"
 	return logString
 }
 func (t *Triangle) setupVao() {
@@ -125,6 +126,6 @@ func (t *Triangle) Update(dt float64) {
 		motionVector = motionVector.Normalize().Mul(delta * t.speed)
 	}
 	for i := 0; i < 3; i++ {
-		t.points[i] = t.points[i].Add(motionVector)
+		t.points[i] = (t.points[i]).Add(motionVector)
 	}
 }
