@@ -1,154 +1,113 @@
 package main
 
 import (
-	"fmt"
 	"runtime"
 	"time"
 
-	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
+	"github.com/akosgarai/opengl_playground/pkg/application"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	tr "github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
-	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 const (
 	windowWidth  = 800
 	windowHeight = 600
 	windowTitle  = "Example - mesh deformer"
+
+	rows   = 10
+	cols   = 10
+	length = 10
 )
 
 var (
-	triangles []tr.Triangle
+	app *application.Application
+
+	triangleColorFront = mgl32.Vec3{0, 0, 1}
+	triangleColorBack  = mgl32.Vec3{0, 0.5, 1}
+
+	lastUpdate int64
 )
 
-func initGlfw() *glfw.Window {
-	if err := glfw.Init(); err != nil {
-		panic(fmt.Errorf("could not initialize glfw: %v", err))
-	}
-
-	glfw.WindowHint(glfw.ContextVersionMajor, 4)
-	glfw.WindowHint(glfw.ContextVersionMinor, 1)
-	glfw.WindowHint(glfw.Resizable, glfw.True)
-	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-
-	window, err := glfw.CreateWindow(windowWidth, windowHeight, windowTitle, nil, nil)
-
-	if err != nil {
-		panic(fmt.Errorf("could not create opengl renderer: %v", err))
-	}
-
-	window.MakeContextCurrent()
-
-	return window
-}
-
-func initOpenGL() uint32 {
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
-	version := gl.GoStr(gl.GetString(gl.VERSION))
-	fmt.Println("OpenGL version", version)
-
-	vertexShader, err := shader.CompileShader(shader.VertexShaderDeformVertexPositionSource, gl.VERTEX_SHADER)
-	if err != nil {
-		panic(err)
-	}
-	fragmentShader, err := shader.CompileShader(shader.FragmentShaderBasicSource, gl.FRAGMENT_SHADER)
-	if err != nil {
-		panic(err)
-	}
-
-	program := gl.CreateProgram()
-	gl.AttachShader(program, vertexShader)
-	gl.AttachShader(program, fragmentShader)
-	gl.LinkProgram(program)
-	return program
+// It creates a new camera with the necessary setup
+func CreateCamera() *camera.Camera {
+	camera := camera.NewCamera(mgl32.Vec3{0.0, 1.0, 9.5}, mgl32.Vec3{0, 0, 1}, -90.0, -34.0)
+	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
+	return camera
 }
 
 // It generates a bunch of triangles and sets their color to static blue.
-func generateTrianglesModelCoordinates() {
-	rows := 100
-	cols := 100
-	length := 10.0
+func GenerateTriangles(shaderProgram *shader.Shader) {
 	for i := 0; i <= rows; i++ {
 		for j := 0; j <= cols; j++ {
-			topX := (float64(j) * length)
-			topY := (float64(i) * length)
-			topZ := 0.0
+			topX := float32(j * length)
+			topY := float32(i * length)
+			topZ := float32(0.0)
 
-			triangle := *tr.NewTriangle(
-				vec.Vector{topX, topY, topZ},
-				vec.Vector{topX, topY - length, topZ},
-				vec.Vector{topX - length, topY - length, topZ},
-			)
-			triangle.SetColor(vec.Vector{0, 0, 1})
-			triangles = append(
-				triangles,
-				triangle,
-			)
-			triangle = *tr.NewTriangle(
-				vec.Vector{topX, topY, topZ},
-				vec.Vector{topX - length, topY - length, topZ},
-				vec.Vector{topX - length, topY, topZ},
-			)
-			triangle.SetColor(vec.Vector{0, 0.5, 1})
-			triangles = append(
-				triangles,
-				triangle,
-			)
+			coords := [3]mgl32.Vec3{
+				mgl32.Vec3{topX, topY, topZ},
+				mgl32.Vec3{topX, topY - float32(length), topZ},
+				mgl32.Vec3{topX - float32(length), topY - float32(length), topZ},
+			}
+			colors := [3]mgl32.Vec3{triangleColorFront, triangleColorFront, triangleColorFront}
+			triangle := tr.NewTriangle(coords, colors, shaderProgram)
+			triangle.SetDirection(mgl32.Vec3{0, 0, 1})
+			triangle.SetSpeed(float32(1.0) / float32(1000000000.0))
+			app.AddItem(triangle)
+
+			coords = [3]mgl32.Vec3{
+				mgl32.Vec3{topX, topY, topZ},
+				mgl32.Vec3{topX - float32(length), topY - float32(length), topZ},
+				mgl32.Vec3{topX - float32(length), topY, topZ},
+			}
+			colors = [3]mgl32.Vec3{triangleColorBack, triangleColorBack, triangleColorBack}
+			triangle = tr.NewTriangle(coords, colors, shaderProgram)
+			triangle.SetDirection(mgl32.Vec3{0, 0, 1})
+			triangle.SetSpeed(float32(1.0) / float32(1000000000.0))
+			app.AddItem(triangle)
 		}
 	}
+}
+
+// Update the z coordinates of the vectors.
+func Update() {
+	now := time.Now().UnixNano()
+	delta := float64(now - lastUpdate)
+	app.Update(delta)
+	lastUpdate = now
+
 }
 
 func main() {
 	runtime.LockOSThread()
 
-	window := initGlfw()
+	app = application.New()
+	app.SetWindow(application.InitGlfw(windowWidth, windowHeight, windowTitle))
 	defer glfw.Terminate()
-	program := initOpenGL()
+	application.InitOpenGL()
 
-	// Configure global settings
-	gl.UseProgram(program)
+	app.SetCamera(CreateCamera())
+
+	shaderProgram := shader.NewShader("examples/mesh-deformer/vertexshader.vert", "examples/mesh-deformer/fragmentshader.frag")
+
+	GenerateTriangles(shaderProgram)
+
+	lastUpdate = time.Now().UnixNano()
+	// register keyboard button callback
+	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
 
-	generateTrianglesModelCoordinates()
-
-	nowUnix := time.Now().UnixNano()
-
-	// mvp - modelview - projection matrix
-	angelOfView := float64(270)
-	near := float64(0.1)
-	far := float64(1000)
-	// projection matrix
-	P := trans.ProjectionMatrix(angelOfView, near, far)
-	// scalematrix - coord / 100
-	scaleMatrix := trans.ScaleMatrix(0.01, 0.01, 0.01)
-	// translation matrix
-	translationMatrix := trans.TranslationMatrix(-1, -1, -50)
-	// rotationmatrix - rotate on the Z coord.
-	rotationMatrix := trans.RotationZMatrix(90)
-	MV := (scaleMatrix.Dot(translationMatrix)).Dot(rotationMatrix)
-	mvpPoints := MV.Dot(P).GetMatrix()
-	mvpLocation := gl.GetUniformLocation(program, gl.Str("MVP\x00"))
-	timeLocation := gl.GetUniformLocation(program, gl.Str("time\x00"))
-
-	for !window.ShouldClose() {
+	for !app.GetWindow().ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-		// time
-		elapsedTimeNano := time.Now().UnixNano() - nowUnix
-		gl.Uniform1f(timeLocation, float32(elapsedTimeNano/10000000))
-		gl.UniformMatrix4fv(mvpLocation, 1, false, &mvpPoints[0])
-
-		for _, item := range triangles {
-			item.Draw()
-		}
 		glfw.PollEvents()
-		window.SwapBuffers()
+		Update()
+		app.DrawWithUniforms()
+		app.GetWindow().SwapBuffers()
 	}
 }
