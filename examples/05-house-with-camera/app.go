@@ -241,7 +241,7 @@ func main() {
 	defer glfw.Terminate()
 	application.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/house/vertexshader.vert", "examples/house/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/05-house-with-camera/vertexshader.vert", "examples/05-house-with-camera/fragmentshader.frag")
 
 	app.SetCamera(CreateCamera())
 	cameraLastUpdate = time.Now().UnixNano()
