@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
-	sq "github.com/akosgarai/opengl_playground/pkg/primitives/square"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	tr "github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
@@ -57,7 +57,7 @@ var (
 	app *application.Application
 
 	triangle *tr.Triangle
-	square   *sq.Square
+	square   *rectangle.Rectangle
 )
 
 func SetupKeyMap() map[glfw.Key]bool {
@@ -123,7 +123,7 @@ func main() {
 	triangle = tr.NewTriangle(triangleCoordinates, triangleColors, shaderProgram)
 	triangle.SetSpeed(speed)
 	app.AddItem(triangle)
-	square = sq.NewSquare(squareCoordinates, squareColors, shaderProgram)
+	square = rectangle.New(squareCoordinates, squareColors, shaderProgram)
 	square.SetSpeed(speed)
 	app.AddItem(square)
 

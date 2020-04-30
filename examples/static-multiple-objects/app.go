@@ -4,7 +4,7 @@ import (
 	"runtime"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
-	sq "github.com/akosgarai/opengl_playground/pkg/primitives/square"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	tr "github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
@@ -58,7 +58,7 @@ func main() {
 
 	triangle := tr.NewTriangle(triangleCoordinates, triangleColors, shaderProgram)
 	app.AddItem(triangle)
-	square := sq.NewSquare(squareCoordinates, squareColors, shaderProgram)
+	square := rectangle.New(squareCoordinates, squareColors, shaderProgram)
 	app.AddItem(square)
 
 	gl.Enable(gl.DEPTH_TEST)

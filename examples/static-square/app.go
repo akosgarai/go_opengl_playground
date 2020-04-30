@@ -4,7 +4,7 @@ import (
 	"runtime"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
-	sq "github.com/akosgarai/opengl_playground/pkg/primitives/square"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -45,7 +45,7 @@ func main() {
 
 	shaderProgram := shader.NewShader("examples/static-square/vertexshader.vert", "examples/static-square/fragmentshader.frag")
 
-	square := sq.NewSquare(coordinates, colors, shaderProgram)
+	square := rectangle.New(coordinates, colors, shaderProgram)
 	app.AddItem(square)
 
 	gl.Enable(gl.DEPTH_TEST)
