@@ -4,9 +4,9 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/examples/house/primitives"
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -20,6 +20,7 @@ const (
 	windowTitle  = "Example - the house"
 	moveSpeed    = 1.0 / 100.0
 	epsilon      = 1000.0
+	precision    = 20
 	// buttons
 	FORWARD  = glfw.KeyW // Go forward
 	BACKWARD = glfw.KeyS // Go backward
@@ -31,24 +32,6 @@ var (
 	cameraLastUpdate int64
 	app              *application.Application
 )
-
-// It creates the shader application for the items.
-func CreateShader() uint32 {
-	vertexShader, err := shader.CompileShader(shader.VertexShaderModelViewProjectionSource, gl.VERTEX_SHADER)
-	if err != nil {
-		panic(err)
-	}
-	fragmentShader, err := shader.CompileShader(shader.FragmentShaderBasicSource, gl.FRAGMENT_SHADER)
-	if err != nil {
-		panic(err)
-	}
-
-	program := gl.CreateProgram()
-	gl.AttachShader(program, vertexShader)
-	gl.AttachShader(program, fragmentShader)
-	gl.LinkProgram(program)
-	return program
-}
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
@@ -67,159 +50,155 @@ func SetupKeyMap() map[glfw.Key]bool {
 
 	return keyDowns
 }
+func addRect(coordinates [4]mgl32.Vec3, rectColor mgl32.Vec3, shaderProg *shader.Shader) {
+	color := [4]mgl32.Vec3{rectColor, rectColor, rectColor, rectColor}
+	rect := rectangle.New(coordinates, color, shaderProg)
+	rect.SetPrecision(precision)
+	app.AddItem(rect)
+}
 
 // the path
-func Path(shaderProgId uint32) {
-	floorCoordinates := [4]mgl32.Vec3{
+func Path(shaderProg *shader.Shader) {
+	rectColor := mgl32.Vec3{215.0 / 255.0, 100.0 / 255.0, 30.0 / 255.0}
+	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{60, 0, 30},
 		mgl32.Vec3{60, 0, 80},
 		mgl32.Vec3{90, 0, 80},
 		mgl32.Vec3{90, 0, 30},
 	}
-	floorColor := mgl32.Vec3{215.0 / 255.0, 100.0 / 255.0, 30.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(floorCoordinates, floorColor, 20, shaderProgId))
+	addRect(coordinates, rectColor, shaderProg)
 }
 
 // the wall left of the path
-func LeftFullWall(shaderProgramId uint32) {
+func LeftFullWall(shaderProg *shader.Shader) {
+	rectColor := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
 	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{90, 50, 80},
 		mgl32.Vec3{90, 0, 80},
 		mgl32.Vec3{90, 0, 30},
 		mgl32.Vec3{90, 50, 30},
 	}
-	color := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	addRect(coordinates, rectColor, shaderProg)
 }
 
 // the wall front of the path
-func FrontPathWall(shaderProgramId uint32) {
+func FrontPathWall(shaderProg *shader.Shader) {
+	rectColor := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
 	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{60, 50, 80},
 		mgl32.Vec3{60, 0, 80},
 		mgl32.Vec3{90, 0, 80},
 		mgl32.Vec3{90, 50, 80},
 	}
-	color := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	addRect(coordinates, rectColor, shaderProg)
 }
 
 // the roof of the path
-func PathRoof(shaderProgramId uint32) {
+func PathRoof(shaderProg *shader.Shader) {
+	rectColor := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
 	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{60, 50, 80},
 		mgl32.Vec3{60, 50, 30},
 		mgl32.Vec3{90, 50, 30},
 		mgl32.Vec3{90, 50, 80},
 	}
-	color := mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	addRect(coordinates, rectColor, shaderProg)
 }
 
 // the floor of the room
-func RoomFloor(shaderProgramId uint32) {
+func RoomFloor(shaderProg *shader.Shader) {
+	rectColor := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
 	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{10, 0, 30},
 		mgl32.Vec3{10, 0, 80},
 		mgl32.Vec3{60, 0, 80},
 		mgl32.Vec3{60, 0, 30},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	addRect(coordinates, rectColor, shaderProg)
 }
 
 // the roof of the room
-func RoomRoof(shaderProgramId uint32) {
+func RoomRoof(shaderProg *shader.Shader) {
+	rectColor := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
 	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{10, 50, 30},
 		mgl32.Vec3{10, 50, 80},
 		mgl32.Vec3{60, 50, 80},
 		mgl32.Vec3{60, 50, 30},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	addRect(coordinates, rectColor, shaderProg)
 }
 
 // the front wall of the room
-func RoomFront(shaderProgramId uint32) {
+func RoomFront(shaderProg *shader.Shader) {
+	rectColor := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
 	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{60, 50, 80},
 		mgl32.Vec3{60, 0, 80},
 		mgl32.Vec3{10, 0, 80},
 		mgl32.Vec3{10, 50, 80},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	addRect(coordinates, rectColor, shaderProg)
 }
 
 // the back wall of the room
-func RoomBack(shaderProgramId uint32) {
+func RoomBack(shaderProg *shader.Shader) {
+	rectColor := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
 	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{60, 50, 30},
 		mgl32.Vec3{60, 0, 30},
 		mgl32.Vec3{10, 0, 30},
 		mgl32.Vec3{10, 50, 30},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	addRect(coordinates, rectColor, shaderProg)
 }
 
 // the left wall of the room
-func RoomLeft(shaderProgramId uint32) {
+func RoomLeft(shaderProg *shader.Shader) {
+	rectColor := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
 	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{10, 50, 30},
 		mgl32.Vec3{10, 0, 30},
 		mgl32.Vec3{10, 0, 80},
 		mgl32.Vec3{10, 50, 80},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	addRect(coordinates, rectColor, shaderProg)
 }
 
 // the right wall of the room 1x5
-func RoomRight1(shaderProgramId uint32) {
+func RoomRight1(shaderProg *shader.Shader) {
+	rectColor := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
 	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{60, 50, 80},
 		mgl32.Vec3{60, 0, 80},
 		mgl32.Vec3{60, 0, 70},
 		mgl32.Vec3{60, 50, 70},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	addRect(coordinates, rectColor, shaderProg)
 }
 
 // the right wall of the room 2x5
-func RoomRight2(shaderProgramId uint32) {
+func RoomRight2(shaderProg *shader.Shader) {
+	rectColor := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
 	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{60, 50, 50},
 		mgl32.Vec3{60, 0, 50},
 		mgl32.Vec3{60, 0, 30},
 		mgl32.Vec3{60, 50, 30},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
+	addRect(coordinates, rectColor, shaderProg)
 }
 
 // the right wall of the room 2x2
-func RoomRight3(shaderProgramId uint32) {
+func RoomRight3(shaderProg *shader.Shader) {
+	rectColor := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
 	coordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{60, 50, 70},
 		mgl32.Vec3{60, 30, 70},
 		mgl32.Vec3{60, 30, 50},
 		mgl32.Vec3{60, 50, 50},
 	}
-	color := mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}
-	app.AddItem(primitives.NewRectangle(coordinates, color, 20, shaderProgramId))
-}
-
-// The Sphere.
-func Sphere(shaderProgId uint32) {
-	sphere := primitives.NewSphere()
-	sphere.SetCenter(mgl32.Vec3{75, 5, 35})
-	sphere.SetColor(mgl32.Vec3{0, 0, 1})
-	sphere.SetRadius(1)
-	sphere.SetShaderProgram(shaderProgId)
-	app.AddItem(sphere)
+	addRect(coordinates, rectColor, shaderProg)
 }
 
 func Update() {
@@ -262,25 +241,24 @@ func main() {
 	defer glfw.Terminate()
 	application.InitOpenGL()
 
-	shaderProgramId := CreateShader()
+	shaderProgram := shader.NewShader("examples/house/vertexshader.vert", "examples/house/fragmentshader.frag")
 
 	app.SetCamera(CreateCamera())
 	cameraLastUpdate = time.Now().UnixNano()
 
 	app.SetKeys(SetupKeyMap())
-	Path(shaderProgramId)
-	LeftFullWall(shaderProgramId)
-	FrontPathWall(shaderProgramId)
-	PathRoof(shaderProgramId)
-	RoomFloor(shaderProgramId)
-	RoomRoof(shaderProgramId)
-	RoomFront(shaderProgramId)
-	RoomBack(shaderProgramId)
-	RoomLeft(shaderProgramId)
-	RoomRight1(shaderProgramId)
-	RoomRight2(shaderProgramId)
-	RoomRight3(shaderProgramId)
-	//Sphere(shaderProgramId)
+	Path(shaderProgram)
+	LeftFullWall(shaderProgram)
+	FrontPathWall(shaderProgram)
+	PathRoof(shaderProgram)
+	RoomFloor(shaderProgram)
+	RoomRoof(shaderProgram)
+	RoomFront(shaderProgram)
+	RoomBack(shaderProgram)
+	RoomLeft(shaderProgram)
+	RoomRight1(shaderProgram)
+	RoomRight2(shaderProgram)
+	RoomRight3(shaderProgram)
 
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
 	gl.Viewport(0, 0, windowWidth, windowHeight)
