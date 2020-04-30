@@ -5,13 +5,17 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
-	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
+type Shader interface {
+	Use()
+	SetUniformMat4(string, mgl32.Mat4)
+}
+
 type Triangle struct {
 	vao    *vao.VAO
-	shader *shader.Shader
+	shader Shader
 
 	points [3]mgl32.Vec3
 	colors [3]mgl32.Vec3
@@ -20,7 +24,7 @@ type Triangle struct {
 	speed     float32
 }
 
-func NewTriangle(points, colors [3]mgl32.Vec3, shader *shader.Shader) *Triangle {
+func NewTriangle(points, colors [3]mgl32.Vec3, shader Shader) *Triangle {
 	return &Triangle{
 		shader:    shader,
 		vao:       vao.NewVAO(),
