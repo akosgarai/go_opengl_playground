@@ -56,7 +56,7 @@ func main() {
 	defer glfw.Terminate()
 	application.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/static-triangles/vertexshader.vert", "examples/static-triangles/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/02-static-triangles/vertexshader.vert", "examples/02-static-triangles/fragmentshader.frag")
 
 	GenerateTriangles(50, shaderProgram)
 
