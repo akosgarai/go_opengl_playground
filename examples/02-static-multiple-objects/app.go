@@ -54,7 +54,7 @@ func main() {
 	defer glfw.Terminate()
 	application.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/static-multiple-objects/vertexshader.vert", "examples/static-multiple-objects/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/02-static-multiple-objects/vertexshader.vert", "examples/02-static-multiple-objects/fragmentshader.frag")
 
 	triangle := tr.NewTriangle(triangleCoordinates, triangleColors, shaderProgram)
 	app.AddItem(triangle)
