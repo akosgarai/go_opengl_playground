@@ -186,7 +186,7 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 
-	shaderProgram := shader.NewShader("examples/shapes-with-camera/vertexshader.vert", "examples/shapes-with-camera/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/05-shapes-with-camera/vertexshader.vert", "examples/05-shapes-with-camera/fragmentshader.frag")
 	GenerateCube(shaderProgram)
 	GenerateSphere(shaderProgram)
 
