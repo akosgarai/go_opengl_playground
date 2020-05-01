@@ -22,10 +22,11 @@ type Drawable interface {
 }
 
 type Application struct {
-	window   *glfw.Window
-	program  uint32
-	camera   *camera.Camera
-	keyDowns map[glfw.Key]bool
+	window     *glfw.Window
+	program    uint32
+	camera     *camera.Camera
+	keyDowns   map[glfw.Key]bool
+	mouseDowns map[glfw.MouseButton]bool
 
 	items []Drawable
 }
@@ -33,8 +34,9 @@ type Application struct {
 // New returns an application instance
 func New() *Application {
 	return &Application{
-		keyDowns: make(map[glfw.Key]bool),
-		items:    []Drawable{},
+		keyDowns:   make(map[glfw.Key]bool),
+		mouseDowns: make(map[glfw.MouseButton]bool),
+		items:      []Drawable{},
 	}
 }
 
@@ -77,6 +79,16 @@ func (a *Application) SetCamera(c *camera.Camera) {
 // GetCamera returns the current camera of the application.
 func (a *Application) GetCamera() *camera.Camera {
 	return a.camera
+}
+
+// SetMouseButtons updates the mouseDowns with the new one.
+func (a *Application) SetMouseButtons(m map[glfw.MouseButton]bool) {
+	a.mouseDowns = m
+}
+
+// GetMouseButtons returns the current mouseDowns of the application.
+func (a *Application) GetMouseButtons() map[glfw.MouseButton]bool {
+	return a.mouseDowns
 }
 
 // SetKeys updates the keyDowns with the new one.
@@ -176,6 +188,15 @@ func (a *Application) KeyCallback(w *glfw.Window, key glfw.Key, scancode int, ac
 	}
 }
 
+// MouseButtonCallback is responsible for the mouse button event handling.
+func (a *Application) MouseButtonCallback(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
+	switch key {
+	default:
+		a.SetButtonState(button, action)
+		break
+	}
+}
+
 // SetKeyState setups the keyDowns based on the key and action
 func (a *Application) SetKeyState(key glfw.Key, action glfw.Action) {
 	var isButtonPressed bool
@@ -185,6 +206,17 @@ func (a *Application) SetKeyState(key glfw.Key, action glfw.Action) {
 		isButtonPressed = false
 	}
 	a.keyDowns[key] = isButtonPressed
+}
+
+// SetKeyState setups the keyDowns based on the key and action
+func (a *Application) SetButtonState(button glfw.MouseButton, action glfw.Action) {
+	var isButtonPressed bool
+	if action != glfw.Release {
+		isButtonPressed = true
+	} else {
+		isButtonPressed = false
+	}
+	a.mouseDowns[button] = isButtonPressed
 }
 
 // SetKeyState returns the state of the given key
