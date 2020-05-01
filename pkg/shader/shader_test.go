@@ -562,3 +562,18 @@ func TestGetUniformLocation(t *testing.T) {
 		}
 	}
 }
+func TestBindBufferData(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestBindVertexArray(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestVertexAttribPointer(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestClose(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestDrawPoints(t *testing.T) {
+	t.Skip("Unimplemented")
+}
