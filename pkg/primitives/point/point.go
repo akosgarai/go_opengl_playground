@@ -123,7 +123,7 @@ func (p *Points) buildVao() {
 	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*7, gl.PtrOffset(4*3))
 	// setup size
 	gl.EnableVertexAttribArray(2)
-	gl.VertexAttribPointer(2, 3, gl.FLOAT, false, 4*7, gl.PtrOffset(4*6))
+	gl.VertexAttribPointer(2, 1, gl.FLOAT, false, 4*7, gl.PtrOffset(4*6))
 }
 func (p *Points) DrawWithUniforms(view, projection mgl32.Mat4) {
 	p.shader.Use()
@@ -135,7 +135,12 @@ func (p *Points) Draw() {
 }
 func (p *Points) draw() {
 	p.buildVao()
+
 	gl.DrawArrays(gl.POINTS, 0, int32(len(p.vao.Get())/7))
+	gl.DisableVertexAttribArray(0)
+	gl.DisableVertexAttribArray(1)
+	gl.DisableVertexAttribArray(2)
+	gl.BindVertexArray(0)
 }
 
 func (p *Points) Count() int {
