@@ -577,3 +577,6 @@ func TestClose(t *testing.T) {
 func TestDrawPoints(t *testing.T) {
 	t.Skip("Unimplemented")
 }
+func TestDrawTriangles(t *testing.T) {
+	t.Skip("Unimplemented")
+}

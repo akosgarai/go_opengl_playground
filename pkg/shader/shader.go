@@ -150,3 +150,8 @@ func (s *Shader) Close(numOfVertexAttributes int) {
 func (s *Shader) DrawPoints(numberOfPoints int32) {
 	gl.DrawArrays(gl.POINTS, 0, numberOfPoints)
 }
+
+// DrawTriangles is the draw function for triangles
+func (s *Shader) DrawTriangles(numberOfPoints int32) {
+	gl.DrawArrays(gl.TRIANGLES, 0, numberOfPoints)
+}
