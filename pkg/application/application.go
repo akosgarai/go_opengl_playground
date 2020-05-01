@@ -27,6 +27,8 @@ type Application struct {
 	camera     *camera.Camera
 	keyDowns   map[glfw.Key]bool
 	mouseDowns map[glfw.MouseButton]bool
+	MousePosX  float64
+	MousePosY  float64
 
 	items []Drawable
 }
@@ -108,15 +110,15 @@ func (a *Application) AddItem(d Drawable) {
 
 // Draw calls Draw function in every drawable item.
 func (a *Application) Draw() {
-	for _, item := range a.items {
-		item.Draw()
+	for index, _ := range a.items {
+		a.items[index].Draw()
 	}
 }
 
 // Update calls the Update function in every drawable item.
 func (a *Application) Update(dt float64) {
-	for _, item := range a.items {
-		item.Update(dt)
+	for index, _ := range a.items {
+		a.items[index].Update(dt)
 	}
 }
 
@@ -190,6 +192,7 @@ func (a *Application) KeyCallback(w *glfw.Window, key glfw.Key, scancode int, ac
 
 // MouseButtonCallback is responsible for the mouse button event handling.
 func (a *Application) MouseButtonCallback(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
+	a.MousePosX, a.MousePosY = w.GetCursorPos()
 	switch button {
 	default:
 		a.SetButtonState(button, action)
