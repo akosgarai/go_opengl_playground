@@ -13,6 +13,16 @@ func (t testShader) Use() {
 }
 func (t testShader) SetUniformMat4(s string, m mgl32.Mat4) {
 }
+func (t testShader) DrawPoints(i int32) {
+}
+func (t testShader) Close(i int) {
+}
+func (t testShader) VertexAttribPointer(i uint32, c int32, s int32, o int) {
+}
+func (t testShader) BindVertexArray() {
+}
+func (t testShader) BindBufferData(d []float32) {
+}
 
 var shader testShader
 
@@ -140,13 +150,49 @@ func TestSetupVao(t *testing.T) {
 	}
 }
 func TestBuildVao(t *testing.T) {
-	t.Skip("It needs opengl init.")
+	points := New(shader)
+	points.setupVao()
+	if len(points.vao.Get()) != 0 {
+		t.Error("Invalid vao length")
+	}
+	coords := mgl32.Vec3{0, 0, 0}
+	col := mgl32.Vec3{1, 0, 0}
+	size := float32(3.0)
+	points.Add(coords, col, size)
+	points.buildVao()
+	if len(points.vao.Get()) != 7 {
+		t.Error("Invalid vao length")
+	}
 }
 func TestDrawWithUniforms(t *testing.T) {
-	t.Skip("It needs opengl init.")
+	points := New(shader)
+	points.setupVao()
+	if len(points.vao.Get()) != 0 {
+		t.Error("Invalid vao length")
+	}
+	coords := mgl32.Vec3{0, 0, 0}
+	col := mgl32.Vec3{1, 0, 0}
+	size := float32(3.0)
+	points.Add(coords, col, size)
+	points.DrawWithUniforms(mgl32.Ident4(), mgl32.Ident4())
+	if len(points.vao.Get()) != 7 {
+		t.Error("Invalid vao length")
+	}
 }
 func TestDraw(t *testing.T) {
-	t.Skip("It needs opengl init.")
+	points := New(shader)
+	points.setupVao()
+	if len(points.vao.Get()) != 0 {
+		t.Error("Invalid vao length")
+	}
+	coords := mgl32.Vec3{0, 0, 0}
+	col := mgl32.Vec3{1, 0, 0}
+	size := float32(3.0)
+	points.Add(coords, col, size)
+	points.Draw()
+	if len(points.vao.Get()) != 7 {
+		t.Error("Invalid vao length")
+	}
 }
 func TestCount(t *testing.T) {
 	points := New(shader)
