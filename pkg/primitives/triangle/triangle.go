@@ -1,7 +1,6 @@
 package triangle
 
 import (
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
@@ -11,6 +10,11 @@ import (
 type Shader interface {
 	Use()
 	SetUniformMat4(string, mgl32.Mat4)
+	DrawTriangles(int32)
+	Close(int)
+	VertexAttribPointer(uint32, int32, int32, int)
+	BindVertexArray()
+	BindBufferData([]float32)
 }
 
 type Triangle struct {
@@ -78,28 +82,16 @@ func (t *Triangle) setupVao() {
 	}
 }
 
-func (t *Triangle) buildVao() uint32 {
+func (t *Triangle) buildVao() {
 	t.setupVao()
 
-	var vertexBufferObject uint32
-	gl.GenBuffers(1, &vertexBufferObject)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
-	// a 32-bit float has 4 bytes, so we are saying the size of the buffer,
-	// in bytes, is 4 times the number of points
-	gl.BufferData(gl.ARRAY_BUFFER, 4*len(t.vao.Get()), gl.Ptr(t.vao.Get()), gl.STATIC_DRAW)
+	t.shader.BindBufferData(t.vao.Get())
 
-	var vertexArrayObject uint32
-	gl.GenVertexArrays(1, &vertexArrayObject)
-	gl.BindVertexArray(vertexArrayObject)
+	t.shader.BindVertexArray()
 	// setup points
-	gl.EnableVertexAttribArray(0)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(0))
+	t.shader.VertexAttribPointer(0, 3, 4*6, 0)
 	// setup color
-	gl.EnableVertexAttribArray(1)
-	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(4*3))
-	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
-
-	return vertexArrayObject
+	t.shader.VertexAttribPointer(1, 3, 4*6, 4*3)
 }
 func (t *Triangle) Draw() {
 	t.shader.Use()
@@ -110,7 +102,8 @@ func (t *Triangle) Draw() {
 }
 func (t *Triangle) draw() {
 	t.buildVao()
-	gl.DrawArrays(gl.TRIANGLES, 0, 3)
+	t.shader.DrawTriangles(3)
+	t.shader.Close(1)
 }
 
 // DrawWithUniforms is for drawing the rectangle to the screen. It setups the
