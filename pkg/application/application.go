@@ -190,7 +190,7 @@ func (a *Application) KeyCallback(w *glfw.Window, key glfw.Key, scancode int, ac
 
 // MouseButtonCallback is responsible for the mouse button event handling.
 func (a *Application) MouseButtonCallback(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
-	switch key {
+	switch button {
 	default:
 		a.SetButtonState(button, action)
 		break
@@ -219,7 +219,12 @@ func (a *Application) SetButtonState(button glfw.MouseButton, action glfw.Action
 	a.mouseDowns[button] = isButtonPressed
 }
 
-// SetKeyState returns the state of the given key
+// GetMouseButtonState returns the state of the given button
+func (a *Application) GetMouseButtonState(button glfw.MouseButton) bool {
+	return a.mouseDowns[button]
+}
+
+// GetKeyState returns the state of the given key
 func (a *Application) GetKeyState(key glfw.Key) bool {
 	return a.keyDowns[key]
 }
