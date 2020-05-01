@@ -1,6 +1,7 @@
 package point
 
 import (
+	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
@@ -96,7 +97,10 @@ func (p *Points) Log() string {
 	return logString
 }
 func (p *Points) setupVao() {
-	t.vao.Clear()
+	p.vao.Clear()
+	for index, _ := range p.points {
+		p.vao.AppendPoint(p.points[index].coordinate, p.points[index].color, p.points[index].size)
+	}
 }
 func (p *Points) buildVao() {
 	p.setupVao()
@@ -117,14 +121,19 @@ func (p *Points) buildVao() {
 	// setup color
 	gl.EnableVertexAttribArray(1)
 	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*7, gl.PtrOffset(4*3))
+	// setup size
 	gl.EnableVertexAttribArray(2)
 	gl.VertexAttribPointer(2, 3, gl.FLOAT, false, 4*7, gl.PtrOffset(4*6))
-
-	return vertexArrayObject
 }
 func (p *Points) DrawWithUniforms(view, projection mgl32.Mat4) {
+	p.shader.Use()
+	p.draw()
 }
 func (p *Points) Draw() {
+	p.shader.Use()
+	p.draw()
 }
 func (p *Points) draw() {
+	p.buildVao()
+	gl.DrawArrays(gl.POINTS, 0, int32(len(p.vao.Get())/7))
 }
