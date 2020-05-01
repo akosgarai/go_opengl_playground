@@ -1,26 +1,12 @@
 package transformations
 
 import (
-	"math"
 	"strconv"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-var (
-	EPSILON = 0.0001
-)
-
-// returns the given degree in radian
-func DegToRad(deg float64) float64 {
-	return (deg * math.Pi / 180)
-}
-
-// returns the given radian in degree
-func RadToDeg(rad float64) float64 {
-	return rad * 180 / math.Pi
-}
-
+// Returns the mouse coordinate in window coordinate.
 func MouseCoordinates(currentX, currentY, windowWidth, windowHeight float64) (float64, float64) {
 	halfWidth := windowWidth / 2.0
 	halfHeight := windowHeight / 2.0
@@ -31,9 +17,9 @@ func MouseCoordinates(currentX, currentY, windowWidth, windowHeight float64) (fl
 
 // Vec3ToString helper function for the string representation of a vector. It is for the log.
 func Vec3ToString(v mgl32.Vec3) string {
-	x := strconv.FormatFloat(float64(v.X()), 'f', 10, 32)
-	y := strconv.FormatFloat(float64(v.Y()), 'f', 10, 32)
-	z := strconv.FormatFloat(float64(v.Z()), 'f', 10, 32)
+	x := Float32ToString(v.X())
+	y := Float32ToString(v.Y())
+	z := Float32ToString(v.Z())
 	return "X : " + x + ", Y : " + y + ", Z : " + z
 }
 
