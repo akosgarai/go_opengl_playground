@@ -127,6 +127,10 @@ func (p *Points) buildVao() {
 }
 func (p *Points) DrawWithUniforms(view, projection mgl32.Mat4) {
 	p.shader.Use()
+	p.shader.SetUniformMat4("view", view)
+	p.shader.SetUniformMat4("projection", projection)
+	M := mgl32.Ident4()
+	p.shader.SetUniformMat4("model", M)
 	p.draw()
 }
 func (p *Points) Draw() {
