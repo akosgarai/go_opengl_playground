@@ -148,3 +148,16 @@ func TestDrawWithUniforms(t *testing.T) {
 func TestDraw(t *testing.T) {
 	t.Skip("It needs opengl init.")
 }
+func TestCount(t *testing.T) {
+	points := New(shader)
+	if points.Count() != 0 {
+		t.Error("Invalid points count")
+	}
+	coords := mgl32.Vec3{0, 0, 0}
+	col := mgl32.Vec3{1, 0, 0}
+	size := float32(3.0)
+	points.Add(coords, col, size)
+	if points.Count() != 1 {
+		t.Error("Invalid points count")
+	}
+}

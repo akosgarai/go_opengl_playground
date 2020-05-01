@@ -137,3 +137,7 @@ func (p *Points) draw() {
 	p.buildVao()
 	gl.DrawArrays(gl.POINTS, 0, int32(len(p.vao.Get())/7))
 }
+
+func (p *Points) Count() int {
+	return len(p.points)
+}
