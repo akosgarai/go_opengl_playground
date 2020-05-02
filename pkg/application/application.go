@@ -3,8 +3,6 @@ package application
 import (
 	"fmt"
 
-	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
-
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -21,10 +19,20 @@ type Drawable interface {
 	Log() string
 }
 
+type Camera interface {
+	Log() string
+	GetViewMatrix() mgl32.Mat4
+	GetProjectionMatrix() mgl32.Mat4
+	Walk(float32)
+	Strafe(float32)
+	Lift(float32)
+	UpdateDirection(float32, float32)
+}
+
 type Application struct {
 	window     *glfw.Window
 	program    uint32
-	camera     *camera.Camera
+	camera     Camera
 	keyDowns   map[glfw.Key]bool
 	mouseDowns map[glfw.MouseButton]bool
 	MousePosX  float64
@@ -74,12 +82,12 @@ func (a *Application) GetProgram() uint32 {
 }
 
 // SetCamera updates the camera with the new one.
-func (a *Application) SetCamera(c *camera.Camera) {
+func (a *Application) SetCamera(c Camera) {
 	a.camera = c
 }
 
 // GetCamera returns the current camera of the application.
-func (a *Application) GetCamera() *camera.Camera {
+func (a *Application) GetCamera() Camera {
 	return a.camera
 }
 
