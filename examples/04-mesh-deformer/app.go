@@ -6,7 +6,7 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
-	tr "github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -54,10 +54,10 @@ func GenerateTriangles(shaderProgram *shader.Shader) {
 				mgl32.Vec3{topX - float32(length), topY - float32(length), topZ},
 			}
 			colors := [3]mgl32.Vec3{triangleColorFront, triangleColorFront, triangleColorFront}
-			triangle := tr.NewTriangle(coords, colors, shaderProgram)
-			triangle.SetDirection(mgl32.Vec3{0, 0, 1})
-			triangle.SetSpeed(float32(1.0) / float32(1000000000.0))
-			app.AddItem(triangle)
+			item := triangle.New(coords, colors, shaderProgram)
+			item.SetDirection(mgl32.Vec3{0, 0, 1})
+			item.SetSpeed(float32(1.0) / float32(1000000000.0))
+			app.AddItem(item)
 
 			coords = [3]mgl32.Vec3{
 				mgl32.Vec3{topX, topY, topZ},
@@ -65,10 +65,10 @@ func GenerateTriangles(shaderProgram *shader.Shader) {
 				mgl32.Vec3{topX - float32(length), topY, topZ},
 			}
 			colors = [3]mgl32.Vec3{triangleColorBack, triangleColorBack, triangleColorBack}
-			triangle = tr.NewTriangle(coords, colors, shaderProgram)
-			triangle.SetDirection(mgl32.Vec3{0, 0, 1})
-			triangle.SetSpeed(float32(1.0) / float32(1000000000.0))
-			app.AddItem(triangle)
+			item = triangle.New(coords, colors, shaderProgram)
+			item.SetDirection(mgl32.Vec3{0, 0, 1})
+			item.SetSpeed(float32(1.0) / float32(1000000000.0))
+			app.AddItem(item)
 		}
 	}
 }
