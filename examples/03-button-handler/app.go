@@ -6,7 +6,7 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
-	tr "github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -56,8 +56,8 @@ var (
 
 	app *application.Application
 
-	triangle *tr.Triangle
-	square   *rectangle.Rectangle
+	item   *triangle.Triangle
+	square *rectangle.Rectangle
 )
 
 func SetupKeyMap() map[glfw.Key]bool {
@@ -73,10 +73,10 @@ func SetupKeyMap() map[glfw.Key]bool {
 }
 func Update() {
 	if app.GetKeyState(SWAP) {
-		triangle.SetColor(mgl32.Vec3{0, 1, 0})
+		item.SetColor(mgl32.Vec3{0, 1, 0})
 		square.SetColor(mgl32.Vec3{1, 0, 0})
 	} else {
-		triangle.SetColor(mgl32.Vec3{1, 0, 0})
+		item.SetColor(mgl32.Vec3{1, 0, 0})
 		square.SetColor(mgl32.Vec3{0, 1, 0})
 	}
 	// now in milisec.
@@ -84,23 +84,23 @@ func Update() {
 	delta := nowUnixM - lastUpdate
 	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
 		square.SetIndexDirection(1, 1.0)
-		triangle.SetIndexDirection(1, -1.0)
+		item.SetIndexDirection(1, -1.0)
 	} else if app.GetKeyState(BACKWARD) && !app.GetKeyState(FORWARD) {
 		square.SetIndexDirection(1, -1.0)
-		triangle.SetIndexDirection(1, 1.0)
+		item.SetIndexDirection(1, 1.0)
 	} else {
 		square.SetIndexDirection(1, 0.0)
-		triangle.SetIndexDirection(1, 0.0)
+		item.SetIndexDirection(1, 0.0)
 	}
 	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
 		square.SetIndexDirection(0, -1.0)
-		triangle.SetIndexDirection(0, 1.0)
+		item.SetIndexDirection(0, 1.0)
 	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
 		square.SetIndexDirection(0, 1.0)
-		triangle.SetIndexDirection(0, -1.0)
+		item.SetIndexDirection(0, -1.0)
 	} else {
 		square.SetIndexDirection(0, 0.0)
-		triangle.SetIndexDirection(0, 0.0)
+		item.SetIndexDirection(0, 0.0)
 	}
 	if epsilon > delta {
 		return
@@ -120,9 +120,9 @@ func main() {
 	app.SetKeys(SetupKeyMap())
 	shaderProgram := shader.NewShader("examples/03-button-handler/vertexshader.vert", "examples/03-button-handler/fragmentshader.frag")
 
-	triangle = tr.NewTriangle(triangleCoordinates, triangleColors, shaderProgram)
-	triangle.SetSpeed(speed)
-	app.AddItem(triangle)
+	item = triangle.New(triangleCoordinates, triangleColors, shaderProgram)
+	item.SetSpeed(speed)
+	app.AddItem(item)
 	square = rectangle.New(squareCoordinates, squareColors, shaderProgram)
 	square.SetSpeed(speed)
 	app.AddItem(square)
