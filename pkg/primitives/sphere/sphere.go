@@ -1,7 +1,6 @@
 package sphere
 
 import (
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
@@ -11,6 +10,11 @@ import (
 type Shader interface {
 	Use()
 	SetUniformMat4(string, mgl32.Mat4)
+	DrawTriangles(int32)
+	Close(int)
+	VertexAttribPointer(uint32, int32, int32, int)
+	BindVertexArray()
+	BindBufferData([]float32)
 }
 
 type Sphere struct {
@@ -134,22 +138,14 @@ func (s *Sphere) setupVao() {
 func (s *Sphere) buildVao() {
 	s.setupVao()
 
-	var vertexBufferObject uint32
-	gl.GenBuffers(1, &vertexBufferObject)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
-	// a 32-bit float has 4 bytes, so we are saying the size of the buffer,
-	// in bytes, is 4 times the number of points
-	gl.BufferData(gl.ARRAY_BUFFER, 4*len(s.vao.Get()), gl.Ptr(s.vao.Get()), gl.STATIC_DRAW)
+	s.shader.BindBufferData(s.vao.Get())
 
-	var vertexArrayObject uint32
-	gl.GenVertexArrays(1, &vertexArrayObject)
-	gl.BindVertexArray(vertexArrayObject)
+	s.shader.BindVertexArray()
 	// setup points
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(0))
-	gl.EnableVertexAttribArray(0)
+	s.shader.VertexAttribPointer(0, 3, 4*6, 0)
 	// setup color
-	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(4*3))
-	gl.EnableVertexAttribArray(1)
+	s.shader.VertexAttribPointer(1, 3, 4*6, 4*3)
+
 }
 func (s *Sphere) DrawWithUniforms(view, projection mgl32.Mat4) {
 	s.shader.Use()
@@ -172,7 +168,8 @@ func (s *Sphere) Draw() {
 }
 func (s *Sphere) draw() {
 	s.buildVao()
-	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(s.vao.Get())/6))
+	s.shader.DrawTriangles(int32(len(s.vao.Get()) / 6))
+	s.shader.Close(1)
 }
 func (s *Sphere) Update(dt float64) {
 	delta := float32(dt)
