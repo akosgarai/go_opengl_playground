@@ -9,6 +9,15 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+// InitOpenGL is for initializing the gl lib. It also prints out the gl version.
+func InitOpenGL() {
+	if err := gl.Init(); err != nil {
+		panic(err)
+	}
+	version := gl.GoStr(gl.GetString(gl.VERSION))
+	fmt.Println("OpenGL version", version)
+}
+
 // LoadShaderFromFile takes a filepath string arguments.
 // It loads the file and returns it as a '\x00' terminated string.
 // It returns an error also.

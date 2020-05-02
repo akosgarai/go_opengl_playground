@@ -39,11 +39,15 @@ func InitGlfw() {
 	}
 	window.MakeContextCurrent()
 }
-func InitOpenGl() error {
-	if err := gl.Init(); err != nil {
-		return err
-	}
-	return nil
+func TestInitOpenGl(t *testing.T) {
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("InitOpenGL shouldn't panicked!")
+			}
+		}()
+		InitOpenGL()
+	}()
 }
 func TestLoadShaderFromFile(t *testing.T) {
 	// Create tmp file with a known content.
@@ -85,11 +89,8 @@ func TestCompileShader(t *testing.T) {
 	` + "\x00"
 	InitGlfw()
 	defer glfw.Terminate()
-	err := InitOpenGl()
-	if err != nil {
-		t.Error("Opengl init error")
-	}
-	_, err = CompileShader(wrongFileContent, gl.VERTEX_SHADER)
+	InitOpenGL()
+	_, err := CompileShader(wrongFileContent, gl.VERTEX_SHADER)
 	if err == nil {
 		t.Error("Compile should fail with wrong content.")
 	}
@@ -124,6 +125,7 @@ func TestNewShaderPanicOnVertexContent(t *testing.T) {
 	func() {
 		defer func() {
 			if r := recover(); r == nil {
+				defer glfw.Terminate()
 				t.Errorf("NewShader should have panicked due to the invalid content!")
 			}
 		}()
@@ -160,7 +162,7 @@ func TestNewShaderPanicOnVertexContent(t *testing.T) {
 		defer DeleteFile(vertexShaderFileName)
 		InitGlfw()
 		defer glfw.Terminate()
-		InitOpenGl()
+		InitOpenGL()
 		NewShader(vertexShaderFileName, fragmentShaderFileName)
 	}()
 }
@@ -171,6 +173,7 @@ func TestNewShaderPanicOnFragmentContent(t *testing.T) {
 	func() {
 		defer func() {
 			if r := recover(); r == nil {
+				defer glfw.Terminate()
 				t.Errorf("NewShader should have panicked due to the invalid content!")
 			}
 		}()
@@ -207,7 +210,7 @@ func TestNewShaderPanicOnFragmentContent(t *testing.T) {
 		defer DeleteFile(vertexShaderFileName)
 		InitGlfw()
 		defer glfw.Terminate()
-		InitOpenGl()
+		InitOpenGL()
 		NewShader(vertexShaderFileName, fragmentShaderFileName)
 	}()
 }
@@ -218,6 +221,7 @@ func TestNewShaderPanicOnFragmentFile(t *testing.T) {
 	func() {
 		defer func() {
 			if r := recover(); r == nil {
+				defer glfw.Terminate()
 				t.Errorf("NewShader should have panicked due to the missing file!")
 			}
 		}()
@@ -243,7 +247,7 @@ func TestNewShaderPanicOnFragmentFile(t *testing.T) {
 		defer DeleteFile(vertexShaderFileName)
 		InitGlfw()
 		defer glfw.Terminate()
-		InitOpenGl()
+		InitOpenGL()
 		NewShader(vertexShaderFileName, fragmentShaderFileName)
 	}()
 }
@@ -254,6 +258,7 @@ func TestNewShaderPanicOnVertexFile(t *testing.T) {
 	func() {
 		defer func() {
 			if r := recover(); r == nil {
+				defer glfw.Terminate()
 				t.Errorf("NewShader should have panicked due to the missing file!")
 			}
 		}()
@@ -272,7 +277,7 @@ func TestNewShaderPanicOnVertexFile(t *testing.T) {
 		defer DeleteFile(fragmentShaderFileName)
 		InitGlfw()
 		defer glfw.Terminate()
-		InitOpenGl()
+		InitOpenGL()
 		NewShader(vertexShaderFileName, fragmentShaderFileName)
 	}()
 }
@@ -313,7 +318,7 @@ func TestNewShader(t *testing.T) {
 	defer DeleteFile(vertexShaderFileName)
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGl()
+	InitOpenGL()
 	shader := NewShader(vertexShaderFileName, fragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
@@ -356,7 +361,7 @@ func TestUse(t *testing.T) {
 	defer DeleteFile(vertexShaderFileName)
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGl()
+	InitOpenGL()
 	shader := NewShader(vertexShaderFileName, fragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
@@ -400,7 +405,7 @@ func TestSetUniformMat4(t *testing.T) {
 	defer DeleteFile(vertexShaderFileName)
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGl()
+	InitOpenGL()
 	shader := NewShader(vertexShaderFileName, fragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
@@ -444,7 +449,7 @@ func TestSetUniformMat3(t *testing.T) {
 	defer DeleteFile(vertexShaderFileName)
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGl()
+	InitOpenGL()
 	shader := NewShader(vertexShaderFileName, fragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
@@ -487,7 +492,7 @@ func TestSetUniform3f(t *testing.T) {
 	defer DeleteFile(vertexShaderFileName)
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGl()
+	InitOpenGL()
 	shader := NewShader(vertexShaderFileName, fragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
@@ -531,7 +536,7 @@ func TestSetUniform1f(t *testing.T) {
 	defer DeleteFile(vertexShaderFileName)
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGl()
+	InitOpenGL()
 	shader := NewShader(vertexShaderFileName, fragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
@@ -577,7 +582,7 @@ func TestGetUniformLocation(t *testing.T) {
 	defer DeleteFile(vertexShaderFileName)
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGl()
+	InitOpenGL()
 	shader := NewShader(vertexShaderFileName, fragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
