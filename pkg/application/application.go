@@ -33,6 +33,7 @@ type Application struct {
 	window     *glfw.Window
 	program    uint32
 	camera     Camera
+	cameraSet  bool
 	keyDowns   map[glfw.Key]bool
 	mouseDowns map[glfw.MouseButton]bool
 	MousePosX  float64
@@ -41,19 +42,25 @@ type Application struct {
 	items []Drawable
 }
 
+type Window interface {
+}
+
 // New returns an application instance
 func New() *Application {
 	return &Application{
 		keyDowns:   make(map[glfw.Key]bool),
 		mouseDowns: make(map[glfw.MouseButton]bool),
 		items:      []Drawable{},
+		cameraSet:  false,
 	}
 }
 
 // Log returns the string representation of this object.
 func (a *Application) Log() string {
 	logString := "Application:\n"
-	logString += " - camera : " + a.camera.Log() + "\n"
+	if a.cameraSet {
+		logString += " - camera : " + a.camera.Log() + "\n"
+	}
 	logString += " - items :\n"
 	for _, item := range a.items {
 		logString += item.Log()
@@ -83,6 +90,7 @@ func (a *Application) GetProgram() uint32 {
 
 // SetCamera updates the camera with the new one.
 func (a *Application) SetCamera(c Camera) {
+	a.cameraSet = true
 	a.camera = c
 }
 
