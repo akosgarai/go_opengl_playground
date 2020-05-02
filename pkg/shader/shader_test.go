@@ -77,6 +77,9 @@ func TestLoadShaderFromFile(t *testing.T) {
 	}
 }
 func TestCompileShader(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	wrongFileContent := `This is My Content
 	in my favorite file.
 	` + "\x00"
@@ -115,6 +118,9 @@ func TestCompileShader(t *testing.T) {
 	}
 }
 func TestNewShaderPanicOnVertexContent(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	func() {
 		defer func() {
 			if r := recover(); r == nil {
@@ -159,6 +165,9 @@ func TestNewShaderPanicOnVertexContent(t *testing.T) {
 	}()
 }
 func TestNewShaderPanicOnFragmentContent(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	func() {
 		defer func() {
 			if r := recover(); r == nil {
@@ -203,6 +212,9 @@ func TestNewShaderPanicOnFragmentContent(t *testing.T) {
 	}()
 }
 func TestNewShaderPanicOnFragmentFile(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	func() {
 		defer func() {
 			if r := recover(); r == nil {
@@ -236,6 +248,9 @@ func TestNewShaderPanicOnFragmentFile(t *testing.T) {
 	}()
 }
 func TestNewShaderPanicOnVertexFile(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	func() {
 		defer func() {
 			if r := recover(); r == nil {
@@ -262,6 +277,9 @@ func TestNewShaderPanicOnVertexFile(t *testing.T) {
 	}()
 }
 func TestNewShader(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	fragmentShaderFileName := "fragmentShader.frag"
 	fragmentShaderRaw := `
     #version 410
@@ -302,6 +320,9 @@ func TestNewShader(t *testing.T) {
 	}
 }
 func TestUse(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	fragmentShaderFileName := "fragmentShader.frag"
 	fragmentShaderRaw := `
     #version 410
@@ -343,6 +364,9 @@ func TestUse(t *testing.T) {
 	shader.Use()
 }
 func TestSetUniformMat4(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	fragmentShaderFileName := "fragmentShader.frag"
 	fragmentShaderRaw := `
     #version 410
@@ -384,6 +408,9 @@ func TestSetUniformMat4(t *testing.T) {
 	shader.SetUniformMat4("model", mgl32.Ident4())
 }
 func TestSetUniformMat3(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	fragmentShaderFileName := "fragmentShader.frag"
 	fragmentShaderRaw := `
     #version 410
@@ -425,6 +452,9 @@ func TestSetUniformMat3(t *testing.T) {
 	shader.SetUniformMat3("model", mgl32.Ident3())
 }
 func TestSetUniform3f(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	fragmentShaderFileName := "fragmentShader.frag"
 	fragmentShaderRaw := `
     #version 410
@@ -465,6 +495,9 @@ func TestSetUniform3f(t *testing.T) {
 	shader.SetUniform3f("ambientColor", 1, 1, 1)
 }
 func TestSetUniform1f(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	fragmentShaderFileName := "fragmentShader.frag"
 	fragmentShaderRaw := `
     #version 410
@@ -508,6 +541,9 @@ func TestSetUniform1f(t *testing.T) {
 	shader.SetUniform1f("pointSize", valueToSet)
 }
 func TestGetUniformLocation(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	fragmentShaderFileName := "fragmentShader.frag"
 	fragmentShaderRaw := `
     #version 410
