@@ -15,6 +15,16 @@ func (t testShader) Use() {
 }
 func (t testShader) SetUniformMat4(s string, m mgl32.Mat4) {
 }
+func (t testShader) DrawTriangles(i int32) {
+}
+func (t testShader) Close(i int) {
+}
+func (t testShader) VertexAttribPointer(i uint32, c int32, s int32, o int) {
+}
+func (t testShader) BindVertexArray() {
+}
+func (t testShader) BindBufferData(d []float32) {
+}
 
 func TestNew(t *testing.T) {
 	points := [4]mgl32.Vec3{
@@ -143,13 +153,73 @@ func TestSetupVao(t *testing.T) {
 	}
 }
 func TestBuildVao(t *testing.T) {
-	t.Skip("It needs opengl init.")
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	colors := [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+	var shader testShader
+	square := New(points, colors, shader)
+	if len(square.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	square.buildVao()
+	if len(square.vao.Get()) == 0 {
+		t.Error("Vao is empty after the first setup.")
+	}
 }
 func TestDraw(t *testing.T) {
-	t.Skip("It needs opengl init.")
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	colors := [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+	var shader testShader
+	square := New(points, colors, shader)
+	if len(square.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	square.Draw()
+	if len(square.vao.Get()) == 0 {
+		t.Error("Vao is empty after the first setup.")
+	}
 }
 func TestDrawWithUniforms(t *testing.T) {
-	t.Skip("It needs opengl init.")
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	colors := [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+	var shader testShader
+	square := New(points, colors, shader)
+	if len(square.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	square.DrawWithUniforms(mgl32.Ident4(), mgl32.Ident4())
+	if len(square.vao.Get()) == 0 {
+		t.Error("Vao is empty after the first setup.")
+	}
 }
 func TestUpdate(t *testing.T) {
 	points := [4]mgl32.Vec3{
@@ -311,5 +381,27 @@ func TestSetupExternalVao(t *testing.T) {
 	}
 	if len(outerVao.Get()) == 0 {
 		t.Error("VAO shouldn't be empty")
+	}
+}
+func TestSetPrecision(t *testing.T) {
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	colors := [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+	var shader testShader
+	square := New(points, colors, shader)
+	newPrecision := 100
+	square.SetPrecision(newPrecision)
+
+	if square.precision != newPrecision {
+		t.Error("Mismatch in the precision")
 	}
 }
