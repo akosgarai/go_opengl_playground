@@ -1,7 +1,7 @@
 # Triangle
 
 It represents a triangle, so it contains 3 `coordinate vectors`, 3 `color vectors`, a direction vector + speed (for moving objects).
-It has a VAO and a Shader also.
+It has a VAO and a Shader also. It implements the Drawable interface.
 
 ## Functions
 
