@@ -4,7 +4,7 @@ import (
 	"runtime"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
-	tr "github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -43,8 +43,8 @@ func main() {
 
 	shaderProgram := shader.NewShader("examples/02-static-triangle/vertexshader.vert", "examples/02-static-triangle/fragmentshader.frag")
 
-	triangle := tr.NewTriangle(coordinates, colors, shaderProgram)
-	app.AddItem(triangle)
+	item := triangle.New(coordinates, colors, shaderProgram)
+	app.AddItem(item)
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
