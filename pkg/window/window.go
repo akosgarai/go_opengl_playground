@@ -28,3 +28,15 @@ func InitGlfw(windowWidth, windowHeight int, windowTitle string) *glfw.Window {
 
 	return window
 }
+
+// DummyKeyCallback is responsible for the keyboard event handling with log.
+// So this function does nothing but printing out the input parameters.
+func DummyKeyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+	fmt.Printf("KeyCallback has been called with the following options: key: '%d', scancode: '%d', action: '%d'!, mods: '%d'\n", key, scancode, action, mods)
+}
+
+// DummyMouseButtonCallback is responsible for the mouse button event handling with log.
+// So this function does nothing but printing out the input parameters.
+func DummyMouseButtonCallback(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
+	fmt.Printf("MouseButtonCallback has been called with the following options: button: '%d', action: '%d'!, mods: '%d'\n", button, action, mods)
+}

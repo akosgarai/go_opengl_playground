@@ -30,7 +30,6 @@ type Camera interface {
 
 type Application struct {
 	window     Window
-	program    uint32
 	camera     Camera
 	cameraSet  bool
 	keyDowns   map[glfw.Key]bool
@@ -80,16 +79,6 @@ func (a *Application) SetWindow(w Window) {
 // GetWindow returns the current window of the application.
 func (a *Application) GetWindow() Window {
 	return a.window
-}
-
-// SetProgram updates the program with the new one.
-func (a *Application) SetProgram(p uint32) {
-	a.program = p
-}
-
-// GetProgram returns the current shader program of the application.
-func (a *Application) GetProgram() uint32 {
-	return a.program
 }
 
 // SetCamera updates the camera with the new one.
@@ -150,41 +139,6 @@ func (a *Application) DrawWithUniforms() {
 	for _, item := range a.items {
 		item.DrawWithUniforms(V, P)
 	}
-}
-
-// InitGlfw returns a *glfw.Windows instance.
-func InitGlfw(windowWidth, windowHeight int, windowTitle string) *glfw.Window {
-	if err := glfw.Init(); err != nil {
-		panic(fmt.Errorf("could not initialize glfw: %v", err))
-	}
-
-	glfw.WindowHint(glfw.ContextVersionMajor, 4)
-	glfw.WindowHint(glfw.ContextVersionMinor, 1)
-	glfw.WindowHint(glfw.Resizable, glfw.False)
-	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-
-	window, err := glfw.CreateWindow(windowWidth, windowHeight, windowTitle, nil, nil)
-
-	if err != nil {
-		panic(fmt.Errorf("could not create opengl renderer: %v", err))
-	}
-
-	window.MakeContextCurrent()
-
-	return window
-}
-
-// DummyKeyCallback is responsible for the keyboard event handling with log.
-// So this function does nothing but printing out the input parameters.
-func (a *Application) DummyKeyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-	fmt.Printf("KeyCallback has been called with the following options: key: '%d', scancode: '%d', action: '%d'!, mods: '%d'\n", key, scancode, action, mods)
-}
-
-// DummyMouseButtonCallback is responsible for the mouse button event handling with log.
-// So this function does nothing but printing out the input parameters.
-func (a *Application) DummyMouseButtonCallback(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
-	fmt.Printf("MouseButtonCallback has been called with the following options: button: '%d', action: '%d'!, mods: '%d'\n", button, action, mods)
 }
 
 // KeyCallback is responsible for the keyboard event handling.
