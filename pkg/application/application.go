@@ -133,8 +133,12 @@ func (a *Application) Update(dt float64) {
 
 // DrawWithUniforms calls DrawWithUniforms function in every drawable item with the calculated V & P.
 func (a *Application) DrawWithUniforms() {
-	V := a.camera.GetViewMatrix()
-	P := a.camera.GetProjectionMatrix()
+	V := mgl32.Ident4()
+	P := mgl32.Ident4()
+	if a.cameraSet {
+		V = a.camera.GetViewMatrix()
+		P = a.camera.GetProjectionMatrix()
+	}
 
 	for _, item := range a.items {
 		item.DrawWithUniforms(V, P)
