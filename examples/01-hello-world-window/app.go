@@ -7,6 +7,8 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
+	"github.com/akosgarai/opengl_playground/pkg/shader"
+	"github.com/akosgarai/opengl_playground/pkg/window"
 )
 
 const (
@@ -20,17 +22,17 @@ func main() {
 
 	app := application.New()
 
-	app.SetWindow(application.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
 	defer glfw.Terminate()
-	application.InitOpenGL()
+	shader.InitOpenGL()
 
 	program := gl.CreateProgram()
 	gl.LinkProgram(program)
 	gl.UseProgram(program)
 	// register keyboard button callback
-	app.GetWindow().SetKeyCallback(app.DummyKeyCallback)
+	app.GetWindow().SetKeyCallback(window.DummyKeyCallback)
 	// register mouse button callback
-	app.GetWindow().SetMouseButtonCallback(app.DummyMouseButtonCallback)
+	app.GetWindow().SetMouseButtonCallback(window.DummyMouseButtonCallback)
 
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
 

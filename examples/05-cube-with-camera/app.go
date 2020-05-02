@@ -10,6 +10,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
+	"github.com/akosgarai/opengl_playground/pkg/window"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -169,9 +170,9 @@ func main() {
 	runtime.LockOSThread()
 
 	app = application.New()
-	app.SetWindow(application.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
 	defer glfw.Terminate()
-	application.InitOpenGL()
+	shader.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 

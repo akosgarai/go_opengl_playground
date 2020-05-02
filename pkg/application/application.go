@@ -3,7 +3,6 @@ package application
 import (
 	"fmt"
 
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -30,8 +29,7 @@ type Camera interface {
 }
 
 type Application struct {
-	window     *glfw.Window
-	program    uint32
+	window     Window
 	camera     Camera
 	cameraSet  bool
 	keyDowns   map[glfw.Key]bool
@@ -43,6 +41,11 @@ type Application struct {
 }
 
 type Window interface {
+	GetCursorPos() (float64, float64)
+	SetKeyCallback(glfw.KeyCallback) glfw.KeyCallback
+	SetMouseButtonCallback(glfw.MouseButtonCallback) glfw.MouseButtonCallback
+	ShouldClose() bool
+	SwapBuffers()
 }
 
 // New returns an application instance
@@ -69,23 +72,13 @@ func (a *Application) Log() string {
 }
 
 // SetWindow updates the window with the new one.
-func (a *Application) SetWindow(w *glfw.Window) {
+func (a *Application) SetWindow(w Window) {
 	a.window = w
 }
 
 // GetWindow returns the current window of the application.
-func (a *Application) GetWindow() *glfw.Window {
+func (a *Application) GetWindow() Window {
 	return a.window
-}
-
-// SetProgram updates the program with the new one.
-func (a *Application) SetProgram(p uint32) {
-	a.program = p
-}
-
-// GetProgram returns the current shader program of the application.
-func (a *Application) GetProgram() uint32 {
-	return a.program
 }
 
 // SetCamera updates the camera with the new one.
@@ -140,56 +133,16 @@ func (a *Application) Update(dt float64) {
 
 // DrawWithUniforms calls DrawWithUniforms function in every drawable item with the calculated V & P.
 func (a *Application) DrawWithUniforms() {
-	V := a.camera.GetViewMatrix()
-	P := a.camera.GetProjectionMatrix()
+	V := mgl32.Ident4()
+	P := mgl32.Ident4()
+	if a.cameraSet {
+		V = a.camera.GetViewMatrix()
+		P = a.camera.GetProjectionMatrix()
+	}
 
 	for _, item := range a.items {
 		item.DrawWithUniforms(V, P)
 	}
-}
-
-// InitGlfw returns a *glfw.Windows instance.
-func InitGlfw(windowWidth, windowHeight int, windowTitle string) *glfw.Window {
-	if err := glfw.Init(); err != nil {
-		panic(fmt.Errorf("could not initialize glfw: %v", err))
-	}
-
-	glfw.WindowHint(glfw.ContextVersionMajor, 4)
-	glfw.WindowHint(glfw.ContextVersionMinor, 1)
-	glfw.WindowHint(glfw.Resizable, glfw.False)
-	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-
-	window, err := glfw.CreateWindow(windowWidth, windowHeight, windowTitle, nil, nil)
-
-	if err != nil {
-		panic(fmt.Errorf("could not create opengl renderer: %v", err))
-	}
-
-	window.MakeContextCurrent()
-
-	return window
-}
-
-// InitOpenGL is for initializing the gl lib. It also prints out the gl version.
-func InitOpenGL() {
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
-	version := gl.GoStr(gl.GetString(gl.VERSION))
-	fmt.Println("OpenGL version", version)
-}
-
-// DummyKeyCallback is responsible for the keyboard event handling with log.
-// So this function does nothing but printing out the input parameters.
-func (a *Application) DummyKeyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-	fmt.Printf("KeyCallback has been called with the following options: key: '%d', scancode: '%d', action: '%d'!, mods: '%d'\n", key, scancode, action, mods)
-}
-
-// DummyMouseButtonCallback is responsible for the mouse button event handling with log.
-// So this function does nothing but printing out the input parameters.
-func (a *Application) DummyMouseButtonCallback(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
-	fmt.Printf("MouseButtonCallback has been called with the following options: button: '%d', action: '%d'!, mods: '%d'\n", button, action, mods)
 }
 
 // KeyCallback is responsible for the keyboard event handling.

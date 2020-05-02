@@ -8,6 +8,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
+	"github.com/akosgarai/opengl_playground/pkg/window"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -237,9 +238,9 @@ func main() {
 
 	app = application.New()
 
-	app.SetWindow(application.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
 	defer glfw.Terminate()
-	application.InitOpenGL()
+	shader.InitOpenGL()
 
 	shaderProgram := shader.NewShader("examples/05-house-with-camera/vertexshader.vert", "examples/05-house-with-camera/fragmentshader.frag")
 
@@ -269,7 +270,7 @@ func main() {
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 	// register mouse button callback
-	app.GetWindow().SetMouseButtonCallback(app.DummyMouseButtonCallback)
+	app.GetWindow().SetMouseButtonCallback(window.DummyMouseButtonCallback)
 
 	for !app.GetWindow().ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
