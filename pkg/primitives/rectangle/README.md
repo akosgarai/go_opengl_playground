@@ -1,9 +1,11 @@
 # Rectangle
 
 It represents a rectangle, so it contains 4 `coordinate vectors`, 4 `color vectors`, a direction vector + speed (for moving objects).
-It has a VAO and a Shader also.
+It has a VAO and a Shader also. It implements the Drawable interface.
 
 ## Functions
+
+The stuff that we can do with a rectangle.
 
 ## New
 
@@ -44,3 +46,11 @@ It draws the rectangle. It gets the V & P matrices as inputs. It sets the model,
 ### Update
 
 It updates the state of the rectangle. It gets the delta time as input and it calculates the movement of the rectangle.
+
+### Coordinates
+
+It returns the coordinates of the rectangle.
+
+### Color
+
+It returns the colors of the rectangle.
