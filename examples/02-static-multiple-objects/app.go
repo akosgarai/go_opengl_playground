@@ -5,7 +5,7 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
-	tr "github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -56,8 +56,8 @@ func main() {
 
 	shaderProgram := shader.NewShader("examples/02-static-multiple-objects/vertexshader.vert", "examples/02-static-multiple-objects/fragmentshader.frag")
 
-	triangle := tr.NewTriangle(triangleCoordinates, triangleColors, shaderProgram)
-	app.AddItem(triangle)
+	triang := triangle.New(triangleCoordinates, triangleColors, shaderProgram)
+	app.AddItem(triang)
 	square := rectangle.New(squareCoordinates, squareColors, shaderProgram)
 	app.AddItem(square)
 
