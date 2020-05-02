@@ -270,7 +270,7 @@ func main() {
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 	// register mouse button callback
-	app.GetWindow().SetMouseButtonCallback(app.DummyMouseButtonCallback)
+	app.GetWindow().SetMouseButtonCallback(window.DummyMouseButtonCallback)
 
 	for !app.GetWindow().ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)

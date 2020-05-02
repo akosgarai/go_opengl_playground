@@ -30,9 +30,9 @@ func main() {
 	gl.LinkProgram(program)
 	gl.UseProgram(program)
 	// register keyboard button callback
-	app.GetWindow().SetKeyCallback(app.DummyKeyCallback)
+	app.GetWindow().SetKeyCallback(window.DummyKeyCallback)
 	// register mouse button callback
-	app.GetWindow().SetMouseButtonCallback(app.DummyMouseButtonCallback)
+	app.GetWindow().SetMouseButtonCallback(window.DummyMouseButtonCallback)
 
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
 
