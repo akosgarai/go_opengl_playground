@@ -7,6 +7,8 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
+	"github.com/akosgarai/opengl_playground/pkg/shader"
+	"github.com/akosgarai/opengl_playground/pkg/window"
 )
 
 const (
@@ -20,9 +22,9 @@ func main() {
 
 	app := application.New()
 
-	app.SetWindow(application.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
 	defer glfw.Terminate()
-	application.InitOpenGL()
+	shader.InitOpenGL()
 
 	program := gl.CreateProgram()
 	gl.LinkProgram(program)
