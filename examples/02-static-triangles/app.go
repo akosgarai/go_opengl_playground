@@ -4,7 +4,7 @@ import (
 	"runtime"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
-	tr "github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -41,9 +41,9 @@ func GenerateTriangles(rows int, shaderProgram *shader.Shader) {
 				mgl32.Vec3{topX, topY - length, topZ},
 				mgl32.Vec3{topX - length, topY - length, topZ},
 			}
-			triangle := tr.NewTriangle(coordinates, colors, shaderProgram)
+			item := triangle.New(coordinates, colors, shaderProgram)
 
-			app.AddItem(triangle)
+			app.AddItem(item)
 
 		}
 	}
