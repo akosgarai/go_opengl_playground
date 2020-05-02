@@ -8,6 +8,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
+	"github.com/akosgarai/opengl_playground/pkg/window"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -35,7 +36,7 @@ var (
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{0.0, 1.0, 9.5}, mgl32.Vec3{0, 0, 1}, -90.0, -34.0)
+	camera := camera.NewCamera(mgl32.Vec3{4.0, 9.7, -0.3}, mgl32.Vec3{0, 0, 1}, 13.0, 58.5)
 	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
 	return camera
 }
@@ -86,9 +87,9 @@ func main() {
 	runtime.LockOSThread()
 
 	app = application.New()
-	app.SetWindow(application.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
 	defer glfw.Terminate()
-	application.InitOpenGL()
+	shader.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 
