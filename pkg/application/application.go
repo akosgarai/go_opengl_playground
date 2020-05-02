@@ -3,7 +3,6 @@ package application
 import (
 	"fmt"
 
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -30,9 +29,10 @@ type Camera interface {
 }
 
 type Application struct {
-	window     *glfw.Window
+	window     Window
 	program    uint32
 	camera     Camera
+	cameraSet  bool
 	keyDowns   map[glfw.Key]bool
 	mouseDowns map[glfw.MouseButton]bool
 	MousePosX  float64
@@ -41,19 +41,30 @@ type Application struct {
 	items []Drawable
 }
 
+type Window interface {
+	GetCursorPos() (float64, float64)
+	SetKeyCallback(glfw.KeyCallback) glfw.KeyCallback
+	SetMouseButtonCallback(glfw.MouseButtonCallback) glfw.MouseButtonCallback
+	ShouldClose() bool
+	SwapBuffers()
+}
+
 // New returns an application instance
 func New() *Application {
 	return &Application{
 		keyDowns:   make(map[glfw.Key]bool),
 		mouseDowns: make(map[glfw.MouseButton]bool),
 		items:      []Drawable{},
+		cameraSet:  false,
 	}
 }
 
 // Log returns the string representation of this object.
 func (a *Application) Log() string {
 	logString := "Application:\n"
-	logString += " - camera : " + a.camera.Log() + "\n"
+	if a.cameraSet {
+		logString += " - camera : " + a.camera.Log() + "\n"
+	}
 	logString += " - items :\n"
 	for _, item := range a.items {
 		logString += item.Log()
@@ -62,12 +73,12 @@ func (a *Application) Log() string {
 }
 
 // SetWindow updates the window with the new one.
-func (a *Application) SetWindow(w *glfw.Window) {
+func (a *Application) SetWindow(w Window) {
 	a.window = w
 }
 
 // GetWindow returns the current window of the application.
-func (a *Application) GetWindow() *glfw.Window {
+func (a *Application) GetWindow() Window {
 	return a.window
 }
 
@@ -83,6 +94,7 @@ func (a *Application) GetProgram() uint32 {
 
 // SetCamera updates the camera with the new one.
 func (a *Application) SetCamera(c Camera) {
+	a.cameraSet = true
 	a.camera = c
 }
 
@@ -161,15 +173,6 @@ func InitGlfw(windowWidth, windowHeight int, windowTitle string) *glfw.Window {
 	window.MakeContextCurrent()
 
 	return window
-}
-
-// InitOpenGL is for initializing the gl lib. It also prints out the gl version.
-func InitOpenGL() {
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
-	version := gl.GoStr(gl.GetString(gl.VERSION))
-	fmt.Println("OpenGL version", version)
 }
 
 // DummyKeyCallback is responsible for the keyboard event handling with log.
