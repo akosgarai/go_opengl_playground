@@ -36,7 +36,7 @@ func TestNewTriangle(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
-	triangle := NewTriangle(points, colors, shader)
+	triangle := New(points, colors, shader)
 
 	if triangle.speed != 0.0 {
 		t.Error("Speed should be 0")
@@ -66,7 +66,7 @@ func TestSetColor(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
-	triangle := NewTriangle(points, colors, shader)
+	triangle := New(points, colors, shader)
 	newColor := mgl32.Vec3{1, 1, 0}
 	triangle.SetColor(newColor)
 
@@ -86,7 +86,7 @@ func TestSetIndexColor(t *testing.T) {
 	}
 	colors := [3]mgl32.Vec3{origColor, origColor, origColor}
 	var shader testShader
-	triangle := NewTriangle(points, colors, shader)
+	triangle := New(points, colors, shader)
 	newColor := mgl32.Vec3{1, 1, 0}
 	triangle.SetIndexColor(0, newColor)
 
@@ -108,7 +108,7 @@ func TestLog(t *testing.T) {
 	}
 	colors := [3]mgl32.Vec3{origColor, origColor, origColor}
 	var shader testShader
-	triangle := NewTriangle(points, colors, shader)
+	triangle := New(points, colors, shader)
 	log := triangle.Log()
 	if len(log) < 10 {
 		t.Error("Log too short")
@@ -123,7 +123,7 @@ func TestSetupVao(t *testing.T) {
 	}
 	colors := [3]mgl32.Vec3{origColor, origColor, origColor}
 	var shader testShader
-	triangle := NewTriangle(points, colors, shader)
+	triangle := New(points, colors, shader)
 	if len(triangle.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -141,7 +141,7 @@ func TestBuildVao(t *testing.T) {
 	}
 	colors := [3]mgl32.Vec3{origColor, origColor, origColor}
 	var shader testShader
-	triangle := NewTriangle(points, colors, shader)
+	triangle := New(points, colors, shader)
 	if len(triangle.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -159,7 +159,7 @@ func TestDraw(t *testing.T) {
 	}
 	colors := [3]mgl32.Vec3{origColor, origColor, origColor}
 	var shader testShader
-	triangle := NewTriangle(points, colors, shader)
+	triangle := New(points, colors, shader)
 	if len(triangle.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -177,7 +177,7 @@ func TestDrawWithUniforms(t *testing.T) {
 	}
 	colors := [3]mgl32.Vec3{origColor, origColor, origColor}
 	var shader testShader
-	triangle := NewTriangle(points, colors, shader)
+	triangle := New(points, colors, shader)
 	if len(triangle.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -195,7 +195,7 @@ func TestUpdate(t *testing.T) {
 	}
 	colors := [3]mgl32.Vec3{origColor, origColor, origColor}
 	var shader testShader
-	triangle := NewTriangle(points, colors, shader)
+	triangle := New(points, colors, shader)
 	triangle.SetDirection(mgl32.Vec3{1, 0, 0})
 	triangle.SetSpeed(1)
 	dt := 10.0
@@ -222,7 +222,7 @@ func TestSetDirection(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
-	triangle := NewTriangle(points, colors, shader)
+	triangle := New(points, colors, shader)
 	newDirection := mgl32.Vec3{1, 1, 0}
 	triangle.SetDirection(newDirection)
 
@@ -242,7 +242,7 @@ func TestSetIndexDirection(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
-	triangle := NewTriangle(points, colors, shader)
+	triangle := New(points, colors, shader)
 	triangle.SetIndexDirection(0, 1)
 
 	if triangle.direction.X() != 1.0 || triangle.direction.Y() != 0.0 || triangle.direction.Z() != 0.0 {
@@ -261,7 +261,7 @@ func TestSetSpeed(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
-	triangle := NewTriangle(points, colors, shader)
+	triangle := New(points, colors, shader)
 	triangle.SetSpeed(10)
 
 	if triangle.speed != 10.0 {

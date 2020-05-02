@@ -7,7 +7,7 @@ It has a VAO and a Shader also. It implements the Drawable interface.
 
 We can do some stuff with the triangles.
 
-### NewTriangle
+### New
 
 It creates a new triangle. The inputs of this functions are the coordinates, the colors and the shader. The direction & speed is initialized as null vector & 0 speed.
 

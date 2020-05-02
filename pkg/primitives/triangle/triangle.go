@@ -28,7 +28,7 @@ type Triangle struct {
 	speed     float32
 }
 
-func NewTriangle(points, colors [3]mgl32.Vec3, shader Shader) *Triangle {
+func New(points, colors [3]mgl32.Vec3, shader Shader) *Triangle {
 	return &Triangle{
 		shader:    shader,
 		vao:       vao.NewVAO(),
