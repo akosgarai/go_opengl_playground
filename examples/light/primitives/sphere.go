@@ -3,6 +3,9 @@ package primitives
 import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
+
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
+	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
 type Sphere struct {
@@ -12,7 +15,7 @@ type Sphere struct {
 
 	numOfRows       int
 	numOfItemsInRow int
-	vao             *VAO
+	vao             *vao.VAO
 	shaderProgram   uint32
 }
 
@@ -23,18 +26,18 @@ func NewSphere() *Sphere {
 		color:           mgl32.Vec3{1, 1, 1},
 		numOfRows:       20,
 		numOfItemsInRow: 20,
-		vao:             NewVAO(),
+		vao:             vao.NewVAO(),
 	}
 }
 
 // Log returns the string representation of this object.
 func (s *Sphere) Log() string {
 	logString := "Sphere:\n"
-	logString += " - center : Vector{" + Vec3ToString(s.center) + "}\n"
-	logString += " - radius : " + Float32ToString(s.radius) + "\n"
-	logString += " - color : Vector{" + Vec3ToString(s.color) + "}\n"
-	logString += " - numOfRows : " + IntegerToString(s.numOfRows) + "\n"
-	logString += " - numOfItemsInRow : " + IntegerToString(s.numOfItemsInRow) + "\n"
+	logString += " - center : Vector{" + trans.Vec3ToString(s.center) + "}\n"
+	logString += " - radius : " + trans.Float32ToString(s.radius) + "\n"
+	logString += " - color : Vector{" + trans.Vec3ToString(s.color) + "}\n"
+	logString += " - numOfRows : " + trans.IntegerToString(s.numOfRows) + "\n"
+	logString += " - numOfItemsInRow : " + trans.IntegerToString(s.numOfItemsInRow) + "\n"
 	return logString
 }
 
@@ -72,6 +75,11 @@ func (s *Sphere) GetRadius() float32 {
 func (s *Sphere) SetShaderProgram(p uint32) {
 	s.shaderProgram = p
 }
+func (s *Sphere) trianglePointsToVao(pa, pb, pc, color mgl32.Vec3) {
+	s.vao.AppendVectors(pa, color)
+	s.vao.AppendVectors(pb, color)
+	s.vao.AppendVectors(pc, color)
+}
 func (s *Sphere) setupVao() {
 	s.vao.Clear()
 	RefPoint := &mgl32.Vec3{0, 1, 0}
@@ -84,17 +92,17 @@ func (s *Sphere) setupVao() {
 			j1_Rotation := mgl32.HomogRotate3DY(float32(j+1) * step_Y).Transpose()
 			j_Rotation := mgl32.HomogRotate3DY(float32(j) * step_Y).Transpose()
 			if i == 0 {
-				p1 := Point{*RefPoint, s.color}
-				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation)), s.color}
-				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation)), s.color}
-				s.vao.AppendTrianglePoints(p1, p2, p3)
+				p1 := *RefPoint
+				p2 := mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation))
+				p3 := mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation))
+				s.trianglePointsToVao(p1, p2, p3, s.color)
 			} else {
-				p1 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i_Rotation)), s.color}
-				p2 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i_Rotation)), s.color}
-				p3 := Point{mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation)), s.color}
-				p4 := Point{mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation)), s.color}
-				s.vao.AppendTrianglePoints(p1, p2, p3)
-				s.vao.AppendTrianglePoints(p1, p3, p4)
+				p1 := mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i_Rotation))
+				p2 := mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i_Rotation))
+				p3 := mgl32.TransformCoordinate(*RefPoint, j1_Rotation.Mul4(i1_Rotation))
+				p4 := mgl32.TransformCoordinate(*RefPoint, j_Rotation.Mul4(i1_Rotation))
+				s.trianglePointsToVao(p1, p2, p3, s.color)
+				s.trianglePointsToVao(p1, p3, p4, s.color)
 			}
 		}
 	}

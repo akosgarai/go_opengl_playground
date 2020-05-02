@@ -1,127 +1,181 @@
 package sphere
 
 import (
-	"github.com/go-gl/gl/v4.1-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
 
-	P "github.com/akosgarai/opengl_playground/pkg/primitives/point"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
-	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
+	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
-type Sphere struct {
-	center vec.Vector
-	radius float64
-	color  vec.Vector
-
-	numOfRows       int
-	numOfItemsInRow int
+type Shader interface {
+	Use()
+	SetUniformMat4(string, mgl32.Mat4)
+	DrawTriangles(int32)
+	Close(int)
+	VertexAttribPointer(uint32, int32, int32, int)
+	BindVertexArray()
+	BindBufferData([]float32)
 }
 
-func NewSphere() *Sphere {
-	return &Sphere{vec.Vector{0, 0, 0}, 1, vec.Vector{1, 1, 1}, 20, 20}
+type Sphere struct {
+	precision int
+	vao       *vao.VAO
+	shader    Shader
+
+	center mgl32.Vec3
+	radius float32
+	color  mgl32.Vec3
+
+	direction mgl32.Vec3
+	speed     float32
+}
+
+func New(center, color mgl32.Vec3, radius float32, shader Shader) *Sphere {
+	return &Sphere{
+		precision: 10,
+		vao:       vao.NewVAO(),
+		shader:    shader,
+
+		center: center,
+		radius: radius,
+		color:  color,
+
+		direction: mgl32.Vec3{0, 0, 0},
+		speed:     0,
+	}
+}
+
+// SetRadius updates the radius of the sphere
+func (s *Sphere) Log() string {
+	logString := "Sphere:\n"
+	logString += " - Center : Coordinate: Vector{" + trans.Vec3ToString(s.center) + "}, radius: " + trans.Float32ToString(s.radius) + ", color: Vector{" + trans.Vec3ToString(s.color) + "}\n"
+	logString += " - Movement : Direction: Vector{" + trans.Vec3ToString(s.direction) + "}, speed: " + trans.Float32ToString(s.speed) + "\n"
+	return logString
+}
+
+// SetPrecision updates the precision of the rectangle
+func (s *Sphere) SetPrecision(p int) {
+	s.precision = p
 }
 
 // SetCenter updates the center of the sphere
-func (s *Sphere) SetCenter(c vec.Vector) {
+func (s *Sphere) SetCenter(c mgl32.Vec3) {
 	s.center = c
 }
 
 // GetCenter returns the center of the sphere
-func (s *Sphere) GetCenter() vec.Vector {
+func (s *Sphere) GetCenter() mgl32.Vec3 {
 	return s.center
 }
 
 // SetColor updates the color of the sphere
-func (s *Sphere) SetColor(c vec.Vector) {
+func (s *Sphere) SetColor(c mgl32.Vec3) {
 	s.color = c
 }
 
 // GetColor returns the color of the sphere
-func (s *Sphere) GetColor() vec.Vector {
+func (s *Sphere) GetColor() mgl32.Vec3 {
 	return s.color
 }
 
 // SetRadius updates the radius of the sphere
-func (s *Sphere) SetRadius(r float64) {
+func (s *Sphere) SetRadius(r float32) {
 	s.radius = r
 }
 
 // GetRadius returns the radius of the sphere
-func (s *Sphere) GetRadius() float64 {
+func (s *Sphere) GetRadius() float32 {
 	return s.radius
 }
-func (s *Sphere) appendPointToVao(currentVao []float32, p P.Point) []float32 {
-	currentVao = append(currentVao, float32(p.Coordinate.X))
-	currentVao = append(currentVao, float32(p.Coordinate.Y))
-	currentVao = append(currentVao, float32(p.Coordinate.Z))
-	currentVao = append(currentVao, float32(p.Color.X))
-	currentVao = append(currentVao, float32(p.Color.Y))
-	currentVao = append(currentVao, float32(p.Color.Z))
-	return currentVao
+
+// SetDirection updates the direction vector.
+func (s *Sphere) SetDirection(dir mgl32.Vec3) {
+	s.direction = dir
 }
-func (s *Sphere) triangleByPointToVao(currentVao []float32, pa, pb, pc P.Point) []float32 {
-	currentVao = s.appendPointToVao(currentVao, pa)
-	currentVao = s.appendPointToVao(currentVao, pb)
-	currentVao = s.appendPointToVao(currentVao, pc)
-	return currentVao
+
+// SetIndexDirection updates the direction vector.
+func (s *Sphere) SetIndexDirection(index int, value float32) {
+	s.direction[index] = value
 }
-func (s *Sphere) sideByPointToVao(currentVao []float32, pa, pb, pc, pd P.Point) []float32 {
-	currentVao = s.triangleByPointToVao(currentVao, pa, pb, pc)
-	currentVao = s.triangleByPointToVao(currentVao, pa, pc, pd)
-	return currentVao
+
+// SetSpeed updates the speed.
+func (s *Sphere) SetSpeed(speed float32) {
+	s.speed = speed
 }
-func (s *Sphere) setupVao() []float32 {
-	var vao []float32
+func (s *Sphere) triangleToVao(pa, pb, pc mgl32.Vec3) {
+	s.vao.AppendVectors(pa, s.color)
+	s.vao.AppendVectors(pb, s.color)
+	s.vao.AppendVectors(pc, s.color)
+}
+func (s *Sphere) setupVao() {
 	// the coordinates will be set as a following: origo as center, 1 as radius, for drawing, the translation and scale could be done later in the model transformation.
 	// Sphere top: center + v{0,radius,0}, bottom: center + v{0,-radius,0}, left: center + v{-radius,0,0}, right: center + v{radius,0,0}
 	// Idea : start drawing triangles from both direction (top, bottom). step the coordinates and calculate the triangles, add them to vao.
 	// - step for y coord, : radius * 2 / numOfRows
-	RefPoint := &vec.Vector{0, 1, 0}
-	step_Z := -trans.DegToRad(float64(360.0 / s.numOfItemsInRow))
-	step_Y := -trans.DegToRad(float64(360.0 / s.numOfRows))
-	for i := 0; i < s.numOfRows; i++ {
-		i_Rotation := trans.RotationZMatrix(float64(i) * step_Z).TransposeMatrix()
-		i1_Rotation := trans.RotationZMatrix(float64(i+1) * step_Z).TransposeMatrix()
-		for j := 0; j < s.numOfItemsInRow; j++ {
-			j1_Rotation := trans.RotationYMatrix(float64(j+1) * step_Y).TransposeMatrix()
-			j_Rotation := trans.RotationYMatrix(float64(j) * step_Y).TransposeMatrix()
+	RefPoint := mgl32.Vec3{0, 1, 0}
+	step := -mgl32.DegToRad(float32(360.0) / float32(s.precision))
+	for i := 0; i < s.precision; i++ {
+		i_Rotation := mgl32.HomogRotate3DZ(float32(i) * step)
+		i1_Rotation := mgl32.HomogRotate3DZ(float32(i+1) * step)
+		for j := 0; j < s.precision; j++ {
+			j1_Rotation := mgl32.HomogRotate3DY(float32(j+1) * step)
+			j_Rotation := mgl32.HomogRotate3DY(float32(j) * step)
 			if i == 0 {
-				p1 := P.Point{*RefPoint, s.color}
-				p2 := P.Point{*(j_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
-				p3 := P.Point{*(j1_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
-				vao = s.triangleByPointToVao(vao, p1, p2, p3)
+				p2 := mgl32.TransformCoordinate(RefPoint, j_Rotation.Mul4(i1_Rotation))
+				p3 := mgl32.TransformCoordinate(RefPoint, j1_Rotation.Mul4(i1_Rotation))
+				s.triangleToVao(RefPoint, p2, p3)
 			} else {
-				p1 := P.Point{*(j_Rotation.Dot(i_Rotation).MultiVector(*RefPoint)), s.color}
-				p2 := P.Point{*(j1_Rotation.Dot(i_Rotation).MultiVector(*RefPoint)), s.color}
-				p3 := P.Point{*(j1_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
-				p4 := P.Point{*(j_Rotation.Dot(i1_Rotation).MultiVector(*RefPoint)), s.color}
-				vao = s.sideByPointToVao(vao, p1, p2, p3, p4)
+				p1 := mgl32.TransformCoordinate(RefPoint, j_Rotation.Mul4(i_Rotation))
+				p2 := mgl32.TransformCoordinate(RefPoint, j1_Rotation.Mul4(i_Rotation))
+				p3 := mgl32.TransformCoordinate(RefPoint, j1_Rotation.Mul4(i1_Rotation))
+				p4 := mgl32.TransformCoordinate(RefPoint, j_Rotation.Mul4(i1_Rotation))
+				s.triangleToVao(p1, p2, p3)
+				s.triangleToVao(p1, p3, p4)
 			}
 		}
 	}
-	return vao
+}
+func (s *Sphere) buildVao() {
+	s.setupVao()
+
+	s.shader.BindBufferData(s.vao.Get())
+
+	s.shader.BindVertexArray()
+	// setup points
+	s.shader.VertexAttribPointer(0, 3, 4*6, 0)
+	// setup color
+	s.shader.VertexAttribPointer(1, 3, 4*6, 4*3)
+
+}
+func (s *Sphere) DrawWithUniforms(view, projection mgl32.Mat4) {
+	s.shader.Use()
+	s.shader.SetUniformMat4("view", view)
+	s.shader.SetUniformMat4("projection", projection)
+	M := mgl32.Translate3D(
+		s.center.X(),
+		s.center.Y(),
+		s.center.Z()).Mul4(mgl32.Scale3D(
+		s.radius,
+		s.radius,
+		s.radius))
+	s.shader.SetUniformMat4("model", M)
+	s.draw()
 }
 
 func (s *Sphere) Draw() {
-	points := s.setupVao()
-
-	var vertexBufferObject uint32
-	gl.GenBuffers(1, &vertexBufferObject)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
-	// a 32-bit float has 4 bytes, so we are saying the size of the buffer,
-	// in bytes, is 4 times the number of points
-	gl.BufferData(gl.ARRAY_BUFFER, 4*len(points), gl.Ptr(points), gl.STATIC_DRAW)
-
-	var vertexArrayObject uint32
-	gl.GenVertexArrays(1, &vertexArrayObject)
-	gl.BindVertexArray(vertexArrayObject)
-	// setup points
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(0))
-	gl.EnableVertexAttribArray(0)
-	// setup color
-	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(4*3))
-	gl.EnableVertexAttribArray(1)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
-	// The sphere is represented by triangles, so we have TODO points here.
-	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(points)/6))
+	s.shader.Use()
+	s.draw()
+}
+func (s *Sphere) draw() {
+	s.buildVao()
+	s.shader.DrawTriangles(int32(len(s.vao.Get()) / 6))
+	s.shader.Close(1)
+}
+func (s *Sphere) Update(dt float64) {
+	delta := float32(dt)
+	motionVector := s.direction
+	if motionVector.Len() > 0 {
+		motionVector = motionVector.Normalize().Mul(delta * s.speed)
+	}
+	s.center = (s.center).Add(motionVector)
 }

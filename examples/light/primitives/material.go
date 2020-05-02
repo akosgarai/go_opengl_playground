@@ -2,6 +2,8 @@ package primitives
 
 import (
 	"github.com/go-gl/mathgl/mgl32"
+
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 )
 
 type Material struct {
@@ -12,9 +14,9 @@ type Material struct {
 
 func (m *Material) Log() string {
 	logString := "Material\n"
-	logString += " - Diffuse: Vector{" + Vec3ToString(m.diffuse) + "}\n"
-	logString += " - Specualar: Vector{" + Vec3ToString(m.specular) + "}\n"
-	logString += " - Shininess: " + Float32ToString(m.shininess) + "\n"
+	logString += " - Diffuse: Vector{" + trans.Vec3ToString(m.diffuse) + "}\n"
+	logString += " - Specualar: Vector{" + trans.Vec3ToString(m.specular) + "}\n"
+	logString += " - Shininess: " + trans.Float32ToString(m.shininess) + "\n"
 	return logString
 }
 

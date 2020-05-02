@@ -4,6 +4,7 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
@@ -98,7 +99,7 @@ func (c *Cuboid) Log() string {
 	logString += c.sides[4].Log()
 	logString += " - Right:\n"
 	logString += c.sides[5].Log()
-	logString += " - precision : " + IntegerToString(c.precision) + "\n"
+	logString += " - precision : " + trans.IntegerToString(c.precision) + "\n"
 	logString += " - " + c.material.Log() + "\n"
 	return logString
 

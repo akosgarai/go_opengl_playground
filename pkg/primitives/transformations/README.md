@@ -1,55 +1,23 @@
 # Transformations
 
-It contains functions that represents transformations. 
-
-## DegToRad
-
-This function converts a `float64` degree value to `float64` radian.
-
-```
-    rad = deg * PI / 180
-```
-
-## RadToDeg
-
-This function converts a `float64` radian value to `float64` degree.
-
-```
-    deg = rad * 180 / PI
-```
-
-## Perspective
-
-This function returns the perspective matrix.
-
-## LookAt
-
-This function returns the transformation matrix from the world space to the camera space.
+It contains functions that represents transformations. Coordinate transformations or type specific transformations (eg float to string)
 
 ## MouseCoordinates
 
 This function transforms the mouse coordinates to window coordinate. (windowwidth\*windowheight -> [-1, 1])
 
-## ScaleMatrix
+## Vec3ToString
 
-This function returns a scale matrix. The inputs are the scale ratios.
+This function transforms a 3 dimensional vector `mgl32.Vec3` to it's string representation. Useful for logs.
 
-## TranslationMatrix
+## Float64ToString
 
-This function returns a translation matrix. The inputs are the translation values.
+This function transforms a float64 type number `float64` to it's string representation. Useful for logs.
 
-## RotationXMatrix
+## Float32ToString
 
-This function returns a rotation matrix, where the rotation is based on the `X` axis.
+This function transforms a float32 type number `float32` to it's string representation. Useful for logs.
 
-## RotationYMatrix
+## IntegerToString
 
-This function returns a rotation matrix, where the rotation is based on the `Y` axis.
-
-## RotationZMatrix
-
-This function returns a rotation matrix, where the rotation is based on the `Z` axis.
-
-## ProjectionMatrix
-
-This functions returns a perspective matrix, but with 1 as ratio.
+This function transforms an integer type number `int` to it's string representation. Useful for logs.

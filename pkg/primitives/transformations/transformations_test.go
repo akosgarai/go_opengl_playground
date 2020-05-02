@@ -1,158 +1,95 @@
 package transformations
 
 import (
-	"math"
 	"testing"
 
-	mat "github.com/akosgarai/opengl_playground/pkg/primitives/matrix"
-	vec "github.com/akosgarai/opengl_playground/pkg/primitives/vector"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
-func TestTranslationMatrix(t *testing.T) {
+func TestMouseCoordinates(t *testing.T) {
 	testData := []struct {
-		Translation vec.Vector
-		Expected    mat.Matrix
+		x      float64
+		y      float64
+		width  float64
+		height float64
+		rX     float64
+		rY     float64
 	}{
-		{
-			vec.Vector{0, 0, 0},
-			*mat.UnitMatrix(),
-		},
-		{
-			vec.Vector{1, 2, 3},
-			mat.Matrix{
-				[16]float32{
-					1.0, 0.0, 0.0, 1.0,
-					0.0, 1.0, 0.0, 2.0,
-					0.0, 0.0, 1.0, 3.0,
-					0.0, 0.0, 0.0, 1.0},
-			},
-		},
+		{0, 0, 600, 600, -1, 1},
+		{600, 600, 600, 600, 1, -1},
+		{300, 300, 600, 600, 0, 0},
 	}
 	for _, tt := range testData {
-		translated := TranslationMatrix(float32(tt.Translation.X), float32(tt.Translation.Y), float32(tt.Translation.Z))
-		for i := 0; i < 16; i++ {
-			if translated.Points[i] != tt.Expected.Points[i] {
-				t.Log(translated)
-				t.Log(tt.Expected)
-				t.Error("Value mismatch - TranslationMatrix")
-			}
+		x, y := MouseCoordinates(tt.x, tt.y, tt.width, tt.height)
+		if x != tt.rX {
+			t.Errorf("Invalid x Component instead of %f, got %f", tt.rX, x)
+		}
+		if y != tt.rY {
+			t.Errorf("Invalid y Component instead of %f, got %f", tt.rY, y)
 		}
 	}
 }
-func TestRotationTransformationXAxis(t *testing.T) {
+func TestVec3ToString(t *testing.T) {
 	testData := []struct {
-		Point         *vec.Vector
-		RotationAngle float64
-		RotatedPoint  *vec.Vector
+		v mgl32.Vec3
+		s string
 	}{
-		{&vec.Vector{0, 0, 0}, 0.0, &vec.Vector{0, 0, 0}},
-		{&vec.Vector{1, 0, 0}, 0.0, &vec.Vector{1, 0, 0}},
-		{&vec.Vector{1, 1, 0}, 0.0, &vec.Vector{1, 1, 0}},
-		{&vec.Vector{1, 1, 1}, 0.0, &vec.Vector{1, 1, 1}},
-		{&vec.Vector{0, 0, 0}, 90.0, &vec.Vector{0, 0, 0}},
-		{&vec.Vector{1, 0, 0}, 90.0, &vec.Vector{1, 0, 0}},
-		{&vec.Vector{0, 1, 0}, math.Pi / 2, &vec.Vector{0, 0, 1}},
-		{&vec.Vector{0, 0, 1}, math.Pi / 2, &vec.Vector{1, 0, 0}},
+		{mgl32.Vec3{0, 0, 0}, "X : 0.0000000000, Y : 0.0000000000, Z : 0.0000000000"},
+		{mgl32.Vec3{1, 1, 1}, "X : 1.0000000000, Y : 1.0000000000, Z : 1.0000000000"},
+		{mgl32.Vec3{0.5, 0.5, 0.5}, "X : 0.5000000000, Y : 0.5000000000, Z : 0.5000000000"},
 	}
 	for _, tt := range testData {
-		rotationMatrix := RotationXMatrix(tt.RotationAngle).TransposeMatrix()
-		sinAngle, cosAngle := float32(math.Sin(tt.RotationAngle)), float32(math.Cos(tt.RotationAngle))
-		points := rotationMatrix.Points
-		if points[0] != 1.0 ||
-			points[1] != 0.0 ||
-			points[2] != 0.0 ||
-			points[3] != 0.0 ||
-			points[4] != 0.0 ||
-			points[5] != cosAngle ||
-			points[6] != sinAngle ||
-			points[7] != 0.0 ||
-			points[8] != 0.0 ||
-			points[9] != -sinAngle ||
-			points[10] != cosAngle ||
-			points[11] != 0.0 ||
-			points[12] != 0.0 ||
-			points[13] != 0.0 ||
-			points[14] != 0.0 ||
-			points[15] != 1.0 {
-			t.Error("Invalid rotationX matrix", points, sinAngle, cosAngle)
+		str := Vec3ToString(tt.v)
+		if str != tt.s {
+			t.Errorf("Invalid string representation. Instead of '%s', got '%s'", tt.s, str)
 		}
 	}
 }
-func TestRotationTransformationYAxis(t *testing.T) {
+func TestFloat64ToString(t *testing.T) {
 	testData := []struct {
-		Point         *vec.Vector
-		RotationAngle float64
-		RotatedPoint  *vec.Vector
+		v float64
+		s string
 	}{
-		{&vec.Vector{0, 0, 0}, 0.0, &vec.Vector{0, 0, 0}},
-		{&vec.Vector{1, 0, 0}, 0.0, &vec.Vector{1, 0, 0}},
-		{&vec.Vector{1, 1, 0}, 0.0, &vec.Vector{1, 1, 0}},
-		{&vec.Vector{1, 1, 1}, 0.0, &vec.Vector{1, 1, 1}},
-		{&vec.Vector{0, 0, 0}, 90.0, &vec.Vector{0, 0, 0}},
-		{&vec.Vector{0, 1, 0}, 90.0, &vec.Vector{0, 1, 0}},
-		{&vec.Vector{1, 0, 0}, math.Pi / 2, &vec.Vector{0, 0, 1}},
-		{&vec.Vector{0, 0, 1}, math.Pi / 2, &vec.Vector{1, 0, 0}},
+		{0, "0.0000000000"},
+		{1, "1.0000000000"},
+		{0.5, "0.5000000000"},
 	}
 	for _, tt := range testData {
-		rotationMatrix := RotationYMatrix(tt.RotationAngle).TransposeMatrix()
-		sinAngle, cosAngle := float32(math.Sin(tt.RotationAngle)), float32(math.Cos(tt.RotationAngle))
-		points := rotationMatrix.Points
-		if points[0] != cosAngle ||
-			points[1] != 0.0 ||
-			points[2] != -sinAngle ||
-			points[3] != 0.0 ||
-			points[4] != 0.0 ||
-			points[5] != 1.0 ||
-			points[6] != 0.0 ||
-			points[7] != 0.0 ||
-			points[8] != sinAngle ||
-			points[9] != 0.0 ||
-			points[10] != cosAngle ||
-			points[11] != 0.0 ||
-			points[12] != 0.0 ||
-			points[13] != 0.0 ||
-			points[14] != 0.0 ||
-			points[15] != 1.0 {
-			t.Error("Invalid rotationY matrix", points, sinAngle, cosAngle)
+		str := Float64ToString(tt.v)
+		if str != tt.s {
+			t.Errorf("Invalid string representation. Instead of '%s', got '%s'", tt.s, str)
 		}
 	}
 }
-func TestRotationTransformationZAxis(t *testing.T) {
+func TestFloat32ToString(t *testing.T) {
 	testData := []struct {
-		Point         *vec.Vector
-		RotationAngle float64
-		RotatedPoint  *vec.Vector
+		v float32
+		s string
 	}{
-		{&vec.Vector{0, 0, 0}, 0.0, &vec.Vector{0, 0, 0}},
-		{&vec.Vector{1, 0, 0}, 0.0, &vec.Vector{1, 0, 0}},
-		{&vec.Vector{1, 1, 0}, 0.0, &vec.Vector{1, 1, 0}},
-		{&vec.Vector{1, 1, 1}, 0.0, &vec.Vector{1, 1, 1}},
-		{&vec.Vector{0, 0, 0}, 90.0, &vec.Vector{0, 0, 0}},
-		{&vec.Vector{0, 0, 1}, 90.0, &vec.Vector{0, 0, 1}},
-		{&vec.Vector{1, 0, 0}, math.Pi / 2, &vec.Vector{0, 1, 0}},
-		{&vec.Vector{0, 1, 0}, math.Pi / 2, &vec.Vector{1, 0, 0}},
+		{0, "0.0000000000"},
+		{1, "1.0000000000"},
+		{0.5, "0.5000000000"},
 	}
 	for _, tt := range testData {
-		rotationMatrix := RotationZMatrix(tt.RotationAngle).TransposeMatrix()
-		sinAngle, cosAngle := float32(math.Sin(tt.RotationAngle)), float32(math.Cos(tt.RotationAngle))
-		points := rotationMatrix.Points
-		if points[0] != cosAngle ||
-			points[1] != sinAngle ||
-			points[2] != 0.0 ||
-			points[3] != 0.0 ||
-			points[4] != -sinAngle ||
-			points[5] != cosAngle ||
-			points[6] != 0.0 ||
-			points[7] != 0.0 ||
-			points[8] != 0.0 ||
-			points[9] != 0.0 ||
-			points[10] != 1.0 ||
-			points[11] != 0.0 ||
-			points[12] != 0.0 ||
-			points[13] != 0.0 ||
-			points[14] != 0.0 ||
-			points[15] != 1.0 {
-			t.Error("Invalid rotationY matrix", points, sinAngle, cosAngle)
+		str := Float32ToString(tt.v)
+		if str != tt.s {
+			t.Errorf("Invalid string representation. Instead of '%s', got '%s'", tt.s, str)
+		}
+	}
+}
+func TestIntegerToString(t *testing.T) {
+	testData := []struct {
+		v int
+		s string
+	}{
+		{0, "0"},
+		{1, "1"},
+		{5, "5"},
+	}
+	for _, tt := range testData {
+		str := IntegerToString(tt.v)
+		if str != tt.s {
+			t.Errorf("Invalid string representation. Instead of '%s', got '%s'", tt.s, str)
 		}
 	}
 }
