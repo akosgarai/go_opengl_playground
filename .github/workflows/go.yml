@@ -19,6 +19,9 @@ jobs:
         go-version: 1.13
       id: go
 
+    - name: Install ubuntu dependencies.
+      run: sudo apt-get install libgl1-mesa-dev xorg-dev
+
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
