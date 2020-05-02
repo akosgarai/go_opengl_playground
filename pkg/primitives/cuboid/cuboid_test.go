@@ -6,7 +6,6 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
-	_ "github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
 type testShader struct {
@@ -15,6 +14,16 @@ type testShader struct {
 func (t testShader) Use() {
 }
 func (t testShader) SetUniformMat4(s string, m mgl32.Mat4) {
+}
+func (t testShader) DrawTriangles(i int32) {
+}
+func (t testShader) Close(i int) {
+}
+func (t testShader) VertexAttribPointer(i uint32, c int32, s int32, o int) {
+}
+func (t testShader) BindVertexArray() {
+}
+func (t testShader) BindBufferData(d []float32) {
 }
 
 func TestNew(t *testing.T) {
@@ -247,13 +256,67 @@ func TestSetupVao(t *testing.T) {
 	}
 }
 func TestBuildVao(t *testing.T) {
-	t.Skip("It needs opengl init.")
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	origColor := mgl32.Vec3{1, 0, 0}
+	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
+
+	var shader testShader
+	bottom := rectangle.New(points, colors, shader)
+	cube := New(bottom, 1, shader)
+	if len(cube.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	cube.buildVao()
+	if len(cube.vao.Get()) == 0 {
+		t.Error("Vao is empty after the first setup.")
+	}
 }
 func TestDraw(t *testing.T) {
-	t.Skip("It needs opengl init.")
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	origColor := mgl32.Vec3{1, 0, 0}
+	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
+
+	var shader testShader
+	bottom := rectangle.New(points, colors, shader)
+	cube := New(bottom, 1, shader)
+	if len(cube.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	cube.Draw()
+	if len(cube.vao.Get()) == 0 {
+		t.Error("Vao is empty after the first setup.")
+	}
 }
 func TestDrawWithUniforms(t *testing.T) {
-	t.Skip("It needs opengl init.")
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	origColor := mgl32.Vec3{1, 0, 0}
+	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
+
+	var shader testShader
+	bottom := rectangle.New(points, colors, shader)
+	cube := New(bottom, 1, shader)
+	if len(cube.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	cube.DrawWithUniforms(mgl32.Ident4(), mgl32.Ident4())
+	if len(cube.vao.Get()) == 0 {
+		t.Error("Vao is empty after the first setup.")
+	}
 }
 func TestUpdate(t *testing.T) {
 	points := [4]mgl32.Vec3{
@@ -281,5 +344,29 @@ func TestUpdate(t *testing.T) {
 	}
 	if cube.sides[0].Coordinates() != expectedCoordinates {
 		t.Error("Invalid update after direction & speed setup")
+	}
+}
+func TestSetPrecision(t *testing.T) {
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	origColor := mgl32.Vec3{1, 0, 0}
+	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
+
+	var shader testShader
+	bottom := rectangle.New(points, colors, shader)
+	cube := New(bottom, 1, shader)
+	cube.SetPrecision(1)
+	cube.setupVao()
+	if len(cube.vao.Get()) != 216 {
+		t.Error("Invalid number of elements in the vao.")
+	}
+	cube.SetPrecision(2)
+	cube.setupVao()
+	if len(cube.vao.Get()) != 864 {
+		t.Error("Invalid number of elements in the vao.")
 	}
 }

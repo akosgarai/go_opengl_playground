@@ -1,7 +1,6 @@
 package cuboid
 
 import (
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
@@ -158,23 +157,13 @@ func (c *Cuboid) buildVao() {
 	// Create the vao object
 	c.setupVao()
 
-	var vertexBufferObject uint32
-	gl.GenBuffers(1, &vertexBufferObject)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
-	// a 32-bit float has 4 bytes, so we are saying the size of the buffer,
-	// in bytes, is 4 times the number of points
-	gl.BufferData(gl.ARRAY_BUFFER, 4*len(c.vao.Get()), gl.Ptr(c.vao.Get()), gl.STATIC_DRAW)
+	c.shader.BindBufferData(c.vao.Get())
 
-	var vertexArrayObject uint32
-	gl.GenVertexArrays(1, &vertexArrayObject)
-	gl.BindVertexArray(vertexArrayObject)
+	c.shader.BindVertexArray()
 	// setup points
-	gl.EnableVertexAttribArray(0)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(0))
+	c.shader.VertexAttribPointer(0, 3, 4*6, 0)
 	// setup color
-	gl.EnableVertexAttribArray(1)
-	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 4*6, gl.PtrOffset(4*3))
-	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
+	c.shader.VertexAttribPointer(1, 3, 4*6, 4*3)
 }
 
 // Draw is for drawing the cuboid to the screen.
@@ -184,7 +173,8 @@ func (c *Cuboid) Draw() {
 }
 func (c *Cuboid) draw() {
 	c.buildVao()
-	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(c.vao.Get())/6))
+	c.shader.DrawTriangles(int32(len(c.vao.Get()) / 6))
+	c.shader.Close(1)
 }
 
 // DrawWithUniforms is for drawing the rectangle to the screen. It setups the
