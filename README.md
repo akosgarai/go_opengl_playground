@@ -25,3 +25,16 @@ In the main directory run the following command, after you replaced the director
 ```
 go run examples/directory-name/app.go
 ```
+
+## Possible issues ubuntu.
+
+- Opengl version mismatch.
+
+The applications are using the opengl 4.1 package. If your version is same or higher, the appliactions should run without issues.
+To check your opengl version just run the following command in terminal (based on [this](https://askubuntu.com/questions/47062/what-is-terminal-command-that-can-show-opengl-version)):
+
+```bash
+glxinfo | grep "OpenGL version"
+```
+
+The output is something like: `OpenGL version string: 4.6.0 NVIDIA 440.82`.
