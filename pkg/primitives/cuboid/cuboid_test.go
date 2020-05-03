@@ -25,6 +25,9 @@ func (t testShader) BindVertexArray() {
 }
 func (t testShader) BindBufferData(d []float32) {
 }
+func (t testShader) HasTexture() bool {
+	return false
+}
 
 func TestNew(t *testing.T) {
 	points := [4]mgl32.Vec3{
