@@ -129,3 +129,37 @@ func TestAppendPoint(t *testing.T) {
 		t.Error("AppendVectors should add 7 as 7. element to the vao.")
 	}
 }
+func TestAppendTextureVectors(t *testing.T) {
+	vao := NewVAO()
+	vector1 := mgl32.Vec3{1, 2, 3}
+	vector2 := mgl32.Vec3{4, 5, 6}
+	texPos := mgl32.Vec2{0, 0}
+	vao.AppendTextureVectors(vector1, vector2, texPos)
+	if len(vao.vao) != 8 {
+		t.Error("AppendTextureVectors should add 8 element to the vao.")
+	}
+	if vao.vao[0] != 1 {
+		t.Error("AppendTextureVectors should add 1 as first element to the vao.")
+	}
+	if vao.vao[1] != 2 {
+		t.Error("AppendTextureVectors should add 2 as second element to the vao.")
+	}
+	if vao.vao[2] != 3 {
+		t.Error("AppendTextureVectors should add 3 as third element to the vao.")
+	}
+	if vao.vao[3] != 4 {
+		t.Error("AppendTextureVectors should add 4 as 4. element to the vao.")
+	}
+	if vao.vao[4] != 5 {
+		t.Error("AppendTextureVectors should add 5 as 5. element to the vao.")
+	}
+	if vao.vao[5] != 6 {
+		t.Error("AppendTextureVectors should add 6 as 6. element to the vao.")
+	}
+	if vao.vao[6] != 0 {
+		t.Error("AppendTextureVectors should add 0 as 7. element to the vao.")
+	}
+	if vao.vao[7] != 0 {
+		t.Error("AppendTextureVectors should add 0 as 8. element to the vao.")
+	}
+}

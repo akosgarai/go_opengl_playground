@@ -153,7 +153,20 @@ func (c *Cuboid) setupVao() {
 		c.vao = c.sides[i].SetupExternalVao(c.vao)
 	}
 }
-func (c *Cuboid) buildVao() {
+func (c *Cuboid) buildVaoWithTexture() {
+	// Create the vao object
+	c.setupVao()
+
+	c.shader.BindBufferData(c.vao.Get())
+
+	c.shader.BindVertexArray()
+	// setup points
+	c.shader.VertexAttribPointer(0, 3, 4*8, 0)
+	// setup color
+	c.shader.VertexAttribPointer(1, 3, 4*8, 4*3)
+	c.shader.VertexAttribPointer(2, 2, 4*8, 4*6)
+}
+func (c *Cuboid) buildVaoWithoutTexture() {
 	// Create the vao object
 	c.setupVao()
 
@@ -169,10 +182,20 @@ func (c *Cuboid) buildVao() {
 // Draw is for drawing the cuboid to the screen.
 func (c *Cuboid) Draw() {
 	c.shader.Use()
-	c.draw()
+
+	if !c.shader.HasTexture() {
+		c.drawWithoutTextures()
+	} else {
+		c.drawWithTextures()
+	}
 }
-func (c *Cuboid) draw() {
-	c.buildVao()
+func (c *Cuboid) drawWithTextures() {
+	c.buildVaoWithTexture()
+	c.shader.DrawTriangles(int32(len(c.vao.Get()) / 8))
+	c.shader.Close(2)
+}
+func (c *Cuboid) drawWithoutTextures() {
+	c.buildVaoWithoutTexture()
 	c.shader.DrawTriangles(int32(len(c.vao.Get()) / 6))
 	c.shader.Close(1)
 }
@@ -184,7 +207,12 @@ func (c *Cuboid) DrawWithUniforms(view, projection mgl32.Mat4) {
 	c.shader.SetUniformMat4("projection", projection)
 	M := mgl32.Ident4()
 	c.shader.SetUniformMat4("model", M)
-	c.draw()
+
+	if !c.shader.HasTexture() {
+		c.drawWithoutTextures()
+	} else {
+		c.drawWithTextures()
+	}
 }
 
 // Update
