@@ -9,6 +9,7 @@ import (
 )
 
 type testShader struct {
+	HasTextureValue bool
 }
 
 func (t testShader) Use() {
@@ -26,7 +27,7 @@ func (t testShader) BindVertexArray() {
 func (t testShader) BindBufferData(d []float32) {
 }
 func (t testShader) HasTexture() bool {
-	return false
+	return t.HasTextureValue
 }
 
 func TestNew(t *testing.T) {
@@ -258,7 +259,7 @@ func TestSetupVao(t *testing.T) {
 		t.Error("Vao is empty after the first setup.")
 	}
 }
-func TestBuildVao(t *testing.T) {
+func TestBuildVaoWithoutTexture(t *testing.T) {
 	points := [4]mgl32.Vec3{
 		mgl32.Vec3{0, 0, 0},
 		mgl32.Vec3{1, 0, 0},
@@ -274,7 +275,7 @@ func TestBuildVao(t *testing.T) {
 	if len(cube.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
-	cube.buildVao()
+	cube.buildVaoWithoutTexture()
 	if len(cube.vao.Get()) == 0 {
 		t.Error("Vao is empty after the first setup.")
 	}
@@ -296,6 +297,50 @@ func TestDraw(t *testing.T) {
 		t.Error("Vao is not empty before the first setup.")
 	}
 	cube.Draw()
+	if len(cube.vao.Get()) == 0 {
+		t.Error("Vao is empty after the first setup.")
+	}
+}
+func TestDrawTexture(t *testing.T) {
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	origColor := mgl32.Vec3{1, 0, 0}
+	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
+
+	var shader testShader
+	shader.HasTextureValue = true
+	bottom := rectangle.New(points, colors, shader)
+	cube := New(bottom, 1, shader)
+	if len(cube.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	cube.Draw()
+	if len(cube.vao.Get()) == 0 {
+		t.Error("Vao is empty after the first setup.")
+	}
+}
+func TestDrawWithUniformsTexture(t *testing.T) {
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	origColor := mgl32.Vec3{1, 0, 0}
+	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
+
+	var shader testShader
+	shader.HasTextureValue = true
+	bottom := rectangle.New(points, colors, shader)
+	cube := New(bottom, 1, shader)
+	if len(cube.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	cube.DrawWithUniforms(mgl32.Ident4(), mgl32.Ident4())
 	if len(cube.vao.Get()) == 0 {
 		t.Error("Vao is empty after the first setup.")
 	}
