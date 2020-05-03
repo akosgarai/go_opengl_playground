@@ -129,3 +129,5 @@ func TestAppendPoint(t *testing.T) {
 		t.Error("AppendVectors should add 7 as 7. element to the vao.")
 	}
 }
+func TestAppendTextureVectors(t *testing.T) {
+}
