@@ -621,3 +621,28 @@ func TestDrawPoints(t *testing.T) {
 func TestDrawTriangles(t *testing.T) {
 	t.Skip("Unimplemented")
 }
+func TestTexParameteri(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestTextureBorderColor(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestLoadImageFromFile(t *testing.T) {
+	_, err := loadImageFromFile("transparent-image-for-texture-testing.jpg")
+	if err != nil {
+		t.Log(err)
+		t.Error("Issue during load.")
+	}
+}
+func TestAddTexture(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestTextureBind(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestTextureUnbind(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestHasTexture(t *testing.T) {
+	t.Skip("Unimplemented")
+}

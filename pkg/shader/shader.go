@@ -2,7 +2,12 @@ package shader
 
 import (
 	"fmt"
+	"image"
+	"image/draw"
+	_ "image/jpeg"
+	_ "image/png"
 	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -17,6 +22,17 @@ func InitOpenGL() {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
 }
+func textureMap(index int) uint32 {
+	switch index {
+	case 0:
+		return gl.TEXTURE0
+	case 1:
+		return gl.TEXTURE1
+	case 2:
+		return gl.TEXTURE2
+	}
+	return 0
+}
 
 // LoadShaderFromFile takes a filepath string arguments.
 // It loads the file and returns it as a '\x00' terminated string.
@@ -28,6 +44,19 @@ func LoadShaderFromFile(path string) (string, error) {
 	}
 	result := string(shaderCode) + "\x00"
 	return result, nil
+}
+
+// LoadImageFromFile takes a filepath string argument.
+// It loads the file, decodes it as PNG or jpg, and returns the image and error
+func loadImageFromFile(path string) (image.Image, error) {
+	imgFile, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer imgFile.Close()
+	img, _, err := image.Decode(imgFile)
+	return img, err
+
 }
 func CompileShader(source string, shaderType uint32) (uint32, error) {
 	shader := gl.CreateShader(shaderType)
@@ -52,8 +81,32 @@ func CompileShader(source string, shaderType uint32) (uint32, error) {
 	return shader, nil
 }
 
+type texture struct {
+	textureId   uint32
+	targetId    uint32
+	texUnitId   uint32
+	uniformName string
+}
+
+func (t *texture) Bind(id uint32) {
+	t.texUnitId = id
+	gl.ActiveTexture(t.texUnitId)
+	gl.BindTexture(t.targetId, t.textureId)
+}
+func (t *texture) IsBinded() bool {
+	if t.texUnitId == 0 {
+		return false
+	}
+	return true
+}
+func (t *texture) UnBind() {
+	t.texUnitId = 0
+	gl.BindTexture(t.targetId, t.textureId)
+}
+
 type Shader struct {
 	shaderProgramId uint32
+	textures        []texture
 }
 
 // NewShader returns a Shader. It's inputs are the filenames of the shaders.
@@ -83,7 +136,54 @@ func NewShader(vertexShaderPath, fragmentShaderPath string) *Shader {
 
 	return &Shader{
 		shaderProgramId: program,
+		textures:        []texture{},
 	}
+}
+func (s *Shader) AddTexture(filePath string, wrapR, wrapS, minificationFilter, magnificationFilter int32, uniformName string) {
+	img, err := loadImageFromFile(filePath)
+	if err != nil {
+		panic(err)
+	}
+
+	rgba := image.NewRGBA(img.Bounds())
+	draw.Draw(rgba, rgba.Bounds(), img, image.Pt(0, 0), draw.Src)
+	if rgba.Stride != rgba.Rect.Size().X*4 {
+		panic("not 32 bit color")
+	}
+
+	t := texture{
+		textureId:   s.genTexture(),
+		targetId:    gl.TEXTURE_2D,
+		texUnitId:   0,
+		uniformName: uniformName,
+	}
+
+	t.Bind(gl.TEXTURE0)
+	defer t.UnBind()
+
+	s.TexParameteri(gl.TEXTURE_WRAP_R, wrapR)
+	s.TexParameteri(gl.TEXTURE_WRAP_S, wrapS)
+	s.TexParameteri(gl.TEXTURE_MIN_FILTER, minificationFilter)
+	s.TexParameteri(gl.TEXTURE_MAG_FILTER, magnificationFilter)
+
+	gl.TexImage2D(t.targetId, 0, gl.RGBA, int32(rgba.Rect.Size().X), int32(rgba.Rect.Size().Y), 0, gl.RGBA, uint32(gl.UNSIGNED_BYTE), gl.Ptr(rgba.Pix))
+
+	gl.GenerateMipmap(t.textureId)
+
+	s.textures = append(s.textures, t)
+}
+
+func (s *Shader) genTexture() uint32 {
+	var id uint32
+	gl.GenTextures(1, &id)
+	return id
+}
+
+func (s *Shader) HasTexture() bool {
+	if len(s.textures) > 0 {
+		return true
+	}
+	return false
 }
 
 // Use is a wrapper for gl.UseProgram
@@ -152,6 +252,9 @@ func (s *Shader) Close(numOfVertexAttributes int) {
 		index := uint32(i)
 		gl.DisableVertexAttribArray(index)
 	}
+	for index, _ := range s.textures {
+		s.textures[index].UnBind()
+	}
 	gl.BindVertexArray(0)
 }
 
@@ -162,5 +265,19 @@ func (s *Shader) DrawPoints(numberOfPoints int32) {
 
 // DrawTriangles is the draw function for triangles
 func (s *Shader) DrawTriangles(numberOfPoints int32) {
+	for index, _ := range s.textures {
+		s.textures[index].Bind(textureMap(index))
+		gl.Uniform1i(s.getUniformLocation(s.textures[index].uniformName), int32(s.textures[index].texUnitId-gl.TEXTURE0))
+	}
 	gl.DrawArrays(gl.TRIANGLES, 0, numberOfPoints)
+}
+
+// TexParameteri is a wrapper function for gl.TexParameteri
+func (s *Shader) TexParameteri(pName uint32, param int32) {
+	gl.TexParameteri(gl.TEXTURE_2D, pName, param)
+}
+
+// TextureBorderColor is a wrapper function for gl.glTexParameterfv with TEXTURE_BORDER_COLOR as pname.
+func (s *Shader) TextureBorderColor(color [4]float32) {
+	gl.TexParameterfv(gl.TEXTURE_2D, gl.TEXTURE_BORDER_COLOR, &color[0])
 }
