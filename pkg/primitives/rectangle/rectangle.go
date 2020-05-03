@@ -15,6 +15,7 @@ type Shader interface {
 	VertexAttribPointer(uint32, int32, int32, int)
 	BindVertexArray()
 	BindBufferData([]float32)
+	HasTexture() bool
 }
 
 type Rectangle struct {
@@ -96,8 +97,20 @@ func (r *Rectangle) SetPrecision(p int) {
 
 func (r *Rectangle) appendRectangleToVao(coordinates, colors [4]mgl32.Vec3) {
 	indicies := [6]int{0, 1, 2, 0, 2, 3}
-	for i := 0; i < 6; i++ {
-		r.vao.AppendVectors(coordinates[indicies[i]], colors[indicies[i]])
+	if r.shader.HasTexture() {
+		textureCoords := [4]mgl32.Vec2{
+			{0.0, 1.0},
+			{1.0, 1.0},
+			{1.0, 0.0},
+			{0.0, 0.0},
+		}
+		for i := 0; i < 6; i++ {
+			r.vao.AppendTextureVectors(coordinates[indicies[i]], colors[indicies[i]], textureCoords[indicies[i]])
+		}
+	} else {
+		for i := 0; i < 6; i++ {
+			r.vao.AppendVectors(coordinates[indicies[i]], colors[indicies[i]])
+		}
 	}
 }
 
@@ -135,7 +148,20 @@ func (r *Rectangle) SetupExternalVao(v *vao.VAO) *vao.VAO {
 	r.vao = tmpVao
 	return v
 }
-func (r *Rectangle) buildVao() {
+
+func (r *Rectangle) buildVaoWithTexture() {
+	// Create the vao object
+	r.setupVao()
+	r.shader.BindBufferData(r.vao.Get())
+	r.shader.BindVertexArray()
+	// setup points
+	r.shader.VertexAttribPointer(0, 3, 4*8, 0)
+	// setup color
+	r.shader.VertexAttribPointer(1, 3, 4*8, 4*3)
+	// setup texture
+	r.shader.VertexAttribPointer(2, 2, 4*8, 4*6)
+}
+func (r *Rectangle) buildVaoWithoutTexture() {
 	// Create the vao object
 	r.setupVao()
 
@@ -151,12 +177,21 @@ func (r *Rectangle) buildVao() {
 // Draw is for drawing the rectangle to the screen.
 func (r *Rectangle) Draw() {
 	r.shader.Use()
-	MVP := mgl32.Ident4()
-	r.shader.SetUniformMat4("MVP", MVP)
-	r.draw()
+	if !r.shader.HasTexture() {
+		MVP := mgl32.Ident4()
+		r.shader.SetUniformMat4("MVP", MVP)
+		r.drawWithoutTextures()
+	} else {
+		r.drawWithTextures()
+	}
 }
-func (r *Rectangle) draw() {
-	r.buildVao()
+func (r *Rectangle) drawWithTextures() {
+	r.buildVaoWithTexture()
+	r.shader.DrawTriangles(int32(len(r.vao.Get()) / 8))
+	r.shader.Close(2)
+}
+func (r *Rectangle) drawWithoutTextures() {
+	r.buildVaoWithoutTexture()
 	r.shader.DrawTriangles(int32(len(r.vao.Get()) / 6))
 	r.shader.Close(1)
 }
@@ -168,7 +203,7 @@ func (r *Rectangle) DrawWithUniforms(view, projection mgl32.Mat4) {
 	r.shader.SetUniformMat4("projection", projection)
 	M := mgl32.Ident4()
 	r.shader.SetUniformMat4("model", M)
-	r.draw()
+	r.drawWithoutTextures()
 }
 func (r *Rectangle) Update(dt float64) {
 	delta := float32(dt)

@@ -9,6 +9,7 @@ import (
 )
 
 type testShader struct {
+	HasTextureValue bool
 }
 
 func (t testShader) Use() {
@@ -25,6 +26,9 @@ func (t testShader) BindVertexArray() {
 }
 func (t testShader) BindBufferData(d []float32) {
 }
+func (t testShader) HasTexture() bool {
+	return t.HasTextureValue
+}
 
 func TestNew(t *testing.T) {
 	points := [4]mgl32.Vec3{
@@ -40,6 +44,7 @@ func TestNew(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 
 	if square.speed != 0.0 {
@@ -72,6 +77,7 @@ func TestSetColor(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	newColor := mgl32.Vec3{1, 1, 0}
 	square.SetColor(newColor)
@@ -96,6 +102,7 @@ func TestSetIndexColor(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	newColor := mgl32.Vec3{1, 1, 0}
 	square.SetIndexColor(0, newColor)
@@ -123,6 +130,7 @@ func TestLog(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	log := square.Log()
 	if len(log) < 10 {
@@ -143,6 +151,7 @@ func TestSetupVao(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	if len(square.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
@@ -152,7 +161,7 @@ func TestSetupVao(t *testing.T) {
 		t.Error("Vao is empty after the first setup.")
 	}
 }
-func TestBuildVao(t *testing.T) {
+func TestBuildVaoWithoutTexture(t *testing.T) {
 	points := [4]mgl32.Vec3{
 		mgl32.Vec3{0, 0, 0},
 		mgl32.Vec3{1, 0, 0},
@@ -166,13 +175,38 @@ func TestBuildVao(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	if len(square.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
-	square.buildVao()
-	if len(square.vao.Get()) == 0 {
-		t.Error("Vao is empty after the first setup.")
+	square.buildVaoWithoutTexture()
+	if len(square.vao.Get()) != 36 {
+		t.Errorf("Invalid number of items in the vao. Instead of '36', we have '%d'.", len(square.vao.Get()))
+	}
+}
+func TestBuildVaoWithTexture(t *testing.T) {
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	colors := [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+	var shader testShader
+	shader.HasTextureValue = true
+	square := New(points, colors, shader)
+	if len(square.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	square.buildVaoWithTexture()
+	if len(square.vao.Get()) != 48 {
+		t.Errorf("Invalid number of items in the vao. Instead of '48', we have '%d'.", len(square.vao.Get()))
 	}
 }
 func TestDraw(t *testing.T) {
@@ -189,13 +223,38 @@ func TestDraw(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	if len(square.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
 	square.Draw()
-	if len(square.vao.Get()) == 0 {
-		t.Error("Vao is empty after the first setup.")
+	if len(square.vao.Get()) != 36 {
+		t.Errorf("Invalid number of items in the vao. Instead of '36', we have '%d'.", len(square.vao.Get()))
+	}
+}
+func TestDrawWithTexture(t *testing.T) {
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	colors := [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+	var shader testShader
+	shader.HasTextureValue = true
+	square := New(points, colors, shader)
+	if len(square.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	square.Draw()
+	if len(square.vao.Get()) != 48 {
+		t.Errorf("Invalid number of items in the vao. Instead of '48', we have '%d'.", len(square.vao.Get()))
 	}
 }
 func TestDrawWithUniforms(t *testing.T) {
@@ -212,6 +271,7 @@ func TestDrawWithUniforms(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	if len(square.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
@@ -235,6 +295,7 @@ func TestUpdate(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	square.SetDirection(mgl32.Vec3{1, 0, 0})
 	square.SetSpeed(1)
@@ -267,6 +328,7 @@ func TestSetDirection(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	newDirection := mgl32.Vec3{1, 1, 0}
 	square.SetDirection(newDirection)
@@ -289,6 +351,7 @@ func TestSetIndexDirection(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	square.SetIndexDirection(0, 1)
 
@@ -310,6 +373,7 @@ func TestSetSpeed(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	square.SetSpeed(10)
 
@@ -331,6 +395,7 @@ func TestCoordinates(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	coords := square.Coordinates()
 	if coords != points {
@@ -351,6 +416,7 @@ func TestColors(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	cols := square.Colors()
 	if cols != colors {
@@ -371,6 +437,7 @@ func TestSetupExternalVao(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	if len(square.vao.Get()) != 0 {
 		t.Error("VAO should be empty")
@@ -397,6 +464,7 @@ func TestSetPrecision(t *testing.T) {
 		mgl32.Vec3{1, 0, 0},
 	}
 	var shader testShader
+	shader.HasTextureValue = false
 	square := New(points, colors, shader)
 	newPrecision := 100
 	square.SetPrecision(newPrecision)
