@@ -89,9 +89,9 @@ type texture struct {
 }
 
 func (t *texture) Bind(id uint32) {
-	t.texUnitId = id
-	gl.ActiveTexture(t.texUnitId)
+	gl.ActiveTexture(id)
 	gl.BindTexture(t.targetId, t.textureId)
+	t.texUnitId = id
 }
 func (t *texture) IsBinded() bool {
 	if t.texUnitId == 0 {
@@ -101,7 +101,7 @@ func (t *texture) IsBinded() bool {
 }
 func (t *texture) UnBind() {
 	t.texUnitId = 0
-	gl.BindTexture(t.targetId, t.textureId)
+	gl.BindTexture(t.targetId, t.texUnitId)
 }
 
 type Shader struct {
@@ -151,26 +151,26 @@ func (s *Shader) AddTexture(filePath string, wrapR, wrapS, minificationFilter, m
 		panic("not 32 bit color")
 	}
 
-	t := texture{
+	tex := texture{
 		textureId:   s.genTexture(),
 		targetId:    gl.TEXTURE_2D,
 		texUnitId:   0,
 		uniformName: uniformName,
 	}
 
-	t.Bind(gl.TEXTURE0)
-	defer t.UnBind()
+	tex.Bind(gl.TEXTURE0)
+	defer tex.UnBind()
 
 	s.TexParameteri(gl.TEXTURE_WRAP_R, wrapR)
 	s.TexParameteri(gl.TEXTURE_WRAP_S, wrapS)
 	s.TexParameteri(gl.TEXTURE_MIN_FILTER, minificationFilter)
 	s.TexParameteri(gl.TEXTURE_MAG_FILTER, magnificationFilter)
 
-	gl.TexImage2D(t.targetId, 0, gl.RGBA, int32(rgba.Rect.Size().X), int32(rgba.Rect.Size().Y), 0, gl.RGBA, uint32(gl.UNSIGNED_BYTE), gl.Ptr(rgba.Pix))
+	gl.TexImage2D(tex.targetId, 0, gl.RGBA, int32(rgba.Rect.Size().X), int32(rgba.Rect.Size().Y), 0, gl.RGBA, uint32(gl.UNSIGNED_BYTE), gl.Ptr(rgba.Pix))
 
-	gl.GenerateMipmap(t.textureId)
+	gl.GenerateMipmap(tex.textureId)
 
-	s.textures = append(s.textures, t)
+	s.textures = append(s.textures, tex)
 }
 
 func (s *Shader) genTexture() uint32 {
