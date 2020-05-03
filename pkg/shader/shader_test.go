@@ -464,6 +464,9 @@ func TestGetUniformLocation(t *testing.T) {
 	}
 }
 func TestBindBufferData(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer glfw.Terminate()
@@ -471,6 +474,9 @@ func TestBindBufferData(t *testing.T) {
 	shader.BindBufferData(bufferData)
 }
 func TestBindVertexArray(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer glfw.Terminate()
@@ -479,6 +485,9 @@ func TestBindVertexArray(t *testing.T) {
 	shader.BindVertexArray()
 }
 func TestVertexAttribPointer(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer glfw.Terminate()
@@ -488,6 +497,9 @@ func TestVertexAttribPointer(t *testing.T) {
 	shader.VertexAttribPointer(uint32(0), int32(3), int32(6*4), 0)
 }
 func TestClose(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer glfw.Terminate()
@@ -499,6 +511,9 @@ func TestClose(t *testing.T) {
 	shader.Close(1)
 }
 func TestDrawPoints(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer glfw.Terminate()
@@ -512,6 +527,9 @@ func TestDrawPoints(t *testing.T) {
 	shader.Close(2)
 }
 func TestDrawTriangles(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer glfw.Terminate()
@@ -571,6 +589,9 @@ func TestAddTextureInvalidFilename(t *testing.T) {
 	}()
 }
 func TestTextureBind(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer glfw.Terminate()
@@ -584,6 +605,9 @@ func TestTextureBind(t *testing.T) {
 	shader.Close(2)
 }
 func TestTextureIsBinded(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
@@ -600,6 +624,9 @@ func TestTextureIsBinded(t *testing.T) {
 	}
 }
 func TestTextureUnbind(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
@@ -615,6 +642,9 @@ func TestTextureUnbind(t *testing.T) {
 	}
 }
 func TestHasTexture(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
