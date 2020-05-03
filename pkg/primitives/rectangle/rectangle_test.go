@@ -281,6 +281,30 @@ func TestDrawWithUniforms(t *testing.T) {
 		t.Error("Vao is empty after the first setup.")
 	}
 }
+func TestDrawWithUniformsTextures(t *testing.T) {
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	colors := [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+	var shader testShader
+	shader.HasTextureValue = true
+	square := New(points, colors, shader)
+	if len(square.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	square.DrawWithUniforms(mgl32.Ident4(), mgl32.Ident4())
+	if len(square.vao.Get()) != 48 {
+		t.Errorf("Vao should be 48 long. Instead of it, it's '%d'", len(square.vao.Get()))
+	}
+}
 func TestUpdate(t *testing.T) {
 	points := [4]mgl32.Vec3{
 		mgl32.Vec3{0, 0, 0},

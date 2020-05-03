@@ -203,7 +203,11 @@ func (r *Rectangle) DrawWithUniforms(view, projection mgl32.Mat4) {
 	r.shader.SetUniformMat4("projection", projection)
 	M := mgl32.Ident4()
 	r.shader.SetUniformMat4("model", M)
-	r.drawWithoutTextures()
+	if !r.shader.HasTexture() {
+		r.drawWithoutTextures()
+	} else {
+		r.drawWithTextures()
+	}
 }
 func (r *Rectangle) Update(dt float64) {
 	delta := float32(dt)
