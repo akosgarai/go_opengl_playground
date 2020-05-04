@@ -26,8 +26,13 @@ type Rectangle struct {
 	colors [4]mgl32.Vec3
 	points [4]mgl32.Vec3
 
+	// movement paramteres
 	direction mgl32.Vec3
 	speed     float32
+	// rotation parameters
+	// angle has to be in radian
+	angle float32
+	axis  mgl32.Vec3
 }
 
 func New(points, color [4]mgl32.Vec3, shader Shader) *Rectangle {
@@ -39,6 +44,8 @@ func New(points, color [4]mgl32.Vec3, shader Shader) *Rectangle {
 		points:    points,
 		direction: mgl32.Vec3{0, 0, 0},
 		speed:     0,
+		angle:     0,
+		axis:      mgl32.Vec3{0, 0, 0},
 	}
 }
 
@@ -178,8 +185,7 @@ func (r *Rectangle) buildVaoWithoutTexture() {
 func (r *Rectangle) Draw() {
 	r.shader.Use()
 	if !r.shader.HasTexture() {
-		MVP := mgl32.Ident4()
-		r.shader.SetUniformMat4("MVP", MVP)
+		r.shader.SetUniformMat4("MVP", r.modelTransformation())
 		r.drawWithoutTextures()
 	} else {
 		r.drawWithTextures()
@@ -195,14 +201,16 @@ func (r *Rectangle) drawWithoutTextures() {
 	r.shader.DrawTriangles(int32(len(r.vao.Get()) / 6))
 	r.shader.Close(1)
 }
+func (r *Rectangle) modelTransformation() mgl32.Mat4 {
+	return mgl32.HomogRotate3D(r.angle, r.axis)
+}
 
 // DrawWithUniforms is for drawing the rectangle to the screen. It setups the
 func (r *Rectangle) DrawWithUniforms(view, projection mgl32.Mat4) {
 	r.shader.Use()
 	r.shader.SetUniformMat4("view", view)
 	r.shader.SetUniformMat4("projection", projection)
-	M := mgl32.Ident4()
-	r.shader.SetUniformMat4("model", M)
+	r.shader.SetUniformMat4("model", r.modelTransformation())
 	if !r.shader.HasTexture() {
 		r.drawWithoutTextures()
 	} else {
