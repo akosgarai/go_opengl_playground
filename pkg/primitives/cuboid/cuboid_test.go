@@ -418,3 +418,10 @@ func TestSetPrecision(t *testing.T) {
 		t.Error("Invalid number of elements in the vao.")
 	}
 }
+
+func TestSetRotationAngle(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestSetRotationAxis(t *testing.T) {
+	t.Skip("Unimplemented")
+}

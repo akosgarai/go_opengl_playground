@@ -4,6 +4,7 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
+	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
@@ -12,10 +13,15 @@ type Cuboid struct {
 	shader rectangle.Shader
 
 	sides [6]*rectangle.Rectangle
+	// rotation parameters
+	// angle has to be in radian
+	angle float32
+	axis  mgl32.Vec3
 }
 
 func (c *Cuboid) Log() string {
 	logString := "Cuboid:\n"
+	logString += " - Rotation : Axis: Vector{" + trans.Vec3ToString(c.axis) + "}, angle: " + trans.Float32ToString(c.angle) + "}\n"
 	logString += " - Top:\n"
 	logString += c.sides[1].Log()
 	logString += " - Bottom:\n"
@@ -95,6 +101,8 @@ func New(bottom *rectangle.Rectangle, heightLength float32, shader rectangle.Sha
 		vao:    vao.NewVAO(),
 		shader: shader,
 		sides:  sides,
+		angle:  0,
+		axis:   mgl32.Vec3{0, 0, 0},
 	}
 }
 
@@ -145,6 +153,17 @@ func (c *Cuboid) SetPrecision(p int) {
 	for i := 0; i < 6; i++ {
 		c.sides[i].SetPrecision(p)
 	}
+}
+
+// SetAngle updates the angle.
+// Input has to be radian.
+func (c *Cuboid) SetAngle(angle float32) {
+	c.angle = angle
+}
+
+// SetAxis updates the axis.
+func (c *Cuboid) SetAxis(axis mgl32.Vec3) {
+	c.axis = axis
 }
 
 func (c *Cuboid) setupVao() {
@@ -200,12 +219,16 @@ func (c *Cuboid) drawWithoutTextures() {
 	c.shader.Close(1)
 }
 
+func (c *Cuboid) modelTransformation() mgl32.Mat4 {
+	return mgl32.HomogRotate3D(c.angle, c.axis)
+}
+
 // DrawWithUniforms is for drawing the rectangle to the screen. It setups the
 func (c *Cuboid) DrawWithUniforms(view, projection mgl32.Mat4) {
 	c.shader.Use()
 	c.shader.SetUniformMat4("view", view)
 	c.shader.SetUniformMat4("projection", projection)
-	M := mgl32.Ident4()
+	M := c.modelTransformation()
 	c.shader.SetUniformMat4("model", M)
 
 	if !c.shader.HasTexture() {
