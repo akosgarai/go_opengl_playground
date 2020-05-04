@@ -170,7 +170,7 @@ func NewTestShader(t *testing.T, validFragmentShaderContent, validVertexShaderCo
 		t.Fail()
 	}
 	if len(shader.textures) != 0 {
-		t.Error("Invalid shader length.")
+		t.Error("Invalid shader texture length.")
 		t.Fail()
 	}
 	return shader
@@ -526,6 +526,23 @@ func TestDrawPoints(t *testing.T) {
 	shader.DrawPoints(1)
 	shader.Close(2)
 }
+func TestDrawPointsLightColor(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightColor")
+	defer glfw.Terminate()
+	bufferData := []float32{0, 0, 0, 1, 1, 1, 5}
+	shader.BindBufferData(bufferData)
+	shader.BindVertexArray()
+	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
+	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
+	shader.VertexAttribPointer(uint32(2), int32(1), int32(7*4), 6*4)
+	shader.DrawPoints(1)
+	shader.Close(2)
+}
 func TestDrawTriangles(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping it in short mode")
@@ -533,6 +550,38 @@ func TestDrawTriangles(t *testing.T) {
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer glfw.Terminate()
+	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
+	shader.BindBufferData(bufferData)
+	shader.BindVertexArray()
+	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
+	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
+	shader.DrawTriangles(1)
+	shader.Close(1)
+}
+func TestDrawTrianglesLight(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightColor")
+	defer glfw.Terminate()
+	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
+	shader.BindBufferData(bufferData)
+	shader.BindVertexArray()
+	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
+	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
+	shader.DrawTriangles(1)
+	shader.Close(1)
+}
+func TestDrawTrianglesTextures(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	defer glfw.Terminate()
+	shader.AddTexture("transparent-image-for-texture-testing.jpg", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "textureOne")
 	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
 	shader.BindBufferData(bufferData)
 	shader.BindVertexArray()
@@ -655,5 +704,23 @@ func TestHasTexture(t *testing.T) {
 	shader.AddTexture("transparent-image-for-texture-testing.jpg", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "textureOne")
 	if !shader.HasTexture() {
 		t.Error("it has texture")
+	}
+}
+func TestUseLightColor(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	defer shader.Close(2)
+	defer glfw.Terminate()
+	lightColor := mgl32.Vec3{1, 1, 1}
+	lightName := "lightSourceName"
+	shader.UseLightColor(lightColor, lightName)
+	if shader.lightColorUniformName != lightName {
+		t.Error("Invalid light uniform name")
+	}
+	if shader.lightColor != lightColor {
+		t.Error("Invalid light color")
 	}
 }
