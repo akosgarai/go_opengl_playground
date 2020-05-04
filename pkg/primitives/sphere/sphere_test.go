@@ -6,6 +6,14 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+var (
+	DefaultRadius    = float32(2.0)
+	DefaultColor     = mgl32.Vec3{0, 0, 1}
+	DefaultCenter    = mgl32.Vec3{3, 3, 5}
+	DefaultSpeed     = float32(0.0)
+	DefaultDirection = mgl32.Vec3{0, 0, 0}
+)
+
 type testShader struct {
 }
 
@@ -27,119 +35,89 @@ func (t testShader) BindBufferData(d []float32) {
 var shader testShader
 
 func TestNew(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
-	sphere := New(center, color, radius, shader)
-	if sphere.center != center {
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
+	if sphere.center != DefaultCenter {
 		t.Error("Center mismatch")
 	}
-	if sphere.color != color {
+	if sphere.color != DefaultColor {
 		t.Error("Color mismatch")
 	}
-	if sphere.radius != radius {
+	if sphere.radius != DefaultRadius {
 		t.Error("Radius mismatch")
 	}
-	if sphere.speed != 0.0 {
+	if sphere.speed != DefaultSpeed {
 		t.Error("Speed should be 0")
 	}
-	if sphere.direction.X() != 0.0 || sphere.direction.Y() != 0.0 || sphere.direction.Z() != 0.0 {
+	if sphere.direction != DefaultDirection {
 		t.Error("Direction vector is not 0")
 	}
 }
 func TestLog(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
-	sphere := New(center, color, radius, shader)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	log := sphere.Log()
 	if len(log) < 10 {
 		t.Error("Log too short")
 	}
 }
 func TestSetPrecision(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	prec := 20
-	sphere := New(center, color, radius, shader)
 	sphere.SetPrecision(prec)
 	if sphere.precision != prec {
-		t.Error("Precision mismatch")
+		t.Errorf("Precision mismatch. instead of '%d', we have '%d'", prec, sphere.precision)
 	}
 
 }
 func TestSetCenter(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	newCenter := mgl32.Vec3{0, 0, 0}
-	sphere := New(center, color, radius, shader)
 	sphere.SetCenter(newCenter)
 	if sphere.center != newCenter {
 		t.Error("Center mismatch")
 	}
 }
 func TestGetCenter(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	newCenter := mgl32.Vec3{0, 0, 0}
-	sphere := New(center, color, radius, shader)
 	sphere.SetCenter(newCenter)
 	if sphere.GetCenter() != newCenter {
 		t.Error("Center mismatch")
 	}
 }
 func TestSetColor(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	newColor := mgl32.Vec3{1, 0, 0}
-	sphere := New(center, color, radius, shader)
 	sphere.SetColor(newColor)
 	if sphere.color != newColor {
 		t.Error("Color mismatch")
 	}
 }
 func TestGetColor(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	newColor := mgl32.Vec3{1, 0, 0}
-	sphere := New(center, color, radius, shader)
 	sphere.SetColor(newColor)
 	if sphere.GetColor() != newColor {
 		t.Error("Color mismatch")
 	}
 }
 func TestSetRadius(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	newRadius := float32(4.0)
-	sphere := New(center, color, radius, shader)
 	sphere.SetRadius(newRadius)
 	if sphere.radius != newRadius {
 		t.Error("Radius mismatch")
 	}
 }
 func TestGetRadius(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	newRadius := float32(4.0)
-	sphere := New(center, color, radius, shader)
 	sphere.SetRadius(newRadius)
 	if sphere.GetRadius() != newRadius {
 		t.Error("Radius mismatch")
 	}
 }
 func TestSetupVao(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
-	sphere := New(center, color, radius, shader)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	if len(sphere.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -149,10 +127,7 @@ func TestSetupVao(t *testing.T) {
 	}
 }
 func TestBuildVao(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
-	sphere := New(center, color, radius, shader)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	if len(sphere.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -162,10 +137,7 @@ func TestBuildVao(t *testing.T) {
 	}
 }
 func TestDrawWithUniforms(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
-	sphere := New(center, color, radius, shader)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	if len(sphere.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -175,10 +147,7 @@ func TestDrawWithUniforms(t *testing.T) {
 	}
 }
 func TestDraw(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
-	sphere := New(center, color, radius, shader)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	if len(sphere.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -188,45 +157,33 @@ func TestDraw(t *testing.T) {
 	}
 }
 func TestSetDirection(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	direction := mgl32.Vec3{1, 0, 0}
-	sphere := New(center, color, radius, shader)
 	sphere.SetDirection(direction)
 	if sphere.direction != direction {
 		t.Error("Direction mismatch")
 	}
 }
 func TestSetIndexDirection(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	direction := mgl32.Vec3{1, 0, 0}
-	sphere := New(center, color, radius, shader)
 	sphere.SetIndexDirection(0, direction[0])
 	if sphere.direction != direction {
 		t.Error("Direction mismatch")
 	}
 }
 func TestSetSpeed(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	speed := float32(5.0)
-	sphere := New(center, color, radius, shader)
 	sphere.SetSpeed(speed)
 	if sphere.speed != speed {
 		t.Error("Speed mismatch")
 	}
 }
 func TestUpdate(t *testing.T) {
-	center := mgl32.Vec3{3, 3, 5}
-	color := mgl32.Vec3{0, 0, 1}
-	radius := float32(2.0)
-	speed := float32(5.0)
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	direction := mgl32.Vec3{1, 0, 0}
-	sphere := New(center, color, radius, shader)
+	speed := float32(5.0)
 	sphere.SetSpeed(speed)
 	sphere.SetDirection(direction)
 	sphere.Update(10)
