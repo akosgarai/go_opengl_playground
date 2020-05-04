@@ -31,6 +31,8 @@ type testShader struct {
 
 func (t testShader) Use() {
 }
+func (t testShader) SetUniform3f(s string, f1, f2, f3 float32) {
+}
 func (t testShader) SetUniformMat4(s string, m mgl32.Mat4) {
 }
 func (t testShader) DrawTriangles(i int32) {
@@ -287,5 +289,68 @@ func TestSetRotationAxis(t *testing.T) {
 
 	if square.axis != axis {
 		t.Errorf("Mismatch in the axis")
+	}
+}
+func TestGetNormal(t *testing.T) {
+	shader.HasTextureValue = false
+	square := New(DefaultCoordinates, DefaultColors, shader)
+	normal := square.GetNormal()
+	expectedNormal := mgl32.Vec3{0, 0, 1}
+	if normal != expectedNormal {
+		t.Error("Invalid normal vector.")
+	}
+	testData := []struct {
+		coordinates    [4]mgl32.Vec3
+		expectedNormal mgl32.Vec3
+	}{
+		{[4]mgl32.Vec3{mgl32.Vec3{0, 0, 0}, mgl32.Vec3{1, 0, 0}, mgl32.Vec3{1, 1, 0}, mgl32.Vec3{0, 1, 0}}, mgl32.Vec3{0, 0, 1}},
+		{[4]mgl32.Vec3{mgl32.Vec3{-0.5, -1.5, -0.5}, mgl32.Vec3{-0.5, -1.5, 0.5}, mgl32.Vec3{0.5, -1.5, 0.5}, mgl32.Vec3{0.5, -1.5, -0.5}}, mgl32.Vec3{0, 1, 0}},
+	}
+
+	for _, item := range testData {
+		square = New(item.coordinates, DefaultColors, shader)
+		if square.GetNormal() != item.expectedNormal {
+			v1 := item.coordinates[1].Sub(item.coordinates[0])
+			v2 := item.coordinates[3].Sub(item.coordinates[0])
+			t.Log("v1")
+			t.Log(v1)
+			t.Log("v2")
+			t.Log(v2)
+			t.Log("v1.Cross(v2)")
+			t.Log(v1.Cross(v2))
+			t.Log("v1.Cross(v2).Normalize()")
+			t.Log(v1.Cross(v2).Normalize())
+			t.Log("(v1.Cross(v2)).Normalize()")
+			t.Log((v1.Cross(v2)).Normalize())
+			t.Log(square.GetNormal())
+			t.Log(item.expectedNormal)
+			t.Error("Invalid normals")
+		}
+	}
+}
+func TestDrawMode(t *testing.T) {
+	shader.HasTextureValue = false
+	square := New(DefaultCoordinates, DefaultColors, shader)
+	if square.drawMode != 0 {
+		t.Errorf("Invalid default draw mode. Instead of '0', we got '%d'", square.drawMode)
+	}
+	square.DrawMode(1)
+	if square.drawMode != 1 {
+		t.Errorf("Invalid  draw mode. Instead of '1', we got '%d'", square.drawMode)
+	}
+	square.DrawMode(2)
+	if square.drawMode != 1 {
+		t.Errorf("Invalid draw mode. Instead of '1', we got '%d'", square.drawMode)
+	}
+}
+func TestDrawWithLight(t *testing.T) {
+	square := New(DefaultCoordinates, DefaultColors, shader)
+	square.DrawMode(DRAW_MODE_LIGHT)
+	if len(square.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	square.DrawWithUniforms(mgl32.Ident4(), mgl32.Ident4())
+	if len(square.vao.Get()) != 36 {
+		t.Errorf("Vao should be 36 long. Instead of it, it's '%d'", len(square.vao.Get()))
 	}
 }
