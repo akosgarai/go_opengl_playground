@@ -706,3 +706,21 @@ func TestHasTexture(t *testing.T) {
 		t.Error("it has texture")
 	}
 }
+func TestUseLightColor(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	defer shader.Close(2)
+	defer glfw.Terminate()
+	lightColor := mgl32.Vec3{1, 1, 1}
+	lightName := "lightSourceName"
+	shader.UseLightColor(lightColor, lightName)
+	if shader.lightColorUniformName != lightName {
+		t.Error("Invalid light uniform name")
+	}
+	if shader.lightColor != lightColor {
+		t.Error("Invalid light color")
+	}
+}
