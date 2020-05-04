@@ -42,6 +42,14 @@ It updates the speed of the sides to the given one.
 
 It updates the precision of the sides to the given one.
 
+### SetAngle
+
+It updates the rotation angle (radian) of the cube.
+
+### SetAxis
+
+It updates the rotation axis of the cube.
+
 ### Draw
 
 It draws the cuboid (rectangles). Transformations are not applied.
