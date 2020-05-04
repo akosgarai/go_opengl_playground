@@ -105,10 +105,12 @@ func (t *texture) UnBind() {
 }
 
 type Shader struct {
-	shaderProgramId       uint32
-	textures              []texture
-	lightColor            mgl32.Vec3
-	lightColorUniformName string
+	shaderProgramId         uint32
+	textures                []texture
+	lightColor              mgl32.Vec3
+	lightColorUniformName   string
+	lightAmbientStrength    float32
+	lightAmbientUniformName string
 }
 
 // NewShader returns a Shader. It's inputs are the filenames of the shaders.
@@ -137,10 +139,12 @@ func NewShader(vertexShaderPath, fragmentShaderPath string) *Shader {
 	gl.LinkProgram(program)
 
 	return &Shader{
-		shaderProgramId:       program,
-		textures:              []texture{},
-		lightColorUniformName: "",
-		lightColor:            mgl32.Vec3{1, 1, 1},
+		shaderProgramId:         program,
+		textures:                []texture{},
+		lightColorUniformName:   "",
+		lightColor:              mgl32.Vec3{1, 1, 1},
+		lightAmbientStrength:    float32(1.0),
+		lightAmbientUniformName: "",
 	}
 }
 func (s *Shader) AddTexture(filePath string, wrapR, wrapS, minificationFilter, magnificationFilter int32, uniformName string) {
@@ -186,6 +190,10 @@ func (s *Shader) genTexture() uint32 {
 func (s *Shader) UseLightColor(color mgl32.Vec3, uniformName string) {
 	s.lightColor = color
 	s.lightColorUniformName = uniformName
+}
+func (s *Shader) SetLightAmbient(a float32, uniformName string) {
+	s.lightAmbientStrength = a
+	s.lightAmbientUniformName = uniformName
 }
 func (s *Shader) HasTexture() bool {
 	if len(s.textures) > 0 {
@@ -266,11 +274,19 @@ func (s *Shader) Close(numOfVertexAttributes int) {
 	gl.BindVertexArray(0)
 }
 
-// DrawPoints is the draw functions for points
-func (s *Shader) DrawPoints(numberOfPoints int32) {
+// Setup light related uniforms.
+func (s *Shader) lightHandler() {
 	if s.lightColorUniformName != "" {
 		s.SetUniform3f(s.lightColorUniformName, s.lightColor.X(), s.lightColor.Y(), s.lightColor.Z())
 	}
+	if s.lightAmbientUniformName != "" {
+		s.SetUniform1f(s.lightAmbientUniformName, s.lightAmbientStrength)
+	}
+}
+
+// DrawPoints is the draw functions for points
+func (s *Shader) DrawPoints(numberOfPoints int32) {
+	s.lightHandler()
 	gl.DrawArrays(gl.POINTS, 0, numberOfPoints)
 }
 
@@ -280,9 +296,7 @@ func (s *Shader) DrawTriangles(numberOfPoints int32) {
 		s.textures[index].Bind(textureMap(index))
 		gl.Uniform1i(s.getUniformLocation(s.textures[index].uniformName), int32(s.textures[index].texUnitId-gl.TEXTURE0))
 	}
-	if s.lightColorUniformName != "" {
-		s.SetUniform3f(s.lightColorUniformName, s.lightColor.X(), s.lightColor.Y(), s.lightColor.Z())
-	}
+	s.lightHandler()
 	gl.DrawArrays(gl.TRIANGLES, 0, numberOfPoints)
 }
 

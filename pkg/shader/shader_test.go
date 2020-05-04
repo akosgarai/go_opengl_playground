@@ -724,3 +724,44 @@ func TestUseLightColor(t *testing.T) {
 		t.Error("Invalid light color")
 	}
 }
+func TestSetLightAmbient(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	defer shader.Close(2)
+	defer glfw.Terminate()
+	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightSourceName")
+	ambientStrength := float32(0.5)
+	ambientUniformName := "ambientStrengthName"
+	shader.SetLightAmbient(ambientStrength, ambientUniformName)
+
+	if shader.lightAmbientStrength != ambientStrength {
+		t.Error("Invalid light ambient strength")
+	}
+	if shader.lightAmbientUniformName != ambientUniformName {
+		t.Error("Invalid light uniform name")
+	}
+}
+func TestDrawWithLightAmbient(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	defer shader.Close(2)
+	defer glfw.Terminate()
+	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightSourceName")
+	ambientStrength := float32(0.5)
+	ambientUniformName := "ambientStrengthName"
+	shader.SetLightAmbient(ambientStrength, ambientUniformName)
+	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
+	shader.BindBufferData(bufferData)
+	shader.BindVertexArray()
+	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
+	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
+	shader.DrawTriangles(1)
+	shader.Close(1)
+
+}
