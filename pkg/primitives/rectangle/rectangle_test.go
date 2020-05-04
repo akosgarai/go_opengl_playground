@@ -497,3 +497,10 @@ func TestSetPrecision(t *testing.T) {
 		t.Error("Mismatch in the precision")
 	}
 }
+
+func TestSetRotationAngle(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestSetRotationAxis(t *testing.T) {
+	t.Skip("Unimplemented")
+}
