@@ -31,6 +31,8 @@ func (t testShader) Use() {
 }
 func (t testShader) SetUniformMat4(s string, m mgl32.Mat4) {
 }
+func (t testShader) SetUniform3f(s string, f1, f2, f3 float32) {
+}
 func (t testShader) DrawTriangles(i int32) {
 }
 func (t testShader) Close(i int) {
@@ -298,5 +300,35 @@ func TestSetRotationAxis(t *testing.T) {
 	cube.SetAxis(axis)
 	if cube.axis != axis {
 		t.Error("Invalid axis")
+	}
+}
+func TestDrawMode(t *testing.T) {
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
+	cube := New(bottom, 1, shader)
+
+	if cube.drawMode != 0 {
+		t.Errorf("Invalid default draw mode. Instead of '0', we got '%d'", cube.drawMode)
+	}
+	cube.DrawMode(2) // should keep the original value
+	if cube.drawMode != 0 {
+		t.Errorf("Invalid default draw mode. Instead of '0', we got '%d'", cube.drawMode)
+	}
+	cube.DrawMode(1) // should update the original value
+	if cube.drawMode != 1 {
+		t.Errorf("Invalid default draw mode. Instead of '1', we got '%d'", cube.drawMode)
+	}
+}
+func TestDrawWithUniformsLight(t *testing.T) {
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
+	cube := New(bottom, 1, shader)
+	cube.DrawMode(1) // set light mode
+	if len(cube.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	cube.DrawWithUniforms(mgl32.Ident4(), mgl32.Ident4())
+	if len(cube.vao.Get()) != 36*6 {
+		t.Errorf("Invalid vao length. Instead of '216', we got '%d'", len(cube.vao.Get()))
 	}
 }
