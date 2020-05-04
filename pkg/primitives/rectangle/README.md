@@ -31,6 +31,14 @@ It updates the indexed direction of the rectangle to the given value.
 
 It updates the speed of the rectangle.
 
+### SetAngle
+
+It updates the rotation angle (radian) of the rectangle.
+
+### SetAxis
+
+It updates the rotation axis of the rectangle.
+
 ### Log
 
 The string representation of the current state of the object.

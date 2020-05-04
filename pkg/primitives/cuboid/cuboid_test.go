@@ -418,3 +418,41 @@ func TestSetPrecision(t *testing.T) {
 		t.Error("Invalid number of elements in the vao.")
 	}
 }
+
+func TestSetRotationAngle(t *testing.T) {
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	origColor := mgl32.Vec3{1, 0, 0}
+	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
+
+	var shader testShader
+	bottom := rectangle.New(points, colors, shader)
+	cube := New(bottom, 1, shader)
+	cube.SetAngle(float32(1.0))
+	if cube.angle != float32(1.0) {
+		t.Error("Invalid angle")
+	}
+}
+func TestSetRotationAxis(t *testing.T) {
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	origColor := mgl32.Vec3{1, 0, 0}
+	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
+
+	var shader testShader
+	bottom := rectangle.New(points, colors, shader)
+	cube := New(bottom, 1, shader)
+	axis := mgl32.Vec3{0, 1, 0}
+	cube.SetAxis(axis)
+	if cube.axis != axis {
+		t.Error("Invalid axis")
+	}
+}
