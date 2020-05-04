@@ -105,12 +105,14 @@ func (t *texture) UnBind() {
 }
 
 type Shader struct {
-	shaderProgramId         uint32
-	textures                []texture
-	lightColor              mgl32.Vec3
-	lightColorUniformName   string
-	lightAmbientStrength    float32
-	lightAmbientUniformName string
+	shaderProgramId          uint32
+	textures                 []texture
+	lightColor               mgl32.Vec3
+	lightColorUniformName    string
+	lightAmbientStrength     float32
+	lightAmbientUniformName  string
+	lightPosition            mgl32.Vec3
+	lightPositionUniformName string
 }
 
 // NewShader returns a Shader. It's inputs are the filenames of the shaders.
@@ -139,12 +141,14 @@ func NewShader(vertexShaderPath, fragmentShaderPath string) *Shader {
 	gl.LinkProgram(program)
 
 	return &Shader{
-		shaderProgramId:         program,
-		textures:                []texture{},
-		lightColorUniformName:   "",
-		lightColor:              mgl32.Vec3{1, 1, 1},
-		lightAmbientStrength:    float32(1.0),
-		lightAmbientUniformName: "",
+		shaderProgramId:          program,
+		textures:                 []texture{},
+		lightColorUniformName:    "",
+		lightColor:               mgl32.Vec3{1, 1, 1},
+		lightAmbientStrength:     float32(1.0),
+		lightAmbientUniformName:  "",
+		lightPositionUniformName: "",
+		lightPosition:            mgl32.Vec3{0, 0, 0},
 	}
 }
 func (s *Shader) AddTexture(filePath string, wrapR, wrapS, minificationFilter, magnificationFilter int32, uniformName string) {
@@ -190,6 +194,10 @@ func (s *Shader) genTexture() uint32 {
 func (s *Shader) UseLightColor(color mgl32.Vec3, uniformName string) {
 	s.lightColor = color
 	s.lightColorUniformName = uniformName
+}
+func (s *Shader) UseLightPosition(position mgl32.Vec3, uniformName string) {
+	s.lightPosition = position
+	s.lightPositionUniformName = uniformName
 }
 func (s *Shader) SetLightAmbient(a float32, uniformName string) {
 	s.lightAmbientStrength = a
@@ -281,6 +289,9 @@ func (s *Shader) lightHandler() {
 	}
 	if s.lightAmbientUniformName != "" {
 		s.SetUniform1f(s.lightAmbientUniformName, s.lightAmbientStrength)
+	}
+	if s.lightPositionUniformName != "" {
+		s.SetUniform3f(s.lightPositionUniformName, s.lightPosition.X(), s.lightPosition.Y(), s.lightPosition.Z())
 	}
 }
 

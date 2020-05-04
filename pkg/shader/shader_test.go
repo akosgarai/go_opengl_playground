@@ -765,3 +765,37 @@ func TestDrawWithLightAmbient(t *testing.T) {
 	shader.Close(1)
 
 }
+func TestUseLightPosition(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	defer shader.Close(2)
+	defer glfw.Terminate()
+	lightPosition := mgl32.Vec3{1, 1, 1}
+	lightPositionName := "lightPosName"
+	shader.UseLightPosition(lightPosition, lightPositionName)
+	if shader.lightPositionUniformName != lightPositionName {
+		t.Errorf("Invalid light uniform name. Instead of '%s', we have '%s'", lightPositionName, shader.lightPositionUniformName)
+	}
+	if shader.lightPosition != lightPosition {
+		t.Error("Invalid light Position")
+	}
+}
+func TestDrawTrianglesLightPosition(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	shader.UseLightPosition(mgl32.Vec3{1, 1, 1}, "lightPosition")
+	defer glfw.Terminate()
+	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
+	shader.BindBufferData(bufferData)
+	shader.BindVertexArray()
+	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
+	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
+	shader.DrawTriangles(1)
+	shader.Close(1)
+}
