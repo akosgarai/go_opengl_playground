@@ -196,6 +196,7 @@ func main() {
 	app.SetCamera(CreateCamera())
 
 	shaderProgram := shader.NewShader("examples/08-colors/vertexshader.vert", "examples/08-colors/fragmentshader.frag")
+	shaderProgram.UseLightColor(mgl32.Vec3{0, 1, 1}, "lightColor")
 	GenerateColoredCube(shaderProgram)
 	GenerateWhiteCube(shaderProgram)
 

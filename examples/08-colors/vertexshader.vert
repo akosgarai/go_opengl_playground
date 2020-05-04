@@ -5,7 +5,7 @@ smooth out vec4 vSmoothColor;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform vec3 lightColor
+uniform vec3 lightColor;
 void main()
 {
     vSmoothColor = vec4(lightColor*vColor,1);
