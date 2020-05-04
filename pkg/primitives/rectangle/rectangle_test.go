@@ -499,8 +499,48 @@ func TestSetPrecision(t *testing.T) {
 }
 
 func TestSetRotationAngle(t *testing.T) {
-	t.Skip("Unimplemented")
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	colors := [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+	var shader testShader
+	shader.HasTextureValue = false
+	square := New(points, colors, shader)
+	angle := float32(2.0)
+	square.SetAngle(angle)
+
+	if square.angle != angle {
+		t.Errorf("Mismatch in the angle instead of '%f', we have '%f'.", angle, square.angle)
+	}
 }
 func TestSetRotationAxis(t *testing.T) {
-	t.Skip("Unimplemented")
+	points := [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	colors := [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+	var shader testShader
+	shader.HasTextureValue = false
+	square := New(points, colors, shader)
+	axis := mgl32.Vec3{0, 1, 0}
+	square.SetAxis(axis)
+
+	if square.axis != axis {
+		t.Errorf("Mismatch in the axis")
+	}
 }

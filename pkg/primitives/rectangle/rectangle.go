@@ -102,6 +102,16 @@ func (r *Rectangle) SetPrecision(p int) {
 	r.precision = p
 }
 
+// SetAngle updates the angle.
+// Input has to be radian.
+func (r *Rectangle) SetAngle(angle float32) {
+	r.angle = angle
+}
+
+// SetAxis updates the axis.
+func (r *Rectangle) SetAxis(axis mgl32.Vec3) {
+	r.axis = axis
+}
 func (r *Rectangle) appendRectangleToVao(coordinates, colors [4]mgl32.Vec3) {
 	indicies := [6]int{0, 1, 2, 0, 2, 3}
 	if r.shader.HasTexture() {
