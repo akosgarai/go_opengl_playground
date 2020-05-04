@@ -8,6 +8,21 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 )
 
+var (
+	DefaultCoordinates = [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	DefaultColors = [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+)
+
 type testShader struct {
 	HasTextureValue bool
 }
@@ -30,21 +45,11 @@ func (t testShader) HasTexture() bool {
 	return t.HasTextureValue
 }
 
+var shader testShader
+
 func TestNew(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	cubeBottom := cube.sides[0].Coordinates()
 	cubeTop := cube.sides[1].Coordinates()
@@ -53,7 +58,7 @@ func TestNew(t *testing.T) {
 		cubeTopExpected[i] = cubeBottom[i].Add(mgl32.Vec3{0, 0, -1})
 	}
 	for i := 0; i < 4; i++ {
-		if cubeBottom[i] != points[i] {
+		if cubeBottom[i] != DefaultCoordinates[i] {
 			t.Error("Mismatch in the bottom coordinates")
 		}
 		if cubeTop[i] != cubeTopExpected[i] {
@@ -62,20 +67,8 @@ func TestNew(t *testing.T) {
 	}
 }
 func TestLog(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	log := cube.Log()
 	if len(log) < 10 {
@@ -83,20 +76,8 @@ func TestLog(t *testing.T) {
 	}
 }
 func TestSetColor(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	newColor := mgl32.Vec3{0, 1, 0}
 	newColors := [4]mgl32.Vec3{newColor, newColor, newColor, newColor}
@@ -108,20 +89,11 @@ func TestSetColor(t *testing.T) {
 	}
 }
 func TestSetIndexColor(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	newColor := mgl32.Vec3{1, 1, 0}
-	newColors := [4]mgl32.Vec3{origColor, newColor, origColor, newColor}
+	newColors := [4]mgl32.Vec3{DefaultColors[0], newColor, DefaultColors[2], newColor}
 	cube.SetIndexColor(1, newColor)
 	cube.SetIndexColor(3, newColor)
 	for i := 0; i < 6; i++ {
@@ -131,23 +103,14 @@ func TestSetIndexColor(t *testing.T) {
 	}
 }
 func TestSetSideColor(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	newColor := mgl32.Vec3{1, 1, 0}
 	newColors := [4]mgl32.Vec3{newColor, newColor, newColor, newColor}
 	cube.SetSideColor(5, newColor)
 	for i := 0; i < 5; i++ {
-		if cube.sides[i].Colors() != colors {
+		if cube.sides[i].Colors() != DefaultColors {
 			t.Error("Invalid side color update")
 		}
 	}
@@ -156,17 +119,8 @@ func TestSetSideColor(t *testing.T) {
 	}
 }
 func TestSetDirection(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	direction := mgl32.Vec3{0, 0, 1}
 	speed := float32(10.0)
@@ -184,17 +138,8 @@ func TestSetDirection(t *testing.T) {
 	}
 }
 func TestSetIndexDirection(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	speed := float32(10.0)
 	cube.SetIndexDirection(2, 1)
@@ -211,17 +156,8 @@ func TestSetIndexDirection(t *testing.T) {
 	}
 }
 func TestSetSpeed(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	direction := mgl32.Vec3{0, 0, 1}
 	speed := float32(10.0)
@@ -239,17 +175,8 @@ func TestSetSpeed(t *testing.T) {
 	}
 }
 func TestSetupVao(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	if len(cube.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
@@ -260,17 +187,8 @@ func TestSetupVao(t *testing.T) {
 	}
 }
 func TestBuildVaoWithoutTexture(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	if len(cube.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
@@ -281,17 +199,8 @@ func TestBuildVaoWithoutTexture(t *testing.T) {
 	}
 }
 func TestDraw(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	if len(cube.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
@@ -302,18 +211,8 @@ func TestDraw(t *testing.T) {
 	}
 }
 func TestDrawTexture(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
 	shader.HasTextureValue = true
-	bottom := rectangle.New(points, colors, shader)
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	if len(cube.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
@@ -324,18 +223,8 @@ func TestDrawTexture(t *testing.T) {
 	}
 }
 func TestDrawWithUniformsTexture(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
 	shader.HasTextureValue = true
-	bottom := rectangle.New(points, colors, shader)
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	if len(cube.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
@@ -346,17 +235,8 @@ func TestDrawWithUniformsTexture(t *testing.T) {
 	}
 }
 func TestDrawWithUniforms(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	if len(cube.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
@@ -367,17 +247,8 @@ func TestDrawWithUniforms(t *testing.T) {
 	}
 }
 func TestUpdate(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	direction := mgl32.Vec3{0, 0, 1}
 	speed := float32(10.0)
@@ -395,17 +266,8 @@ func TestUpdate(t *testing.T) {
 	}
 }
 func TestSetPrecision(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	cube.SetPrecision(1)
 	cube.setupVao()
@@ -420,17 +282,8 @@ func TestSetPrecision(t *testing.T) {
 }
 
 func TestSetRotationAngle(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	cube.SetAngle(float32(1.0))
 	if cube.angle != float32(1.0) {
@@ -438,17 +291,8 @@ func TestSetRotationAngle(t *testing.T) {
 	}
 }
 func TestSetRotationAxis(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	origColor := mgl32.Vec3{1, 0, 0}
-	colors := [4]mgl32.Vec3{origColor, origColor, origColor, origColor}
-
-	var shader testShader
-	bottom := rectangle.New(points, colors, shader)
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
 	cube := New(bottom, 1, shader)
 	axis := mgl32.Vec3{0, 1, 0}
 	cube.SetAxis(axis)

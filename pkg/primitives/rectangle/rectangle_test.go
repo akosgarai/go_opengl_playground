@@ -8,6 +8,23 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
+var (
+	DefaultCoordinates = [4]mgl32.Vec3{
+		mgl32.Vec3{0, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 1, 0},
+		mgl32.Vec3{0, 1, 0},
+	}
+	DefaultColors = [4]mgl32.Vec3{
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+		mgl32.Vec3{1, 0, 0},
+	}
+	DefaultSpeed     = float32(0.0)
+	DefaultDirection = mgl32.Vec3{0, 0, 0}
+)
+
 type testShader struct {
 	HasTextureValue bool
 }
@@ -29,73 +46,31 @@ func (t testShader) BindBufferData(d []float32) {
 func (t testShader) HasTexture() bool {
 	return t.HasTextureValue
 }
-func NewTestSquare() *Rectangle {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
-	shader.HasTextureValue = false
-	return New(points, colors, shader)
-}
+
+var shader testShader
 
 func TestNew(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = false
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 
-	if square.speed != 0.0 {
-		t.Error("Speed should be 0")
+	if square.speed != DefaultSpeed {
+		t.Errorf("Speed should be '%f, but it is '%f'.", DefaultSpeed, square.speed)
 	}
-	if square.direction.X() != 0.0 || square.direction.Y() != 0.0 || square.direction.Z() != 0.0 {
+	if square.direction != DefaultDirection {
 		t.Error("Direction vector is not 0")
 	}
 
-	for i := 0; i < 4; i++ {
-		if square.points[i] != points[i] {
-			t.Error("Mismatch in the coordinates")
-		}
-		if square.colors[i] != colors[i] {
-			t.Error("Mismatch in the colors")
-		}
+	if square.points != DefaultCoordinates {
+		t.Error("Mismatch in the coordinates")
 	}
+	if square.colors != DefaultColors {
+		t.Error("Mismatch in the colors")
+	}
+
 }
 func TestSetColor(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = false
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	newColor := mgl32.Vec3{1, 1, 0}
 	square.SetColor(newColor)
 
@@ -106,21 +81,8 @@ func TestSetColor(t *testing.T) {
 	}
 }
 func TestSetIndexColor(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = false
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	newColor := mgl32.Vec3{1, 1, 0}
 	square.SetIndexColor(0, newColor)
 
@@ -128,48 +90,22 @@ func TestSetIndexColor(t *testing.T) {
 		t.Error("Mismatch in the new color")
 	}
 	for i := 1; i < 4; i++ {
-		if square.colors[i] != colors[i] {
+		if square.colors[i] != DefaultColors[i] {
 			t.Error("Mismatch in the colors")
 		}
 	}
 }
 func TestLog(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = false
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	log := square.Log()
 	if len(log) < 10 {
 		t.Error("Log too short")
 	}
 }
 func TestSetupVao(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = false
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	if len(square.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -179,21 +115,8 @@ func TestSetupVao(t *testing.T) {
 	}
 }
 func TestBuildVaoWithoutTexture(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = false
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	if len(square.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -203,21 +126,8 @@ func TestBuildVaoWithoutTexture(t *testing.T) {
 	}
 }
 func TestBuildVaoWithTexture(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = true
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	if len(square.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -227,21 +137,8 @@ func TestBuildVaoWithTexture(t *testing.T) {
 	}
 }
 func TestDraw(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = false
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	if len(square.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -251,21 +148,8 @@ func TestDraw(t *testing.T) {
 	}
 }
 func TestDrawWithTexture(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = true
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	if len(square.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -275,21 +159,8 @@ func TestDrawWithTexture(t *testing.T) {
 	}
 }
 func TestDrawWithUniforms(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = false
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	if len(square.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -299,21 +170,8 @@ func TestDrawWithUniforms(t *testing.T) {
 	}
 }
 func TestDrawWithUniformsTextures(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = true
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	if len(square.vao.Get()) != 0 {
 		t.Error("Vao is not empty before the first setup.")
 	}
@@ -323,21 +181,8 @@ func TestDrawWithUniformsTextures(t *testing.T) {
 	}
 }
 func TestUpdate(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = false
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	square.SetDirection(mgl32.Vec3{1, 0, 0})
 	square.SetSpeed(1)
 	dt := 10.0
@@ -356,7 +201,8 @@ func TestUpdate(t *testing.T) {
 	}
 }
 func TestSetDirection(t *testing.T) {
-	square := NewTestSquare()
+	shader.HasTextureValue = false
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	newDirection := mgl32.Vec3{1, 1, 0}
 	square.SetDirection(newDirection)
 
@@ -365,7 +211,8 @@ func TestSetDirection(t *testing.T) {
 	}
 }
 func TestSetIndexDirection(t *testing.T) {
-	square := NewTestSquare()
+	shader.HasTextureValue = false
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	square.SetIndexDirection(0, 1)
 
 	if square.direction.X() != 1.0 || square.direction.Y() != 0.0 || square.direction.Z() != 0.0 {
@@ -373,7 +220,8 @@ func TestSetIndexDirection(t *testing.T) {
 	}
 }
 func TestSetSpeed(t *testing.T) {
-	square := NewTestSquare()
+	shader.HasTextureValue = false
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	square.SetSpeed(10)
 
 	if square.speed != 10.0 {
@@ -381,49 +229,24 @@ func TestSetSpeed(t *testing.T) {
 	}
 }
 func TestCoordinates(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = false
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	coords := square.Coordinates()
-	if coords != points {
+	if coords != DefaultCoordinates {
 		t.Error("Mismatch in coordinates")
 	}
 }
 func TestColors(t *testing.T) {
-	points := [4]mgl32.Vec3{
-		mgl32.Vec3{0, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-	colors := [4]mgl32.Vec3{
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-		mgl32.Vec3{1, 0, 0},
-	}
-	var shader testShader
 	shader.HasTextureValue = false
-	square := New(points, colors, shader)
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	cols := square.Colors()
-	if cols != colors {
+	if cols != DefaultColors {
 		t.Error("Mismatch in colors")
 	}
 }
 func TestSetupExternalVao(t *testing.T) {
-	square := NewTestSquare()
+	shader.HasTextureValue = false
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	if len(square.vao.Get()) != 0 {
 		t.Error("VAO should be empty")
 	}
@@ -436,7 +259,8 @@ func TestSetupExternalVao(t *testing.T) {
 	}
 }
 func TestSetPrecision(t *testing.T) {
-	square := NewTestSquare()
+	shader.HasTextureValue = false
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	newPrecision := 100
 	square.SetPrecision(newPrecision)
 
@@ -446,7 +270,8 @@ func TestSetPrecision(t *testing.T) {
 }
 
 func TestSetRotationAngle(t *testing.T) {
-	square := NewTestSquare()
+	shader.HasTextureValue = false
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	angle := float32(2.0)
 	square.SetAngle(angle)
 
@@ -455,7 +280,8 @@ func TestSetRotationAngle(t *testing.T) {
 	}
 }
 func TestSetRotationAxis(t *testing.T) {
-	square := NewTestSquare()
+	shader.HasTextureValue = false
+	square := New(DefaultCoordinates, DefaultColors, shader)
 	axis := mgl32.Vec3{0, 1, 0}
 	square.SetAxis(axis)
 
