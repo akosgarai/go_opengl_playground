@@ -26,6 +26,7 @@ type Camera interface {
 	Strafe(float32)
 	Lift(float32)
 	UpdateDirection(float32, float32)
+	GetPosition() mgl32.Vec3
 }
 
 type Application struct {
