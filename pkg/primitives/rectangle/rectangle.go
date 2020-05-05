@@ -16,6 +16,7 @@ type Shader interface {
 	Use()
 	SetUniformMat4(string, mgl32.Mat4)
 	SetUniform3f(string, float32, float32, float32)
+	SetUniform1f(string, float32)
 	DrawTriangles(int32)
 	Close(int)
 	VertexAttribPointer(uint32, int32, int32, int)

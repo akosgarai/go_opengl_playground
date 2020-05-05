@@ -31,6 +31,8 @@ type testShader struct {
 
 func (t testShader) Use() {
 }
+func (t testShader) SetUniform1f(s string, f1 float32) {
+}
 func (t testShader) SetUniform3f(s string, f1, f2, f3 float32) {
 }
 func (t testShader) SetUniformMat4(s string, m mgl32.Mat4) {
