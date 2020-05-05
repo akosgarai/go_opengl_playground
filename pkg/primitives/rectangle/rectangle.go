@@ -7,9 +7,15 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
+const (
+	DRAW_MODE_COLOR = 0
+	DRAW_MODE_LIGHT = 1
+)
+
 type Shader interface {
 	Use()
 	SetUniformMat4(string, mgl32.Mat4)
+	SetUniform3f(string, float32, float32, float32)
 	DrawTriangles(int32)
 	Close(int)
 	VertexAttribPointer(uint32, int32, int32, int)
@@ -33,6 +39,12 @@ type Rectangle struct {
 	// angle has to be in radian
 	angle float32
 	axis  mgl32.Vec3
+	// for the lighting stuff we have to distinguse the need of the color or the normal vector.
+	// it also means, that we need to know the normal vector of the rectangle.-> GetNormal() function.
+	// drawMode map:
+	// 0 - normal draw with colors
+	// 1 - draw with normal vectors.
+	drawMode int
 }
 
 func New(points, color [4]mgl32.Vec3, shader Shader) *Rectangle {
@@ -46,6 +58,7 @@ func New(points, color [4]mgl32.Vec3, shader Shader) *Rectangle {
 		speed:     0,
 		angle:     0,
 		axis:      mgl32.Vec3{0, 0, 0},
+		drawMode:  DRAW_MODE_COLOR,
 	}
 }
 
@@ -66,7 +79,9 @@ func (r *Rectangle) Log() string {
 	logString += " - B : Coordinate: Vector{" + trans.Vec3ToString(r.points[1]) + "}, color: Vector{" + trans.Vec3ToString(r.colors[1]) + "}\n"
 	logString += " - C : Coordinate: Vector{" + trans.Vec3ToString(r.points[2]) + "}, color: Vector{" + trans.Vec3ToString(r.colors[2]) + "}\n"
 	logString += " - D : Coordinate: Vector{" + trans.Vec3ToString(r.points[3]) + "}, color: Vector{" + trans.Vec3ToString(r.colors[3]) + "}\n"
+	logString += " - Normal : Coordinate: Vector{" + trans.Vec3ToString(r.axis) + "}, DrawMode: " + trans.IntegerToString(r.drawMode) + "\n"
 	logString += " - Movement : Direction: Vector{" + trans.Vec3ToString(r.direction) + "}, speed: " + trans.Float32ToString(r.speed) + "}\n"
+	logString += " - Rotation : Axis: Vector{" + trans.Vec3ToString(r.axis) + "}, angle: " + trans.Float32ToString(r.angle) + "}\n"
 	return logString
 }
 
@@ -112,7 +127,7 @@ func (r *Rectangle) SetAngle(angle float32) {
 func (r *Rectangle) SetAxis(axis mgl32.Vec3) {
 	r.axis = axis
 }
-func (r *Rectangle) appendRectangleToVao(coordinates, colors [4]mgl32.Vec3) {
+func (r *Rectangle) appendRectangleToVao(coordinates, data2 [4]mgl32.Vec3) {
 	indicies := [6]int{0, 1, 2, 0, 2, 3}
 	if r.shader.HasTexture() {
 		textureCoords := [4]mgl32.Vec2{
@@ -122,11 +137,11 @@ func (r *Rectangle) appendRectangleToVao(coordinates, colors [4]mgl32.Vec3) {
 			{0.0, 0.0},
 		}
 		for i := 0; i < 6; i++ {
-			r.vao.AppendTextureVectors(coordinates[indicies[i]], colors[indicies[i]], textureCoords[indicies[i]])
+			r.vao.AppendTextureVectors(coordinates[indicies[i]], data2[indicies[i]], textureCoords[indicies[i]])
 		}
 	} else {
 		for i := 0; i < 6; i++ {
-			r.vao.AppendVectors(coordinates[indicies[i]], colors[indicies[i]])
+			r.vao.AppendVectors(coordinates[indicies[i]], data2[indicies[i]])
 		}
 	}
 }
@@ -149,7 +164,12 @@ func (r *Rectangle) insertEverythingToVao() {
 			d := r.points[0].Add(
 				verticalStep.Mul(float32(verticalLoopIndex + 1))).Add(
 				horisontalStep.Mul(float32(horisontalLoopIndex)))
-			r.appendRectangleToVao([4]mgl32.Vec3{a, b, c, d}, r.colors)
+			if r.drawMode == DRAW_MODE_COLOR {
+				r.appendRectangleToVao([4]mgl32.Vec3{a, b, c, d}, r.colors)
+			} else if r.drawMode == DRAW_MODE_LIGHT {
+				normals := [4]mgl32.Vec3{r.GetNormal(), r.GetNormal(), r.GetNormal(), r.GetNormal()}
+				r.appendRectangleToVao([4]mgl32.Vec3{a, b, c, d}, normals)
+			}
 		}
 	}
 }
@@ -235,5 +255,19 @@ func (r *Rectangle) Update(dt float64) {
 	}
 	for i := 0; i < 4; i++ {
 		r.points[i] = (r.points[i]).Add(motionVector)
+	}
+}
+
+// GetNormal returns the normal vector of the square.
+func (r *Rectangle) GetNormal() mgl32.Vec3 {
+	v1 := r.points[1].Sub(r.points[0])
+	v2 := r.points[3].Sub(r.points[0])
+	return v1.Cross(v2).Normalize()
+}
+
+// DrawMode updates the draw mode after validation. If it fails, it keeps the original value.
+func (s *Rectangle) DrawMode(mode int) {
+	if mode == DRAW_MODE_COLOR || mode == DRAW_MODE_LIGHT {
+		s.drawMode = mode
 	}
 }

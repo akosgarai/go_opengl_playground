@@ -8,6 +8,11 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
+const (
+	DRAW_MODE_COLOR = 0
+	DRAW_MODE_LIGHT = 1
+)
+
 type Cuboid struct {
 	vao    *vao.VAO
 	shader rectangle.Shader
@@ -15,13 +20,17 @@ type Cuboid struct {
 	sides [6]*rectangle.Rectangle
 	// rotation parameters
 	// angle has to be in radian
-	angle float32
-	axis  mgl32.Vec3
+	angle    float32
+	axis     mgl32.Vec3
+	drawMode int
+
+	color mgl32.Vec3
 }
 
 func (c *Cuboid) Log() string {
 	logString := "Cuboid:\n"
 	logString += " - Rotation : Axis: Vector{" + trans.Vec3ToString(c.axis) + "}, angle: " + trans.Float32ToString(c.angle) + "}\n"
+	logString += " - Color: Vector{" + trans.Vec3ToString(c.color) + "}, DrawMode: " + trans.IntegerToString(c.drawMode) + "\n"
 	logString += " - Top:\n"
 	logString += c.sides[1].Log()
 	logString += " - Bottom:\n"
@@ -98,16 +107,19 @@ func New(bottom *rectangle.Rectangle, heightLength float32, shader rectangle.Sha
 	sides[5] = right
 
 	return &Cuboid{
-		vao:    vao.NewVAO(),
-		shader: shader,
-		sides:  sides,
-		angle:  0,
-		axis:   mgl32.Vec3{0, 0, 0},
+		vao:      vao.NewVAO(),
+		shader:   shader,
+		sides:    sides,
+		angle:    0,
+		axis:     mgl32.Vec3{0, 0, 0},
+		drawMode: DRAW_MODE_COLOR,
+		color:    (bottom.Colors())[0],
 	}
 }
 
 // SetColor updates every color with the given one.
 func (c *Cuboid) SetColor(color mgl32.Vec3) {
+	c.color = color
 	for i := 0; i < 6; i++ {
 		c.sides[i].SetColor(color)
 	}
@@ -202,6 +214,7 @@ func (c *Cuboid) buildVaoWithoutTexture() {
 func (c *Cuboid) Draw() {
 	c.shader.Use()
 
+	c.setupColorUniform()
 	if !c.shader.HasTexture() {
 		c.drawWithoutTextures()
 	} else {
@@ -222,6 +235,11 @@ func (c *Cuboid) drawWithoutTextures() {
 func (c *Cuboid) modelTransformation() mgl32.Mat4 {
 	return mgl32.HomogRotate3D(c.angle, c.axis)
 }
+func (c *Cuboid) setupColorUniform() {
+	if c.drawMode == DRAW_MODE_LIGHT {
+		c.shader.SetUniform3f("objectColor", c.color.X(), c.color.Y(), c.color.Z())
+	}
+}
 
 // DrawWithUniforms is for drawing the rectangle to the screen. It setups the
 func (c *Cuboid) DrawWithUniforms(view, projection mgl32.Mat4) {
@@ -230,6 +248,8 @@ func (c *Cuboid) DrawWithUniforms(view, projection mgl32.Mat4) {
 	c.shader.SetUniformMat4("projection", projection)
 	M := c.modelTransformation()
 	c.shader.SetUniformMat4("model", M)
+
+	c.setupColorUniform()
 
 	if !c.shader.HasTexture() {
 		c.drawWithoutTextures()
@@ -242,5 +262,16 @@ func (c *Cuboid) DrawWithUniforms(view, projection mgl32.Mat4) {
 func (c *Cuboid) Update(dt float64) {
 	for i := 0; i < 6; i++ {
 		c.sides[i].Update(dt)
+	}
+}
+
+// DrawMode updates the draw mode after validation. If it fails, it keeps the original value.
+func (c *Cuboid) DrawMode(mode int) {
+	if mode != DRAW_MODE_COLOR && mode != DRAW_MODE_LIGHT {
+		return
+	}
+	c.drawMode = mode
+	for i := 0; i < 6; i++ {
+		c.sides[i].DrawMode(mode)
 	}
 }

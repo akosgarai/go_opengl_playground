@@ -48,6 +48,9 @@ func (cm CameraMock) Lift(float32) {
 }
 func (cm CameraMock) UpdateDirection(float32, float32) {
 }
+func (cm CameraMock) GetPosition() mgl32.Vec3 {
+	return mgl32.Vec3{0, 0, 0}
+}
 
 var cm CameraMock
 

@@ -128,3 +128,6 @@ func (c *Camera) UpdateDirection(amountX, amountY float32) {
 	c.yaw = float32(math.Mod(float64(c.yaw+amountX), 360))
 	c.updateVectors()
 }
+func (c *Camera) GetPosition() mgl32.Vec3 {
+	return c.cameraPosition
+}
