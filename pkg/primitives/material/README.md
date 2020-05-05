@@ -1,7 +1,10 @@
 # Materials
 
 This package tries to implement the base needs of the following tutorial: https://learnopengl.com/Lighting/Materials
-For further developments, this [page](http://devernay.free.fr/cours/opengl/materials.html) contains the setup for materials. It might worth to predefine them as variables.
+
+## Defined materials.
+
+This [page](http://devernay.free.fr/cours/opengl/materials.html) contains the setup for materials. I made the named materials based on this document.
 
 ## The math behind it
 
