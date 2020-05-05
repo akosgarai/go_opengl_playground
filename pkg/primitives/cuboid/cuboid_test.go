@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-gl/mathgl/mgl32"
 
+	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 )
 
@@ -30,6 +31,8 @@ type testShader struct {
 func (t testShader) Use() {
 }
 func (t testShader) SetUniformMat4(s string, m mgl32.Mat4) {
+}
+func (t testShader) SetUniform1f(s string, f1 float32) {
 }
 func (t testShader) SetUniform3f(s string, f1, f2, f3 float32) {
 }
@@ -75,6 +78,15 @@ func TestLog(t *testing.T) {
 	log := cube.Log()
 	if len(log) < 10 {
 		t.Error("Log too short")
+	}
+}
+func TestSetMaterial(t *testing.T) {
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
+	cube := New(bottom, 1, shader)
+	cube.SetMaterial(material.Gold)
+	if cube.material != material.Gold {
+		t.Error("Invalid material")
 	}
 }
 func TestSetColor(t *testing.T) {

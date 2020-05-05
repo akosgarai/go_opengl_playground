@@ -3,6 +3,7 @@ package cuboid
 import (
 	"github.com/go-gl/mathgl/mgl32"
 
+	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/vao"
@@ -24,13 +25,13 @@ type Cuboid struct {
 	axis     mgl32.Vec3
 	drawMode int
 
-	color mgl32.Vec3
+	material *material.Material
 }
 
 func (c *Cuboid) Log() string {
 	logString := "Cuboid:\n"
-	logString += " - Rotation : Axis: Vector{" + trans.Vec3ToString(c.axis) + "}, angle: " + trans.Float32ToString(c.angle) + "}\n"
-	logString += " - Color: Vector{" + trans.Vec3ToString(c.color) + "}, DrawMode: " + trans.IntegerToString(c.drawMode) + "\n"
+	logString += " - Rotation : Axis: Vector{" + trans.Vec3ToString(c.axis) + "}, angle: " + trans.Float32ToString(c.angle) + "}, DrawMode: " + trans.IntegerToString(c.drawMode) + "\n"
+	logString += " - " + c.material.Log() + "\n"
 	logString += " - Top:\n"
 	logString += c.sides[1].Log()
 	logString += " - Bottom:\n"
@@ -113,13 +114,17 @@ func New(bottom *rectangle.Rectangle, heightLength float32, shader rectangle.Sha
 		angle:    0,
 		axis:     mgl32.Vec3{0, 0, 0},
 		drawMode: DRAW_MODE_COLOR,
-		color:    (bottom.Colors())[0],
+		material: material.New((bottom.Colors())[0], (bottom.Colors())[0], (bottom.Colors())[0], 36.0),
 	}
+}
+
+// SetMaterial updates the material of the cuboid.
+func (c *Cuboid) SetMaterial(mat *material.Material) {
+	c.material = mat
 }
 
 // SetColor updates every color with the given one.
 func (c *Cuboid) SetColor(color mgl32.Vec3) {
-	c.color = color
 	for i := 0; i < 6; i++ {
 		c.sides[i].SetColor(color)
 	}
@@ -237,7 +242,14 @@ func (c *Cuboid) modelTransformation() mgl32.Mat4 {
 }
 func (c *Cuboid) setupColorUniform() {
 	if c.drawMode == DRAW_MODE_LIGHT {
-		c.shader.SetUniform3f("objectColor", c.color.X(), c.color.Y(), c.color.Z())
+		diffuse := c.material.GetDiffuse()
+		ambient := c.material.GetAmbient()
+		specular := c.material.GetSpecular()
+		shininess := c.material.GetShininess()
+		c.shader.SetUniform3f("material.diffuse", diffuse.X(), diffuse.Y(), diffuse.Z())
+		c.shader.SetUniform3f("material.ambient", ambient.X(), ambient.Y(), ambient.Z())
+		c.shader.SetUniform3f("material.specular", specular.X(), specular.Y(), specular.Z())
+		c.shader.SetUniform1f("material.shininess", shininess)
 	}
 }
 
