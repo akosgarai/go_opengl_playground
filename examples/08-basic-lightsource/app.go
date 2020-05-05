@@ -7,6 +7,8 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -77,6 +79,8 @@ func GenerateWhiteCube(shaderProgram *shader.Shader) {
 	}
 	bottomRect := rectangle.New(whiteBottomCoordinates, whiteBottomColor, shaderProgram)
 	cube := cuboid.New(bottomRect, 1.0, shaderProgram)
+	mat := material.New(mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, 36.0)
+	cube.SetMaterial(mat)
 	cube.DrawMode(cuboid.DRAW_MODE_LIGHT)
 	app.AddItem(cube)
 }
@@ -97,6 +101,8 @@ func GenerateColoredCube(shaderProgram *shader.Shader) {
 	}
 	bottomRect := rectangle.New(coloredBottomCoordinates, coloredBottomColor, shaderProgram)
 	cube := cuboid.New(bottomRect, 1.0, shaderProgram)
+	mat := material.New(mgl32.Vec3{0.0, 0.3, 0.3}, mgl32.Vec3{0, 1, 1}, mgl32.Vec3{0, 1, 1}, 36.0)
+	cube.SetMaterial(mat)
 	cube.DrawMode(cuboid.DRAW_MODE_LIGHT)
 	app.AddItem(cube)
 }
@@ -186,17 +192,12 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 
+	lightSource := light.New(mgl32.Vec3{-3, 0, -3}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1})
 	shaderProgramColored := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
-	shaderProgramColored.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightColor")
-	shaderProgramColored.SetLightAmbient(0.3, "ambientStrength")
-	shaderProgramColored.SetLightSpecular(0.5, "specularStrength")
-	shaderProgramColored.UseLightPosition(mgl32.Vec3{-3, 0, -3}, "lightPosition")
+	shaderProgramColored.SetLightSource(lightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
 	GenerateColoredCube(shaderProgramColored)
 	shaderProgramWhite := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
-	shaderProgramWhite.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightColor")
-	shaderProgramWhite.SetLightAmbient(1.0, "ambientStrength")
-	shaderProgramWhite.SetLightSpecular(1.0, "specularStrength")
-	shaderProgramWhite.UseLightPosition(mgl32.Vec3{-3, 0, -3}, "lightPosition")
+	shaderProgramWhite.SetLightSource(lightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
 	GenerateWhiteCube(shaderProgramWhite)
 
 	gl.Enable(gl.DEPTH_TEST)
