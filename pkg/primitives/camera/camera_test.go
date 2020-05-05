@@ -33,6 +33,9 @@ func TestNewCamera(t *testing.T) {
 	if cam.cameraPosition != DefaultCameraPosition {
 		t.Errorf("Invalid position")
 	}
+	if cam.GetPosition() != DefaultCameraPosition {
+		t.Errorf("Invalid position")
+	}
 	if cam.worldUp != WorldUp {
 		t.Errorf("Invalid worldUp")
 	}
@@ -64,6 +67,9 @@ func TestWalk(t *testing.T) {
 	if cam.cameraPosition != expectedPos {
 		t.Error("Invalid movement")
 	}
+	if cam.GetPosition() != expectedPos {
+		t.Errorf("Invalid position")
+	}
 	if cam.cameraFrontDirection != DefaultFront {
 		t.Error("Invalid front direction")
 	}
@@ -84,6 +90,9 @@ func TestStrafe(t *testing.T) {
 	if cam.cameraPosition != expectedPos {
 		t.Error("Invalid movement")
 	}
+	if cam.GetPosition() != expectedPos {
+		t.Errorf("Invalid position")
+	}
 	if cam.cameraFrontDirection != DefaultFront {
 		t.Error("Invalid front direction")
 	}
@@ -103,6 +112,9 @@ func TestLift(t *testing.T) {
 	expectedPos := mgl32.Vec3{0, -2, 0}
 	if cam.cameraPosition != expectedPos {
 		t.Error("Invalid movement")
+	}
+	if cam.GetPosition() != expectedPos {
+		t.Errorf("Invalid position")
 	}
 	if cam.cameraFrontDirection != DefaultFront {
 		t.Error("Invalid front direction")
@@ -146,6 +158,9 @@ func TestUpdateDirection(t *testing.T) {
 	cam.UpdateDirection(0, 0)
 	if cam.cameraPosition != DefaultCameraPosition {
 		t.Error("Invalid movement")
+	}
+	if cam.GetPosition() != DefaultCameraPosition {
+		t.Errorf("Invalid position")
 	}
 	if cam.cameraFrontDirection != DefaultFront {
 		t.Error("Invalid front direction")
