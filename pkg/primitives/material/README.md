@@ -62,7 +62,7 @@ Calculating this is also fun. We need to know some further stuff for the calcula
 
 ```
 viewDirection = normalize(viewPosition - lightPosition) // The light is coming from the lamp to the camera (eye)
-viewDir = reflect(-lightDirection, norm) // The calculation of the reflection direction
+reflectionDirection = reflect(-lightDirection, norm) // The calculation of the reflection direction
 specMult = pow(max(dot(viewDirection, reflectionDirection), 0.0), material.shininess); // the dot product of the view direction and reflection direction, but it can't be negative, and it is powered to the shininess.
 specularColorComponent = lightColor * (specMult * material.specular)
 ```
