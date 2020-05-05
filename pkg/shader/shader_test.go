@@ -799,3 +799,86 @@ func TestDrawTrianglesLightPosition(t *testing.T) {
 	shader.DrawTriangles(1)
 	shader.Close(1)
 }
+func TestSetViewPosition(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	defer shader.Close(2)
+	defer glfw.Terminate()
+	viewPosition := mgl32.Vec3{1, 1, 1}
+	viewPositionName := "viewPosName"
+	shader.SetViewPosition(viewPosition, viewPositionName)
+	if shader.viewPositionUniformName != viewPositionName {
+		t.Errorf("Invalid view position uniform name. Instead of '%s', we have '%s'", viewPositionName, shader.viewPositionUniformName)
+	}
+	if shader.viewPosition != viewPosition {
+		t.Error("Invalid view Position")
+	}
+}
+func TestSetLightSpecular(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	defer shader.Close(2)
+	defer glfw.Terminate()
+	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightSourceName")
+	specularStrength := float32(0.5)
+	specularUniformName := "specularStrengthName"
+	shader.SetLightSpecular(specularStrength, specularUniformName)
+
+	if shader.lightSpecularStrength != specularStrength {
+		t.Error("Invalid light specular strength")
+	}
+	if shader.lightSpecularUniformName != specularUniformName {
+		t.Error("Invalid light uniform name")
+	}
+}
+func TestDrawWithLightSpecular(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	defer shader.Close(2)
+	defer glfw.Terminate()
+	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightSourceName")
+	specularStrength := float32(0.5)
+	specularUniformName := "specularStrengthName"
+	shader.SetLightSpecular(specularStrength, specularUniformName)
+	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
+	shader.BindBufferData(bufferData)
+	shader.BindVertexArray()
+	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
+	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
+	shader.DrawTriangles(1)
+	shader.Close(1)
+
+}
+func TestDrawWithLightViewPosition(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	defer shader.Close(2)
+	defer glfw.Terminate()
+	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightSourceName")
+	specularStrength := float32(0.5)
+	specularUniformName := "specularStrengthName"
+	shader.SetLightSpecular(specularStrength, specularUniformName)
+	viewPosition := mgl32.Vec3{1, 1, 1}
+	viewPositionName := "viewPosName"
+	shader.SetViewPosition(viewPosition, viewPositionName)
+	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
+	shader.BindBufferData(bufferData)
+	shader.BindVertexArray()
+	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
+	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
+	shader.DrawTriangles(1)
+	shader.Close(1)
+
+}

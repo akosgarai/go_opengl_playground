@@ -113,6 +113,10 @@ type Shader struct {
 	lightAmbientUniformName  string
 	lightPosition            mgl32.Vec3
 	lightPositionUniformName string
+	lightSpecularStrength    float32
+	lightSpecularUniformName string
+	viewPosition             mgl32.Vec3
+	viewPositionUniformName  string
 }
 
 // NewShader returns a Shader. It's inputs are the filenames of the shaders.
@@ -149,6 +153,11 @@ func NewShader(vertexShaderPath, fragmentShaderPath string) *Shader {
 		lightAmbientUniformName:  "",
 		lightPositionUniformName: "",
 		lightPosition:            mgl32.Vec3{0, 0, 0},
+		lightSpecularStrength:    float32(0.5),
+		lightSpecularUniformName: "",
+
+		viewPosition:            mgl32.Vec3{0, 0, 0},
+		viewPositionUniformName: "",
 	}
 }
 func (s *Shader) AddTexture(filePath string, wrapR, wrapS, minificationFilter, magnificationFilter int32, uniformName string) {
@@ -202,6 +211,14 @@ func (s *Shader) UseLightPosition(position mgl32.Vec3, uniformName string) {
 func (s *Shader) SetLightAmbient(a float32, uniformName string) {
 	s.lightAmbientStrength = a
 	s.lightAmbientUniformName = uniformName
+}
+func (s *Shader) SetViewPosition(position mgl32.Vec3, uniformName string) {
+	s.viewPosition = position
+	s.viewPositionUniformName = uniformName
+}
+func (s *Shader) SetLightSpecular(spec float32, uniformName string) {
+	s.lightSpecularStrength = spec
+	s.lightSpecularUniformName = uniformName
 }
 func (s *Shader) HasTexture() bool {
 	if len(s.textures) > 0 {
@@ -292,6 +309,12 @@ func (s *Shader) lightHandler() {
 	}
 	if s.lightPositionUniformName != "" {
 		s.SetUniform3f(s.lightPositionUniformName, s.lightPosition.X(), s.lightPosition.Y(), s.lightPosition.Z())
+	}
+	if s.lightSpecularUniformName != "" {
+		s.SetUniform1f(s.lightSpecularUniformName, s.lightSpecularStrength)
+	}
+	if s.viewPositionUniformName != "" {
+		s.SetUniform3f(s.viewPositionUniformName, s.viewPosition.X(), s.viewPosition.Y(), s.viewPosition.Z())
 	}
 }
 
