@@ -22,7 +22,7 @@ import (
 const (
 	windowWidth  = 800
 	windowHeight = 800
-	windowTitle  = "Example - material light"
+	windowTitle  = "Example - material light - with rotation"
 
 	FORWARD  = glfw.KeyW // Go forward
 	BACKWARD = glfw.KeyS // Go backward
@@ -101,8 +101,7 @@ func GenerateColoredCube(shaderProgram *shader.Shader) {
 	}
 	bottomRect := rectangle.New(coloredBottomCoordinates, coloredBottomColor, shaderProgram)
 	cube := cuboid.New(bottomRect, 1.0, shaderProgram)
-	mat := material.New(mgl32.Vec3{0.0, 0.3, 0.3}, mgl32.Vec3{0, 1, 1}, mgl32.Vec3{0, 1, 1}, 36.0)
-	cube.SetMaterial(mat)
+	cube.SetMaterial(material.Jade)
 	cube.DrawMode(cuboid.DRAW_MODE_LIGHT)
 	app.AddItem(cube)
 }
