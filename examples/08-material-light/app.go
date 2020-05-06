@@ -45,7 +45,7 @@ var (
 	cameraDistance  = 0.1
 	LightSource     *light.Light
 	LightSourceCube *cuboid.Cuboid
-	MaterialCube    *cuboid.Cuboid
+	JadeCube        *cuboid.Cuboid
 
 	InitialCenterPointLight = mgl32.Vec3{-3, 0, -3}
 	CenterPointObject       = mgl32.Vec3{0, 0, 0}
@@ -90,33 +90,61 @@ func GenerateWhiteCube(shaderProgram *shader.Shader) {
 	mat := material.New(mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, 144.0)
 	LightSourceCube.SetMaterial(mat)
 	LightSourceCube.SetDirection((mgl32.Vec3{9, 0, -3}).Normalize())
-	distance := (LightSourceCube.GetCenterPoint().Sub(MaterialCube.GetCenterPoint())).Len()
+	distance := (LightSourceCube.GetCenterPoint().Sub(JadeCube.GetCenterPoint())).Len()
 
 	LightSourceCube.SetSpeed((float32(2) * float32(3.1415) * distance) / LightSourceRoundSpeed)
 	LightSourceCube.DrawMode(cuboid.DRAW_MODE_LIGHT)
 	app.AddItem(LightSourceCube)
 }
 
-// It generates the colored cube.
-func GenerateColoredCube(shaderProgram *shader.Shader) {
-	coloredBottomCoordinates := [4]mgl32.Vec3{
-		mgl32.Vec3{-0.5, -0.5, -0.5},
-		mgl32.Vec3{0.5, -0.5, -0.5},
-		mgl32.Vec3{0.5, -0.5, 0.5},
-		mgl32.Vec3{-0.5, -0.5, 0.5},
-	}
-	coloredBottomColor := [4]mgl32.Vec3{
-		mgl32.Vec3{0.0, 1.0, 1.0},
-		mgl32.Vec3{0.0, 1.0, 1.0},
-		mgl32.Vec3{0.0, 1.0, 1.0},
-		mgl32.Vec3{0.0, 1.0, 1.0},
-	}
-	bottomRect := rectangle.NewSquare(coloredBottomCoordinates[1], coloredBottomCoordinates[3], mgl32.Vec3{0, 1, 0}, coloredBottomColor[0], shaderProgram)
-	MaterialCube = cuboid.New(bottomRect, 1.0, shaderProgram)
-	MaterialCube.SetPrecision(5)
-	MaterialCube.SetMaterial(material.Jade)
-	MaterialCube.DrawMode(cuboid.DRAW_MODE_LIGHT)
-	app.AddItem(MaterialCube)
+// It generates the Jade cube.
+func GenerateJadeCube(shaderProgram *shader.Shader) {
+	bottomRect := rectangle.NewSquare(mgl32.Vec3{0.5, -0.5, -0.5}, mgl32.Vec3{-0.5, -0.5, 0.5}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0.0, 1.0, 1.0}, shaderProgram)
+	JadeCube = cuboid.New(bottomRect, 1.0, shaderProgram)
+	JadeCube.SetPrecision(5)
+	JadeCube.SetMaterial(material.Jade)
+	JadeCube.DrawMode(cuboid.DRAW_MODE_LIGHT)
+	app.AddItem(JadeCube)
+}
+
+// It generates the red plastic cube.
+func GenerateRedPlasticCube(shaderProgram *shader.Shader) {
+	bottomRect := rectangle.NewSquare(mgl32.Vec3{-5.5, -3.5, -3.5}, mgl32.Vec3{-7.5, -3.5, -5.5}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0.0, 1.0, 1.0}, shaderProgram)
+	redPlasticCube := cuboid.New(bottomRect, 2.0, shaderProgram)
+	redPlasticCube.SetPrecision(1)
+	redPlasticCube.SetMaterial(material.Redplastic)
+	redPlasticCube.DrawMode(cuboid.DRAW_MODE_LIGHT)
+	app.AddItem(redPlasticCube)
+}
+
+// It generates the obsidian cube.
+func GenerateObsidianCube(shaderProgram *shader.Shader) {
+	bottomRect := rectangle.NewSquare(mgl32.Vec3{-6.5, -4.5, 0.5}, mgl32.Vec3{-8.5, -4.5, -1.5}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0.0, 1.0, 1.0}, shaderProgram)
+	redPlasticCube := cuboid.New(bottomRect, 1.0, shaderProgram)
+	redPlasticCube.SetPrecision(1)
+	redPlasticCube.SetMaterial(material.Obsidian)
+	redPlasticCube.DrawMode(cuboid.DRAW_MODE_LIGHT)
+	app.AddItem(redPlasticCube)
+}
+
+// It generates the copper plastic cube.
+func GenerateCopperCube(shaderProgram *shader.Shader) {
+	bottomRect := rectangle.NewSquare(mgl32.Vec3{2.5, -4.5, 0.5}, mgl32.Vec3{1.5, -4.5, -1.5}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0.0, 1.0, 1.0}, shaderProgram)
+	redPlasticCube := cuboid.New(bottomRect, 3.0, shaderProgram)
+	redPlasticCube.SetPrecision(1)
+	redPlasticCube.SetMaterial(material.Copper)
+	redPlasticCube.DrawMode(cuboid.DRAW_MODE_LIGHT)
+	app.AddItem(redPlasticCube)
+}
+
+// It generates the silver plastic cube.
+func GenerateSilverCube(shaderProgram *shader.Shader) {
+	bottomRect := rectangle.NewSquare(mgl32.Vec3{2.5, -1.5, 0.5}, mgl32.Vec3{1.5, -1.5, -1.5}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0.0, 1.0, 1.0}, shaderProgram)
+	redPlasticCube := cuboid.New(bottomRect, 2.0, shaderProgram)
+	redPlasticCube.SetPrecision(1)
+	redPlasticCube.SetMaterial(material.Silver)
+	redPlasticCube.DrawMode(cuboid.DRAW_MODE_LIGHT)
+	app.AddItem(redPlasticCube)
 }
 
 func Update() {
@@ -217,7 +245,11 @@ func main() {
 	LightSource = light.New(InitialCenterPointLight, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1})
 	shaderProgramColored := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
 	shaderProgramColored.SetLightSource(LightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
-	GenerateColoredCube(shaderProgramColored)
+	GenerateJadeCube(shaderProgramColored)
+	GenerateRedPlasticCube(shaderProgramColored)
+	GenerateObsidianCube(shaderProgramColored)
+	GenerateCopperCube(shaderProgramColored)
+	GenerateSilverCube(shaderProgramColored)
 	shaderProgramWhite := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
 	shaderProgramWhite.SetLightSource(LightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
 	GenerateWhiteCube(shaderProgramWhite)
