@@ -371,3 +371,15 @@ func TestDrawWithUniformsLight(t *testing.T) {
 		t.Errorf("Invalid vao length. Instead of '216', we got '%d'", len(cube.vao.Get()))
 	}
 }
+func TestGetCenterPoint(t *testing.T) {
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
+	cube := New(bottom, 1, shader)
+	centerPoint := cube.GetCenterPoint()
+	expectedCenterPoint := mgl32.Vec3{0.5, 0.5, -0.5}
+	if centerPoint != expectedCenterPoint {
+		t.Error("Invalid center point (given / expected)")
+		t.Log(centerPoint)
+		t.Log(expectedCenterPoint)
+	}
+}

@@ -188,6 +188,15 @@ func (c *Cuboid) GetDirection() mgl32.Vec3 {
 	return c.sides[0].GetDirection()
 }
 
+// GetCenterPoint return the center point of the cuboid.
+// In other words it returns the cross point of the diagonals
+func (c *Cuboid) GetCenterPoint() mgl32.Vec3 {
+	// calculate the diagonal:side[0][0] - side[1][2], then
+	// multiply it with 1/2 (make it half), and add it to side[0][X].
+	diagonalHalf := (c.sides[1].Coordinates()[2]).Sub(c.sides[0].Coordinates()[0]).Mul(0.5)
+	return (c.sides[0].Coordinates()[0]).Add(diagonalHalf)
+}
+
 func (c *Cuboid) setupVao() {
 	c.vao.Clear()
 	for i := 0; i < 6; i++ {
