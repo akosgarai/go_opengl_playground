@@ -53,7 +53,7 @@ var (
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{0, 0, 10.0}, mgl32.Vec3{0, 1, 0}, -90.0, 0.0)
+	camera := camera.NewCamera(mgl32.Vec3{3.3, -10, 14.0}, mgl32.Vec3{0, 1, 0}, -101.0, 21.5)
 	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
 	return camera
 }
@@ -89,7 +89,7 @@ func GenerateWhiteCube(shaderProgram *shader.Shader) {
 	LightSourceCube = cuboid.New(bottomRect, 1.0, shaderProgram)
 	mat := material.New(mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, 144.0)
 	LightSourceCube.SetMaterial(mat)
-	LightSourceCube.SetDirection((mgl32.Vec3{1, 0, 1}).Normalize())
+	LightSourceCube.SetDirection((mgl32.Vec3{9, 0, -3}).Normalize())
 	distance := (LightSourceCube.GetCenterPoint().Sub(MaterialCube.GetCenterPoint())).Len()
 
 	LightSourceCube.SetSpeed((float32(2) * float32(3.1415) * distance) / LightSourceRoundSpeed)
@@ -113,7 +113,7 @@ func GenerateColoredCube(shaderProgram *shader.Shader) {
 	}
 	bottomRect := rectangle.NewSquare(coloredBottomCoordinates[1], coloredBottomCoordinates[3], mgl32.Vec3{0, 1, 0}, coloredBottomColor[0], shaderProgram)
 	MaterialCube = cuboid.New(bottomRect, 1.0, shaderProgram)
-	MaterialCube.SetPrecision(3)
+	MaterialCube.SetPrecision(5)
 	MaterialCube.SetMaterial(material.Jade)
 	MaterialCube.DrawMode(cuboid.DRAW_MODE_LIGHT)
 	app.AddItem(MaterialCube)
@@ -128,7 +128,7 @@ func Update() {
 	// Then we can transform the current direction vector to the new one. (TransformNormal(v Vec3, m Mat4) Vec3)
 	// after it we can set the new direction vector of the light source.
 	lightSourceRotationAngleRadian := mgl32.DegToRad(float32((360 / LightSourceRoundSpeed) * moveTime))
-	lightDirectionRotationMatrix := mgl32.HomogRotate3D(lightSourceRotationAngleRadian, mgl32.Vec3{0, 1, 0})
+	lightDirectionRotationMatrix := mgl32.HomogRotate3D(lightSourceRotationAngleRadian, mgl32.Vec3{0, -1, 0})
 	currentLightSourceDirection := LightSourceCube.GetDirection()
 	LightSourceCube.SetDirection(mgl32.TransformNormal(currentLightSourceDirection, lightDirectionRotationMatrix))
 	LightSource.SetPosition(LightSourceCube.GetCenterPoint())
