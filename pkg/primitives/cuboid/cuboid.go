@@ -32,6 +32,7 @@ func (c *Cuboid) Log() string {
 	logString := "Cuboid:\n"
 	logString += " - Rotation : Axis: Vector{" + trans.Vec3ToString(c.axis) + "}, angle: " + trans.Float32ToString(c.angle) + "}, DrawMode: " + trans.IntegerToString(c.drawMode) + "\n"
 	logString += " - " + c.material.Log() + "\n"
+	logString += " - Center: Vector{" + trans.Vec3ToString(c.GetCenterPoint()) + "}\n"
 	logString += " - Top:\n"
 	logString += c.sides[1].Log()
 	logString += " - Bottom:\n"
