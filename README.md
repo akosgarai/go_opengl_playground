@@ -42,7 +42,7 @@ The output is something like: `OpenGL version string: 4.6.0 NVIDIA 440.82`.
 
 ## v3.3
 
-This is a test branch. Check wether the current apps are working with the opengl 3.3 version or not.
+This is a test branch. Check whether the current apps are working with the opengl 3.3 version or not.
 
 The following steps needs to be done, to replace the versions:
 
