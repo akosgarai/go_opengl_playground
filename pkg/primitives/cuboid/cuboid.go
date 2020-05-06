@@ -49,11 +49,11 @@ func (c *Cuboid) Log() string {
 }
 
 func New(bottom *rectangle.Rectangle, heightLength float32, shader rectangle.Shader) *Cuboid {
-	bottomPoints := bottom.Coordinates()
+	givenSidePoints := bottom.Coordinates()
 	// normal vector * (-1) * heightLength is the height vector.
 	// each point of the bottom + calculated prev vector -> top rectangle.
-	v1 := bottomPoints[1].Sub(bottomPoints[0])
-	v2 := bottomPoints[3].Sub(bottomPoints[0])
+	v1 := givenSidePoints[1].Sub(givenSidePoints[0])
+	v2 := givenSidePoints[3].Sub(givenSidePoints[0])
 	cp := v1.Cross(v2).Normalize()
 	height := cp.Mul(-1.0 * heightLength)
 
@@ -62,47 +62,47 @@ func New(bottom *rectangle.Rectangle, heightLength float32, shader rectangle.Sha
 	sides[0] = bottom
 	// top
 	topSide := [4]mgl32.Vec3{
-		bottomPoints[0].Add(height),
-		bottomPoints[1].Add(height),
-		bottomPoints[2].Add(height),
-		bottomPoints[3].Add(height),
+		givenSidePoints[0].Add(height),
+		givenSidePoints[3].Add(height),
+		givenSidePoints[2].Add(height),
+		givenSidePoints[1].Add(height),
 	}
 	top := rectangle.New(topSide, bottom.Colors(), shader)
 	sides[1] = top
-	topPoints := top.Coordinates()
+	oppositeSidePoints := top.Coordinates()
 	// front
 	frontSide := [4]mgl32.Vec3{
-		topPoints[0],
-		bottomPoints[0],
-		bottomPoints[1],
-		topPoints[1],
+		oppositeSidePoints[0],
+		oppositeSidePoints[3],
+		givenSidePoints[1],
+		givenSidePoints[0],
 	}
 	front := rectangle.New(frontSide, bottom.Colors(), shader)
 	sides[2] = front
 	// back
 	backSide := [4]mgl32.Vec3{
-		topPoints[3],
-		bottomPoints[3],
-		bottomPoints[2],
-		topPoints[2],
+		givenSidePoints[2],
+		oppositeSidePoints[2],
+		oppositeSidePoints[1],
+		givenSidePoints[3],
 	}
 	back := rectangle.New(backSide, bottom.Colors(), shader)
 	sides[3] = back
 	// left
 	leftSide := [4]mgl32.Vec3{
-		topPoints[3],
-		bottomPoints[3],
-		bottomPoints[0],
-		topPoints[0],
+		givenSidePoints[2],
+		givenSidePoints[1],
+		oppositeSidePoints[3],
+		oppositeSidePoints[2],
 	}
 	left := rectangle.New(leftSide, bottom.Colors(), shader)
 	sides[4] = left
 	// right
 	rightSide := [4]mgl32.Vec3{
-		topPoints[1],
-		bottomPoints[1],
-		bottomPoints[2],
-		topPoints[2],
+		givenSidePoints[0],
+		givenSidePoints[3],
+		oppositeSidePoints[1],
+		oppositeSidePoints[0],
 	}
 	right := rectangle.New(rightSide, bottom.Colors(), shader)
 	sides[5] = right
@@ -181,6 +181,11 @@ func (c *Cuboid) SetAngle(angle float32) {
 // SetAxis updates the axis.
 func (c *Cuboid) SetAxis(axis mgl32.Vec3) {
 	c.axis = axis
+}
+
+// GetDirection returns the direction of the cuboid, aka the direction of the first side.
+func (c *Cuboid) GetDirection() mgl32.Vec3 {
+	return c.sides[0].GetDirection()
 }
 
 func (c *Cuboid) setupVao() {
