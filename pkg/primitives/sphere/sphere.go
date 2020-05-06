@@ -16,6 +16,8 @@ const (
 type Shader interface {
 	Use()
 	SetUniformMat4(string, mgl32.Mat4)
+	SetUniform3f(string, float32, float32, float32)
+	SetUniform1f(string, float32)
 	DrawTriangles(int32)
 	Close(int)
 	VertexAttribPointer(uint32, int32, int32, int)
@@ -214,6 +216,18 @@ func (s *Sphere) modelTransformation() mgl32.Mat4 {
 		s.radius,
 		s.radius))
 }
+func (s *Sphere) setupColorUniform() {
+	if s.drawMode == DRAW_MODE_LIGHT {
+		diffuse := s.material.GetDiffuse()
+		ambient := s.material.GetAmbient()
+		specular := s.material.GetSpecular()
+		shininess := s.material.GetShininess()
+		s.shader.SetUniform3f("material.diffuse", diffuse.X(), diffuse.Y(), diffuse.Z())
+		s.shader.SetUniform3f("material.ambient", ambient.X(), ambient.Y(), ambient.Z())
+		s.shader.SetUniform3f("material.specular", specular.X(), specular.Y(), specular.Z())
+		s.shader.SetUniform1f("material.shininess", shininess)
+	}
+}
 func (s *Sphere) DrawWithUniforms(view, projection mgl32.Mat4) {
 	s.shader.Use()
 	s.shader.SetUniformMat4("view", view)
@@ -221,11 +235,13 @@ func (s *Sphere) DrawWithUniforms(view, projection mgl32.Mat4) {
 	M := s.modelTransformation()
 
 	s.shader.SetUniformMat4("model", M)
+	s.setupColorUniform()
 	s.draw()
 }
 
 func (s *Sphere) Draw() {
 	s.shader.Use()
+	s.setupColorUniform()
 	s.draw()
 }
 func (s *Sphere) draw() {

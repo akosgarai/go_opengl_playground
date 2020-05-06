@@ -34,6 +34,10 @@ func (t testShader) BindVertexArray() {
 }
 func (t testShader) BindBufferData(d []float32) {
 }
+func (t testShader) SetUniform3f(s string, f1, f2, f3 float32) {
+}
+func (t testShader) SetUniform1f(s string, f1 float32) {
+}
 
 var shader testShader
 
@@ -261,5 +265,17 @@ func TestDrawMode(t *testing.T) {
 	sphere.DrawMode(1) // should update the original value
 	if sphere.drawMode != 1 {
 		t.Errorf("Invalid default draw mode. Instead of '1', we got '%d'", sphere.drawMode)
+	}
+}
+func TestDrawWithLight(t *testing.T) {
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
+	sphere.SetMaterial(material.Chrome)
+	sphere.DrawMode(1)
+	if len(sphere.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	sphere.Draw()
+	if len(sphere.vao.Get()) == 0 {
+		t.Error("Vao is empty after the first setup.")
 	}
 }
