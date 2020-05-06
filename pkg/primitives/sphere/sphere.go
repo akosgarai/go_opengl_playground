@@ -207,6 +207,7 @@ func (s *Sphere) setupVao() {
 	}
 }
 func (s *Sphere) buildVao() {
+	s.vao.Clear()
 	s.setupVao()
 
 	s.shader.BindBufferData(s.vao.Get())
