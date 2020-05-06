@@ -53,7 +53,7 @@ sed -i 's%github.com/go-gl/gl/v4.1-core/gl%github.com/go-gl/gl/v3.3-core/gl%g' p
 sed -i 's%#version 410%#version 330%g' examples/*/*
 ```
 
-Manually update the window pkg.
+Manually update the [window](https://github.com/akosgarai/go_opengl_playground/blob/v3.3/pkg/window/window.go#L15-L16) pkg.
 
 ```
 	glfw.WindowHint(glfw.ContextVersionMajor, 3)
