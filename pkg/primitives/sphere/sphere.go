@@ -114,6 +114,16 @@ func (s *Sphere) SetIndexDirection(index int, value float32) {
 func (s *Sphere) SetSpeed(speed float32) {
 	s.speed = speed
 }
+
+// GetAngle returns the angle of the sphere
+func (s *Sphere) GetAngle() float32 {
+	return s.angle
+}
+
+// GetAxis returns the axis vector.
+func (s *Sphere) GetAxis() mgl32.Vec3 {
+	return s.axis
+}
 func (s *Sphere) triangleToVao(pa, pb, pc mgl32.Vec3) {
 	s.vao.AppendVectors(pa, s.color)
 	s.vao.AppendVectors(pb, s.color)

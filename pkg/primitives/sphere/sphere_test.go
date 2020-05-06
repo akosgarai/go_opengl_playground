@@ -59,7 +59,10 @@ func TestNew(t *testing.T) {
 	if sphere.axis != DefaultAxis {
 		t.Error("Axis vector is not 0")
 	}
-	if sphere.angle != DefaultAngle {
+	if sphere.GetAxis() != DefaultAxis {
+		t.Error("Axis vector is not 0")
+	}
+	if sphere.GetAngle() != DefaultAngle {
 		t.Error("Angle is not null")
 	}
 }
