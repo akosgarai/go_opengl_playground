@@ -8,6 +8,11 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
 
+const (
+	DRAW_MODE_COLOR = 0
+	DRAW_MODE_LIGHT = 1
+)
+
 type Shader interface {
 	Use()
 	SetUniformMat4(string, mgl32.Mat4)
@@ -35,6 +40,7 @@ type Sphere struct {
 	axis  mgl32.Vec3
 
 	material *material.Material
+	drawMode int
 }
 
 func New(center, color mgl32.Vec3, radius float32, shader Shader) *Sphere {
@@ -53,6 +59,7 @@ func New(center, color mgl32.Vec3, radius float32, shader Shader) *Sphere {
 		angle:    float32(0.0),
 		axis:     mgl32.Vec3{0, 0, 0},
 		material: material.New(color, color, color, 36.0),
+		drawMode: DRAW_MODE_COLOR,
 	}
 }
 
