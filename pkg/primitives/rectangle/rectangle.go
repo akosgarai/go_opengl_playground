@@ -63,6 +63,20 @@ func New(points, color [4]mgl32.Vec3, shader Shader) *Rectangle {
 	}
 }
 
+// NewSquare returns a square. The inputs are 2 diagonal points of the square, it's normal vector, and the color vector.
+// IT also needs a shader as input.
+// Let's define the points of the square as 'A', 'B', 'C', 'D'.
+// Let's imagine, that we have 'A' and 'C' as inputs. (or we have 'B', and 'D'. these are the only options for the diagonals)
+// We can calulate 'B' and 'D' by rotating the other points with 90 deg on the normal axis.
+func NewSquare(p1, p3, normal, color mgl32.Vec3, shader Shader) *Rectangle {
+	rotationMatrix := mgl32.HomogRotate3D(mgl32.DegToRad(90.0), normal)
+	p2 := mgl32.TransformCoordinate(p1, rotationMatrix)
+	p0 := mgl32.TransformCoordinate(p3, rotationMatrix)
+	points := [4]mgl32.Vec3{p0, p1, p2, p3}
+	colors := [4]mgl32.Vec3{color, color, color, color}
+	return New(points, colors, shader)
+}
+
 // Coordinates returns the points of the rectangle. It's necessary for the cuboid construction.
 func (r *Rectangle) Coordinates() [4]mgl32.Vec3 {
 	return r.points
@@ -127,6 +141,11 @@ func (r *Rectangle) SetAngle(angle float32) {
 // SetAxis updates the axis.
 func (r *Rectangle) SetAxis(axis mgl32.Vec3) {
 	r.axis = axis
+}
+
+// GetDirection returns the direction of the rectangle
+func (r *Rectangle) GetDirection() mgl32.Vec3 {
+	return r.direction
 }
 func (r *Rectangle) appendRectangleToVao(coordinates, data2 [4]mgl32.Vec3) {
 	indicies := [6]int{0, 1, 2, 0, 2, 3}

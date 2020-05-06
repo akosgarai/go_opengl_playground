@@ -72,6 +72,26 @@ func TestNew(t *testing.T) {
 	}
 
 }
+func TestNewSquare(t *testing.T) {
+	shader.HasTextureValue = false
+	expectedPoints := [4]mgl32.Vec3{
+		mgl32.Vec3{-0.5, 0, -0.5},
+		mgl32.Vec3{-0.5, 0, 0.5},
+		mgl32.Vec3{0.5, 0, 0.5},
+		mgl32.Vec3{0.5, 0, -0.5},
+	}
+	normal := mgl32.Vec3{0, 1, 0}
+	color := mgl32.Vec3{1, 0, 0}
+	//colors := [4]mgl32.Vec3{color, color, color, color}
+
+	square := NewSquare(expectedPoints[1], expectedPoints[3], normal, color, shader)
+	for i := 0; i < 4; i++ {
+		// It has to be checked in this way. In the practice, the '-0.5' was calculated as '-0.49999997'.
+		if !expectedPoints[i].ApproxEqualThreshold(square.points[i], 0.003) {
+			t.Error("Vectors are not equal.")
+		}
+	}
+}
 func TestSetColor(t *testing.T) {
 	shader.HasTextureValue = false
 	square := New(DefaultCoordinates, DefaultColors, shader)
@@ -211,6 +231,9 @@ func TestSetDirection(t *testing.T) {
 	square.SetDirection(newDirection)
 
 	if square.direction != newDirection {
+		t.Error("Mismatch in the direction")
+	}
+	if square.GetDirection() != newDirection {
 		t.Error("Mismatch in the direction")
 	}
 }
