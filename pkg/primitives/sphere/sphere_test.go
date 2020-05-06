@@ -115,6 +115,14 @@ func TestGetCenter(t *testing.T) {
 		t.Error("Center mismatch")
 	}
 }
+func TestGetCenterPoint(t *testing.T) {
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
+	newCenter := mgl32.Vec3{0, 0, 0}
+	sphere.SetCenter(newCenter)
+	if sphere.GetCenterPoint() != newCenter {
+		t.Error("Center mismatch")
+	}
+}
 func TestSetColor(t *testing.T) {
 	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	newColor := mgl32.Vec3{1, 0, 0}

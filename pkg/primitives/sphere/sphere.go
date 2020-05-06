@@ -85,6 +85,11 @@ func (s *Sphere) SetCenter(c mgl32.Vec3) {
 	s.center = c
 }
 
+// GetCenterPoint returns the center of the sphere
+func (s *Sphere) GetCenterPoint() mgl32.Vec3 {
+	return s.center
+}
+
 // GetCenter returns the center of the sphere
 func (s *Sphere) GetCenter() mgl32.Vec3 {
 	return s.center
