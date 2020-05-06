@@ -38,3 +38,24 @@ glxinfo | grep "OpenGL version"
 ```
 
 The output is something like: `OpenGL version string: 4.6.0 NVIDIA 440.82`.
+
+
+## v3.3
+
+This is a test branch. Check wether the current apps are working with the opengl 3.3 version or not.
+
+The following steps needs to be done, to replace the versions:
+
+```bash
+sed -i 's%github.com/go-gl/gl/v4.1-core/gl%github.com/go-gl/gl/v3.3-core/gl%g' examples/*/*.go
+sed -i 's%github.com/go-gl/gl/v4.1-core/gl%github.com/go-gl/gl/v3.3-core/gl%g' pkg/*/*.go
+sed -i 's%github.com/go-gl/gl/v4.1-core/gl%github.com/go-gl/gl/v3.3-core/gl%g' pkg/primitives/*/*.go
+sed -i 's%#version 410%#version 330%g' examples/*/*
+```
+
+Manually update the window pkg.
+
+```
+	glfw.WindowHint(glfw.ContextVersionMajor, 3)
+	glfw.WindowHint(glfw.ContextVersionMinor, 3)
+```
