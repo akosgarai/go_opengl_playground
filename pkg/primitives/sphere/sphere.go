@@ -163,9 +163,15 @@ func (s *Sphere) DrawMode(mode int) {
 	s.drawMode = mode
 }
 func (s *Sphere) triangleToVao(pa, pb, pc mgl32.Vec3) {
-	s.vao.AppendVectors(pa, s.color)
-	s.vao.AppendVectors(pb, s.color)
-	s.vao.AppendVectors(pc, s.color)
+	if s.drawMode == DRAW_MODE_LIGHT {
+		s.vao.AppendVectors(pa, pa)
+		s.vao.AppendVectors(pb, pb)
+		s.vao.AppendVectors(pc, pb)
+	} else {
+		s.vao.AppendVectors(pa, s.color)
+		s.vao.AppendVectors(pb, s.color)
+		s.vao.AppendVectors(pc, s.color)
+	}
 }
 func (s *Sphere) setupVao() {
 	// the coordinates will be set as a following: origo as center, 1 as radius, for drawing, the translation and scale could be done later in the model transformation.
