@@ -3,6 +3,7 @@ package sphere
 import (
 	"testing"
 
+	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
@@ -64,6 +65,18 @@ func TestNew(t *testing.T) {
 	}
 	if sphere.GetAngle() != DefaultAngle {
 		t.Error("Angle is not null")
+	}
+	if sphere.material.GetAmbient() != DefaultColor {
+		t.Error("Invalid material ambient")
+	}
+	if sphere.material.GetDiffuse() != DefaultColor {
+		t.Error("Invalid material diffuse")
+	}
+	if sphere.material.GetSpecular() != DefaultColor {
+		t.Error("Invalid material specular")
+	}
+	if sphere.material.GetShininess() != float32(36.0) {
+		t.Error("Invalid material shininess")
 	}
 }
 func TestLog(t *testing.T) {
@@ -226,5 +239,12 @@ func TestSetAxis(t *testing.T) {
 	sphere.SetAxis(axis)
 	if sphere.GetAxis() != axis {
 		t.Error("Axis mismatch")
+	}
+}
+func TestSetMaterial(t *testing.T) {
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
+	sphere.SetMaterial(material.Chrome)
+	if sphere.material != material.Chrome {
+		t.Error("Material mismatch")
 	}
 }

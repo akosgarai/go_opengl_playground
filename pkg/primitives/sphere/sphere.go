@@ -3,6 +3,7 @@ package sphere
 import (
 	"github.com/go-gl/mathgl/mgl32"
 
+	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/vao"
 )
@@ -32,6 +33,8 @@ type Sphere struct {
 	// angle has to be in radian
 	angle float32
 	axis  mgl32.Vec3
+
+	material *material.Material
 }
 
 func New(center, color mgl32.Vec3, radius float32, shader Shader) *Sphere {
@@ -47,8 +50,9 @@ func New(center, color mgl32.Vec3, radius float32, shader Shader) *Sphere {
 		direction: mgl32.Vec3{0, 0, 0},
 		speed:     0,
 
-		angle: float32(0.0),
-		axis:  mgl32.Vec3{0, 0, 0},
+		angle:    float32(0.0),
+		axis:     mgl32.Vec3{0, 0, 0},
+		material: material.New(color, color, color, 36.0),
 	}
 }
 
@@ -58,6 +62,7 @@ func (s *Sphere) Log() string {
 	logString += " - Center : Coordinate: Vector{" + trans.Vec3ToString(s.center) + "}, radius: " + trans.Float32ToString(s.radius) + ", color: Vector{" + trans.Vec3ToString(s.color) + "}\n"
 	logString += " - Movement : Direction: Vector{" + trans.Vec3ToString(s.direction) + "}, speed: " + trans.Float32ToString(s.speed) + "\n"
 	logString += " - Rotation : Axis: Vector{" + trans.Vec3ToString(s.axis) + "}, angle: " + trans.Float32ToString(s.angle) + "\n"
+	logString += s.material.Log() + "\n"
 	return logString
 }
 
@@ -134,6 +139,11 @@ func (s *Sphere) SetAngle(angle float32) {
 // SetAxis updatess the axis vector.
 func (s *Sphere) SetAxis(axis mgl32.Vec3) {
 	s.axis = axis
+}
+
+// SetMaterial updates the material of the sphere.
+func (s *Sphere) SetMaterial(mat *material.Material) {
+	s.material = mat
 }
 func (s *Sphere) triangleToVao(pa, pb, pc mgl32.Vec3) {
 	s.vao.AppendVectors(pa, s.color)
