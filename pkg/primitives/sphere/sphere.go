@@ -57,6 +57,7 @@ func (s *Sphere) Log() string {
 	logString := "Sphere:\n"
 	logString += " - Center : Coordinate: Vector{" + trans.Vec3ToString(s.center) + "}, radius: " + trans.Float32ToString(s.radius) + ", color: Vector{" + trans.Vec3ToString(s.color) + "}\n"
 	logString += " - Movement : Direction: Vector{" + trans.Vec3ToString(s.direction) + "}, speed: " + trans.Float32ToString(s.speed) + "\n"
+	logString += " - Rotation : Axis: Vector{" + trans.Vec3ToString(s.axis) + "}, angle: " + trans.Float32ToString(s.angle) + "\n"
 	return logString
 }
 
