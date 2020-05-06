@@ -248,3 +248,18 @@ func TestSetMaterial(t *testing.T) {
 		t.Error("Material mismatch")
 	}
 }
+func TestDrawMode(t *testing.T) {
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
+
+	if sphere.drawMode != 0 {
+		t.Errorf("Invalid default draw mode. Instead of '0', we got '%d'", sphere.drawMode)
+	}
+	sphere.DrawMode(2) // should keep the original value
+	if sphere.drawMode != 0 {
+		t.Errorf("Invalid default draw mode. Instead of '0', we got '%d'", sphere.drawMode)
+	}
+	sphere.DrawMode(1) // should update the original value
+	if sphere.drawMode != 1 {
+		t.Errorf("Invalid default draw mode. Instead of '1', we got '%d'", sphere.drawMode)
+	}
+}

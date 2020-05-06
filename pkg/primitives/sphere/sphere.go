@@ -152,6 +152,14 @@ func (s *Sphere) SetAxis(axis mgl32.Vec3) {
 func (s *Sphere) SetMaterial(mat *material.Material) {
 	s.material = mat
 }
+
+// DrawMode updates the draw mode after validation. If it fails, it keeps the original value.
+func (s *Sphere) DrawMode(mode int) {
+	if mode != DRAW_MODE_COLOR && mode != DRAW_MODE_LIGHT {
+		return
+	}
+	s.drawMode = mode
+}
 func (s *Sphere) triangleToVao(pa, pb, pc mgl32.Vec3) {
 	s.vao.AppendVectors(pa, s.color)
 	s.vao.AppendVectors(pb, s.color)
