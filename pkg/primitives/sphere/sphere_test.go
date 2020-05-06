@@ -212,3 +212,19 @@ func TestUpdate(t *testing.T) {
 		t.Error("Center mismatch after update")
 	}
 }
+func TestSetAngle(t *testing.T) {
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
+	angle := float32(4.0)
+	sphere.SetAngle(angle)
+	if sphere.GetAngle() != angle {
+		t.Error("Angle mismatch")
+	}
+}
+func TestSetAxis(t *testing.T) {
+	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
+	axis := mgl32.Vec3{1, 0, 0}
+	sphere.SetAxis(axis)
+	if sphere.GetAxis() != axis {
+		t.Error("Axis mismatch")
+	}
+}

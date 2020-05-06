@@ -124,6 +124,16 @@ func (s *Sphere) GetAngle() float32 {
 func (s *Sphere) GetAxis() mgl32.Vec3 {
 	return s.axis
 }
+
+// SetAngle updates the angle of the sphere
+func (s *Sphere) SetAngle(angle float32) {
+	s.angle = angle
+}
+
+// SetAxis updatess the axis vector.
+func (s *Sphere) SetAxis(axis mgl32.Vec3) {
+	s.axis = axis
+}
 func (s *Sphere) triangleToVao(pa, pb, pc mgl32.Vec3) {
 	s.vao.AppendVectors(pa, s.color)
 	s.vao.AppendVectors(pb, s.color)
