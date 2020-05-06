@@ -74,21 +74,96 @@ func TestNew(t *testing.T) {
 }
 func TestNewSquare(t *testing.T) {
 	shader.HasTextureValue = false
-	expectedPoints := [4]mgl32.Vec3{
-		mgl32.Vec3{-0.5, 0, -0.5},
-		mgl32.Vec3{-0.5, 0, 0.5},
-		mgl32.Vec3{0.5, 0, 0.5},
-		mgl32.Vec3{0.5, 0, -0.5},
-	}
-	normal := mgl32.Vec3{0, 1, 0}
-	color := mgl32.Vec3{1, 0, 0}
-	//colors := [4]mgl32.Vec3{color, color, color, color}
 
-	square := NewSquare(expectedPoints[1], expectedPoints[3], normal, color, shader)
-	for i := 0; i < 4; i++ {
-		// It has to be checked in this way. In the practice, the '-0.5' was calculated as '-0.49999997'.
-		if !expectedPoints[i].ApproxEqualThreshold(square.points[i], 0.003) {
-			t.Error("Vectors are not equal.")
+	color := mgl32.Vec3{1, 0, 0}
+	testData := []struct {
+		ExpectedPoints [4]mgl32.Vec3
+		Normal         mgl32.Vec3
+	}{
+		{
+			[4]mgl32.Vec3{
+				mgl32.Vec3{-0.5, 0, -0.5},
+				mgl32.Vec3{-0.5, 0, 0.5},
+				mgl32.Vec3{0.5, 0, 0.5},
+				mgl32.Vec3{0.5, 0, -0.5},
+			},
+			mgl32.Vec3{0, 1, 0},
+		},
+		{
+			[4]mgl32.Vec3{
+				mgl32.Vec3{-0.5, 5, -0.5},
+				mgl32.Vec3{-0.5, 5, 0.5},
+				mgl32.Vec3{0.5, 5, 0.5},
+				mgl32.Vec3{0.5, 5, -0.5},
+			},
+			mgl32.Vec3{0, 1, 0},
+		},
+		{
+			[4]mgl32.Vec3{
+				mgl32.Vec3{-5.5, 5, -5.5},
+				mgl32.Vec3{-5.5, 5, 5.5},
+				mgl32.Vec3{5.5, 5, 5.5},
+				mgl32.Vec3{5.5, 5, -5.5},
+			},
+			mgl32.Vec3{0, 1, 0},
+		},
+		{
+			[4]mgl32.Vec3{
+				mgl32.Vec3{-3.5, -0.5, -3.5},
+				mgl32.Vec3{-3.5, -0.5, -2.5},
+				mgl32.Vec3{-2.5, -0.5, -2.5},
+				mgl32.Vec3{-2.5, -0.5, -3.5},
+			},
+			mgl32.Vec3{0, 1, 0},
+		},
+		{
+			[4]mgl32.Vec3{
+				mgl32.Vec3{-5.5, 0, -3.5},
+				mgl32.Vec3{-5.5, 0, -1.5},
+				mgl32.Vec3{-3.5, 0, -1.5},
+				mgl32.Vec3{-3.5, 0, -3.5},
+			},
+			mgl32.Vec3{0, 1, 0}.Normalize(),
+		},
+		{
+			[4]mgl32.Vec3{
+				mgl32.Vec3{-5.5, 5, -3.5},
+				mgl32.Vec3{-5.5, 5, -1.5},
+				mgl32.Vec3{-3.5, 5, -1.5},
+				mgl32.Vec3{-3.5, 5, -3.5},
+			},
+			mgl32.Vec3{0, 1, 0},
+		},
+		{
+			[4]mgl32.Vec3{
+				mgl32.Vec3{-7.5, -3.5, -5.5},
+				mgl32.Vec3{-7.5, -3.5, -4.5},
+				mgl32.Vec3{-6.5, -3.5, -4.5},
+				mgl32.Vec3{-6.5, -3.5, -5.5},
+			},
+			mgl32.Vec3{0, 1, 0},
+		},
+	}
+	for index, tt := range testData {
+		square := NewSquare(tt.ExpectedPoints[1], tt.ExpectedPoints[3], tt.Normal, color, shader)
+		for i := 0; i < 4; i++ {
+			// It has to be checked in this way. In the practice, the '-0.5' was calculated as '-0.49999997'.
+			if !tt.ExpectedPoints[i].ApproxEqualThreshold(square.points[i], 0.003) {
+				rotationMatrix := mgl32.HomogRotate3D(mgl32.DegToRad(90.0), tt.Normal)
+				t.Log("RotationMatrix:")
+				t.Log(rotationMatrix)
+				p2 := mgl32.TransformCoordinate(tt.ExpectedPoints[1], rotationMatrix)
+				p0 := mgl32.TransformCoordinate(tt.ExpectedPoints[3], rotationMatrix)
+				t.Log("p0")
+				t.Log(p0)
+				t.Log("p2")
+				t.Log(p2)
+				t.Log("expected")
+				t.Log(tt.ExpectedPoints)
+				t.Log("got")
+				t.Log(square.points)
+				t.Fatalf("TC%d - Vectors are not equal. %d\n", index, i)
+			}
 		}
 	}
 }

@@ -68,10 +68,16 @@ func New(points, color [4]mgl32.Vec3, shader Shader) *Rectangle {
 // Let's define the points of the square as 'A', 'B', 'C', 'D'.
 // Let's imagine, that we have 'A' and 'C' as inputs. (or we have 'B', and 'D'. these are the only options for the diagonals)
 // We can calulate 'B' and 'D' by rotating the other points with 90 deg on the normal axis.
+// Currently it seems this function only works if the center point of the rectangle is in the origo.
+// Due to this, i decided to transform the points to the right place, do the transformation, then invers transform back them to the right place.
 func NewSquare(p1, p3, normal, color mgl32.Vec3, shader Shader) *Rectangle {
+	// Get the center of the p1-p2 strip. first calculate the substraction, then make it half, then add it to the point.
+	center := (p3.Sub(p1).Mul(0.5)).Add(p1)
+	// translation: origo - center
+	translationMatrix := mgl32.Translate3D(center.X(), center.Y(), center.Z())
 	rotationMatrix := mgl32.HomogRotate3D(mgl32.DegToRad(90.0), normal)
-	p2 := mgl32.TransformCoordinate(p1, rotationMatrix)
-	p0 := mgl32.TransformCoordinate(p3, rotationMatrix)
+	p2 := mgl32.TransformCoordinate(p1, translationMatrix.Mul4(rotationMatrix).Mul4(translationMatrix.Inv()))
+	p0 := mgl32.TransformCoordinate(p3, translationMatrix.Mul4(rotationMatrix).Mul4(translationMatrix.Inv()))
 	points := [4]mgl32.Vec3{p0, p1, p2, p3}
 	colors := [4]mgl32.Vec3{color, color, color, color}
 	return New(points, colors, shader)
