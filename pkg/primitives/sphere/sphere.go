@@ -28,6 +28,10 @@ type Sphere struct {
 
 	direction mgl32.Vec3
 	speed     float32
+	// rotation parameters
+	// angle has to be in radian
+	angle float32
+	axis  mgl32.Vec3
 }
 
 func New(center, color mgl32.Vec3, radius float32, shader Shader) *Sphere {
@@ -42,6 +46,9 @@ func New(center, color mgl32.Vec3, radius float32, shader Shader) *Sphere {
 
 		direction: mgl32.Vec3{0, 0, 0},
 		speed:     0,
+
+		angle: float32(0.0),
+		axis:  mgl32.Vec3{0, 0, 0},
 	}
 }
 
