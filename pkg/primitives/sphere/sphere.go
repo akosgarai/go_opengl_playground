@@ -179,17 +179,21 @@ func (s *Sphere) buildVao() {
 	s.shader.VertexAttribPointer(1, 3, 4*6, 4*3)
 
 }
+func (s *Sphere) modelTransformation() mgl32.Mat4 {
+	return mgl32.Translate3D(
+		s.center.X(),
+		s.center.Y(),
+		s.center.Z()).Mul4(mgl32.HomogRotate3D(s.angle, s.axis)).Mul4(mgl32.Scale3D(
+		s.radius,
+		s.radius,
+		s.radius))
+}
 func (s *Sphere) DrawWithUniforms(view, projection mgl32.Mat4) {
 	s.shader.Use()
 	s.shader.SetUniformMat4("view", view)
 	s.shader.SetUniformMat4("projection", projection)
-	M := mgl32.Translate3D(
-		s.center.X(),
-		s.center.Y(),
-		s.center.Z()).Mul4(mgl32.Scale3D(
-		s.radius,
-		s.radius,
-		s.radius))
+	M := s.modelTransformation()
+
 	s.shader.SetUniformMat4("model", M)
 	s.draw()
 }
