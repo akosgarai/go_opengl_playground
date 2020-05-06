@@ -176,6 +176,7 @@ func NewTestShader(t *testing.T, validFragmentShaderContent, validVertexShaderCo
 	defer DeleteFile(FragmentShaderFileName)
 	CreateFileWithContent(VertexShaderFileName, validVertexShaderContent)
 	defer DeleteFile(VertexShaderFileName)
+	runtime.LockOSThread()
 	InitGlfw()
 	InitOpenGL()
 	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
@@ -197,6 +198,7 @@ func TestInitOpenGL(t *testing.T) {
 				t.Errorf("InitOpenGL shouldn't panicked!")
 			}
 		}()
+		runtime.LockOSThread()
 		InitOpenGL()
 	}()
 }
