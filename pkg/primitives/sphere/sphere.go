@@ -3,13 +3,21 @@ package sphere
 import (
 	"github.com/go-gl/mathgl/mgl32"
 
+	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/vao"
+)
+
+const (
+	DRAW_MODE_COLOR = 0
+	DRAW_MODE_LIGHT = 1
 )
 
 type Shader interface {
 	Use()
 	SetUniformMat4(string, mgl32.Mat4)
+	SetUniform3f(string, float32, float32, float32)
+	SetUniform1f(string, float32)
 	DrawTriangles(int32)
 	Close(int)
 	VertexAttribPointer(uint32, int32, int32, int)
@@ -28,6 +36,13 @@ type Sphere struct {
 
 	direction mgl32.Vec3
 	speed     float32
+	// rotation parameters
+	// angle has to be in radian
+	angle float32
+	axis  mgl32.Vec3
+
+	material *material.Material
+	drawMode int
 }
 
 func New(center, color mgl32.Vec3, radius float32, shader Shader) *Sphere {
@@ -42,6 +57,11 @@ func New(center, color mgl32.Vec3, radius float32, shader Shader) *Sphere {
 
 		direction: mgl32.Vec3{0, 0, 0},
 		speed:     0,
+
+		angle:    float32(0.0),
+		axis:     mgl32.Vec3{0, 0, 0},
+		material: material.New(color, color, color, 36.0),
+		drawMode: DRAW_MODE_COLOR,
 	}
 }
 
@@ -50,6 +70,8 @@ func (s *Sphere) Log() string {
 	logString := "Sphere:\n"
 	logString += " - Center : Coordinate: Vector{" + trans.Vec3ToString(s.center) + "}, radius: " + trans.Float32ToString(s.radius) + ", color: Vector{" + trans.Vec3ToString(s.color) + "}\n"
 	logString += " - Movement : Direction: Vector{" + trans.Vec3ToString(s.direction) + "}, speed: " + trans.Float32ToString(s.speed) + "\n"
+	logString += " - Rotation : Axis: Vector{" + trans.Vec3ToString(s.axis) + "}, angle: " + trans.Float32ToString(s.angle) + "\n"
+	logString += s.material.Log() + "\n"
 	return logString
 }
 
@@ -61,6 +83,11 @@ func (s *Sphere) SetPrecision(p int) {
 // SetCenter updates the center of the sphere
 func (s *Sphere) SetCenter(c mgl32.Vec3) {
 	s.center = c
+}
+
+// GetCenterPoint returns the center of the sphere
+func (s *Sphere) GetCenterPoint() mgl32.Vec3 {
+	return s.center
 }
 
 // GetCenter returns the center of the sphere
@@ -88,6 +115,11 @@ func (s *Sphere) GetRadius() float32 {
 	return s.radius
 }
 
+// GetDirection returns the direction vector.
+func (s *Sphere) GetDirection() mgl32.Vec3 {
+	return s.direction
+}
+
 // SetDirection updates the direction vector.
 func (s *Sphere) SetDirection(dir mgl32.Vec3) {
 	s.direction = dir
@@ -102,10 +134,49 @@ func (s *Sphere) SetIndexDirection(index int, value float32) {
 func (s *Sphere) SetSpeed(speed float32) {
 	s.speed = speed
 }
+
+// GetAngle returns the angle of the sphere
+func (s *Sphere) GetAngle() float32 {
+	return s.angle
+}
+
+// GetAxis returns the axis vector.
+func (s *Sphere) GetAxis() mgl32.Vec3 {
+	return s.axis
+}
+
+// SetAngle updates the angle of the sphere
+func (s *Sphere) SetAngle(angle float32) {
+	s.angle = angle
+}
+
+// SetAxis updatess the axis vector.
+func (s *Sphere) SetAxis(axis mgl32.Vec3) {
+	s.axis = axis
+}
+
+// SetMaterial updates the material of the sphere.
+func (s *Sphere) SetMaterial(mat *material.Material) {
+	s.material = mat
+}
+
+// DrawMode updates the draw mode after validation. If it fails, it keeps the original value.
+func (s *Sphere) DrawMode(mode int) {
+	if mode != DRAW_MODE_COLOR && mode != DRAW_MODE_LIGHT {
+		return
+	}
+	s.drawMode = mode
+}
 func (s *Sphere) triangleToVao(pa, pb, pc mgl32.Vec3) {
-	s.vao.AppendVectors(pa, s.color)
-	s.vao.AppendVectors(pb, s.color)
-	s.vao.AppendVectors(pc, s.color)
+	if s.drawMode == DRAW_MODE_LIGHT {
+		s.vao.AppendVectors(pa, pa)
+		s.vao.AppendVectors(pb, pb)
+		s.vao.AppendVectors(pc, pb)
+	} else {
+		s.vao.AppendVectors(pa, s.color)
+		s.vao.AppendVectors(pb, s.color)
+		s.vao.AppendVectors(pc, s.color)
+	}
 }
 func (s *Sphere) setupVao() {
 	// the coordinates will be set as a following: origo as center, 1 as radius, for drawing, the translation and scale could be done later in the model transformation.
@@ -136,6 +207,7 @@ func (s *Sphere) setupVao() {
 	}
 }
 func (s *Sphere) buildVao() {
+	s.vao.Clear()
 	s.setupVao()
 
 	s.shader.BindBufferData(s.vao.Get())
@@ -147,23 +219,41 @@ func (s *Sphere) buildVao() {
 	s.shader.VertexAttribPointer(1, 3, 4*6, 4*3)
 
 }
+func (s *Sphere) modelTransformation() mgl32.Mat4 {
+	return mgl32.Translate3D(
+		s.center.X(),
+		s.center.Y(),
+		s.center.Z()).Mul4(mgl32.HomogRotate3D(s.angle, s.axis)).Mul4(mgl32.Scale3D(
+		s.radius,
+		s.radius,
+		s.radius))
+}
+func (s *Sphere) setupColorUniform() {
+	if s.drawMode == DRAW_MODE_LIGHT {
+		diffuse := s.material.GetDiffuse()
+		ambient := s.material.GetAmbient()
+		specular := s.material.GetSpecular()
+		shininess := s.material.GetShininess()
+		s.shader.SetUniform3f("material.diffuse", diffuse.X(), diffuse.Y(), diffuse.Z())
+		s.shader.SetUniform3f("material.ambient", ambient.X(), ambient.Y(), ambient.Z())
+		s.shader.SetUniform3f("material.specular", specular.X(), specular.Y(), specular.Z())
+		s.shader.SetUniform1f("material.shininess", shininess)
+	}
+}
 func (s *Sphere) DrawWithUniforms(view, projection mgl32.Mat4) {
 	s.shader.Use()
 	s.shader.SetUniformMat4("view", view)
 	s.shader.SetUniformMat4("projection", projection)
-	M := mgl32.Translate3D(
-		s.center.X(),
-		s.center.Y(),
-		s.center.Z()).Mul4(mgl32.Scale3D(
-		s.radius,
-		s.radius,
-		s.radius))
+	M := s.modelTransformation()
+
 	s.shader.SetUniformMat4("model", M)
+	s.setupColorUniform()
 	s.draw()
 }
 
 func (s *Sphere) Draw() {
 	s.shader.Use()
+	s.setupColorUniform()
 	s.draw()
 }
 func (s *Sphere) draw() {
