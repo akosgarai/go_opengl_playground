@@ -88,6 +88,11 @@ func (s *Sphere) GetRadius() float32 {
 	return s.radius
 }
 
+// GetDirection returns the direction vector.
+func (s *Sphere) GetDirection() mgl32.Vec3 {
+	return s.direction
+}
+
 // SetDirection updates the direction vector.
 func (s *Sphere) SetDirection(dir mgl32.Vec3) {
 	s.direction = dir

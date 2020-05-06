@@ -51,6 +51,9 @@ func TestNew(t *testing.T) {
 	if sphere.direction != DefaultDirection {
 		t.Error("Direction vector is not 0")
 	}
+	if sphere.GetDirection() != DefaultDirection {
+		t.Error("Direction vector is not 0")
+	}
 }
 func TestLog(t *testing.T) {
 	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
@@ -163,12 +166,18 @@ func TestSetDirection(t *testing.T) {
 	if sphere.direction != direction {
 		t.Error("Direction mismatch")
 	}
+	if sphere.GetDirection() != direction {
+		t.Error("Direction mismatch")
+	}
 }
 func TestSetIndexDirection(t *testing.T) {
 	sphere := New(DefaultCenter, DefaultColor, DefaultRadius, shader)
 	direction := mgl32.Vec3{1, 0, 0}
 	sphere.SetIndexDirection(0, direction[0])
 	if sphere.direction != direction {
+		t.Error("Direction mismatch")
+	}
+	if sphere.GetDirection() != direction {
 		t.Error("Direction mismatch")
 	}
 }
