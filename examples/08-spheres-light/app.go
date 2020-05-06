@@ -58,7 +58,8 @@ func CreateCamera() *camera.Camera {
 
 // It generates the lightsource sphere.
 func GenerateWhiteSphere(shaderProgram *shader.Shader) {
-	LightSourceSphere = sphere.New(mgl32.Vec3{-3.0, -0.5, -3.0}, mgl32.Vec3{1, 1, 1}, 1.0, shaderProgram)
+	LightSourceSphere = sphere.New(mgl32.Vec3{-3.0, -0.5, -3.0}, mgl32.Vec3{1, 1, 1}, 0.1, shaderProgram)
+	LightSourceSphere.SetPrecision(20)
 	mat := material.New(mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, 144.0)
 	LightSourceSphere.SetMaterial(mat)
 	LightSourceSphere.SetDirection((mgl32.Vec3{9, 0, -3}).Normalize())
@@ -73,6 +74,7 @@ func GenerateWhiteSphere(shaderProgram *shader.Shader) {
 func GenerateJadeSphere(shaderProgram *shader.Shader) {
 	JadeSphere = sphere.New(mgl32.Vec3{0.0, -0.5, 0.0}, mgl32.Vec3{0, 1, 0}, 1.0, shaderProgram)
 	JadeSphere.SetMaterial(material.Jade)
+	JadeSphere.SetPrecision(20)
 	JadeSphere.DrawMode(sphere.DRAW_MODE_LIGHT)
 	app.AddItem(JadeSphere)
 }
@@ -81,6 +83,7 @@ func GenerateJadeSphere(shaderProgram *shader.Shader) {
 func GenerateRedPlasticSphere(shaderProgram *shader.Shader) {
 	sp := sphere.New(mgl32.Vec3{-6.5, -3.5, -4.5}, mgl32.Vec3{1, 0, 0}, 2.0, shaderProgram)
 	sp.SetMaterial(material.Redplastic)
+	sp.SetPrecision(20)
 	sp.DrawMode(sphere.DRAW_MODE_LIGHT)
 	app.AddItem(sp)
 }
