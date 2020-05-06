@@ -12,6 +12,8 @@ var (
 	DefaultCenter    = mgl32.Vec3{3, 3, 5}
 	DefaultSpeed     = float32(0.0)
 	DefaultDirection = mgl32.Vec3{0, 0, 0}
+	DefaultAngle     = float32(0.0)
+	DefaultAxis      = mgl32.Vec3{0, 0, 0}
 )
 
 type testShader struct {
@@ -53,6 +55,12 @@ func TestNew(t *testing.T) {
 	}
 	if sphere.GetDirection() != DefaultDirection {
 		t.Error("Direction vector is not 0")
+	}
+	if sphere.axis != DefaultAxis {
+		t.Error("Axis vector is not 0")
+	}
+	if sphere.angle != DefaultAngle {
+		t.Error("Angle is not null")
 	}
 }
 func TestLog(t *testing.T) {
