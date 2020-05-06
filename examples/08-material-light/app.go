@@ -31,7 +31,10 @@ const (
 	UP       = glfw.KeyQ
 	DOWN     = glfw.KeyE
 
-	moveSpeed = 0.005
+	CameraMoveSpeed      = 0.005
+	CameraDirectionSpeed = float32(0.00500)
+
+	LightSourceRoundSpeed = 3000.0
 )
 
 var (
@@ -39,8 +42,13 @@ var (
 
 	lastUpdate int64
 
-	cameraDistance       = 0.1
-	cameraDirectionSpeed = float32(0.00500)
+	cameraDistance  = 0.1
+	LightSource     *light.Light
+	LightSourceCube *cuboid.Cuboid
+	MaterialCube    *cuboid.Cuboid
+
+	InitialCenterPointLight = mgl32.Vec3{-3, 0, -3}
+	CenterPointObject       = mgl32.Vec3{0, 0, 0}
 )
 
 // It creates a new camera with the necessary setup
@@ -78,20 +86,24 @@ func GenerateWhiteCube(shaderProgram *shader.Shader) {
 		mgl32.Vec3{1.0, 1.0, 1.0},
 	}
 	bottomRect := rectangle.New(whiteBottomCoordinates, whiteBottomColor, shaderProgram)
-	cube := cuboid.New(bottomRect, 1.0, shaderProgram)
-	mat := material.New(mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, 36.0)
-	cube.SetMaterial(mat)
-	cube.DrawMode(cuboid.DRAW_MODE_LIGHT)
-	app.AddItem(cube)
+	LightSourceCube = cuboid.New(bottomRect, 1.0, shaderProgram)
+	mat := material.New(mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, 144.0)
+	LightSourceCube.SetMaterial(mat)
+	LightSourceCube.SetDirection((mgl32.Vec3{1, 0, 1}).Normalize())
+	distance := (LightSourceCube.GetCenterPoint().Sub(MaterialCube.GetCenterPoint())).Len()
+
+	LightSourceCube.SetSpeed((float32(2) * float32(3.1415) * distance) / LightSourceRoundSpeed)
+	LightSourceCube.DrawMode(cuboid.DRAW_MODE_LIGHT)
+	app.AddItem(LightSourceCube)
 }
 
 // It generates the colored cube.
 func GenerateColoredCube(shaderProgram *shader.Shader) {
 	coloredBottomCoordinates := [4]mgl32.Vec3{
 		mgl32.Vec3{-0.5, -0.5, -0.5},
-		mgl32.Vec3{-0.5, -0.5, 0.5},
-		mgl32.Vec3{0.5, -0.5, 0.5},
 		mgl32.Vec3{0.5, -0.5, -0.5},
+		mgl32.Vec3{0.5, -0.5, 0.5},
+		mgl32.Vec3{-0.5, -0.5, 0.5},
 	}
 	coloredBottomColor := [4]mgl32.Vec3{
 		mgl32.Vec3{0.0, 1.0, 1.0},
@@ -99,42 +111,53 @@ func GenerateColoredCube(shaderProgram *shader.Shader) {
 		mgl32.Vec3{0.0, 1.0, 1.0},
 		mgl32.Vec3{0.0, 1.0, 1.0},
 	}
-	bottomRect := rectangle.New(coloredBottomCoordinates, coloredBottomColor, shaderProgram)
-	cube := cuboid.New(bottomRect, 1.0, shaderProgram)
-	cube.SetMaterial(material.Jade)
-	cube.DrawMode(cuboid.DRAW_MODE_LIGHT)
-	app.AddItem(cube)
+	bottomRect := rectangle.NewSquare(coloredBottomCoordinates[1], coloredBottomCoordinates[3], mgl32.Vec3{0, 1, 0}, coloredBottomColor[0], shaderProgram)
+	MaterialCube = cuboid.New(bottomRect, 1.0, shaderProgram)
+	MaterialCube.SetPrecision(3)
+	MaterialCube.SetMaterial(material.Jade)
+	MaterialCube.DrawMode(cuboid.DRAW_MODE_LIGHT)
+	app.AddItem(MaterialCube)
 }
 
 func Update() {
 	nowNano := time.Now().UnixNano()
-	delta := float64(nowNano - lastUpdate)
-	moveTime := delta / float64(time.Millisecond)
+	moveTime := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
+	// Calculate the  rotation matrix. Get the current one, rotate it with a calculated angle around the Y axis. (HomogRotate3D(angle float32, axis Vec3) Mat4)
+	// angle calculation: (360 / LightSourceRoundSpeed) * delta) -> in radian: mat32.DegToRad()
+	// Then we can transform the current direction vector to the new one. (TransformNormal(v Vec3, m Mat4) Vec3)
+	// after it we can set the new direction vector of the light source.
+	lightSourceRotationAngleRadian := mgl32.DegToRad(float32((360 / LightSourceRoundSpeed) * moveTime))
+	lightDirectionRotationMatrix := mgl32.HomogRotate3D(lightSourceRotationAngleRadian, mgl32.Vec3{0, 1, 0})
+	currentLightSourceDirection := LightSourceCube.GetDirection()
+	LightSourceCube.SetDirection(mgl32.TransformNormal(currentLightSourceDirection, lightDirectionRotationMatrix))
+	LightSource.SetPosition(LightSourceCube.GetCenterPoint())
+
+	app.Update(moveTime)
 
 	forward := 0.0
 	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
-		forward = moveSpeed * moveTime
+		forward = CameraMoveSpeed * moveTime
 	} else if app.GetKeyState(BACKWARD) && !app.GetKeyState(FORWARD) {
-		forward = -moveSpeed * moveTime
+		forward = -CameraMoveSpeed * moveTime
 	}
 	if forward != 0 {
 		app.GetCamera().Walk(float32(forward))
 	}
 	horisontal := 0.0
 	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
-		horisontal = -moveSpeed * moveTime
+		horisontal = -CameraMoveSpeed * moveTime
 	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
-		horisontal = moveSpeed * moveTime
+		horisontal = CameraMoveSpeed * moveTime
 	}
 	if horisontal != 0 {
 		app.GetCamera().Strafe(float32(horisontal))
 	}
 	vertical := 0.0
 	if app.GetKeyState(UP) && !app.GetKeyState(DOWN) {
-		vertical = -moveSpeed * moveTime
+		vertical = -CameraMoveSpeed * moveTime
 	} else if app.GetKeyState(DOWN) && !app.GetKeyState(UP) {
-		vertical = moveSpeed * moveTime
+		vertical = CameraMoveSpeed * moveTime
 	}
 	if vertical != 0 {
 		app.GetCamera().Lift(float32(vertical))
@@ -170,14 +193,14 @@ func Update() {
 	dX := float32(0.0)
 	dY := float32(0.0)
 	if KeyDowns["dUp"] && !KeyDowns["dDown"] {
-		dY = cameraDirectionSpeed
+		dY = CameraDirectionSpeed
 	} else if KeyDowns["dDown"] && !KeyDowns["dUp"] {
-		dY = -cameraDirectionSpeed
+		dY = -CameraDirectionSpeed
 	}
 	if KeyDowns["dLeft"] && !KeyDowns["dRight"] {
-		dX = -cameraDirectionSpeed
+		dX = -CameraDirectionSpeed
 	} else if KeyDowns["dRight"] && !KeyDowns["dLeft"] {
-		dX = cameraDirectionSpeed
+		dX = CameraDirectionSpeed
 	}
 	app.GetCamera().UpdateDirection(dX, dY)
 }
@@ -191,12 +214,12 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 
-	lightSource := light.New(mgl32.Vec3{-3, 0, -3}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1})
+	LightSource = light.New(InitialCenterPointLight, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1})
 	shaderProgramColored := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
-	shaderProgramColored.SetLightSource(lightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
+	shaderProgramColored.SetLightSource(LightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
 	GenerateColoredCube(shaderProgramColored)
 	shaderProgramWhite := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
-	shaderProgramWhite.SetLightSource(lightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
+	shaderProgramWhite.SetLightSource(LightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
 	GenerateWhiteCube(shaderProgramWhite)
 
 	gl.Enable(gl.DEPTH_TEST)
