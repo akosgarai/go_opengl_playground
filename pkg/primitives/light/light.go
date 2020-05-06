@@ -52,3 +52,8 @@ func (l *Light) GetSpecular() mgl32.Vec3 {
 func (l *Light) GetPosition() mgl32.Vec3 {
 	return l.position
 }
+
+// SetPosition updates the position of the light
+func (l *Light) SetPosition(pos mgl32.Vec3) {
+	l.position = pos
+}

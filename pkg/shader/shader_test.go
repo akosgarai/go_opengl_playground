@@ -8,6 +8,8 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
+
+	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 )
 
 const (
@@ -126,6 +128,18 @@ void main()
 	FragmentShaderFileName = "fragmentShader.frag"
 	VertexShaderFileName   = "vertexShader.vert"
 )
+
+var (
+	LightPosition = mgl32.Vec3{0, 0, 0}
+	LightAmbient  = mgl32.Vec3{1, 1, 1}
+	LightDiffuse  = mgl32.Vec3{1, 1, 1}
+	LightSpecular = mgl32.Vec3{1, 1, 1}
+)
+
+func NewLightSource() *light.Light {
+	source := light.New(LightPosition, LightAmbient, LightDiffuse, LightSpecular)
+	return source
+}
 
 func CreateFileWithContent(name, content string) error {
 	file, err := os.Create(name)
@@ -532,7 +546,8 @@ func TestDrawPointsLightColor(t *testing.T) {
 	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightColor")
+	lightSource := NewLightSource()
+	shader.SetLightSource(lightSource, "lightSourceName", "", "diffuseUniformName", "")
 	defer glfw.Terminate()
 	bufferData := []float32{0, 0, 0, 1, 1, 1, 5}
 	shader.BindBufferData(bufferData)
@@ -564,7 +579,8 @@ func TestDrawTrianglesLight(t *testing.T) {
 	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightColor")
+	lightSource := NewLightSource()
+	shader.SetLightSource(lightSource, "lightSourceName", "", "diffuseUniformName", "")
 	defer glfw.Terminate()
 	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
 	shader.BindBufferData(bufferData)
@@ -706,7 +722,7 @@ func TestHasTexture(t *testing.T) {
 		t.Error("it has texture")
 	}
 }
-func TestUseLightColor(t *testing.T) {
+func TestLightDiffuseColor(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping it in short mode")
 	}
@@ -714,13 +730,12 @@ func TestUseLightColor(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	lightColor := mgl32.Vec3{1, 1, 1}
-	lightName := "lightSourceName"
-	shader.UseLightColor(lightColor, lightName)
-	if shader.lightColorUniformName != lightName {
+	lightSource := NewLightSource()
+	shader.SetLightSource(lightSource, "lightSourceName", "", "diffuseUniformName", "")
+	if shader.lightSource.DiffuseUniformName != "diffuseUniformName" {
 		t.Error("Invalid light uniform name")
 	}
-	if shader.lightColor != lightColor {
+	if shader.lightSource.LightSource.GetDiffuse() != LightDiffuse {
 		t.Error("Invalid light color")
 	}
 }
@@ -732,15 +747,14 @@ func TestSetLightAmbient(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightSourceName")
-	ambientStrength := float32(0.5)
+	lightSource := NewLightSource()
 	ambientUniformName := "ambientStrengthName"
-	shader.SetLightAmbient(ambientStrength, ambientUniformName)
+	shader.SetLightSource(lightSource, "lightSourceName", ambientUniformName, "", "")
 
-	if shader.lightAmbientStrength != ambientStrength {
+	if shader.lightSource.LightSource.GetAmbient() != LightAmbient {
 		t.Error("Invalid light ambient strength")
 	}
-	if shader.lightAmbientUniformName != ambientUniformName {
+	if shader.lightSource.AmbientUniformName != ambientUniformName {
 		t.Error("Invalid light uniform name")
 	}
 }
@@ -752,10 +766,9 @@ func TestDrawWithLightAmbient(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightSourceName")
-	ambientStrength := float32(0.5)
-	ambientUniformName := "ambientStrengthName"
-	shader.SetLightAmbient(ambientStrength, ambientUniformName)
+	lightSource := NewLightSource()
+	shader.SetLightSource(lightSource, "lightSourceName", "ambientSourceName", "", "")
+
 	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
 	shader.BindBufferData(bufferData)
 	shader.BindVertexArray()
@@ -773,13 +786,13 @@ func TestUseLightPosition(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	lightPosition := mgl32.Vec3{1, 1, 1}
 	lightPositionName := "lightPosName"
-	shader.UseLightPosition(lightPosition, lightPositionName)
-	if shader.lightPositionUniformName != lightPositionName {
-		t.Errorf("Invalid light uniform name. Instead of '%s', we have '%s'", lightPositionName, shader.lightPositionUniformName)
+	lightSource := NewLightSource()
+	shader.SetLightSource(lightSource, lightPositionName, "", "", "")
+	if shader.lightSource.PositionUniformName != lightPositionName {
+		t.Errorf("Invalid light uniform name. Instead of '%s', we have '%s'", lightPositionName, shader.lightSource.PositionUniformName)
 	}
-	if shader.lightPosition != lightPosition {
+	if shader.lightSource.LightSource.GetPosition() != LightPosition {
 		t.Error("Invalid light Position")
 	}
 }
@@ -789,7 +802,8 @@ func TestDrawTrianglesLightPosition(t *testing.T) {
 	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	shader.UseLightPosition(mgl32.Vec3{1, 1, 1}, "lightPosition")
+	lightSource := NewLightSource()
+	shader.SetLightSource(lightSource, "posUniform", "", "", "")
 	defer glfw.Terminate()
 	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
 	shader.BindBufferData(bufferData)
@@ -825,16 +839,14 @@ func TestSetLightSpecular(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightSourceName")
-	specularStrength := float32(0.5)
-	specularUniformName := "specularStrengthName"
-	shader.SetLightSpecular(specularStrength, specularUniformName)
+	lightSource := NewLightSource()
+	shader.SetLightSource(lightSource, "", "", "", "specularUniform")
 
-	if shader.lightSpecularStrength != specularStrength {
-		t.Error("Invalid light specular strength")
+	if shader.lightSource.SpecularUniformName != "specularUniform" {
+		t.Error("Invalid light specular uniform name")
 	}
-	if shader.lightSpecularUniformName != specularUniformName {
-		t.Error("Invalid light uniform name")
+	if shader.lightSource.LightSource.GetSpecular() != LightSpecular {
+		t.Error("Invalid light specular value")
 	}
 }
 func TestDrawWithLightSpecular(t *testing.T) {
@@ -845,10 +857,8 @@ func TestDrawWithLightSpecular(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightSourceName")
-	specularStrength := float32(0.5)
-	specularUniformName := "specularStrengthName"
-	shader.SetLightSpecular(specularStrength, specularUniformName)
+	lightSource := NewLightSource()
+	shader.SetLightSource(lightSource, "", "", "", "specularUniform")
 	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
 	shader.BindBufferData(bufferData)
 	shader.BindVertexArray()
@@ -866,10 +876,8 @@ func TestDrawWithLightViewPosition(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	shader.UseLightColor(mgl32.Vec3{1, 1, 1}, "lightSourceName")
-	specularStrength := float32(0.5)
-	specularUniformName := "specularStrengthName"
-	shader.SetLightSpecular(specularStrength, specularUniformName)
+	lightSource := NewLightSource()
+	shader.SetLightSource(lightSource, "posUniform", "ambientUniform", "diffuseUniform", "specularUniform")
 	viewPosition := mgl32.Vec3{1, 1, 1}
 	viewPositionName := "viewPosName"
 	shader.SetViewPosition(viewPosition, viewPositionName)

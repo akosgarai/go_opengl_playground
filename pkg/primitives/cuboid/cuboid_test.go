@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-gl/mathgl/mgl32"
 
+	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 )
 
@@ -31,6 +32,8 @@ func (t testShader) Use() {
 }
 func (t testShader) SetUniformMat4(s string, m mgl32.Mat4) {
 }
+func (t testShader) SetUniform1f(s string, f1 float32) {
+}
 func (t testShader) SetUniform3f(s string, f1, f2, f3 float32) {
 }
 func (t testShader) DrawTriangles(i int32) {
@@ -50,22 +53,44 @@ func (t testShader) HasTexture() bool {
 var shader testShader
 
 func TestNew(t *testing.T) {
-	shader.HasTextureValue = false
-	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
-	cube := New(bottom, 1, shader)
-	cubeBottom := cube.sides[0].Coordinates()
-	cubeTop := cube.sides[1].Coordinates()
-	var cubeTopExpected [4]mgl32.Vec3
-	for i := 0; i < 4; i++ {
-		cubeTopExpected[i] = cubeBottom[i].Add(mgl32.Vec3{0, 0, -1})
+	givenSide := rectangle.New(DefaultCoordinates, DefaultColors, shader)
+	heightLength := float32(1.0)
+
+	cube := New(givenSide, heightLength, shader)
+
+	// opposite normal vectors.
+	if cube.sides[0].GetNormal() != cube.sides[1].GetNormal().Mul(-1) {
+		t.Error("sides[0] - sides[1] normal vector not opposite.")
+		t.Log(cube.sides[0].GetNormal())
+		t.Log(cube.sides[1].GetNormal())
 	}
-	for i := 0; i < 4; i++ {
-		if cubeBottom[i] != DefaultCoordinates[i] {
-			t.Error("Mismatch in the bottom coordinates")
-		}
-		if cubeTop[i] != cubeTopExpected[i] {
-			t.Error("Mismatch in the top coordinates")
-		}
+	if cube.sides[2].GetNormal() != cube.sides[3].GetNormal().Mul(-1) {
+		t.Error("sides[2] - sides[3] normal vector not opposite.")
+		t.Log(cube.sides[2].GetNormal())
+		t.Log(cube.sides[3].GetNormal())
+	}
+	if cube.sides[4].GetNormal() != cube.sides[5].GetNormal().Mul(-1) {
+		t.Error("sides[4] - sides[5] normal vector not opposite.")
+		t.Log(cube.sides[4].GetNormal())
+		t.Log(cube.sides[5].GetNormal())
+	}
+
+	// sides[0] supposed to be the given side.
+	if cube.sides[0] != givenSide {
+		t.Error("sides[0] supposed to be the given side.")
+
+	}
+	// sides[1] supposed to be the opposite side of the cube.
+	expectedCoordinatesForTheOppositeSide := [4]mgl32.Vec3{
+		givenSide.Coordinates()[0].Add(givenSide.GetNormal().Mul(-heightLength)),
+		givenSide.Coordinates()[3].Add(givenSide.GetNormal().Mul(-heightLength)),
+		givenSide.Coordinates()[2].Add(givenSide.GetNormal().Mul(-heightLength)),
+		givenSide.Coordinates()[1].Add(givenSide.GetNormal().Mul(-heightLength)),
+	}
+	if cube.sides[1].Coordinates() != expectedCoordinatesForTheOppositeSide {
+		t.Log(cube.sides[1].Coordinates())
+		t.Log(expectedCoordinatesForTheOppositeSide)
+		t.Error("sides[1] suppose to be the opposite side.")
 	}
 }
 func TestLog(t *testing.T) {
@@ -75,6 +100,15 @@ func TestLog(t *testing.T) {
 	log := cube.Log()
 	if len(log) < 10 {
 		t.Error("Log too short")
+	}
+}
+func TestSetMaterial(t *testing.T) {
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
+	cube := New(bottom, 1, shader)
+	cube.SetMaterial(material.Gold)
+	if cube.material != material.Gold {
+		t.Error("Invalid material")
 	}
 }
 func TestSetColor(t *testing.T) {
@@ -127,6 +161,9 @@ func TestSetDirection(t *testing.T) {
 	direction := mgl32.Vec3{0, 0, 1}
 	speed := float32(10.0)
 	cube.SetDirection(direction)
+	if cube.GetDirection() != direction {
+		t.Error("Invalid direction")
+	}
 	cube.SetSpeed(speed)
 	cube.Update(10)
 	expectedCoordinates := [4]mgl32.Vec3{
@@ -273,13 +310,15 @@ func TestSetPrecision(t *testing.T) {
 	cube := New(bottom, 1, shader)
 	cube.SetPrecision(1)
 	cube.setupVao()
-	if len(cube.vao.Get()) != 216 {
-		t.Error("Invalid number of elements in the vao.")
+	expectedPrecision := 216
+	if len(cube.vao.Get()) != expectedPrecision {
+		t.Errorf("Invalid number of elements in the vao. Instead of '%d', we have '%d'.", expectedPrecision, len(cube.vao.Get()))
 	}
 	cube.SetPrecision(2)
 	cube.setupVao()
-	if len(cube.vao.Get()) != 864 {
-		t.Error("Invalid number of elements in the vao.")
+	expectedPrecision = 864
+	if len(cube.vao.Get()) != expectedPrecision {
+		t.Errorf("Invalid number of elements in the vao. Instead of '%d', we have '%d'.", expectedPrecision, len(cube.vao.Get()))
 	}
 }
 
@@ -330,5 +369,17 @@ func TestDrawWithUniformsLight(t *testing.T) {
 	cube.DrawWithUniforms(mgl32.Ident4(), mgl32.Ident4())
 	if len(cube.vao.Get()) != 36*6 {
 		t.Errorf("Invalid vao length. Instead of '216', we got '%d'", len(cube.vao.Get()))
+	}
+}
+func TestGetCenterPoint(t *testing.T) {
+	shader.HasTextureValue = false
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
+	cube := New(bottom, 1, shader)
+	centerPoint := cube.GetCenterPoint()
+	expectedCenterPoint := mgl32.Vec3{0.5, 0.5, -0.5}
+	if centerPoint != expectedCenterPoint {
+		t.Error("Invalid center point (given / expected)")
+		t.Log(centerPoint)
+		t.Log(expectedCenterPoint)
 	}
 }

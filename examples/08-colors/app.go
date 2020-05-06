@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -196,7 +197,8 @@ func main() {
 	app.SetCamera(CreateCamera())
 
 	shaderProgram := shader.NewShader("examples/08-colors/vertexshader.vert", "examples/08-colors/fragmentshader.frag")
-	shaderProgram.UseLightColor(mgl32.Vec3{0, 1, 1}, "lightColor")
+	lightSource := light.New(mgl32.Vec3{0, 0, 0}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1})
+	shaderProgram.SetLightSource(lightSource, "", "light.ambient", "", "")
 	GenerateColoredCube(shaderProgram)
 	GenerateWhiteCube(shaderProgram)
 

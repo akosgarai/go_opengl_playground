@@ -59,3 +59,11 @@ func TestGetPosition(t *testing.T) {
 		t.Error("Invalid position vector")
 	}
 }
+func TestSetPosition(t *testing.T) {
+	l := New(DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent)
+	newPosition := mgl32.Vec3{2, 2, 2}
+	l.SetPosition(newPosition)
+	if l.GetPosition() != newPosition {
+		t.Error("Invalid position vector")
+	}
+}

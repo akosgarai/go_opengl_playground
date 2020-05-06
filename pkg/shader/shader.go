@@ -14,6 +14,21 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+type Light interface {
+	GetSpecular() mgl32.Vec3
+	GetAmbient() mgl32.Vec3
+	GetDiffuse() mgl32.Vec3
+	GetPosition() mgl32.Vec3
+}
+
+type LightSource struct {
+	LightSource         Light
+	PositionUniformName string
+	AmbientUniformName  string
+	DiffuseUniformName  string
+	SpecularUniformName string
+}
+
 // InitOpenGL is for initializing the gl lib. It also prints out the gl version.
 func InitOpenGL() {
 	if err := gl.Init(); err != nil {
@@ -105,18 +120,11 @@ func (t *texture) UnBind() {
 }
 
 type Shader struct {
-	shaderProgramId          uint32
-	textures                 []texture
-	lightColor               mgl32.Vec3
-	lightColorUniformName    string
-	lightAmbientStrength     float32
-	lightAmbientUniformName  string
-	lightPosition            mgl32.Vec3
-	lightPositionUniformName string
-	lightSpecularStrength    float32
-	lightSpecularUniformName string
-	viewPosition             mgl32.Vec3
-	viewPositionUniformName  string
+	shaderProgramId         uint32
+	textures                []texture
+	lightSource             LightSource
+	viewPosition            mgl32.Vec3
+	viewPositionUniformName string
 }
 
 // NewShader returns a Shader. It's inputs are the filenames of the shaders.
@@ -145,16 +153,14 @@ func NewShader(vertexShaderPath, fragmentShaderPath string) *Shader {
 	gl.LinkProgram(program)
 
 	return &Shader{
-		shaderProgramId:          program,
-		textures:                 []texture{},
-		lightColorUniformName:    "",
-		lightColor:               mgl32.Vec3{1, 1, 1},
-		lightAmbientStrength:     float32(1.0),
-		lightAmbientUniformName:  "",
-		lightPositionUniformName: "",
-		lightPosition:            mgl32.Vec3{0, 0, 0},
-		lightSpecularStrength:    float32(0.5),
-		lightSpecularUniformName: "",
+		shaderProgramId: program,
+		textures:        []texture{},
+		lightSource: LightSource{
+			PositionUniformName: "",
+			AmbientUniformName:  "",
+			DiffuseUniformName:  "",
+			SpecularUniformName: "",
+		},
 
 		viewPosition:            mgl32.Vec3{0, 0, 0},
 		viewPositionUniformName: "",
@@ -200,25 +206,21 @@ func (s *Shader) genTexture() uint32 {
 	return id
 }
 
-func (s *Shader) UseLightColor(color mgl32.Vec3, uniformName string) {
-	s.lightColor = color
-	s.lightColorUniformName = uniformName
+// SetLight setups a light source.
+// It takes a Light input that contains the model related info,
+// and it also takes 4 strings, the uniform names that are used in the shader applications
+// the 'PositionUniformName', 'AmbientUniformName', 'DiffuseUniformName', 'SpecularUniformName'
+func (s *Shader) SetLightSource(lightSource Light, position, ambient, diffuse, specular string) {
+	s.lightSource.LightSource = lightSource
+	s.lightSource.PositionUniformName = position
+	s.lightSource.AmbientUniformName = ambient
+	s.lightSource.DiffuseUniformName = diffuse
+	s.lightSource.SpecularUniformName = specular
 }
-func (s *Shader) UseLightPosition(position mgl32.Vec3, uniformName string) {
-	s.lightPosition = position
-	s.lightPositionUniformName = uniformName
-}
-func (s *Shader) SetLightAmbient(a float32, uniformName string) {
-	s.lightAmbientStrength = a
-	s.lightAmbientUniformName = uniformName
-}
+
 func (s *Shader) SetViewPosition(position mgl32.Vec3, uniformName string) {
 	s.viewPosition = position
 	s.viewPositionUniformName = uniformName
-}
-func (s *Shader) SetLightSpecular(spec float32, uniformName string) {
-	s.lightSpecularStrength = spec
-	s.lightSpecularUniformName = uniformName
 }
 func (s *Shader) HasTexture() bool {
 	if len(s.textures) > 0 {
@@ -301,17 +303,21 @@ func (s *Shader) Close(numOfVertexAttributes int) {
 
 // Setup light related uniforms.
 func (s *Shader) lightHandler() {
-	if s.lightColorUniformName != "" {
-		s.SetUniform3f(s.lightColorUniformName, s.lightColor.X(), s.lightColor.Y(), s.lightColor.Z())
+	if s.lightSource.PositionUniformName != "" {
+		position := s.lightSource.LightSource.GetPosition()
+		s.SetUniform3f(s.lightSource.PositionUniformName, position.X(), position.Y(), position.Z())
 	}
-	if s.lightAmbientUniformName != "" {
-		s.SetUniform1f(s.lightAmbientUniformName, s.lightAmbientStrength)
+	if s.lightSource.AmbientUniformName != "" {
+		ambient := s.lightSource.LightSource.GetAmbient()
+		s.SetUniform3f(s.lightSource.AmbientUniformName, ambient.X(), ambient.Y(), ambient.Z())
 	}
-	if s.lightPositionUniformName != "" {
-		s.SetUniform3f(s.lightPositionUniformName, s.lightPosition.X(), s.lightPosition.Y(), s.lightPosition.Z())
+	if s.lightSource.DiffuseUniformName != "" {
+		diffuse := s.lightSource.LightSource.GetDiffuse()
+		s.SetUniform3f(s.lightSource.DiffuseUniformName, diffuse.X(), diffuse.Y(), diffuse.Z())
 	}
-	if s.lightSpecularUniformName != "" {
-		s.SetUniform1f(s.lightSpecularUniformName, s.lightSpecularStrength)
+	if s.lightSource.SpecularUniformName != "" {
+		specular := s.lightSource.LightSource.GetSpecular()
+		s.SetUniform3f(s.lightSource.DiffuseUniformName, specular.X(), specular.Y(), specular.Z())
 	}
 	if s.viewPositionUniformName != "" {
 		s.SetUniform3f(s.viewPositionUniformName, s.viewPosition.X(), s.viewPosition.Y(), s.viewPosition.Z())

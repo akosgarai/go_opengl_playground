@@ -3,6 +3,7 @@ package cuboid
 import (
 	"github.com/go-gl/mathgl/mgl32"
 
+	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/vao"
@@ -24,13 +25,14 @@ type Cuboid struct {
 	axis     mgl32.Vec3
 	drawMode int
 
-	color mgl32.Vec3
+	material *material.Material
 }
 
 func (c *Cuboid) Log() string {
 	logString := "Cuboid:\n"
-	logString += " - Rotation : Axis: Vector{" + trans.Vec3ToString(c.axis) + "}, angle: " + trans.Float32ToString(c.angle) + "}\n"
-	logString += " - Color: Vector{" + trans.Vec3ToString(c.color) + "}, DrawMode: " + trans.IntegerToString(c.drawMode) + "\n"
+	logString += " - Rotation : Axis: Vector{" + trans.Vec3ToString(c.axis) + "}, angle: " + trans.Float32ToString(c.angle) + "}, DrawMode: " + trans.IntegerToString(c.drawMode) + "\n"
+	logString += " - " + c.material.Log() + "\n"
+	logString += " - Center: Vector{" + trans.Vec3ToString(c.GetCenterPoint()) + "}\n"
 	logString += " - Top:\n"
 	logString += c.sides[1].Log()
 	logString += " - Bottom:\n"
@@ -48,11 +50,11 @@ func (c *Cuboid) Log() string {
 }
 
 func New(bottom *rectangle.Rectangle, heightLength float32, shader rectangle.Shader) *Cuboid {
-	bottomPoints := bottom.Coordinates()
+	givenSidePoints := bottom.Coordinates()
 	// normal vector * (-1) * heightLength is the height vector.
 	// each point of the bottom + calculated prev vector -> top rectangle.
-	v1 := bottomPoints[1].Sub(bottomPoints[0])
-	v2 := bottomPoints[3].Sub(bottomPoints[0])
+	v1 := givenSidePoints[1].Sub(givenSidePoints[0])
+	v2 := givenSidePoints[3].Sub(givenSidePoints[0])
 	cp := v1.Cross(v2).Normalize()
 	height := cp.Mul(-1.0 * heightLength)
 
@@ -61,47 +63,47 @@ func New(bottom *rectangle.Rectangle, heightLength float32, shader rectangle.Sha
 	sides[0] = bottom
 	// top
 	topSide := [4]mgl32.Vec3{
-		bottomPoints[0].Add(height),
-		bottomPoints[1].Add(height),
-		bottomPoints[2].Add(height),
-		bottomPoints[3].Add(height),
+		givenSidePoints[0].Add(height),
+		givenSidePoints[3].Add(height),
+		givenSidePoints[2].Add(height),
+		givenSidePoints[1].Add(height),
 	}
 	top := rectangle.New(topSide, bottom.Colors(), shader)
 	sides[1] = top
-	topPoints := top.Coordinates()
+	oppositeSidePoints := top.Coordinates()
 	// front
 	frontSide := [4]mgl32.Vec3{
-		topPoints[0],
-		bottomPoints[0],
-		bottomPoints[1],
-		topPoints[1],
+		oppositeSidePoints[0],
+		oppositeSidePoints[3],
+		givenSidePoints[1],
+		givenSidePoints[0],
 	}
 	front := rectangle.New(frontSide, bottom.Colors(), shader)
 	sides[2] = front
 	// back
 	backSide := [4]mgl32.Vec3{
-		topPoints[3],
-		bottomPoints[3],
-		bottomPoints[2],
-		topPoints[2],
+		givenSidePoints[2],
+		oppositeSidePoints[2],
+		oppositeSidePoints[1],
+		givenSidePoints[3],
 	}
 	back := rectangle.New(backSide, bottom.Colors(), shader)
 	sides[3] = back
 	// left
 	leftSide := [4]mgl32.Vec3{
-		topPoints[3],
-		bottomPoints[3],
-		bottomPoints[0],
-		topPoints[0],
+		givenSidePoints[2],
+		givenSidePoints[1],
+		oppositeSidePoints[3],
+		oppositeSidePoints[2],
 	}
 	left := rectangle.New(leftSide, bottom.Colors(), shader)
 	sides[4] = left
 	// right
 	rightSide := [4]mgl32.Vec3{
-		topPoints[1],
-		bottomPoints[1],
-		bottomPoints[2],
-		topPoints[2],
+		givenSidePoints[0],
+		givenSidePoints[3],
+		oppositeSidePoints[1],
+		oppositeSidePoints[0],
 	}
 	right := rectangle.New(rightSide, bottom.Colors(), shader)
 	sides[5] = right
@@ -113,13 +115,17 @@ func New(bottom *rectangle.Rectangle, heightLength float32, shader rectangle.Sha
 		angle:    0,
 		axis:     mgl32.Vec3{0, 0, 0},
 		drawMode: DRAW_MODE_COLOR,
-		color:    (bottom.Colors())[0],
+		material: material.New((bottom.Colors())[0], (bottom.Colors())[0], (bottom.Colors())[0], 36.0),
 	}
+}
+
+// SetMaterial updates the material of the cuboid.
+func (c *Cuboid) SetMaterial(mat *material.Material) {
+	c.material = mat
 }
 
 // SetColor updates every color with the given one.
 func (c *Cuboid) SetColor(color mgl32.Vec3) {
-	c.color = color
 	for i := 0; i < 6; i++ {
 		c.sides[i].SetColor(color)
 	}
@@ -176,6 +182,20 @@ func (c *Cuboid) SetAngle(angle float32) {
 // SetAxis updates the axis.
 func (c *Cuboid) SetAxis(axis mgl32.Vec3) {
 	c.axis = axis
+}
+
+// GetDirection returns the direction of the cuboid, aka the direction of the first side.
+func (c *Cuboid) GetDirection() mgl32.Vec3 {
+	return c.sides[0].GetDirection()
+}
+
+// GetCenterPoint return the center point of the cuboid.
+// In other words it returns the cross point of the diagonals
+func (c *Cuboid) GetCenterPoint() mgl32.Vec3 {
+	// calculate the diagonal:side[0][0] - side[1][2], then
+	// multiply it with 1/2 (make it half), and add it to side[0][X].
+	diagonalHalf := (c.sides[1].Coordinates()[2]).Sub(c.sides[0].Coordinates()[0]).Mul(0.5)
+	return (c.sides[0].Coordinates()[0]).Add(diagonalHalf)
 }
 
 func (c *Cuboid) setupVao() {
@@ -237,7 +257,14 @@ func (c *Cuboid) modelTransformation() mgl32.Mat4 {
 }
 func (c *Cuboid) setupColorUniform() {
 	if c.drawMode == DRAW_MODE_LIGHT {
-		c.shader.SetUniform3f("objectColor", c.color.X(), c.color.Y(), c.color.Z())
+		diffuse := c.material.GetDiffuse()
+		ambient := c.material.GetAmbient()
+		specular := c.material.GetSpecular()
+		shininess := c.material.GetShininess()
+		c.shader.SetUniform3f("material.diffuse", diffuse.X(), diffuse.Y(), diffuse.Z())
+		c.shader.SetUniform3f("material.ambient", ambient.X(), ambient.Y(), ambient.Z())
+		c.shader.SetUniform3f("material.specular", specular.X(), specular.Y(), specular.Z())
+		c.shader.SetUniform1f("material.shininess", shininess)
 	}
 }
 
