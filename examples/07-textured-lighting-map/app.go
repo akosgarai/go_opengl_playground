@@ -7,7 +7,10 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
@@ -29,8 +32,12 @@ const (
 	UP       = glfw.KeyQ
 	DOWN     = glfw.KeyE
 
-	moveSpeed     = 0.005
-	rotationSpeed = float32(2.0)
+	moveSpeed            = 0.005
+	rotationSpeed        = float32(2.0)
+	cameraDirectionSpeed = float32(0.00500)
+	CameraMoveSpeed      = 0.005
+
+	LightSourceRoundSpeed = 3000.0
 )
 
 var (
@@ -39,56 +46,62 @@ var (
 
 	lastUpdate int64
 
-	cameraDistance       = 0.1
-	cameraDirectionSpeed = float32(0.00500)
-	rotationAngle        = float32(0.0)
+	InitialCenterPointLight = mgl32.Vec3{-3, 0, -3}
+
+	LightSource       *light.Light
+	LightSourceSphere *sphere.Sphere
+	JadeCube          *cuboid.Cuboid
+
+	cameraDistance = 0.1
+	rotationAngle  = float32(0.0)
 )
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{0, 0, 10.0}, mgl32.Vec3{0, 1, 0}, -90.0, 0.0)
+	camera := camera.NewCamera(mgl32.Vec3{3.3, -10, 14.0}, mgl32.Vec3{0, 1, 0}, -101.0, 21.5)
 	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
 	return camera
 }
 
-// It generates a cube.
+// It generates the lightsource sphere.
+func GenerateWhiteSphere(shaderProgram *shader.Shader) {
+	LightSourceSphere = sphere.New(mgl32.Vec3{-3.0, -0.5, -3.0}, mgl32.Vec3{1, 1, 1}, 0.1, shaderProgram)
+	LightSourceSphere.SetPrecision(15)
+	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 64.0)
+	LightSourceSphere.SetMaterial(mat)
+	LightSourceSphere.SetDirection((mgl32.Vec3{9, 0, -3}).Normalize())
+	distance := (LightSourceSphere.GetCenterPoint().Sub(JadeCube.GetCenterPoint())).Len()
+
+	LightSourceSphere.SetSpeed((float32(2) * float32(3.1415) * distance) / LightSourceRoundSpeed)
+	LightSourceSphere.DrawMode(sphere.DRAW_MODE_LIGHT)
+	app.AddItem(LightSourceSphere)
+}
+
+// It generates the Jade cube.
 func GenerateCube(shaderProgram *shader.Shader) {
-	colors := [6]mgl32.Vec3{
-		mgl32.Vec3{1.0, 0.0, 0.0},
-		mgl32.Vec3{1.0, 1.0, 0.0},
-		mgl32.Vec3{0.0, 1.0, 0.0},
-		mgl32.Vec3{0.0, 1.0, 1.0},
-		mgl32.Vec3{0.0, 0.0, 1.0},
-		mgl32.Vec3{1.0, 0.0, 1.0},
-	}
-	bottomCoordinates := [4]mgl32.Vec3{
-		mgl32.Vec3{-0.5, -0.5, -0.5},
-		mgl32.Vec3{-0.5, -0.5, 0.5},
-		mgl32.Vec3{0.5, -0.5, 0.5},
-		mgl32.Vec3{0.5, -0.5, -0.5},
-	}
-	bottomColor := [4]mgl32.Vec3{
-		colors[0],
-		colors[0],
-		colors[0],
-		colors[0],
-	}
-	bottomRect := rectangle.New(bottomCoordinates, bottomColor, shaderProgram)
-	cube = cuboid.New(bottomRect, 1.0, shaderProgram)
-	for i := 0; i < 6; i++ {
-		cube.SetSideColor(i, colors[i])
-	}
-	cube.SetAxis(mgl32.Vec3{0, 1, 0})
-	app.AddItem(cube)
+	bottomRect := rectangle.NewSquare(mgl32.Vec3{0.5, -0.5, -0.5}, mgl32.Vec3{-0.5, -0.5, 0.5}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0.0, 1.0, 1.0}, shaderProgram)
+	JadeCube = cuboid.New(bottomRect, 1.0, shaderProgram)
+	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 64.0)
+	JadeCube.SetMaterial(mat)
+	JadeCube.DrawMode(cuboid.DRAW_MODE_TEXTURED_LIGHT)
+	app.AddItem(JadeCube)
 }
 
 func Update() {
 	nowNano := time.Now().UnixNano()
-	delta := float64(nowNano - lastUpdate)
-	moveTime := delta / float64(time.Millisecond)
+	moveTime := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
-	rotationAngle = rotationAngle + float32(moveTime)*rotationSpeed
-	cube.SetAngle(mgl32.DegToRad(mgl32.DegToRad(rotationAngle)))
+	// Calculate the  rotation matrix. Get the current one, rotate it with a calculated angle around the Y axis. (HomogRotate3D(angle float32, axis Vec3) Mat4)
+	// angle calculation: (360 / LightSourceRoundSpeed) * delta) -> in radian: mat32.DegToRad()
+	// Then we can transform the current direction vector to the new one. (TransformNormal(v Vec3, m Mat4) Vec3)
+	// after it we can set the new direction vector of the light source.
+	lightSourceRotationAngleRadian := mgl32.DegToRad(float32((360 / LightSourceRoundSpeed) * moveTime))
+	lightDirectionRotationMatrix := mgl32.HomogRotate3D(lightSourceRotationAngleRadian, mgl32.Vec3{0, -1, 0})
+	currentLightSourceDirection := LightSourceSphere.GetDirection()
+	LightSourceSphere.SetDirection(mgl32.TransformNormal(currentLightSourceDirection, lightDirectionRotationMatrix))
+	LightSource.SetPosition(LightSourceSphere.GetCenterPoint())
+
+	app.Update(moveTime)
 
 	forward := 0.0
 	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
@@ -168,12 +181,19 @@ func main() {
 	defer glfw.Terminate()
 	shader.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/07-textured-lighting-map/textured.vert", "examples/07-textured-lighting-map/textured.frag")
-	shaderProgram.AddTexture("examples/07-textured-lighting-map/image-texture-diffuse.png", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "material.diffuse")
-	shaderProgram.AddTexture("examples/07-textured-lighting-map/image-texture-specular.png", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "material.specular")
-
 	app.SetCamera(CreateCamera())
-	GenerateCube(shaderProgram)
+
+	LightSource = light.New(InitialCenterPointLight, mgl32.Vec3{0.2, 0.2, 0.2}, mgl32.Vec3{0.5, 0.5, 0.5}, mgl32.Vec3{1, 1, 1})
+
+	shaderProgramTexture := shader.NewShader("examples/07-textured-lighting-map/texture.vert", "examples/07-textured-lighting-map/texture.frag")
+	shaderProgramTexture.AddTexture("examples/07-textured-lighting-map/image-texture-diffuse.png", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "material.diffuse")
+	shaderProgramTexture.AddTexture("examples/07-textured-lighting-map/image-texture-specular.png", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "material.specular")
+	shaderProgramTexture.SetLightSource(LightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
+	GenerateCube(shaderProgramTexture)
+
+	shaderProgramWhite := shader.NewShader("examples/07-textured-lighting-map/lightsource.vert", "examples/07-textured-lighting-map/lightsource.frag")
+	shaderProgramWhite.SetLightSource(LightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
+	GenerateWhiteSphere(shaderProgramWhite)
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
