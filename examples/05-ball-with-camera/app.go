@@ -18,44 +18,48 @@ import (
 )
 
 const (
-	windowWidth  = 800
-	windowHeight = 800
-	windowTitle  = "Example - plane with ball"
+	WindowWidth  = 800
+	WindowHeight = 800
+	WindowTitle  = "Example - plane with ball"
 
-	moveSpeed = 1.0 / 1000.0
+	moveSpeed = 1.0 / 100.0
 	ballSpeed = float32(1.0 / 10000000.0 / 5.0)
 
-	FORWARD  = glfw.KeyW // Go forward
-	BACKWARD = glfw.KeyS // Go backward
-	LEFT     = glfw.KeyA // Go left
-	RIGHT    = glfw.KeyD // Go right
+	FORWARD  = glfw.KeyW
+	BACKWARD = glfw.KeyS
+	LEFT     = glfw.KeyA
+	RIGHT    = glfw.KeyD
 	UP       = glfw.KeyQ
 	DOWN     = glfw.KeyE
 )
 
 var (
-	app  *application.Application
-	ball *sphere.Sphere
+	app           *application.Application
+	ball          *sphere.Sphere
+	BallPrecision = 10
 
 	lastUpdate           int64
 	cameraDistance       = 0.1
-	cameraDirectionSpeed = float32(0.500)
+	cameraDirectionSpeed = float32(0.005)
 
-	ballInitialDirection = mgl32.Vec3{0, -1, 0}
+	BallInitialDirection = mgl32.Vec3{0, -1, 0}
+	BallTopPosition      = float32(-10)
+	BallBottomPosition   = float32(-2)
 )
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{-10, -4, 22.0}, mgl32.Vec3{0, 1, 0}, 300.0, 16.0)
-	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
+	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
 	return camera
 }
 
 // It generates a Sphere.
 func GenerateSphere(shaderProgram *shader.Shader) {
 	ball = sphere.New(mgl32.Vec3{0, -5, 0}, mgl32.Vec3{1, 0, 0}, 2.0, shaderProgram)
-	ball.SetDirection(ballInitialDirection)
+	ball.SetDirection(BallInitialDirection)
 	ball.SetSpeed(ballSpeed)
+	ball.SetPrecision(BallPrecision)
 	app.AddItem(ball)
 }
 
@@ -93,13 +97,13 @@ func Update() {
 	delta := float64(nowNano - lastUpdate)
 	moveTime := delta / float64(time.Millisecond)
 	// handle ball
-	if ball.GetCenter().Y() <= -5 {
-		ball.SetCenter(mgl32.Vec3{ball.GetCenter().X(), -5, ball.GetCenter().Z()})
-		ball.SetDirection(ballInitialDirection.Mul(-1.0))
+	if ball.GetCenter().Y() <= BallTopPosition {
+		ball.SetCenter(mgl32.Vec3{ball.GetCenter().X(), BallTopPosition, ball.GetCenter().Z()})
+		ball.SetDirection(BallInitialDirection.Mul(-1.0))
 	}
-	if ball.GetCenter().Y() >= -2 {
-		ball.SetCenter(mgl32.Vec3{ball.GetCenter().X(), -2, ball.GetCenter().Z()})
-		ball.SetDirection(ballInitialDirection)
+	if ball.GetCenter().Y() >= BallBottomPosition {
+		ball.SetCenter(mgl32.Vec3{ball.GetCenter().X(), BallBottomPosition, ball.GetCenter().Z()})
+		ball.SetDirection(BallInitialDirection)
 	}
 	app.Update(delta)
 	lastUpdate = nowNano
@@ -133,7 +137,7 @@ func Update() {
 	}
 
 	currX, currY := app.GetWindow().GetCursorPos()
-	x, y := trans.MouseCoordinates(currX, currY, windowWidth, windowHeight)
+	x, y := trans.MouseCoordinates(currX, currY, WindowWidth, WindowHeight)
 	KeyDowns := make(map[string]bool)
 	// dUp
 	if y > 1.0-cameraDistance && y < 1.0 {
@@ -179,7 +183,7 @@ func main() {
 	runtime.LockOSThread()
 
 	app = application.New()
-	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
 	shader.InitOpenGL()
 
