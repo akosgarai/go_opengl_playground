@@ -16,9 +16,9 @@ import (
 )
 
 const (
-	windowWidth  = 800
-	windowHeight = 600
-	windowTitle  = "Example - mesh deformer"
+	WindowWidth  = 800
+	WindowHeight = 600
+	WindowTitle  = "Example - mesh deformer"
 
 	rows   = 10
 	cols   = 10
@@ -37,7 +37,7 @@ var (
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{4.0, 9.7, -0.3}, mgl32.Vec3{0, 0, 1}, 13.0, 58.5)
-	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
+	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
 	return camera
 }
 
@@ -87,7 +87,7 @@ func main() {
 	runtime.LockOSThread()
 
 	app = application.New()
-	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
 	shader.InitOpenGL()
 

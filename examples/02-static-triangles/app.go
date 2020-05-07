@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	windowWidth  = 800
-	windowHeight = 600
-	windowTitle  = "Example - static triangles, lots of them"
+	WindowWidth  = 800
+	WindowHeight = 600
+	WindowTitle  = "Example - static triangles, lots of them"
 )
 
 var (
@@ -53,7 +53,7 @@ func GenerateTriangles(rows int, shaderProgram *shader.Shader) {
 func main() {
 	runtime.LockOSThread()
 	app = application.New()
-	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
 	shader.InitOpenGL()
 

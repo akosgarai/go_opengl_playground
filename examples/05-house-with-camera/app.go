@@ -16,9 +16,9 @@ import (
 )
 
 const (
-	windowWidth  = 800
-	windowHeight = 800
-	windowTitle  = "Example - the house"
+	WindowWidth  = 800
+	WindowHeight = 800
+	WindowTitle  = "Example - the house"
 	moveSpeed    = 1.0 / 100.0
 	epsilon      = 1000.0
 	precision    = 20
@@ -37,7 +37,7 @@ var (
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{75, 30, 0.0}, mgl32.Vec3{0, -1, 0}, 90.0, 0.0)
-	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
+	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 1000.0)
 	return camera
 }
 
@@ -238,7 +238,7 @@ func main() {
 
 	app = application.New()
 
-	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
 	shader.InitOpenGL()
 
@@ -262,7 +262,7 @@ func main() {
 	RoomRight3(shaderProgram)
 
 	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
-	gl.Viewport(0, 0, windowWidth, windowHeight)
+	gl.Viewport(0, 0, WindowWidth, WindowHeight)
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)

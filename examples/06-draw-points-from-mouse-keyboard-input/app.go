@@ -16,9 +16,9 @@ import (
 )
 
 const (
-	windowWidth  = 800
-	windowHeight = 800
-	windowTitle  = "Example - draw points from mouse inputs and keyboard colors"
+	WindowWidth  = 800
+	WindowHeight = 800
+	WindowTitle  = "Example - draw points from mouse inputs and keyboard colors"
 )
 
 var (
@@ -52,7 +52,7 @@ func Update() {
 		} else {
 			b = 0
 		}
-		mX, mY := trans.MouseCoordinates(app.MousePosX, app.MousePosY, windowWidth, windowHeight)
+		mX, mY := trans.MouseCoordinates(app.MousePosX, app.MousePosY, WindowWidth, WindowHeight)
 		coords := mgl32.Vec3{float32(mX), float32(mY), 0.0}
 		color := mgl32.Vec3{r, g, b}
 		size := float32(3 + rand.Intn(17))
@@ -66,7 +66,7 @@ func Update() {
 func main() {
 	runtime.LockOSThread()
 	app = application.New()
-	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
 	shader.InitOpenGL()
 

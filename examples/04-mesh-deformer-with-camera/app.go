@@ -17,9 +17,9 @@ import (
 )
 
 const (
-	windowWidth  = 800
-	windowHeight = 800
-	windowTitle  = "Example - mesh deformer - with moving camera"
+	WindowWidth  = 800
+	WindowHeight = 800
+	WindowTitle  = "Example - mesh deformer - with moving camera"
 	moveSpeed    = 0.005
 
 	rows   = 10
@@ -49,7 +49,7 @@ var (
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{0.0, 1.0, 9.5}, mgl32.Vec3{0, 0, 1}, -90.0, -34.0)
-	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
+	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
 	return camera
 }
 
@@ -136,7 +136,7 @@ func Update() {
 	}
 
 	currX, currY := app.GetWindow().GetCursorPos()
-	x, y := trans.MouseCoordinates(currX, currY, windowWidth, windowHeight)
+	x, y := trans.MouseCoordinates(currX, currY, WindowWidth, WindowHeight)
 	KeyDowns := make(map[string]bool)
 	// dUp
 	if y > 1.0-cameraDistance && y < 1.0 {
@@ -182,7 +182,7 @@ func main() {
 	runtime.LockOSThread()
 
 	app = application.New()
-	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
 	shader.InitOpenGL()
 

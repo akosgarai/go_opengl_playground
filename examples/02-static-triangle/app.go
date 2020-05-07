@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	windowWidth  = 800
-	windowHeight = 600
-	windowTitle  = "Example - static triangle"
+	WindowWidth  = 800
+	WindowHeight = 600
+	WindowTitle  = "Example - static triangle"
 )
 
 var (
@@ -38,7 +38,7 @@ func main() {
 	runtime.LockOSThread()
 
 	app = application.New()
-	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
 	shader.InitOpenGL()
 

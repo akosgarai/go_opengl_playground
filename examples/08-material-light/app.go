@@ -20,14 +20,14 @@ import (
 )
 
 const (
-	windowWidth  = 800
-	windowHeight = 800
-	windowTitle  = "Example - material light - with rotation"
+	WindowWidth  = 800
+	WindowHeight = 800
+	WindowTitle  = "Example - material light - with rotation"
 
-	FORWARD  = glfw.KeyW // Go forward
-	BACKWARD = glfw.KeyS // Go backward
-	LEFT     = glfw.KeyA // Go left
-	RIGHT    = glfw.KeyD // Go right
+	FORWARD  = glfw.KeyW
+	BACKWARD = glfw.KeyS
+	LEFT     = glfw.KeyA
+	RIGHT    = glfw.KeyD
 	UP       = glfw.KeyQ
 	DOWN     = glfw.KeyE
 
@@ -54,7 +54,7 @@ var (
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{3.3, -10, 14.0}, mgl32.Vec3{0, 1, 0}, -101.0, 21.5)
-	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
+	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
 	return camera
 }
 
@@ -191,7 +191,7 @@ func Update() {
 		app.GetCamera().Lift(float32(vertical))
 	}
 	currX, currY := app.GetWindow().GetCursorPos()
-	x, y := trans.MouseCoordinates(currX, currY, windowWidth, windowHeight)
+	x, y := trans.MouseCoordinates(currX, currY, WindowWidth, WindowHeight)
 	KeyDowns := make(map[string]bool)
 	// dUp
 	if y > 1.0-cameraDistance && y < 1.0 {
@@ -236,7 +236,7 @@ func main() {
 	runtime.LockOSThread()
 
 	app = application.New()
-	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
 	shader.InitOpenGL()
 

@@ -1,6 +1,7 @@
 # opengl playground
 
 Just for fun. How to implement 3d applications in golang.
+The gifs under the examples directory were made with [peek](https://github.com/phw/peek) application.
 
 ## Useful links:
 
