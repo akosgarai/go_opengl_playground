@@ -186,8 +186,8 @@ func main() {
 	LightSource = light.New(InitialCenterPointLight, mgl32.Vec3{0.2, 0.2, 0.2}, mgl32.Vec3{0.5, 0.5, 0.5}, mgl32.Vec3{1, 1, 1})
 
 	shaderProgramTexture := shader.NewShader("examples/07-textured-lighting-map/texture.vert", "examples/07-textured-lighting-map/texture.frag")
-	shaderProgramTexture.AddTexture("examples/07-textured-lighting-map/image-texture-diffuse.png", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "material.diffuse")
-	shaderProgramTexture.AddTexture("examples/07-textured-lighting-map/image-texture-specular.png", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "material.specular")
+	shaderProgramTexture.AddTexture("examples/07-textured-lighting-map/colored-image-for-texture-testing-diffuse.png", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "material.diffuse")
+	shaderProgramTexture.AddTexture("examples/07-textured-lighting-map/colored-image-for-texture-testing-specular.png", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "material.specular")
 	shaderProgramTexture.SetLightSource(LightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
 	GenerateCube(shaderProgramTexture)
 
