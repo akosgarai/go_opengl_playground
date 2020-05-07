@@ -349,13 +349,17 @@ func TestDrawMode(t *testing.T) {
 	if cube.drawMode != 0 {
 		t.Errorf("Invalid default draw mode. Instead of '0', we got '%d'", cube.drawMode)
 	}
-	cube.DrawMode(2) // should keep the original value
+	cube.DrawMode(3) // should keep the original value
 	if cube.drawMode != 0 {
 		t.Errorf("Invalid default draw mode. Instead of '0', we got '%d'", cube.drawMode)
 	}
 	cube.DrawMode(1) // should update the original value
 	if cube.drawMode != 1 {
 		t.Errorf("Invalid default draw mode. Instead of '1', we got '%d'", cube.drawMode)
+	}
+	cube.DrawMode(2) // should update the original value
+	if cube.drawMode != 2 {
+		t.Errorf("Invalid default draw mode. Instead of '2', we got '%d'", cube.drawMode)
 	}
 }
 func TestDrawWithUniformsLight(t *testing.T) {
@@ -369,6 +373,19 @@ func TestDrawWithUniformsLight(t *testing.T) {
 	cube.DrawWithUniforms(mgl32.Ident4(), mgl32.Ident4())
 	if len(cube.vao.Get()) != 36*6 {
 		t.Errorf("Invalid vao length. Instead of '216', we got '%d'", len(cube.vao.Get()))
+	}
+}
+func TestDrawWithUniformsTextureLight(t *testing.T) {
+	shader.HasTextureValue = true
+	bottom := rectangle.New(DefaultCoordinates, DefaultColors, shader)
+	cube := New(bottom, 1, shader)
+	cube.DrawMode(2) // set light mode
+	if len(cube.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	cube.DrawWithUniforms(mgl32.Ident4(), mgl32.Ident4())
+	if len(cube.vao.Get()) != 36*8 {
+		t.Errorf("Invalid vao length. Instead of '36*8', we got '%d'", len(cube.vao.Get()))
 	}
 }
 func TestGetCenterPoint(t *testing.T) {

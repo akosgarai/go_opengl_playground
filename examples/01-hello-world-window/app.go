@@ -12,9 +12,13 @@ import (
 )
 
 const (
-	windowWidth  = 800
-	windowHeight = 800
-	windowTitle  = "Example - Hello World Window"
+	WindowWidth  = 800
+	WindowHeight = 800
+	WindowTitle  = "Hello World Window"
+)
+
+var (
+	ClearColor = [4]float32{0.3, 0.3, 0.3, 1.0}
 )
 
 func main() {
@@ -22,7 +26,7 @@ func main() {
 
 	app := application.New()
 
-	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
 	shader.InitOpenGL()
 
@@ -34,7 +38,7 @@ func main() {
 	// register mouse button callback
 	app.GetWindow().SetMouseButtonCallback(window.DummyMouseButtonCallback)
 
-	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
+	gl.ClearColor(ClearColor[0], ClearColor[1], ClearColor[2], ClearColor[3])
 
 	for !app.GetWindow().ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)

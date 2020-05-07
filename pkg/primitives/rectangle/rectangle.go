@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	DRAW_MODE_COLOR = 0
-	DRAW_MODE_LIGHT = 1
+	DRAW_MODE_COLOR          = 0
+	DRAW_MODE_LIGHT          = 1
+	DRAW_MODE_TEXTURED_LIGHT = 2
 )
 
 type Shader interface {
@@ -192,7 +193,7 @@ func (r *Rectangle) insertEverythingToVao() {
 				horisontalStep.Mul(float32(horisontalLoopIndex)))
 			if r.drawMode == DRAW_MODE_COLOR {
 				r.appendRectangleToVao([4]mgl32.Vec3{a, b, c, d}, r.colors)
-			} else if r.drawMode == DRAW_MODE_LIGHT {
+			} else if r.drawMode == DRAW_MODE_LIGHT || r.drawMode == DRAW_MODE_TEXTURED_LIGHT {
 				normals := [4]mgl32.Vec3{r.GetNormal(), r.GetNormal(), r.GetNormal(), r.GetNormal()}
 				r.appendRectangleToVao([4]mgl32.Vec3{a, b, c, d}, normals)
 			}
@@ -293,7 +294,7 @@ func (r *Rectangle) GetNormal() mgl32.Vec3 {
 
 // DrawMode updates the draw mode after validation. If it fails, it keeps the original value.
 func (s *Rectangle) DrawMode(mode int) {
-	if mode == DRAW_MODE_COLOR || mode == DRAW_MODE_LIGHT {
+	if mode == DRAW_MODE_COLOR || mode == DRAW_MODE_LIGHT || mode == DRAW_MODE_TEXTURED_LIGHT {
 		s.drawMode = mode
 	}
 }

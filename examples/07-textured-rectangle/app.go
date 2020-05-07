@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	windowWidth  = 800
-	windowHeight = 800
-	windowTitle  = "Example - textured rectangle"
+	WindowWidth  = 800
+	WindowHeight = 800
+	WindowTitle  = "Example - textured rectangle"
 )
 
 var (
@@ -46,7 +46,7 @@ func main() {
 	runtime.LockOSThread()
 
 	app = application.New()
-	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
 	shader.InitOpenGL()
 
