@@ -18,9 +18,9 @@ import (
 )
 
 const (
-	windowWidth  = 800
-	windowHeight = 800
-	windowTitle  = "Example - draw points from mouse inputs and keyboard colors"
+	WindowWidth  = 800
+	WindowHeight = 800
+	WindowTitle  = "Example - draw points from mouse inputs and keyboard colors"
 )
 
 var (
@@ -49,7 +49,7 @@ var (
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{0.0, 0.0, -10.0}, mgl32.Vec3{0, 1, 0}, -270.0, 0.0)
-	camera.SetupProjection(45, float32(windowWidth)/float32(windowHeight), 0.1, 100.0)
+	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
 	return camera
 }
 
@@ -71,7 +71,7 @@ func updatePointState() {
 		} else {
 			b = 0
 		}
-		mX, mY := trans.MouseCoordinates(app.MousePosX, app.MousePosY, windowWidth, windowHeight)
+		mX, mY := trans.MouseCoordinates(app.MousePosX, app.MousePosY, WindowWidth, WindowHeight)
 		// to calculate the coordinate of the point, we have to apply the inverse of the camera transformations.
 		V := app.GetCamera().GetViewMatrix()
 		P := app.GetCamera().GetProjectionMatrix()
@@ -124,7 +124,7 @@ func main() {
 	runtime.LockOSThread()
 
 	app = application.New()
-	app.SetWindow(window.InitGlfw(windowWidth, windowHeight, windowTitle))
+	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
 	shader.InitOpenGL()
 	app.SetCamera(CreateCamera())
