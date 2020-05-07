@@ -439,8 +439,12 @@ func TestDrawMode(t *testing.T) {
 		t.Errorf("Invalid  draw mode. Instead of '1', we got '%d'", square.drawMode)
 	}
 	square.DrawMode(2)
-	if square.drawMode != 1 {
-		t.Errorf("Invalid draw mode. Instead of '1', we got '%d'", square.drawMode)
+	if square.drawMode != 2 {
+		t.Errorf("Invalid  draw mode. Instead of '2', we got '%d'", square.drawMode)
+	}
+	square.DrawMode(3)
+	if square.drawMode != 2 {
+		t.Errorf("Invalid draw mode. Instead of '2', we got '%d'", square.drawMode)
 	}
 }
 func TestDrawWithLight(t *testing.T) {

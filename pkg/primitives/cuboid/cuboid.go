@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	DRAW_MODE_COLOR = 0
-	DRAW_MODE_LIGHT = 1
+	DRAW_MODE_COLOR          = 0
+	DRAW_MODE_LIGHT          = 1
+	DRAW_MODE_TEXTURED_LIGHT = 2
 )
 
 type Cuboid struct {
@@ -265,6 +266,9 @@ func (c *Cuboid) setupColorUniform() {
 		c.shader.SetUniform3f("material.ambient", ambient.X(), ambient.Y(), ambient.Z())
 		c.shader.SetUniform3f("material.specular", specular.X(), specular.Y(), specular.Z())
 		c.shader.SetUniform1f("material.shininess", shininess)
+	} else if c.drawMode == DRAW_MODE_TEXTURED_LIGHT {
+		shininess := c.material.GetShininess()
+		c.shader.SetUniform1f("material.shininess", shininess)
 	}
 }
 
@@ -294,7 +298,7 @@ func (c *Cuboid) Update(dt float64) {
 
 // DrawMode updates the draw mode after validation. If it fails, it keeps the original value.
 func (c *Cuboid) DrawMode(mode int) {
-	if mode != DRAW_MODE_COLOR && mode != DRAW_MODE_LIGHT {
+	if mode != DRAW_MODE_COLOR && mode != DRAW_MODE_LIGHT && mode != DRAW_MODE_TEXTURED_LIGHT {
 		return
 	}
 	c.drawMode = mode
