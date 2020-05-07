@@ -63,19 +63,6 @@ func GenerateSphere(shaderProgram *shader.Shader) {
 	app.AddItem(ball)
 }
 
-// Create the keymap
-func SetupKeyMap() map[glfw.Key]bool {
-	keyDowns := make(map[glfw.Key]bool)
-	keyDowns[FORWARD] = false
-	keyDowns[LEFT] = false
-	keyDowns[RIGHT] = false
-	keyDowns[BACKWARD] = false
-	keyDowns[UP] = false
-	keyDowns[DOWN] = false
-
-	return keyDowns
-}
-
 // It generates a square.
 func GenerateSquare(shaderProgram *shader.Shader) {
 	squareColor := mgl32.Vec3{0, 1, 0}
@@ -188,7 +175,6 @@ func main() {
 	shader.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
-	app.SetKeys(SetupKeyMap())
 
 	shaderProgram := shader.NewShader("examples/05-ball-with-camera/vertexshader.vert", "examples/05-ball-with-camera/fragmentshader.frag")
 	GenerateSquare(shaderProgram)

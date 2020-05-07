@@ -1,6 +1,6 @@
 # Plane with a ball
 
-This draws a green plane and a red bouncing ball to the screen. The camera is movabla and rotatable with the `W`, `Q`, `A`, `S`, `D`, `E` keys and with the mouse.
+This draws a green plane and a red bouncing ball to the screen. The camera is movable and rotatable with the `W`, `Q`, `A`, `S`, `D`, `E` keys and with the mouse.
 
 ## Samples
 
