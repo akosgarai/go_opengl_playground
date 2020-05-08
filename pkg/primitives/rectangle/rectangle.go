@@ -241,6 +241,7 @@ func (r *Rectangle) buildVaoWithoutTexture() {
 // Draw is for drawing the rectangle to the screen.
 func (r *Rectangle) Draw() {
 	r.shader.Use()
+	r.setupColorUniform()
 	if !r.shader.HasTexture() {
 		r.shader.SetUniformMat4("MVP", r.modelTransformation())
 		r.drawWithoutTextures()
@@ -261,6 +262,12 @@ func (r *Rectangle) drawWithoutTextures() {
 func (r *Rectangle) modelTransformation() mgl32.Mat4 {
 	return mgl32.HomogRotate3D(r.angle, r.axis)
 }
+func (r *Rectangle) setupColorUniform() {
+	if r.drawMode == DRAW_MODE_LIGHT {
+	} else if r.drawMode == DRAW_MODE_TEXTURED_LIGHT {
+		r.shader.SetUniform1f("material.shininess", 32.0)
+	}
+}
 
 // DrawWithUniforms is for drawing the rectangle to the screen. It setups the
 func (r *Rectangle) DrawWithUniforms(view, projection mgl32.Mat4) {
@@ -268,6 +275,8 @@ func (r *Rectangle) DrawWithUniforms(view, projection mgl32.Mat4) {
 	r.shader.SetUniformMat4("view", view)
 	r.shader.SetUniformMat4("projection", projection)
 	r.shader.SetUniformMat4("model", r.modelTransformation())
+
+	r.setupColorUniform()
 	if !r.shader.HasTexture() {
 		r.drawWithoutTextures()
 	} else {
