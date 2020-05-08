@@ -8,6 +8,7 @@ import (
 
 var (
 	DefaultLightPosition     = mgl32.Vec3{0, 0, 0}
+	DefaultLightDirection    = mgl32.Vec3{0, 1, 0}
 	DefaultAmbientComponent  = mgl32.Vec3{1, 1, 1}
 	DefaultDiffuseComponent  = mgl32.Vec3{0.2, 0.2, 0.2}
 	DefaultSpecularComponent = mgl32.Vec3{0.4, 0.4, 0.4}
@@ -102,7 +103,20 @@ func TestGetCutOff(t *testing.T) {
 	t.Skip("Not implemented")
 }
 func TestNewDirectionalLight(t *testing.T) {
-	t.Skip("Not implemented")
+	vectorComponent := [4]mgl32.Vec3{DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	l := NewDirectionalLight(vectorComponent)
+	if l.direction != DefaultLightDirection {
+		t.Error("Invalid direction component")
+	}
+	if l.ambient != DefaultAmbientComponent {
+		t.Error("Invalid ambient component")
+	}
+	if l.diffuse != DefaultDiffuseComponent {
+		t.Error("Invalid diffuse component")
+	}
+	if l.specular != DefaultSpecularComponent {
+		t.Error("Invalid specular component")
+	}
 }
 func TestNewPointLight(t *testing.T) {
 	vectorComponent := [4]mgl32.Vec3{DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}

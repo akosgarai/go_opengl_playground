@@ -50,6 +50,17 @@ func NewPointLight(vectorComponents [4]mgl32.Vec3, terms [3]float32) *Light {
 	}
 }
 
+// NewDirectionalLight returns a Light with directional light settings. The vectorComponent [4]mgl32.Vec3 input
+// has to contain the direction, ambient, diffuse, specular components in this order.
+func NewDirectionalLight(vectorComponents [4]mgl32.Vec3) *Light {
+	return &Light{
+		direction: vectorComponents[0],
+		ambient:   vectorComponents[1],
+		diffuse:   vectorComponents[2],
+		specular:  vectorComponents[3],
+	}
+}
+
 // Log returns the current state of the object
 func (l *Light) Log() string {
 	logString := "Light\n"
