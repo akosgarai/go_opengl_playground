@@ -176,7 +176,7 @@ type Shader struct {
 	shaderProgramId         uint32
 	textures                []texture
 	lightSource             LightSource
-	directionalLightSource  []DirectionalLightSource
+	directionalLightSources []DirectionalLightSource
 	pointLightSources       []PointLightSource
 	spotLightSources        []SpotLightSource
 	viewPosition            mgl32.Vec3
@@ -217,6 +217,9 @@ func NewShader(vertexShaderPath, fragmentShaderPath string) *Shader {
 			DiffuseUniformName:  "",
 			SpecularUniformName: "",
 		},
+		directionalLightSources: []DirectionalLightSource{},
+		pointLightSources:       []PointLightSource{},
+		spotLightSources:        []SpotLightSource{},
 
 		viewPosition:            mgl32.Vec3{0, 0, 0},
 		viewPositionUniformName: "",
