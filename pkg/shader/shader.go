@@ -20,6 +20,32 @@ type Light interface {
 	GetDiffuse() mgl32.Vec3
 	GetPosition() mgl32.Vec3
 }
+type DirectionalLight interface {
+	GetDirection() mgl32.Vec3
+	GetAmbient() mgl32.Vec3
+	GetDiffuse() mgl32.Vec3
+	GetSpecular() mgl32.Vec3
+}
+type PointLight interface {
+	GetPosition() mgl32.Vec3
+	GetAmbient() mgl32.Vec3
+	GetDiffuse() mgl32.Vec3
+	GetSpecular() mgl32.Vec3
+	GetConstantTerm() float32
+	GetLinearTerm() float32
+	GetQuadraticTerm() float32
+}
+type SpotLight interface {
+	GetPosition() mgl32.Vec3
+	GetDirection() mgl32.Vec3
+	GetAmbient() mgl32.Vec3
+	GetDiffuse() mgl32.Vec3
+	GetSpecular() mgl32.Vec3
+	GetConstantTerm() float32
+	GetLinearTerm() float32
+	GetQuadraticTerm() float32
+	GetCutoff() float32
+}
 
 type LightSource struct {
 	LightSource         Light
