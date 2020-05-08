@@ -12,6 +12,17 @@ type Light struct {
 	ambient  mgl32.Vec3
 	diffuse  mgl32.Vec3
 	specular mgl32.Vec3
+
+	// in case of directional lights it's important.
+	direction mgl32.Vec3
+
+	// in case of point light sources we have to know the terms.
+	constantTerm  float32
+	linearTerm    float32
+	quadraticTerm float32
+
+	// spotlights
+	cutoff float32
 }
 
 func New(position, ambientComponent, diffuseComponent, specularComponent mgl32.Vec3) *Light {

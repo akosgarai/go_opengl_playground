@@ -67,3 +67,27 @@ func TestSetPosition(t *testing.T) {
 		t.Error("Invalid position vector")
 	}
 }
+func TestGetDirection(t *testing.T) {
+	t.Skip("Not implemented")
+}
+func TestGetConstantTerm(t *testing.T) {
+	t.Skip("Not implemented")
+}
+func TestGetLinearTerm(t *testing.T) {
+	t.Skip("Not implemented")
+}
+func TestGetQuadraticTerm(t *testing.T) {
+	t.Skip("Not implemented")
+}
+func TestGetCutOff(t *testing.T) {
+	t.Skip("Not implemented")
+}
+func TestNewDirectionalLight(t *testing.T) {
+	t.Skip("Not implemented")
+}
+func TestNewPointLight(t *testing.T) {
+	t.Skip("Not implemented")
+}
+func TestNewSpotLight(t *testing.T) {
+	t.Skip("Not implemented")
+}
