@@ -61,6 +61,24 @@ func NewDirectionalLight(vectorComponents [4]mgl32.Vec3) *Light {
 	}
 }
 
+// NewSpotLight returns a Light with spot light settings. The vectorComponent [5]mgl32.Vec3 input has to contain
+// the position, direction, ambient, diffuse, specular components in this order. The terms[4]float32 input has
+// to contain the constant, linear, quadratic terms and the cutoff components in this order.
+func NewSpotLight(vectorComponents [5]mgl32.Vec3, terms [4]float32) *Light {
+	return &Light{
+		position:  vectorComponents[0],
+		direction: vectorComponents[1],
+		ambient:   vectorComponents[2],
+		diffuse:   vectorComponents[3],
+		specular:  vectorComponents[4],
+
+		constantTerm:  terms[0],
+		linearTerm:    terms[1],
+		quadraticTerm: terms[2],
+		cutoff:        terms[3],
+	}
+}
+
 // Log returns the current state of the object
 func (l *Light) Log() string {
 	logString := "Light\n"
