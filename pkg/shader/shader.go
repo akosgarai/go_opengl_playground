@@ -176,6 +176,9 @@ type Shader struct {
 	shaderProgramId         uint32
 	textures                []texture
 	lightSource             LightSource
+	directionalLightSource  []DirectionalLightSource
+	pointLightSources       []PointLightSource
+	spotLightSources        []SpotLightSource
 	viewPosition            mgl32.Vec3
 	viewPositionUniformName string
 }
