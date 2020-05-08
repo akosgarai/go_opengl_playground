@@ -192,12 +192,12 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 
-	lightSource := light.New(mgl32.Vec3{-3, 0, -3}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1})
+	lightSource := light.NewPointLight([4]mgl32.Vec3{mgl32.Vec3{-3, 0, -3}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
 	shaderProgramColored := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
-	shaderProgramColored.SetLightSource(lightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
+	shaderProgramColored.AddPointLightSource(lightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
 	GenerateColoredCube(shaderProgramColored)
 	shaderProgramWhite := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
-	shaderProgramWhite.SetLightSource(lightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
+	shaderProgramWhite.AddPointLightSource(lightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
 	GenerateWhiteCube(shaderProgramWhite)
 
 	gl.Enable(gl.DEPTH_TEST)
