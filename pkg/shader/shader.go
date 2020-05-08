@@ -74,12 +74,14 @@ type PointLightSource struct {
 type SpotLightSource struct {
 	LightSource              SpotLight
 	PositionUniformName      string
+	DirectionUniformName     string
 	AmbientUniformName       string
 	DiffuseUniformName       string
 	SpecularUniformName      string
 	ConstantTermUniformName  string
 	LinearTermUniformName    string
 	QuadraticTermUniformName string
+	CutoffUniformName        string
 }
 
 // InitOpenGL is for initializing the gl lib. It also prints out the gl version.
