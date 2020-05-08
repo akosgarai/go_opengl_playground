@@ -418,25 +418,9 @@ func (s *Shader) Close(numOfVertexAttributes int) {
 
 // Setup light related uniforms.
 func (s *Shader) lightHandler() {
-	if s.lightSource.PositionUniformName != "" {
-		position := s.lightSource.LightSource.GetPosition()
-		s.SetUniform3f(s.lightSource.PositionUniformName, position.X(), position.Y(), position.Z())
-	}
-	if s.lightSource.AmbientUniformName != "" {
-		ambient := s.lightSource.LightSource.GetAmbient()
-		s.SetUniform3f(s.lightSource.AmbientUniformName, ambient.X(), ambient.Y(), ambient.Z())
-	}
-	if s.lightSource.DiffuseUniformName != "" {
-		diffuse := s.lightSource.LightSource.GetDiffuse()
-		s.SetUniform3f(s.lightSource.DiffuseUniformName, diffuse.X(), diffuse.Y(), diffuse.Z())
-	}
-	if s.lightSource.SpecularUniformName != "" {
-		specular := s.lightSource.LightSource.GetSpecular()
-		s.SetUniform3f(s.lightSource.DiffuseUniformName, specular.X(), specular.Y(), specular.Z())
-	}
-	if s.viewPositionUniformName != "" {
-		s.SetUniform3f(s.viewPositionUniformName, s.viewPosition.X(), s.viewPosition.Y(), s.viewPosition.Z())
-	}
+	s.directionalLightHandler()
+	s.pointLightHandler()
+	s.spotLightHandler()
 }
 
 // Setup directional light related uniforms. It iterates over the directional sources
@@ -484,13 +468,13 @@ func (s *Shader) pointLightHandler() {
 			s.SetUniform3f(source.DiffuseUniformName, specular.X(), specular.Y(), specular.Z())
 		}
 		if source.ConstantTermUniformName != "" {
-			s.SetUniform1f(source.ConstantTermUniformName, source.GetConstantTerm())
+			s.SetUniform1f(source.ConstantTermUniformName, source.LightSource.GetConstantTerm())
 		}
 		if source.LinearTermUniformName != "" {
-			s.SetUniform1f(source.LinearTermUniformName, source.GetLinearTerm())
+			s.SetUniform1f(source.LinearTermUniformName, source.LightSource.GetLinearTerm())
 		}
 		if source.QuadraticTermUniformName != "" {
-			s.SetUniform1f(source.QuadraticTermUniformName, source.GetQuadraticTerm())
+			s.SetUniform1f(source.QuadraticTermUniformName, source.LightSource.GetQuadraticTerm())
 		}
 	}
 }
@@ -520,16 +504,16 @@ func (s *Shader) spotLightHandler() {
 			s.SetUniform3f(source.DiffuseUniformName, specular.X(), specular.Y(), specular.Z())
 		}
 		if source.ConstantTermUniformName != "" {
-			s.SetUniform1f(source.ConstantTermUniformName, source.GetConstantTerm())
+			s.SetUniform1f(source.ConstantTermUniformName, source.LightSource.GetConstantTerm())
 		}
 		if source.LinearTermUniformName != "" {
-			s.SetUniform1f(source.LinearTermUniformName, source.GetLinearTerm())
+			s.SetUniform1f(source.LinearTermUniformName, source.LightSource.GetLinearTerm())
 		}
 		if source.QuadraticTermUniformName != "" {
-			s.SetUniform1f(source.QuadraticTermUniformName, source.GetQuadraticTerm())
+			s.SetUniform1f(source.QuadraticTermUniformName, source.LightSource.GetQuadraticTerm())
 		}
 		if source.CutoffUniformName != "" {
-			s.SetUniform1f(source.CutoffUniformName, source.GetCutoff())
+			s.SetUniform1f(source.CutoffUniformName, source.LightSource.GetCutoff())
 		}
 	}
 }
