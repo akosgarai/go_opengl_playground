@@ -105,7 +105,12 @@ func TestGetQuadraticTerm(t *testing.T) {
 	}
 }
 func TestGetCutOff(t *testing.T) {
-	t.Skip("Not implemented")
+	vectorComponent := [5]mgl32.Vec3{DefaultLightPosition, DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	termComponent := [4]float32{DefaultConstantTerm, DefaultLinearTerm, DefaultQuadraticTerm, DefaultCutoff}
+	l := NewSpotLight(vectorComponent, termComponent)
+	if l.GetCutoff() != DefaultCutoff {
+		t.Errorf("Invalid cutoff component. Instead of '%f', We have '%f'.", DefaultCutoff, l.GetCutoff())
+	}
 }
 func TestNewDirectionalLight(t *testing.T) {
 	vectorComponent := [4]mgl32.Vec3{DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}

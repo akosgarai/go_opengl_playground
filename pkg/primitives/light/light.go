@@ -133,3 +133,8 @@ func (l *Light) GetQuadraticTerm() float32 {
 func (l *Light) GetDirection() mgl32.Vec3 {
 	return l.direction
 }
+
+// GetCutoff returns the cutoff component of the light
+func (l *Light) GetCutoff() float32 {
+	return l.cutoff
+}
