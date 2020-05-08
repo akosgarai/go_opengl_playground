@@ -183,13 +183,13 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 
-	LightSource = light.New(InitialCenterPointLight, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1})
+	LightSource = light.NewPointLight([4]mgl32.Vec3{InitialCenterPointLight, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
 	shaderProgramColored := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
-	shaderProgramColored.SetLightSource(LightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
+	shaderProgramColored.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
 	GenerateJadeSphere(shaderProgramColored)
 	GenerateRedPlasticSphere(shaderProgramColored)
 	shaderProgramWhite := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
-	shaderProgramWhite.SetLightSource(LightSource, "light.position", "light.ambient", "light.diffuse", "light.specular")
+	shaderProgramWhite.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
 	GenerateWhiteSphere(shaderProgramWhite)
 
 	gl.Enable(gl.DEPTH_TEST)
