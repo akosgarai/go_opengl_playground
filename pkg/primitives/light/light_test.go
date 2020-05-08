@@ -73,7 +73,11 @@ func TestSetPosition(t *testing.T) {
 	}
 }
 func TestGetDirection(t *testing.T) {
-	t.Skip("Not implemented")
+	vectorComponent := [4]mgl32.Vec3{DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	l := NewDirectionalLight(vectorComponent)
+	if l.GetDirection() != DefaultLightDirection {
+		t.Error("Invalid direction component")
+	}
 }
 func TestGetConstantTerm(t *testing.T) {
 	vectorComponent := [4]mgl32.Vec3{DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}

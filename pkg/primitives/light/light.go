@@ -110,3 +110,8 @@ func (l *Light) GetLinearTerm() float32 {
 func (l *Light) GetQuadraticTerm() float32 {
 	return l.quadraticTerm
 }
+
+// GetDirection returns the direction of the light
+func (l *Light) GetDirection() mgl32.Vec3 {
+	return l.direction
+}
