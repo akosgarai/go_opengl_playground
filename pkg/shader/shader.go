@@ -177,7 +177,6 @@ func (t *texture) UnBind() {
 type Shader struct {
 	shaderProgramId         uint32
 	textures                []texture
-	lightSource             LightSource
 	directionalLightSources []DirectionalLightSource
 	pointLightSources       []PointLightSource
 	spotLightSources        []SpotLightSource
@@ -211,14 +210,8 @@ func NewShader(vertexShaderPath, fragmentShaderPath string) *Shader {
 	gl.LinkProgram(program)
 
 	return &Shader{
-		shaderProgramId: program,
-		textures:        []texture{},
-		lightSource: LightSource{
-			PositionUniformName: "",
-			AmbientUniformName:  "",
-			DiffuseUniformName:  "",
-			SpecularUniformName: "",
-		},
+		shaderProgramId:         program,
+		textures:                []texture{},
 		directionalLightSources: []DirectionalLightSource{},
 		pointLightSources:       []PointLightSource{},
 		spotLightSources:        []SpotLightSource{},
@@ -265,18 +258,6 @@ func (s *Shader) genTexture() uint32 {
 	var id uint32
 	gl.GenTextures(1, &id)
 	return id
-}
-
-// SetLightSource setups a light source.
-// It takes a Light input that contains the model related info,
-// and it also takes 4 strings, the uniform names that are used in the shader applications
-// the 'PositionUniformName', 'AmbientUniformName', 'DiffuseUniformName', 'SpecularUniformName'
-func (s *Shader) SetLightSource(lightSource Light, position, ambient, diffuse, specular string) {
-	s.lightSource.LightSource = lightSource
-	s.lightSource.PositionUniformName = position
-	s.lightSource.AmbientUniformName = ambient
-	s.lightSource.DiffuseUniformName = diffuse
-	s.lightSource.SpecularUniformName = specular
 }
 
 // AddDirectionalLightSource sets up a directional light source.
