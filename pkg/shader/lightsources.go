@@ -29,6 +29,7 @@ type SpotLight interface {
 	GetLinearTerm() float32
 	GetQuadraticTerm() float32
 	GetCutoff() float32
+	GetOuterCutoff() float32
 }
 
 type DirectionalLightSource struct {
@@ -59,4 +60,5 @@ type SpotLightSource struct {
 	LinearTermUniformName    string
 	QuadraticTermUniformName string
 	CutoffUniformName        string
+	OuterCutoffUniformName   string
 }

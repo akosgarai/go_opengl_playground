@@ -131,11 +131,11 @@ func (s *Shader) AddPointLightSource(lightSource PointLight, uniformNames [7]str
 }
 
 // AddSpotLightSource sets up a spot light source. It takes a SpotLight input
-// that contains the model related info, and it also contains the uniform names in [8]string format.
+// that contains the model related info, and it also contains the uniform names in [10]string format.
 // The order has to be the following: 'PositionUniformName', 'DirectionUniformName', 'AmbientUniformName',
 // 'DiffuseUniformName', 'SpecularUniformName', 'ConstantTermUniformName', 'LinearTermUniformName',
 // 'QuadraticTermUniformName', 'CutoffUniformName'.
-func (s *Shader) AddSpotLightSource(lightSource SpotLight, uniformNames [9]string) {
+func (s *Shader) AddSpotLightSource(lightSource SpotLight, uniformNames [10]string) {
 	var sSource SpotLightSource
 	sSource.LightSource = lightSource
 	sSource.PositionUniformName = uniformNames[0]
@@ -147,6 +147,7 @@ func (s *Shader) AddSpotLightSource(lightSource SpotLight, uniformNames [9]strin
 	sSource.LinearTermUniformName = uniformNames[6]
 	sSource.QuadraticTermUniformName = uniformNames[7]
 	sSource.CutoffUniformName = uniformNames[8]
+	sSource.OuterCutoffUniformName = uniformNames[8]
 
 	s.spotLightSources = append(s.spotLightSources, sSource)
 }
@@ -332,6 +333,9 @@ func (s *Shader) spotLightHandler() {
 		}
 		if source.CutoffUniformName != "" {
 			s.SetUniform1f(source.CutoffUniformName, source.LightSource.GetCutoff())
+		}
+		if source.OuterCutoffUniformName != "" {
+			s.SetUniform1f(source.OuterCutoffUniformName, source.LightSource.GetOuterCutoff())
 		}
 	}
 }

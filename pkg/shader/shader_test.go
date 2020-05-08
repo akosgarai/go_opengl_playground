@@ -139,6 +139,7 @@ var (
 	LightLinearTerm    = float32(0.5)
 	LightQuadraticTerm = float32(0.05)
 	LightCutoff        = float32(12.0)
+	LightOuterCutoff   = float32(20.0)
 )
 
 func NewPointLightSource() *light.Light {
@@ -150,7 +151,7 @@ func NewDirectionalLightSource() *light.Light {
 	return source
 }
 func NewSpotLightSource() *light.Light {
-	source := light.NewSpotLight([5]mgl32.Vec3{LightPosition, LightDirection, LightAmbient, LightDiffuse, LightSpecular}, [4]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, LightCutoff})
+	source := light.NewSpotLight([5]mgl32.Vec3{LightPosition, LightDirection, LightAmbient, LightDiffuse, LightSpecular}, [5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, LightCutoff, LightOuterCutoff})
 	return source
 }
 
@@ -957,7 +958,7 @@ func TestDrawWithSpotViewPositionFullLightParamList(t *testing.T) {
 	defer shader.Close(2)
 	defer glfw.Terminate()
 	lightSource := NewPointLightSource()
-	shader.AddSpotLightSource(lightSource, [9]string{"posUniform", "directionUniform", "ambientUniform", "diffuseUniform", "specularUniform", "constant", "linear", "quadratic", "cutoff"})
+	shader.AddSpotLightSource(lightSource, [10]string{"posUniform", "directionUniform", "ambientUniform", "diffuseUniform", "specularUniform", "constant", "linear", "quadratic", "cutoff", "outercutoff"})
 	viewPosition := mgl32.Vec3{1, 1, 1}
 	viewPositionName := "viewPosName"
 	shader.SetViewPosition(viewPosition, viewPositionName)
