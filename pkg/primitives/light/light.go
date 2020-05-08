@@ -34,6 +34,22 @@ func New(position, ambientComponent, diffuseComponent, specularComponent mgl32.V
 	}
 }
 
+// NewPointLight returns a Light with point light settings. The vectorComponent [4]mgl32.Vec3 input has to contain
+// the position, ambient, diffuse, specular component vectors in this order. The terms [3]float32 input has to
+// contain the constant, linear quadratic term components in this order.
+func NewPointLight(vectorComponents [4]mgl32.Vec3, terms [3]float32) *Light {
+	return &Light{
+		position: vectorComponents[0],
+		ambient:  vectorComponents[1],
+		diffuse:  vectorComponents[2],
+		specular: vectorComponents[3],
+
+		constantTerm:  terms[0],
+		linearTerm:    terms[1],
+		quadraticTerm: terms[2],
+	}
+}
+
 // Log returns the current state of the object
 func (l *Light) Log() string {
 	logString := "Light\n"

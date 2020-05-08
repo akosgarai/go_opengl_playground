@@ -11,6 +11,10 @@ var (
 	DefaultAmbientComponent  = mgl32.Vec3{1, 1, 1}
 	DefaultDiffuseComponent  = mgl32.Vec3{0.2, 0.2, 0.2}
 	DefaultSpecularComponent = mgl32.Vec3{0.4, 0.4, 0.4}
+
+	DefaultConstantTerm  = float32(1.0)
+	DefaultLinearTerm    = float32(0.5)
+	DefaultQuadraticTerm = float32(0.05)
 )
 
 func TestNew(t *testing.T) {
@@ -86,7 +90,30 @@ func TestNewDirectionalLight(t *testing.T) {
 	t.Skip("Not implemented")
 }
 func TestNewPointLight(t *testing.T) {
-	t.Skip("Not implemented")
+	vectorComponent := [4]mgl32.Vec3{DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	termComponent := [3]float32{DefaultConstantTerm, DefaultLinearTerm, DefaultQuadraticTerm}
+	l := NewPointLight(vectorComponent, termComponent)
+	if l.position != DefaultLightPosition {
+		t.Error("Invalid light position")
+	}
+	if l.ambient != DefaultAmbientComponent {
+		t.Error("Invalid ambient component")
+	}
+	if l.diffuse != DefaultDiffuseComponent {
+		t.Error("Invalid diffuse component")
+	}
+	if l.specular != DefaultSpecularComponent {
+		t.Error("Invalid specular component")
+	}
+	if l.constantTerm != DefaultConstantTerm {
+		t.Errorf("Invalid constant term component. Instead of '%f', We have '%f'.", DefaultConstantTerm, l.constantTerm)
+	}
+	if l.linearTerm != DefaultLinearTerm {
+		t.Errorf("Invalid linear term component. Instead of '%f', We have '%f'.", DefaultLinearTerm, l.linearTerm)
+	}
+	if l.quadraticTerm != DefaultQuadraticTerm {
+		t.Errorf("Invalid quadratic term component. Instead of '%f', We have '%f'.", DefaultQuadraticTerm, l.quadraticTerm)
+	}
 }
 func TestNewSpotLight(t *testing.T) {
 	t.Skip("Not implemented")
