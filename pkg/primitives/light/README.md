@@ -22,7 +22,7 @@ A light source that casts light upon object is called `light caster`. We can def
 
 - **Directional light**
 
-This light source is far (ideally infinite far), then we can model it with directional light. A good example for this kind of light caster is the `Sun`. It's not infinite far, but very far. We have to update our light structure, if we want to distinguise the directional light sources from the others. Because for directional lights the position is irrelevant. Instead of this, we have to know the **direction**.
+This light source is far (ideally infinite far), then we can model it with directional light. A good example for this kind of light caster is the `Sun`. It's not infinite far, but very far. We have to update our light structure, if we want to distinguish the directional light sources from the others. Because for directional lights the position is irrelevant. Instead of this, we have to know the **direction**.
 
 - **Point light**
 
