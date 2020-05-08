@@ -22,7 +22,8 @@ type Light struct {
 	quadraticTerm float32
 
 	// spotlights
-	cutoff float32
+	cutoff      float32
+	outerCutoff float32
 }
 
 func New(position, ambientComponent, diffuseComponent, specularComponent mgl32.Vec3) *Light {
@@ -62,9 +63,9 @@ func NewDirectionalLight(vectorComponents [4]mgl32.Vec3) *Light {
 }
 
 // NewSpotLight returns a Light with spot light settings. The vectorComponent [5]mgl32.Vec3 input has to contain
-// the position, direction, ambient, diffuse, specular components in this order. The terms[4]float32 input has
-// to contain the constant, linear, quadratic terms and the cutoff components in this order.
-func NewSpotLight(vectorComponents [5]mgl32.Vec3, terms [4]float32) *Light {
+// the position, direction, ambient, diffuse, specular components in this order. The terms[5]float32 input has
+// to contain the constant, linear, quadratic terms, cutoff and the outerCutoff components in this order.
+func NewSpotLight(vectorComponents [5]mgl32.Vec3, terms [5]float32) *Light {
 	return &Light{
 		position:  vectorComponents[0],
 		direction: vectorComponents[1],
@@ -76,6 +77,7 @@ func NewSpotLight(vectorComponents [5]mgl32.Vec3, terms [4]float32) *Light {
 		linearTerm:    terms[1],
 		quadraticTerm: terms[2],
 		cutoff:        terms[3],
+		outerCutoff:   terms[4],
 	}
 }
 
@@ -137,4 +139,9 @@ func (l *Light) GetDirection() mgl32.Vec3 {
 // GetCutoff returns the cutoff component of the light
 func (l *Light) GetCutoff() float32 {
 	return l.cutoff
+}
+
+// GetOuterCutoff returns the outerCutoff component of the light
+func (l *Light) GetOuterCutoff() float32 {
+	return l.outerCutoff
 }

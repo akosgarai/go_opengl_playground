@@ -17,6 +17,7 @@ var (
 	DefaultLinearTerm    = float32(0.5)
 	DefaultQuadraticTerm = float32(0.05)
 	DefaultCutoff        = float32(15)
+	DefaultOuterCutoff   = float32(20)
 )
 
 func TestNew(t *testing.T) {
@@ -106,10 +107,18 @@ func TestGetQuadraticTerm(t *testing.T) {
 }
 func TestGetCutOff(t *testing.T) {
 	vectorComponent := [5]mgl32.Vec3{DefaultLightPosition, DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
-	termComponent := [4]float32{DefaultConstantTerm, DefaultLinearTerm, DefaultQuadraticTerm, DefaultCutoff}
+	termComponent := [5]float32{DefaultConstantTerm, DefaultLinearTerm, DefaultQuadraticTerm, DefaultCutoff}
 	l := NewSpotLight(vectorComponent, termComponent)
 	if l.GetCutoff() != DefaultCutoff {
 		t.Errorf("Invalid cutoff component. Instead of '%f', We have '%f'.", DefaultCutoff, l.GetCutoff())
+	}
+}
+func TestGetOuterCutOff(t *testing.T) {
+	vectorComponent := [5]mgl32.Vec3{DefaultLightPosition, DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	termComponent := [5]float32{DefaultConstantTerm, DefaultLinearTerm, DefaultQuadraticTerm, DefaultCutoff, DefaultOuterCutoff}
+	l := NewSpotLight(vectorComponent, termComponent)
+	if l.GetOuterCutoff() != DefaultOuterCutoff {
+		t.Errorf("Invalid cutoff component. Instead of '%f', We have '%f'.", DefaultOuterCutoff, l.GetOuterCutoff())
 	}
 }
 func TestNewDirectionalLight(t *testing.T) {
@@ -156,7 +165,7 @@ func TestNewPointLight(t *testing.T) {
 }
 func TestNewSpotLight(t *testing.T) {
 	vectorComponent := [5]mgl32.Vec3{DefaultLightPosition, DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
-	termComponent := [4]float32{DefaultConstantTerm, DefaultLinearTerm, DefaultQuadraticTerm, DefaultCutoff}
+	termComponent := [5]float32{DefaultConstantTerm, DefaultLinearTerm, DefaultQuadraticTerm, DefaultCutoff, DefaultOuterCutoff}
 	l := NewSpotLight(vectorComponent, termComponent)
 	if l.position != DefaultLightPosition {
 		t.Error("Invalid light position")
@@ -184,5 +193,8 @@ func TestNewSpotLight(t *testing.T) {
 	}
 	if l.cutoff != DefaultCutoff {
 		t.Errorf("Invalid cutoff component. Instead of '%f', We have '%f'.", DefaultCutoff, l.cutoff)
+	}
+	if l.outerCutoff != DefaultOuterCutoff {
+		t.Errorf("Invalid couterCutoff component. Instead of '%f', We have '%f'.", DefaultOuterCutoff, l.outerCutoff)
 	}
 }
