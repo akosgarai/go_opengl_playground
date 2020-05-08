@@ -84,3 +84,18 @@ func (l *Light) GetPosition() mgl32.Vec3 {
 func (l *Light) SetPosition(pos mgl32.Vec3) {
 	l.position = pos
 }
+
+// GetConstantTerm returns the constant term component of the light
+func (l *Light) GetConstantTerm() float32 {
+	return l.constantTerm
+}
+
+// GetLinearTerm returns the linear term component of the light
+func (l *Light) GetLinearTerm() float32 {
+	return l.linearTerm
+}
+
+// GetQuadraticTerm returns the quadratic term component of the light
+func (l *Light) GetQuadraticTerm() float32 {
+	return l.quadraticTerm
+}

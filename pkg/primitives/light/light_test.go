@@ -75,13 +75,28 @@ func TestGetDirection(t *testing.T) {
 	t.Skip("Not implemented")
 }
 func TestGetConstantTerm(t *testing.T) {
-	t.Skip("Not implemented")
+	vectorComponent := [4]mgl32.Vec3{DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	termComponent := [3]float32{DefaultConstantTerm, DefaultLinearTerm, DefaultQuadraticTerm}
+	l := NewPointLight(vectorComponent, termComponent)
+	if l.GetConstantTerm() != DefaultConstantTerm {
+		t.Errorf("Invalid constant term component. Instead of '%f', We have '%f'.", DefaultConstantTerm, l.GetConstantTerm())
+	}
 }
 func TestGetLinearTerm(t *testing.T) {
-	t.Skip("Not implemented")
+	vectorComponent := [4]mgl32.Vec3{DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	termComponent := [3]float32{DefaultConstantTerm, DefaultLinearTerm, DefaultQuadraticTerm}
+	l := NewPointLight(vectorComponent, termComponent)
+	if l.GetLinearTerm() != DefaultLinearTerm {
+		t.Errorf("Invalid linear term component. Instead of '%f', We have '%f'.", DefaultLinearTerm, l.GetLinearTerm())
+	}
 }
 func TestGetQuadraticTerm(t *testing.T) {
-	t.Skip("Not implemented")
+	vectorComponent := [4]mgl32.Vec3{DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	termComponent := [3]float32{DefaultConstantTerm, DefaultLinearTerm, DefaultQuadraticTerm}
+	l := NewPointLight(vectorComponent, termComponent)
+	if l.GetQuadraticTerm() != DefaultQuadraticTerm {
+		t.Errorf("Invalid quadratic term component. Instead of '%f', We have '%f'.", DefaultQuadraticTerm, l.GetQuadraticTerm())
+	}
 }
 func TestGetCutOff(t *testing.T) {
 	t.Skip("Not implemented")
