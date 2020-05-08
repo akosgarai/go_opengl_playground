@@ -197,8 +197,8 @@ func main() {
 	app.SetCamera(CreateCamera())
 
 	shaderProgram := shader.NewShader("examples/08-colors/vertexshader.vert", "examples/08-colors/fragmentshader.frag")
-	lightSource := light.New(mgl32.Vec3{0, 0, 0}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1})
-	shaderProgram.SetLightSource(lightSource, "", "light.ambient", "", "")
+	lightSource := light.NewPointLight([4]mgl32.Vec3{mgl32.Vec3{0, 0, 0}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
+	shaderProgram.AddPointLightSource(lightSource, [7]string{"", "light.ambient", "", "", "", "", ""})
 	GenerateColoredCube(shaderProgram)
 	GenerateWhiteCube(shaderProgram)
 
