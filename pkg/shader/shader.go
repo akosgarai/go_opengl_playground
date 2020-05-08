@@ -54,6 +54,33 @@ type LightSource struct {
 	DiffuseUniformName  string
 	SpecularUniformName string
 }
+type DirectionalLightSource struct {
+	LightSource          DirectionalLight
+	DirectionUniformName string
+	AmbientUniformName   string
+	DiffuseUniformName   string
+	SpecularUniformName  string
+}
+type PointLightSource struct {
+	LightSource              PointLight
+	PositionUniformName      string
+	AmbientUniformName       string
+	DiffuseUniformName       string
+	SpecularUniformName      string
+	ConstantTermUniformName  string
+	LinearTermUniformName    string
+	QuadraticTermUniformName string
+}
+type SpotLightSource struct {
+	LightSource              SpotLight
+	PositionUniformName      string
+	AmbientUniformName       string
+	DiffuseUniformName       string
+	SpecularUniformName      string
+	ConstantTermUniformName  string
+	LinearTermUniformName    string
+	QuadraticTermUniformName string
+}
 
 // InitOpenGL is for initializing the gl lib. It also prints out the gl version.
 func InitOpenGL() {
@@ -232,7 +259,7 @@ func (s *Shader) genTexture() uint32 {
 	return id
 }
 
-// SetLight setups a light source.
+// SetLightSource setups a light source.
 // It takes a Light input that contains the model related info,
 // and it also takes 4 strings, the uniform names that are used in the shader applications
 // the 'PositionUniformName', 'AmbientUniformName', 'DiffuseUniformName', 'SpecularUniformName'
