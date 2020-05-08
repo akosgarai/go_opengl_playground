@@ -1,178 +1,14 @@
 package shader
 
 import (
-	"fmt"
 	"image"
 	"image/draw"
 	_ "image/jpeg"
 	_ "image/png"
-	"io/ioutil"
-	"os"
-	"strings"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 )
-
-type Light interface {
-	GetSpecular() mgl32.Vec3
-	GetAmbient() mgl32.Vec3
-	GetDiffuse() mgl32.Vec3
-	GetPosition() mgl32.Vec3
-}
-type DirectionalLight interface {
-	GetDirection() mgl32.Vec3
-	GetAmbient() mgl32.Vec3
-	GetDiffuse() mgl32.Vec3
-	GetSpecular() mgl32.Vec3
-}
-type PointLight interface {
-	GetPosition() mgl32.Vec3
-	GetAmbient() mgl32.Vec3
-	GetDiffuse() mgl32.Vec3
-	GetSpecular() mgl32.Vec3
-	GetConstantTerm() float32
-	GetLinearTerm() float32
-	GetQuadraticTerm() float32
-}
-type SpotLight interface {
-	GetPosition() mgl32.Vec3
-	GetDirection() mgl32.Vec3
-	GetAmbient() mgl32.Vec3
-	GetDiffuse() mgl32.Vec3
-	GetSpecular() mgl32.Vec3
-	GetConstantTerm() float32
-	GetLinearTerm() float32
-	GetQuadraticTerm() float32
-	GetCutoff() float32
-}
-
-type LightSource struct {
-	LightSource         Light
-	PositionUniformName string
-	AmbientUniformName  string
-	DiffuseUniformName  string
-	SpecularUniformName string
-}
-type DirectionalLightSource struct {
-	LightSource          DirectionalLight
-	DirectionUniformName string
-	AmbientUniformName   string
-	DiffuseUniformName   string
-	SpecularUniformName  string
-}
-type PointLightSource struct {
-	LightSource              PointLight
-	PositionUniformName      string
-	AmbientUniformName       string
-	DiffuseUniformName       string
-	SpecularUniformName      string
-	ConstantTermUniformName  string
-	LinearTermUniformName    string
-	QuadraticTermUniformName string
-}
-type SpotLightSource struct {
-	LightSource              SpotLight
-	PositionUniformName      string
-	DirectionUniformName     string
-	AmbientUniformName       string
-	DiffuseUniformName       string
-	SpecularUniformName      string
-	ConstantTermUniformName  string
-	LinearTermUniformName    string
-	QuadraticTermUniformName string
-	CutoffUniformName        string
-}
-
-// InitOpenGL is for initializing the gl lib. It also prints out the gl version.
-func InitOpenGL() {
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
-	version := gl.GoStr(gl.GetString(gl.VERSION))
-	fmt.Println("OpenGL version", version)
-}
-func textureMap(index int) uint32 {
-	switch index {
-	case 0:
-		return gl.TEXTURE0
-	case 1:
-		return gl.TEXTURE1
-	case 2:
-		return gl.TEXTURE2
-	}
-	return 0
-}
-
-// LoadShaderFromFile takes a filepath string arguments.
-// It loads the file and returns it as a '\x00' terminated string.
-// It returns an error also.
-func LoadShaderFromFile(path string) (string, error) {
-	shaderCode, err := ioutil.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-	result := string(shaderCode) + "\x00"
-	return result, nil
-}
-
-// LoadImageFromFile takes a filepath string argument.
-// It loads the file, decodes it as PNG or jpg, and returns the image and error
-func loadImageFromFile(path string) (image.Image, error) {
-	imgFile, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer imgFile.Close()
-	img, _, err := image.Decode(imgFile)
-	return img, err
-
-}
-func CompileShader(source string, shaderType uint32) (uint32, error) {
-	shader := gl.CreateShader(shaderType)
-
-	csources, free := gl.Strs(source)
-	gl.ShaderSource(shader, 1, csources, nil)
-	free()
-	gl.CompileShader(shader)
-
-	var status int32
-	gl.GetShaderiv(shader, gl.COMPILE_STATUS, &status)
-	if status == gl.FALSE {
-		var logLength int32
-		gl.GetShaderiv(shader, gl.INFO_LOG_LENGTH, &logLength)
-
-		log := strings.Repeat("\x00", int(logLength+1))
-		gl.GetShaderInfoLog(shader, logLength, nil, gl.Str(log))
-
-		return 0, fmt.Errorf("failed to compile %v: %v", source, log)
-	}
-
-	return shader, nil
-}
-
-type texture struct {
-	textureId   uint32
-	targetId    uint32
-	texUnitId   uint32
-	uniformName string
-}
-
-func (t *texture) Bind(id uint32) {
-	gl.ActiveTexture(id)
-	gl.BindTexture(t.targetId, t.textureId)
-	t.texUnitId = id
-}
-func (t *texture) IsBinded() bool {
-	if t.texUnitId == 0 {
-		return false
-	}
-	return true
-}
-func (t *texture) UnBind() {
-	t.texUnitId = 0
-	gl.BindTexture(t.targetId, t.texUnitId)
-}
 
 type Shader struct {
 	shaderProgramId         uint32
@@ -298,8 +134,8 @@ func (s *Shader) AddPointLightSource(lightSource PointLight, uniformNames [7]str
 // that contains the model related info, and it also contains the uniform names in [8]string format.
 // The order has to be the following: 'PositionUniformName', 'DirectionUniformName', 'AmbientUniformName',
 // 'DiffuseUniformName', 'SpecularUniformName', 'ConstantTermUniformName', 'LinearTermUniformName',
-// 'QuadraticTermUniformName'.
-func (s *Shader) AddSpotLightSource(lightSource SpotLight, uniformNames [8]string) {
+// 'QuadraticTermUniformName', 'CutoffUniformName'.
+func (s *Shader) AddSpotLightSource(lightSource SpotLight, uniformNames [9]string) {
 	var sSource SpotLightSource
 	sSource.LightSource = lightSource
 	sSource.PositionUniformName = uniformNames[0]
@@ -310,6 +146,7 @@ func (s *Shader) AddSpotLightSource(lightSource SpotLight, uniformNames [8]strin
 	sSource.ConstantTermUniformName = uniformNames[5]
 	sSource.LinearTermUniformName = uniformNames[6]
 	sSource.QuadraticTermUniformName = uniformNames[7]
+	sSource.CutoffUniformName = uniformNames[8]
 
 	s.spotLightSources = append(s.spotLightSources, sSource)
 }
