@@ -439,6 +439,101 @@ func (s *Shader) lightHandler() {
 	}
 }
 
+// Setup directional light related uniforms. It iterates over the directional sources
+// and setups each uniform, where the name is not empty.
+func (s *Shader) directionalLightHandler() {
+	for _, source := range s.directionalLightSources {
+		if source.DirectionUniformName != "" {
+			direction := source.LightSource.GetDirection()
+			s.SetUniform3f(source.DirectionUniformName, direction.X(), direction.Y(), direction.Z())
+		}
+		if source.AmbientUniformName != "" {
+			ambient := source.LightSource.GetAmbient()
+			s.SetUniform3f(source.AmbientUniformName, ambient.X(), ambient.Y(), ambient.Z())
+		}
+		if source.DiffuseUniformName != "" {
+			diffuse := source.LightSource.GetDiffuse()
+			s.SetUniform3f(source.DiffuseUniformName, diffuse.X(), diffuse.Y(), diffuse.Z())
+		}
+		if source.SpecularUniformName != "" {
+			specular := source.LightSource.GetSpecular()
+			s.SetUniform3f(source.DiffuseUniformName, specular.X(), specular.Y(), specular.Z())
+		}
+	}
+
+}
+
+// Setup point light relates uniforms. It iterates over the point light sources and sets
+// up every uniform, where the name is not empty.
+func (s *Shader) pointLightHandler() {
+	for _, source := range s.pointLightSources {
+		if source.PositionUniformName != "" {
+			position := source.LightSource.GetPosition()
+			s.SetUniform3f(source.PositionUniformName, position.X(), position.Y(), position.Z())
+		}
+		if source.AmbientUniformName != "" {
+			ambient := source.LightSource.GetAmbient()
+			s.SetUniform3f(source.AmbientUniformName, ambient.X(), ambient.Y(), ambient.Z())
+		}
+		if source.DiffuseUniformName != "" {
+			diffuse := source.LightSource.GetDiffuse()
+			s.SetUniform3f(source.DiffuseUniformName, diffuse.X(), diffuse.Y(), diffuse.Z())
+		}
+		if source.SpecularUniformName != "" {
+			specular := source.LightSource.GetSpecular()
+			s.SetUniform3f(source.DiffuseUniformName, specular.X(), specular.Y(), specular.Z())
+		}
+		if source.ConstantTermUniformName != "" {
+			s.SetUniform1f(source.ConstantTermUniformName, source.GetConstantTerm())
+		}
+		if source.LinearTermUniformName != "" {
+			s.SetUniform1f(source.LinearTermUniformName, source.GetLinearTerm())
+		}
+		if source.QuadraticTermUniformName != "" {
+			s.SetUniform1f(source.QuadraticTermUniformName, source.GetQuadraticTerm())
+		}
+	}
+}
+
+// Setup spot light related uniforms. It iterates over the spot light sources and sets up
+// every uniform, where the name is not empty.
+func (s *Shader) spotLightHandler() {
+	for _, source := range s.spotLightSources {
+		if source.DirectionUniformName != "" {
+			direction := source.LightSource.GetDirection()
+			s.SetUniform3f(source.DirectionUniformName, direction.X(), direction.Y(), direction.Z())
+		}
+		if source.PositionUniformName != "" {
+			position := source.LightSource.GetPosition()
+			s.SetUniform3f(source.PositionUniformName, position.X(), position.Y(), position.Z())
+		}
+		if source.AmbientUniformName != "" {
+			ambient := source.LightSource.GetAmbient()
+			s.SetUniform3f(source.AmbientUniformName, ambient.X(), ambient.Y(), ambient.Z())
+		}
+		if source.DiffuseUniformName != "" {
+			diffuse := source.LightSource.GetDiffuse()
+			s.SetUniform3f(source.DiffuseUniformName, diffuse.X(), diffuse.Y(), diffuse.Z())
+		}
+		if source.SpecularUniformName != "" {
+			specular := source.LightSource.GetSpecular()
+			s.SetUniform3f(source.DiffuseUniformName, specular.X(), specular.Y(), specular.Z())
+		}
+		if source.ConstantTermUniformName != "" {
+			s.SetUniform1f(source.ConstantTermUniformName, source.GetConstantTerm())
+		}
+		if source.LinearTermUniformName != "" {
+			s.SetUniform1f(source.LinearTermUniformName, source.GetLinearTerm())
+		}
+		if source.QuadraticTermUniformName != "" {
+			s.SetUniform1f(source.QuadraticTermUniformName, source.GetQuadraticTerm())
+		}
+		if source.CutoffUniformName != "" {
+			s.SetUniform1f(source.CutoffUniformName, source.GetCutoff())
+		}
+	}
+}
+
 // DrawPoints is the draw functions for points
 func (s *Shader) DrawPoints(numberOfPoints int32) {
 	s.lightHandler()
