@@ -277,6 +277,60 @@ func (s *Shader) SetLightSource(lightSource Light, position, ambient, diffuse, s
 	s.lightSource.SpecularUniformName = specular
 }
 
+// AddDirectionalLightSource sets up a directional light source.
+// It takes a DirectionalLight input that contains the model related info,
+// and it also takes a [4]string, with the uniform names that are used in the shader applications
+// the 'DirectionUniformName', 'AmbientUniformName', 'DiffuseUniformName', 'SpecularUniformName'.
+// They has to be in this order.
+func (s *Shader) AddDirectionalLightSource(lightSource DirectionalLight, uniformNames [4]string) {
+	var dSource DirectionalLightSource
+	dSource.LightSource = lightSource
+	dSource.DirectionUniformName = uniformNames[0]
+	dSource.AmbientUniformName = uniformNames[1]
+	dSource.DiffuseUniformName = uniformNames[2]
+	dSource.SpecularUniformName = uniformNames[3]
+
+	s.directionalLightSources = append(s.directionalLightSources, dSource)
+}
+
+// AddPointLightSource sets up a point light source. It takes a PointLight
+// input that contains the model related info, and it also containt the uniform names in [7]string format.
+// The order has to be the following: 'PositionUniformName', 'AmbientUniformName', 'DiffuseUniformName',
+// 'SpecularUniformName', 'ConstantTermUniformName', 'LinearTermUniformName', 'QuadraticTermUniformName'.
+func (s *Shader) AddPointLightSource(lightSource PointLight, uniformNames [7]string) {
+	var pSource PointLightSource
+	pSource.LightSource = lightSource
+	pSource.PositionUniformName = uniformNames[0]
+	pSource.AmbientUniformName = uniformNames[1]
+	pSource.DiffuseUniformName = uniformNames[2]
+	pSource.SpecularUniformName = uniformNames[3]
+	pSource.ConstantTermUniformName = uniformNames[4]
+	pSource.LinearTermUniformName = uniformNames[5]
+	pSource.QuadraticTermUniformName = uniformNames[6]
+
+	s.pointLightSources = append(s.pointLightSources, pSource)
+}
+
+// AddSpotLightSource sets up a spot light source. It takes a SpotLight input
+// that contains the model related info, and it also contains the uniform names in [8]string format.
+// The order has to be the following: 'PositionUniformName', 'DirectionUniformName', 'AmbientUniformName',
+// 'DiffuseUniformName', 'SpecularUniformName', 'ConstantTermUniformName', 'LinearTermUniformName',
+// 'QuadraticTermUniformName'.
+func (s *Shader) AddSpotLightSource(lightSource SpotLight, uniformNames [8]string) {
+	var sSource SpotLightSource
+	sSource.LightSource = lightSource
+	sSource.PositionUniformName = uniformNames[0]
+	sSource.DirectionUniformName = uniformNames[1]
+	sSource.AmbientUniformName = uniformNames[2]
+	sSource.DiffuseUniformName = uniformNames[3]
+	sSource.SpecularUniformName = uniformNames[4]
+	sSource.ConstantTermUniformName = uniformNames[5]
+	sSource.LinearTermUniformName = uniformNames[6]
+	sSource.QuadraticTermUniformName = uniformNames[7]
+
+	s.spotLightSources = append(s.spotLightSources, sSource)
+}
+
 func (s *Shader) SetViewPosition(position mgl32.Vec3, uniformName string) {
 	s.viewPosition = position
 	s.viewPositionUniformName = uniformName
