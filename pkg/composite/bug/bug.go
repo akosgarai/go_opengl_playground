@@ -116,6 +116,12 @@ func (b *Bug) DrawMode(mode int) {
 
 // Update calls the Update function of the shapes.
 func (b *Bug) Update(dt float64) {
+	delta := float32(dt)
+	motionVector := b.direction
+	if motionVector.Len() > 0 {
+		motionVector = motionVector.Normalize().Mul(delta * b.speed)
+	}
+	b.position = (b.position).Add(motionVector)
 	for i, _ := range b.shapes {
 		b.shapes[i].Update(dt)
 	}
