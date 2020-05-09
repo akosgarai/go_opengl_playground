@@ -26,15 +26,6 @@ type Light struct {
 	outerCutoff float32
 }
 
-func New(position, ambientComponent, diffuseComponent, specularComponent mgl32.Vec3) *Light {
-	return &Light{
-		position: position,
-		ambient:  ambientComponent,
-		diffuse:  diffuseComponent,
-		specular: specularComponent,
-	}
-}
-
 // NewPointLight returns a Light with point light settings. The vectorComponent [4]mgl32.Vec3 input has to contain
 // the position, ambient, diffuse, specular component vectors in this order. The terms [3]float32 input has to
 // contain the constant, linear quadratic term components in this order.
