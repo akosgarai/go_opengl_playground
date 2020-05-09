@@ -47,9 +47,9 @@ var (
 	DirectionalLightAmbient   = mgl32.Vec3{0.1, 0.1, 0.1}
 	DirectionalLightDiffuse   = mgl32.Vec3{0.1, 0.1, 0.1}
 	DirectionalLightSpecular  = mgl32.Vec3{0.1, 0.1, 0.1}
-	PointLightAmbient         = mgl32.Vec3{1, 1, 1}
-	PointLightDiffuse         = mgl32.Vec3{1, 1, 1}
-	PointLightSpecular        = mgl32.Vec3{1, 1, 1}
+	PointLightAmbient         = mgl32.Vec3{0.5, 0.5, 0.5}
+	PointLightDiffuse         = mgl32.Vec3{0.5, 0.5, 0.5}
+	PointLightSpecular        = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightPosition_1      = mgl32.Vec3{8, -0.5, -1.0}
 	PointLightPosition_2      = mgl32.Vec3{2, 2, 2}
 	LightConstantTerm         = float32(1.0)
