@@ -50,9 +50,9 @@ var (
 	PointLightAmbient         = mgl32.Vec3{0, 0, 0}
 	PointLightDiffuse         = mgl32.Vec3{0, 0, 0}
 	PointLightSpecular        = mgl32.Vec3{0, 0, 0}
-	PointLightDirection_1     = mgl32.Vec3{1, 1, 1}
-	PointLightDirection_2     = mgl32.Vec3{2, 2, 2}
-	LightConstantTerm         = float32(1.0)
+	PointLightPosition_1      = mgl32.Vec3{40, -5, 10}
+	PointLightPosition_2      = mgl32.Vec3{2, 2, 2}
+	LightConstantTerm         = float32(6.0)
 	LightLinearTerm           = float32(0.14)
 	LightQuadraticTerm        = float32(0.07)
 	SpotLightAmbient          = mgl32.Vec3{1, 1, 1}
@@ -94,19 +94,35 @@ func Box(shaderProgram *shader.Shader) {
 
 // It generates the lamp
 func Lamp(shaderProgram *shader.Shader) {
-	bottomRect := rectangle.NewSquare(mgl32.Vec3{0, 0, -11}, mgl32.Vec3{2, 0, -9}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0, 0, 0}, shaderProgram)
-	pole := cuboid.New(bottomRect, 30.0, shaderProgram)
+	baseX := float32(0)
+	baseZ := float32(-11)
+	width := float32(2)
+	height := float32(30)
+	length := float32(10)
+
+	bottomRect := rectangle.NewSquare(mgl32.Vec3{baseX, 0, baseZ}, mgl32.Vec3{baseX + width, 0, baseZ + width}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0, 0, 0}, shaderProgram)
+	pole := cuboid.New(bottomRect, height, shaderProgram)
 	pole.SetMaterial(material.Chrome)
 	pole.SetPrecision(10)
 	pole.DrawMode(cuboid.DRAW_MODE_LIGHT)
 	app.AddItem(pole)
-	bottomRect = rectangle.NewSquare(mgl32.Vec3{0, -30, -11}, mgl32.Vec3{2, -32, -11}, mgl32.Vec3{0, 0, -1}, mgl32.Vec3{0, 0, 0}, shaderProgram)
-	top := cuboid.New(bottomRect, 10.0, shaderProgram)
+	bottomRect = rectangle.NewSquare(mgl32.Vec3{baseX, -height, baseZ}, mgl32.Vec3{baseX + width, -height - width, baseZ}, mgl32.Vec3{0, 0, -1}, mgl32.Vec3{0, 0, 0}, shaderProgram)
+	top := cuboid.New(bottomRect, length, shaderProgram)
 	top.SetMaterial(material.Chrome)
 	top.DrawMode(cuboid.DRAW_MODE_LIGHT)
 	top.SetPrecision(10)
 	app.AddItem(top)
 	bulb := sphere.New(SpotLightPosition_1, mgl32.Vec3{1, 1, 1}, float32(0.5), shaderProgram)
+	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 128.0)
+	bulb.SetMaterial(mat)
+	bulb.SetPrecision(15)
+	bulb.DrawMode(cuboid.DRAW_MODE_LIGHT)
+	app.AddItem(bulb)
+}
+
+// It generates the bug. This stuff will be the point light source. In the furure, i want to make it fly around.
+func Bug(shaderProgram *shader.Shader) {
+	bulb := sphere.New(PointLightPosition_1, mgl32.Vec3{1, 1, 1}, float32(0.5), shaderProgram)
 	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 128.0)
 	bulb.SetMaterial(mat)
 	bulb.SetPrecision(15)
@@ -212,13 +228,13 @@ func main() {
 		DirectionalLightSpecular,
 	})
 	PointLightSource_1 := light.NewPointLight([4]mgl32.Vec3{
-		PointLightDirection_1,
+		PointLightPosition_1,
 		PointLightAmbient,
 		PointLightDiffuse,
 		PointLightSpecular},
 		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
 	PointLightSource_2 := light.NewPointLight([4]mgl32.Vec3{
-		PointLightDirection_2,
+		PointLightPosition_2,
 		PointLightAmbient,
 		PointLightDiffuse,
 		PointLightSpecular},
@@ -268,6 +284,7 @@ func main() {
 	shaderProgramLamp.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 	shaderProgramLamp.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
 	Lamp(shaderProgramLamp)
+	Bug(shaderProgramLamp)
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
