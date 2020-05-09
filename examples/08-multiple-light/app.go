@@ -34,7 +34,7 @@ const (
 
 	moveSpeed            = 0.005
 	rotationSpeed        = float32(10.0)
-	cameraDirectionSpeed = float32(0.00500)
+	cameraDirectionSpeed = float32(0.100)
 	CameraMoveSpeed      = 0.005
 	cameraDistance       = 0.1
 )
@@ -113,7 +113,7 @@ func Lamp(shaderProgram *shader.Shader) {
 	top.SetPrecision(10)
 	app.AddItem(top)
 	bulb := sphere.New(SpotLightPosition_1, mgl32.Vec3{1, 1, 1}, float32(0.1), shaderProgram)
-	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 128.0)
+	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 256.0)
 	bulb.SetMaterial(mat)
 	bulb.SetPrecision(15)
 	bulb.DrawMode(cuboid.DRAW_MODE_LIGHT)
@@ -199,14 +199,14 @@ func Update() {
 	dX := float32(0.0)
 	dY := float32(0.0)
 	if KeyDowns["dUp"] && !KeyDowns["dDown"] {
-		dY = cameraDirectionSpeed
-	} else if KeyDowns["dDown"] && !KeyDowns["dUp"] {
 		dY = -cameraDirectionSpeed
+	} else if KeyDowns["dDown"] && !KeyDowns["dUp"] {
+		dY = cameraDirectionSpeed
 	}
 	if KeyDowns["dLeft"] && !KeyDowns["dRight"] {
-		dX = -cameraDirectionSpeed
-	} else if KeyDowns["dRight"] && !KeyDowns["dLeft"] {
 		dX = cameraDirectionSpeed
+	} else if KeyDowns["dRight"] && !KeyDowns["dLeft"] {
+		dX = -cameraDirectionSpeed
 	}
 	app.GetCamera().UpdateDirection(dX, dY)
 }
