@@ -44,26 +44,26 @@ var (
 	lastUpdate int64
 
 	DirectionalLightDirection = (mgl32.Vec3{0.7, 0.7, 0.7}).Normalize()
-	DirectionalLightAmbient   = mgl32.Vec3{0.2, 0.2, 0.2}
-	DirectionalLightDiffuse   = mgl32.Vec3{0.5, 0.5, 0.5}
+	DirectionalLightAmbient   = mgl32.Vec3{0.1, 0.1, 0.1}
+	DirectionalLightDiffuse   = mgl32.Vec3{0.1, 0.1, 0.1}
 	DirectionalLightSpecular  = mgl32.Vec3{0.1, 0.1, 0.1}
-	PointLightAmbient         = mgl32.Vec3{0, 0, 0}
-	PointLightDiffuse         = mgl32.Vec3{0, 0, 0}
-	PointLightSpecular        = mgl32.Vec3{0, 0, 0}
+	PointLightAmbient         = mgl32.Vec3{1, 1, 1}
+	PointLightDiffuse         = mgl32.Vec3{1, 1, 1}
+	PointLightSpecular        = mgl32.Vec3{1, 1, 1}
 	PointLightPosition_1      = mgl32.Vec3{8, -0.5, -1.0}
 	PointLightPosition_2      = mgl32.Vec3{2, 2, 2}
-	LightConstantTerm         = float32(6.0)
+	LightConstantTerm         = float32(1.0)
 	LightLinearTerm           = float32(0.14)
 	LightQuadraticTerm        = float32(0.07)
 	SpotLightAmbient          = mgl32.Vec3{1, 1, 1}
 	SpotLightDiffuse          = mgl32.Vec3{1, 1, 1}
 	SpotLightSpecular         = mgl32.Vec3{1, 1, 1}
 	SpotLightDirection_1      = (mgl32.Vec3{0, 1, 0}).Normalize()
-	SpotLightDirection_2      = (mgl32.Vec3{2, 2, 2}).Normalize()
+	SpotLightDirection_2      = (mgl32.Vec3{0, 1, 0}).Normalize()
 	SpotLightPosition_1       = mgl32.Vec3{0.20, -6, -0.7}
 	SpotLightPosition_2       = mgl32.Vec3{4, 4, 4}
-	SpotLightCutoff           = float32(250)
-	SpotLightOuterCutoff      = float32(350)
+	SpotLightCutoff           = float32(4)
+	SpotLightOuterCutoff      = float32(5)
 )
 
 // It generates a square.
@@ -233,12 +233,6 @@ func main() {
 		PointLightDiffuse,
 		PointLightSpecular},
 		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
-	PointLightSource_2 := light.NewPointLight([4]mgl32.Vec3{
-		PointLightPosition_2,
-		PointLightAmbient,
-		PointLightDiffuse,
-		PointLightSpecular},
-		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
 	SpotLightSource_1 := light.NewSpotLight([5]mgl32.Vec3{
 		SpotLightPosition_1,
 		SpotLightDirection_1,
@@ -246,22 +240,30 @@ func main() {
 		SpotLightDiffuse,
 		SpotLightSpecular},
 		[5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, SpotLightCutoff, SpotLightOuterCutoff})
-	SpotLightSource_2 := light.NewSpotLight([5]mgl32.Vec3{
-		SpotLightPosition_2,
-		SpotLightDirection_2,
-		SpotLightAmbient,
-		SpotLightDiffuse,
-		SpotLightSpecular},
-		[5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, SpotLightCutoff, SpotLightOuterCutoff})
+	/*
+		PointLightSource_2 := light.NewPointLight([4]mgl32.Vec3{
+			PointLightPosition_2,
+			PointLightAmbient,
+			PointLightDiffuse,
+			PointLightSpecular},
+			[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
+		SpotLightSource_2 := light.NewSpotLight([5]mgl32.Vec3{
+			SpotLightPosition_2,
+			SpotLightDirection_2,
+			SpotLightAmbient,
+			SpotLightDiffuse,
+			SpotLightSpecular},
+			[5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, SpotLightCutoff, SpotLightOuterCutoff})
+	*/
 	//Define the shader application for the grass
 	shaderProgramGrass := shader.NewShader("examples/08-multiple-light/shaders/texture.vert", "examples/08-multiple-light/shaders/texture.frag")
 	shaderProgramGrass.AddTexture("examples/08-multiple-light/assets/grass.jpg", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "material.diffuse")
 	shaderProgramGrass.AddTexture("examples/08-multiple-light/assets/grass.jpg", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "material.specular")
 	shaderProgramGrass.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
 	shaderProgramGrass.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
-	shaderProgramGrass.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
+	//shaderProgramGrass.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
 	shaderProgramGrass.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
-	shaderProgramGrass.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
+	//shaderProgramGrass.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 	shaderProgramGrass.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
 	Grass(shaderProgramGrass)
 	// Shader application for the box
@@ -270,25 +272,26 @@ func main() {
 	shaderProgramBox.AddTexture("examples/08-multiple-light/assets/box-specular.png", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "material.specular")
 	shaderProgramBox.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
 	shaderProgramBox.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
-	shaderProgramBox.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
+	//shaderProgramBox.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
 	shaderProgramBox.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
-	shaderProgramBox.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
+	//shaderProgramBox.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 	shaderProgramBox.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
 	Box(shaderProgramBox)
 	// Shader application for the lamp
 	shaderProgramLamp := shader.NewShader("examples/08-multiple-light/shaders/lamp.vert", "examples/08-multiple-light/shaders/lamp.frag")
 	shaderProgramLamp.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
 	shaderProgramLamp.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
-	shaderProgramLamp.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
+	//shaderProgramLamp.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
 	shaderProgramLamp.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
-	shaderProgramLamp.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
+	//shaderProgramLamp.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 	shaderProgramLamp.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
 	Lamp(shaderProgramLamp)
 	Bug(shaderProgramLamp)
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
-	gl.ClearColor(0.3, 0.1, 0.5, 1.0)
+	//gl.ClearColor(0.3, 0.1, 0.5, 1.0)
+	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	// register keyboard button callback

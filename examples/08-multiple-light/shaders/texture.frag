@@ -47,8 +47,8 @@ in vec3 Normal;
 in vec2 TexCoords;
 
 #define MAX_DIRECTION_LIGHTS 1
-#define MAX_POINT_LIGHTS 2
-#define MAX_SPOT_LIGHTS 2
+#define MAX_POINT_LIGHTS 1
+#define MAX_SPOT_LIGHTS 1
 
 uniform DirectionalLight dirLight[MAX_DIRECTION_LIGHTS];
 uniform PointLight pointLight[MAX_POINT_LIGHTS];
@@ -111,9 +111,9 @@ vec3 CalculatePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewD
     float distance = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
     // combine results
-    vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
-    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
-    vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+    vec3 ambient = light.ambient * texture(material.diffuse, TexCoords).rbg;
+    vec3 diffuse = light.diffuse * diff * texture(material.diffuse, TexCoords).rbg;
+    vec3 specular = light.specular * spec * texture(material.specular, TexCoords).rbg;
     ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
