@@ -62,7 +62,7 @@ var (
 	SpotLightDirection_1      = (mgl32.Vec3{0, 1, 0}).Normalize()
 	SpotLightDirection_2      = (mgl32.Vec3{0, 1, 0}).Normalize()
 	SpotLightPosition_1       = mgl32.Vec3{0.20, -6, -0.7}
-	SpotLightPosition_2       = mgl32.Vec3{4, 4, 4}
+	SpotLightPosition_2       = mgl32.Vec3{10.20, -6, -0.7}
 	SpotLightCutoff           = float32(4)
 	SpotLightOuterCutoff      = float32(5)
 )
@@ -94,9 +94,7 @@ func Box(shaderProgram *shader.Shader) {
 }
 
 // It generates the lamp
-func Lamp(shaderProgram *shader.Shader) {
-	baseX := float32(0)
-	baseZ := float32(-3)
+func Lamp(shaderProgram *shader.Shader, baseX, baseZ float32, lightPosition mgl32.Vec3) {
 	width := float32(0.4)
 	height := float32(6)
 	length := float32(2.5)
@@ -113,7 +111,7 @@ func Lamp(shaderProgram *shader.Shader) {
 	top.DrawMode(cuboid.DRAW_MODE_LIGHT)
 	top.SetPrecision(10)
 	app.AddItem(top)
-	bulb := sphere.New(SpotLightPosition_1, mgl32.Vec3{1, 1, 1}, float32(0.1), shaderProgram)
+	bulb := sphere.New(lightPosition, mgl32.Vec3{1, 1, 1}, float32(0.1), shaderProgram)
 	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 256.0)
 	bulb.SetMaterial(mat)
 	bulb.SetPrecision(15)
@@ -307,7 +305,8 @@ func main() {
 	//shaderProgramLamp.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 	shaderProgramLamp.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
 	ShaderProgramsWithViewPos = append(ShaderProgramsWithViewPos, shaderProgramLamp)
-	Lamp(shaderProgramLamp)
+	Lamp(shaderProgramLamp, 0, -3, SpotLightPosition_1)
+	Lamp(shaderProgramLamp, 10, -3, SpotLightPosition_2)
 	Bug(shaderProgramLamp)
 
 	gl.Enable(gl.DEPTH_TEST)
