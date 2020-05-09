@@ -21,7 +21,8 @@ var (
 )
 
 func TestNew(t *testing.T) {
-	l := New(DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent)
+	vectorComponent := [4]mgl32.Vec3{DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	l := NewDirectionalLight(vectorComponent)
 	if l.position != DefaultLightPosition {
 		t.Error("Invalid light position")
 	}
@@ -36,38 +37,44 @@ func TestNew(t *testing.T) {
 	}
 }
 func TestLog(t *testing.T) {
-	l := New(DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent)
+	vectorComponent := [4]mgl32.Vec3{DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	l := NewDirectionalLight(vectorComponent)
 	log := l.Log()
 	if len(log) < 10 {
 		t.Error("Log too short")
 	}
 }
 func TestGetAmbient(t *testing.T) {
-	l := New(DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent)
+	vectorComponent := [4]mgl32.Vec3{DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	l := NewDirectionalLight(vectorComponent)
 	if l.GetAmbient() != DefaultAmbientComponent {
 		t.Error("Invalid ambient color")
 	}
 }
 func TestGetDiffuse(t *testing.T) {
-	l := New(DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent)
+	vectorComponent := [4]mgl32.Vec3{DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	l := NewDirectionalLight(vectorComponent)
 	if l.GetDiffuse() != DefaultDiffuseComponent {
 		t.Error("Invalid diffuse color")
 	}
 }
 func TestGetSpecular(t *testing.T) {
-	l := New(DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent)
+	vectorComponent := [4]mgl32.Vec3{DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	l := NewDirectionalLight(vectorComponent)
 	if l.GetSpecular() != DefaultSpecularComponent {
 		t.Error("Invalid specular color")
 	}
 }
 func TestGetPosition(t *testing.T) {
-	l := New(DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent)
+	vectorComponent := [4]mgl32.Vec3{DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	l := NewDirectionalLight(vectorComponent)
 	if l.GetPosition() != DefaultLightPosition {
 		t.Error("Invalid position vector")
 	}
 }
 func TestSetPosition(t *testing.T) {
-	l := New(DefaultLightPosition, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent)
+	vectorComponent := [4]mgl32.Vec3{DefaultLightDirection, DefaultAmbientComponent, DefaultDiffuseComponent, DefaultSpecularComponent}
+	l := NewDirectionalLight(vectorComponent)
 	newPosition := mgl32.Vec3{2, 2, 2}
 	l.SetPosition(newPosition)
 	if l.GetPosition() != newPosition {
