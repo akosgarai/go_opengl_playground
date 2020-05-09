@@ -1,128 +1,21 @@
 package shader
 
 import (
-	"fmt"
 	"image"
 	"image/draw"
 	_ "image/jpeg"
 	_ "image/png"
-	"io/ioutil"
-	"os"
-	"strings"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-type Light interface {
-	GetSpecular() mgl32.Vec3
-	GetAmbient() mgl32.Vec3
-	GetDiffuse() mgl32.Vec3
-	GetPosition() mgl32.Vec3
-}
-
-type LightSource struct {
-	LightSource         Light
-	PositionUniformName string
-	AmbientUniformName  string
-	DiffuseUniformName  string
-	SpecularUniformName string
-}
-
-// InitOpenGL is for initializing the gl lib. It also prints out the gl version.
-func InitOpenGL() {
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
-	version := gl.GoStr(gl.GetString(gl.VERSION))
-	fmt.Println("OpenGL version", version)
-}
-func textureMap(index int) uint32 {
-	switch index {
-	case 0:
-		return gl.TEXTURE0
-	case 1:
-		return gl.TEXTURE1
-	case 2:
-		return gl.TEXTURE2
-	}
-	return 0
-}
-
-// LoadShaderFromFile takes a filepath string arguments.
-// It loads the file and returns it as a '\x00' terminated string.
-// It returns an error also.
-func LoadShaderFromFile(path string) (string, error) {
-	shaderCode, err := ioutil.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-	result := string(shaderCode) + "\x00"
-	return result, nil
-}
-
-// LoadImageFromFile takes a filepath string argument.
-// It loads the file, decodes it as PNG or jpg, and returns the image and error
-func loadImageFromFile(path string) (image.Image, error) {
-	imgFile, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer imgFile.Close()
-	img, _, err := image.Decode(imgFile)
-	return img, err
-
-}
-func CompileShader(source string, shaderType uint32) (uint32, error) {
-	shader := gl.CreateShader(shaderType)
-
-	csources, free := gl.Strs(source)
-	gl.ShaderSource(shader, 1, csources, nil)
-	free()
-	gl.CompileShader(shader)
-
-	var status int32
-	gl.GetShaderiv(shader, gl.COMPILE_STATUS, &status)
-	if status == gl.FALSE {
-		var logLength int32
-		gl.GetShaderiv(shader, gl.INFO_LOG_LENGTH, &logLength)
-
-		log := strings.Repeat("\x00", int(logLength+1))
-		gl.GetShaderInfoLog(shader, logLength, nil, gl.Str(log))
-
-		return 0, fmt.Errorf("failed to compile %v: %v", source, log)
-	}
-
-	return shader, nil
-}
-
-type texture struct {
-	textureId   uint32
-	targetId    uint32
-	texUnitId   uint32
-	uniformName string
-}
-
-func (t *texture) Bind(id uint32) {
-	gl.ActiveTexture(id)
-	gl.BindTexture(t.targetId, t.textureId)
-	t.texUnitId = id
-}
-func (t *texture) IsBinded() bool {
-	if t.texUnitId == 0 {
-		return false
-	}
-	return true
-}
-func (t *texture) UnBind() {
-	t.texUnitId = 0
-	gl.BindTexture(t.targetId, t.texUnitId)
-}
-
 type Shader struct {
 	shaderProgramId         uint32
 	textures                []texture
-	lightSource             LightSource
+	directionalLightSources []DirectionalLightSource
+	pointLightSources       []PointLightSource
+	spotLightSources        []SpotLightSource
 	viewPosition            mgl32.Vec3
 	viewPositionUniformName string
 }
@@ -153,14 +46,11 @@ func NewShader(vertexShaderPath, fragmentShaderPath string) *Shader {
 	gl.LinkProgram(program)
 
 	return &Shader{
-		shaderProgramId: program,
-		textures:        []texture{},
-		lightSource: LightSource{
-			PositionUniformName: "",
-			AmbientUniformName:  "",
-			DiffuseUniformName:  "",
-			SpecularUniformName: "",
-		},
+		shaderProgramId:         program,
+		textures:                []texture{},
+		directionalLightSources: []DirectionalLightSource{},
+		pointLightSources:       []PointLightSource{},
+		spotLightSources:        []SpotLightSource{},
 
 		viewPosition:            mgl32.Vec3{0, 0, 0},
 		viewPositionUniformName: "",
@@ -206,16 +96,60 @@ func (s *Shader) genTexture() uint32 {
 	return id
 }
 
-// SetLight setups a light source.
-// It takes a Light input that contains the model related info,
-// and it also takes 4 strings, the uniform names that are used in the shader applications
-// the 'PositionUniformName', 'AmbientUniformName', 'DiffuseUniformName', 'SpecularUniformName'
-func (s *Shader) SetLightSource(lightSource Light, position, ambient, diffuse, specular string) {
-	s.lightSource.LightSource = lightSource
-	s.lightSource.PositionUniformName = position
-	s.lightSource.AmbientUniformName = ambient
-	s.lightSource.DiffuseUniformName = diffuse
-	s.lightSource.SpecularUniformName = specular
+// AddDirectionalLightSource sets up a directional light source.
+// It takes a DirectionalLight input that contains the model related info,
+// and it also takes a [4]string, with the uniform names that are used in the shader applications
+// the 'DirectionUniformName', 'AmbientUniformName', 'DiffuseUniformName', 'SpecularUniformName'.
+// They has to be in this order.
+func (s *Shader) AddDirectionalLightSource(lightSource DirectionalLight, uniformNames [4]string) {
+	var dSource DirectionalLightSource
+	dSource.LightSource = lightSource
+	dSource.DirectionUniformName = uniformNames[0]
+	dSource.AmbientUniformName = uniformNames[1]
+	dSource.DiffuseUniformName = uniformNames[2]
+	dSource.SpecularUniformName = uniformNames[3]
+
+	s.directionalLightSources = append(s.directionalLightSources, dSource)
+}
+
+// AddPointLightSource sets up a point light source. It takes a PointLight
+// input that contains the model related info, and it also containt the uniform names in [7]string format.
+// The order has to be the following: 'PositionUniformName', 'AmbientUniformName', 'DiffuseUniformName',
+// 'SpecularUniformName', 'ConstantTermUniformName', 'LinearTermUniformName', 'QuadraticTermUniformName'.
+func (s *Shader) AddPointLightSource(lightSource PointLight, uniformNames [7]string) {
+	var pSource PointLightSource
+	pSource.LightSource = lightSource
+	pSource.PositionUniformName = uniformNames[0]
+	pSource.AmbientUniformName = uniformNames[1]
+	pSource.DiffuseUniformName = uniformNames[2]
+	pSource.SpecularUniformName = uniformNames[3]
+	pSource.ConstantTermUniformName = uniformNames[4]
+	pSource.LinearTermUniformName = uniformNames[5]
+	pSource.QuadraticTermUniformName = uniformNames[6]
+
+	s.pointLightSources = append(s.pointLightSources, pSource)
+}
+
+// AddSpotLightSource sets up a spot light source. It takes a SpotLight input
+// that contains the model related info, and it also contains the uniform names in [10]string format.
+// The order has to be the following: 'PositionUniformName', 'DirectionUniformName', 'AmbientUniformName',
+// 'DiffuseUniformName', 'SpecularUniformName', 'ConstantTermUniformName', 'LinearTermUniformName',
+// 'QuadraticTermUniformName', 'CutoffUniformName'.
+func (s *Shader) AddSpotLightSource(lightSource SpotLight, uniformNames [10]string) {
+	var sSource SpotLightSource
+	sSource.LightSource = lightSource
+	sSource.PositionUniformName = uniformNames[0]
+	sSource.DirectionUniformName = uniformNames[1]
+	sSource.AmbientUniformName = uniformNames[2]
+	sSource.DiffuseUniformName = uniformNames[3]
+	sSource.SpecularUniformName = uniformNames[4]
+	sSource.ConstantTermUniformName = uniformNames[5]
+	sSource.LinearTermUniformName = uniformNames[6]
+	sSource.QuadraticTermUniformName = uniformNames[7]
+	sSource.CutoffUniformName = uniformNames[8]
+	sSource.OuterCutoffUniformName = uniformNames[8]
+
+	s.spotLightSources = append(s.spotLightSources, sSource)
 }
 
 func (s *Shader) SetViewPosition(position mgl32.Vec3, uniformName string) {
@@ -303,24 +237,106 @@ func (s *Shader) Close(numOfVertexAttributes int) {
 
 // Setup light related uniforms.
 func (s *Shader) lightHandler() {
-	if s.lightSource.PositionUniformName != "" {
-		position := s.lightSource.LightSource.GetPosition()
-		s.SetUniform3f(s.lightSource.PositionUniformName, position.X(), position.Y(), position.Z())
+	s.directionalLightHandler()
+	s.pointLightHandler()
+	s.spotLightHandler()
+}
+
+// Setup directional light related uniforms. It iterates over the directional sources
+// and setups each uniform, where the name is not empty.
+func (s *Shader) directionalLightHandler() {
+	for _, source := range s.directionalLightSources {
+		if source.DirectionUniformName != "" {
+			direction := source.LightSource.GetDirection()
+			s.SetUniform3f(source.DirectionUniformName, direction.X(), direction.Y(), direction.Z())
+		}
+		if source.AmbientUniformName != "" {
+			ambient := source.LightSource.GetAmbient()
+			s.SetUniform3f(source.AmbientUniformName, ambient.X(), ambient.Y(), ambient.Z())
+		}
+		if source.DiffuseUniformName != "" {
+			diffuse := source.LightSource.GetDiffuse()
+			s.SetUniform3f(source.DiffuseUniformName, diffuse.X(), diffuse.Y(), diffuse.Z())
+		}
+		if source.SpecularUniformName != "" {
+			specular := source.LightSource.GetSpecular()
+			s.SetUniform3f(source.DiffuseUniformName, specular.X(), specular.Y(), specular.Z())
+		}
 	}
-	if s.lightSource.AmbientUniformName != "" {
-		ambient := s.lightSource.LightSource.GetAmbient()
-		s.SetUniform3f(s.lightSource.AmbientUniformName, ambient.X(), ambient.Y(), ambient.Z())
+
+}
+
+// Setup point light relates uniforms. It iterates over the point light sources and sets
+// up every uniform, where the name is not empty.
+func (s *Shader) pointLightHandler() {
+	for _, source := range s.pointLightSources {
+		if source.PositionUniformName != "" {
+			position := source.LightSource.GetPosition()
+			s.SetUniform3f(source.PositionUniformName, position.X(), position.Y(), position.Z())
+		}
+		if source.AmbientUniformName != "" {
+			ambient := source.LightSource.GetAmbient()
+			s.SetUniform3f(source.AmbientUniformName, ambient.X(), ambient.Y(), ambient.Z())
+		}
+		if source.DiffuseUniformName != "" {
+			diffuse := source.LightSource.GetDiffuse()
+			s.SetUniform3f(source.DiffuseUniformName, diffuse.X(), diffuse.Y(), diffuse.Z())
+		}
+		if source.SpecularUniformName != "" {
+			specular := source.LightSource.GetSpecular()
+			s.SetUniform3f(source.DiffuseUniformName, specular.X(), specular.Y(), specular.Z())
+		}
+		if source.ConstantTermUniformName != "" {
+			s.SetUniform1f(source.ConstantTermUniformName, source.LightSource.GetConstantTerm())
+		}
+		if source.LinearTermUniformName != "" {
+			s.SetUniform1f(source.LinearTermUniformName, source.LightSource.GetLinearTerm())
+		}
+		if source.QuadraticTermUniformName != "" {
+			s.SetUniform1f(source.QuadraticTermUniformName, source.LightSource.GetQuadraticTerm())
+		}
 	}
-	if s.lightSource.DiffuseUniformName != "" {
-		diffuse := s.lightSource.LightSource.GetDiffuse()
-		s.SetUniform3f(s.lightSource.DiffuseUniformName, diffuse.X(), diffuse.Y(), diffuse.Z())
-	}
-	if s.lightSource.SpecularUniformName != "" {
-		specular := s.lightSource.LightSource.GetSpecular()
-		s.SetUniform3f(s.lightSource.DiffuseUniformName, specular.X(), specular.Y(), specular.Z())
-	}
-	if s.viewPositionUniformName != "" {
-		s.SetUniform3f(s.viewPositionUniformName, s.viewPosition.X(), s.viewPosition.Y(), s.viewPosition.Z())
+}
+
+// Setup spot light related uniforms. It iterates over the spot light sources and sets up
+// every uniform, where the name is not empty.
+func (s *Shader) spotLightHandler() {
+	for _, source := range s.spotLightSources {
+		if source.DirectionUniformName != "" {
+			direction := source.LightSource.GetDirection()
+			s.SetUniform3f(source.DirectionUniformName, direction.X(), direction.Y(), direction.Z())
+		}
+		if source.PositionUniformName != "" {
+			position := source.LightSource.GetPosition()
+			s.SetUniform3f(source.PositionUniformName, position.X(), position.Y(), position.Z())
+		}
+		if source.AmbientUniformName != "" {
+			ambient := source.LightSource.GetAmbient()
+			s.SetUniform3f(source.AmbientUniformName, ambient.X(), ambient.Y(), ambient.Z())
+		}
+		if source.DiffuseUniformName != "" {
+			diffuse := source.LightSource.GetDiffuse()
+			s.SetUniform3f(source.DiffuseUniformName, diffuse.X(), diffuse.Y(), diffuse.Z())
+		}
+		if source.SpecularUniformName != "" {
+			specular := source.LightSource.GetSpecular()
+			s.SetUniform3f(source.DiffuseUniformName, specular.X(), specular.Y(), specular.Z())
+		}
+		if source.ConstantTermUniformName != "" {
+			s.SetUniform1f(source.ConstantTermUniformName, source.LightSource.GetConstantTerm())
+		}
+		if source.LinearTermUniformName != "" {
+			s.SetUniform1f(source.LinearTermUniformName, source.LightSource.GetLinearTerm())
+		}
+		if source.QuadraticTermUniformName != "" {
+			s.SetUniform1f(source.QuadraticTermUniformName, source.LightSource.GetQuadraticTerm())
+		}
+		if source.CutoffUniformName != "" {
+			s.SetUniform1f(source.CutoffUniformName, source.LightSource.GetCutoff())
+		}
+		if source.OuterCutoffUniformName != "" {
+			s.SetUniform1f(source.OuterCutoffUniformName, source.LightSource.GetOuterCutoff())
+		}
 	}
 }
 

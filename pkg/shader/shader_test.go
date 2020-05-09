@@ -130,14 +130,28 @@ void main()
 )
 
 var (
-	LightPosition = mgl32.Vec3{0, 0, 0}
-	LightAmbient  = mgl32.Vec3{1, 1, 1}
-	LightDiffuse  = mgl32.Vec3{1, 1, 1}
-	LightSpecular = mgl32.Vec3{1, 1, 1}
+	LightPosition      = mgl32.Vec3{0, 0, 0}
+	LightDirection     = mgl32.Vec3{0, 1, 0}
+	LightAmbient       = mgl32.Vec3{1, 1, 1}
+	LightDiffuse       = mgl32.Vec3{1, 1, 1}
+	LightSpecular      = mgl32.Vec3{1, 1, 1}
+	LightConstantTerm  = float32(1.0)
+	LightLinearTerm    = float32(0.5)
+	LightQuadraticTerm = float32(0.05)
+	LightCutoff        = float32(12.0)
+	LightOuterCutoff   = float32(20.0)
 )
 
-func NewLightSource() *light.Light {
-	source := light.New(LightPosition, LightAmbient, LightDiffuse, LightSpecular)
+func NewPointLightSource() *light.Light {
+	source := light.NewPointLight([4]mgl32.Vec3{LightPosition, LightAmbient, LightDiffuse, LightSpecular}, [3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
+	return source
+}
+func NewDirectionalLightSource() *light.Light {
+	source := light.NewDirectionalLight([4]mgl32.Vec3{LightDirection, LightAmbient, LightDiffuse, LightSpecular})
+	return source
+}
+func NewSpotLightSource() *light.Light {
+	source := light.NewSpotLight([5]mgl32.Vec3{LightPosition, LightDirection, LightAmbient, LightDiffuse, LightSpecular}, [5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, LightCutoff, LightOuterCutoff})
 	return source
 }
 
@@ -548,8 +562,8 @@ func TestDrawPointsLightColor(t *testing.T) {
 	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	lightSource := NewLightSource()
-	shader.SetLightSource(lightSource, "lightSourceName", "", "diffuseUniformName", "")
+	lightSource := NewPointLightSource()
+	shader.AddPointLightSource(lightSource, [7]string{"lightSourceName", "", "diffuseUniformName", "", "", "", ""})
 	defer glfw.Terminate()
 	bufferData := []float32{0, 0, 0, 1, 1, 1, 5}
 	shader.BindBufferData(bufferData)
@@ -581,8 +595,8 @@ func TestDrawTrianglesLight(t *testing.T) {
 	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	lightSource := NewLightSource()
-	shader.SetLightSource(lightSource, "lightSourceName", "", "diffuseUniformName", "")
+	lightSource := NewPointLightSource()
+	shader.AddPointLightSource(lightSource, [7]string{"lightSourceName", "", "diffuseUniformName", "", "", "", ""})
 	defer glfw.Terminate()
 	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
 	shader.BindBufferData(bufferData)
@@ -732,12 +746,12 @@ func TestLightDiffuseColor(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	lightSource := NewLightSource()
-	shader.SetLightSource(lightSource, "lightSourceName", "", "diffuseUniformName", "")
-	if shader.lightSource.DiffuseUniformName != "diffuseUniformName" {
+	lightSource := NewPointLightSource()
+	shader.AddPointLightSource(lightSource, [7]string{"lightSourceName", "", "diffuseUniformName", "", "", "", ""})
+	if shader.pointLightSources[0].DiffuseUniformName != "diffuseUniformName" {
 		t.Error("Invalid light uniform name")
 	}
-	if shader.lightSource.LightSource.GetDiffuse() != LightDiffuse {
+	if shader.pointLightSources[0].LightSource.GetDiffuse() != LightDiffuse {
 		t.Error("Invalid light color")
 	}
 }
@@ -749,14 +763,14 @@ func TestSetLightAmbient(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	lightSource := NewLightSource()
+	lightSource := NewPointLightSource()
 	ambientUniformName := "ambientStrengthName"
-	shader.SetLightSource(lightSource, "lightSourceName", ambientUniformName, "", "")
+	shader.AddPointLightSource(lightSource, [7]string{"lightSourceName", ambientUniformName, "", "", "", "", ""})
 
-	if shader.lightSource.LightSource.GetAmbient() != LightAmbient {
+	if shader.pointLightSources[0].LightSource.GetAmbient() != LightAmbient {
 		t.Error("Invalid light ambient strength")
 	}
-	if shader.lightSource.AmbientUniformName != ambientUniformName {
+	if shader.pointLightSources[0].AmbientUniformName != ambientUniformName {
 		t.Error("Invalid light uniform name")
 	}
 }
@@ -768,8 +782,8 @@ func TestDrawWithLightAmbient(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	lightSource := NewLightSource()
-	shader.SetLightSource(lightSource, "lightSourceName", "ambientSourceName", "", "")
+	lightSource := NewPointLightSource()
+	shader.AddPointLightSource(lightSource, [7]string{"lightSourceName", "ambientSourceName", "", "", "", "", ""})
 
 	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
 	shader.BindBufferData(bufferData)
@@ -789,12 +803,12 @@ func TestUseLightPosition(t *testing.T) {
 	defer shader.Close(2)
 	defer glfw.Terminate()
 	lightPositionName := "lightPosName"
-	lightSource := NewLightSource()
-	shader.SetLightSource(lightSource, lightPositionName, "", "", "")
-	if shader.lightSource.PositionUniformName != lightPositionName {
-		t.Errorf("Invalid light uniform name. Instead of '%s', we have '%s'", lightPositionName, shader.lightSource.PositionUniformName)
+	lightSource := NewPointLightSource()
+	shader.AddPointLightSource(lightSource, [7]string{lightPositionName, "", "", "", "", "", ""})
+	if shader.pointLightSources[0].PositionUniformName != lightPositionName {
+		t.Errorf("Invalid light uniform name. Instead of '%s', we have '%s'", lightPositionName, shader.pointLightSources[0].PositionUniformName)
 	}
-	if shader.lightSource.LightSource.GetPosition() != LightPosition {
+	if shader.pointLightSources[0].LightSource.GetPosition() != LightPosition {
 		t.Error("Invalid light Position")
 	}
 }
@@ -804,8 +818,8 @@ func TestDrawTrianglesLightPosition(t *testing.T) {
 	}
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	lightSource := NewLightSource()
-	shader.SetLightSource(lightSource, "posUniform", "", "", "")
+	lightSource := NewPointLightSource()
+	shader.AddPointLightSource(lightSource, [7]string{"posUniform", "", "", "", "", "", ""})
 	defer glfw.Terminate()
 	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
 	shader.BindBufferData(bufferData)
@@ -841,13 +855,13 @@ func TestSetLightSpecular(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	lightSource := NewLightSource()
-	shader.SetLightSource(lightSource, "", "", "", "specularUniform")
+	lightSource := NewPointLightSource()
+	shader.AddPointLightSource(lightSource, [7]string{"", "", "", "specularUniform", "", "", ""})
 
-	if shader.lightSource.SpecularUniformName != "specularUniform" {
+	if shader.pointLightSources[0].SpecularUniformName != "specularUniform" {
 		t.Error("Invalid light specular uniform name")
 	}
-	if shader.lightSource.LightSource.GetSpecular() != LightSpecular {
+	if shader.pointLightSources[0].LightSource.GetSpecular() != LightSpecular {
 		t.Error("Invalid light specular value")
 	}
 }
@@ -859,8 +873,8 @@ func TestDrawWithLightSpecular(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	lightSource := NewLightSource()
-	shader.SetLightSource(lightSource, "", "", "", "specularUniform")
+	lightSource := NewPointLightSource()
+	shader.AddPointLightSource(lightSource, [7]string{"", "", "", "specularUniform", "", "", ""})
 	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
 	shader.BindBufferData(bufferData)
 	shader.BindVertexArray()
@@ -878,8 +892,73 @@ func TestDrawWithLightViewPosition(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	lightSource := NewLightSource()
-	shader.SetLightSource(lightSource, "posUniform", "ambientUniform", "diffuseUniform", "specularUniform")
+	lightSource := NewPointLightSource()
+	shader.AddPointLightSource(lightSource, [7]string{"posUniform", "ambientUniform", "diffuseUniform", "specularUniform", "", "", ""})
+	viewPosition := mgl32.Vec3{1, 1, 1}
+	viewPositionName := "viewPosName"
+	shader.SetViewPosition(viewPosition, viewPositionName)
+	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
+	shader.BindBufferData(bufferData)
+	shader.BindVertexArray()
+	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
+	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
+	shader.DrawTriangles(1)
+	shader.Close(1)
+
+}
+func TestDrawWithPointLightViewPositionFullLightParamList(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	defer shader.Close(2)
+	defer glfw.Terminate()
+	lightSource := NewPointLightSource()
+	shader.AddPointLightSource(lightSource, [7]string{"posUniform", "ambientUniform", "diffuseUniform", "specularUniform", "constant", "linear", "quadratic"})
+	viewPosition := mgl32.Vec3{1, 1, 1}
+	viewPositionName := "viewPosName"
+	shader.SetViewPosition(viewPosition, viewPositionName)
+	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
+	shader.BindBufferData(bufferData)
+	shader.BindVertexArray()
+	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
+	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
+	shader.DrawTriangles(1)
+	shader.Close(1)
+
+}
+func TestDrawWithDirectionalLightViewPositionFullParamList(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	defer shader.Close(2)
+	defer glfw.Terminate()
+	lightSource := NewDirectionalLightSource()
+	shader.AddDirectionalLightSource(lightSource, [4]string{"posUniform", "ambientUniform", "diffuseUniform", "specularUniform"})
+	viewPosition := mgl32.Vec3{1, 1, 1}
+	viewPositionName := "viewPosName"
+	shader.SetViewPosition(viewPosition, viewPositionName)
+	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
+	shader.BindBufferData(bufferData)
+	shader.BindVertexArray()
+	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
+	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
+	shader.DrawTriangles(1)
+	shader.Close(1)
+}
+func TestDrawWithSpotViewPositionFullLightParamList(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping it in short mode")
+	}
+	runtime.LockOSThread()
+	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
+	defer shader.Close(2)
+	defer glfw.Terminate()
+	lightSource := NewPointLightSource()
+	shader.AddSpotLightSource(lightSource, [10]string{"posUniform", "directionUniform", "ambientUniform", "diffuseUniform", "specularUniform", "constant", "linear", "quadratic", "cutoff", "outercutoff"})
 	viewPosition := mgl32.Vec3{1, 1, 1}
 	viewPositionName := "viewPosName"
 	shader.SetViewPosition(viewPosition, viewPositionName)
