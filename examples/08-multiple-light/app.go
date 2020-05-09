@@ -33,15 +33,16 @@ const (
 	DOWN     = glfw.KeyE
 
 	moveSpeed            = 0.005
-	rotationSpeed        = float32(10.0)
+	rotationSpeed        = float32(60.0)
 	cameraDirectionSpeed = float32(0.100)
 	CameraMoveSpeed      = 0.005
 	cameraDistance       = 0.1
 )
 
 var (
-	app        *application.Application
-	lastUpdate int64
+	app                       *application.Application
+	lastUpdate                int64
+	ShaderProgramsWithViewPos []*shader.Shader
 
 	DirectionalLightDirection = (mgl32.Vec3{0.7, 0.7, 0.7}).Normalize()
 	DirectionalLightAmbient   = mgl32.Vec3{0.1, 0.1, 0.1}
@@ -128,6 +129,21 @@ func Bug(shaderProgram *shader.Shader) {
 	bulb.SetPrecision(15)
 	bulb.DrawMode(cuboid.DRAW_MODE_LIGHT)
 	app.AddItem(bulb)
+	body := sphere.New(mgl32.Vec3{PointLightPosition_1.X(), PointLightPosition_1.Y(), PointLightPosition_1.Z() + 0.2}, mgl32.Vec3{1, 1, 1}, float32(0.2), shaderProgram)
+	body.SetMaterial(material.Blackplastic)
+	body.SetPrecision(15)
+	body.DrawMode(cuboid.DRAW_MODE_LIGHT)
+	app.AddItem(body)
+	leftEye := sphere.New(mgl32.Vec3{PointLightPosition_1.X() + 0.1, PointLightPosition_1.Y(), PointLightPosition_1.Z() + 0.35}, mgl32.Vec3{1, 1, 1}, float32(0.05), shaderProgram)
+	leftEye.SetMaterial(material.Ruby)
+	leftEye.SetPrecision(15)
+	leftEye.DrawMode(cuboid.DRAW_MODE_LIGHT)
+	app.AddItem(leftEye)
+	rightEye := sphere.New(mgl32.Vec3{PointLightPosition_1.X() - 0.1, PointLightPosition_1.Y(), PointLightPosition_1.Z() + 0.35}, mgl32.Vec3{1, 1, 1}, float32(0.05), shaderProgram)
+	rightEye.SetMaterial(material.Ruby)
+	rightEye.SetPrecision(15)
+	rightEye.DrawMode(cuboid.DRAW_MODE_LIGHT)
+	app.AddItem(rightEye)
 }
 
 // It creates a new camera with the necessary setup
@@ -140,6 +156,9 @@ func Update() {
 	nowNano := time.Now().UnixNano()
 	moveTime := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
+	for index, _ := range ShaderProgramsWithViewPos {
+		ShaderProgramsWithViewPos[index].SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
+	}
 
 	forward := 0.0
 	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
@@ -265,6 +284,7 @@ func main() {
 	shaderProgramGrass.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
 	//shaderProgramGrass.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 	shaderProgramGrass.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
+	ShaderProgramsWithViewPos = append(ShaderProgramsWithViewPos, shaderProgramGrass)
 	Grass(shaderProgramGrass)
 	// Shader application for the box
 	shaderProgramBox := shader.NewShader("examples/08-multiple-light/shaders/texture.vert", "examples/08-multiple-light/shaders/texture.frag")
@@ -276,6 +296,7 @@ func main() {
 	shaderProgramBox.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
 	//shaderProgramBox.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 	shaderProgramBox.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
+	ShaderProgramsWithViewPos = append(ShaderProgramsWithViewPos, shaderProgramBox)
 	Box(shaderProgramBox)
 	// Shader application for the lamp
 	shaderProgramLamp := shader.NewShader("examples/08-multiple-light/shaders/lamp.vert", "examples/08-multiple-light/shaders/lamp.frag")
@@ -285,6 +306,7 @@ func main() {
 	shaderProgramLamp.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
 	//shaderProgramLamp.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 	shaderProgramLamp.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
+	ShaderProgramsWithViewPos = append(ShaderProgramsWithViewPos, shaderProgramLamp)
 	Lamp(shaderProgramLamp)
 	Bug(shaderProgramLamp)
 
