@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
+	"github.com/akosgarai/opengl_playground/pkg/composite/bug"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
@@ -121,27 +122,9 @@ func Lamp(shaderProgram *shader.Shader, baseX, baseZ float32, lightPosition mgl3
 
 // It generates the bug. This stuff will be the point light source. In the furure, i want to make it fly around.
 func Bug(shaderProgram *shader.Shader) {
-	bulb := sphere.New(PointLightPosition_1, mgl32.Vec3{1, 1, 1}, float32(0.1), shaderProgram)
 	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 128.0)
-	bulb.SetMaterial(mat)
-	bulb.SetPrecision(15)
-	bulb.DrawMode(cuboid.DRAW_MODE_LIGHT)
-	app.AddItem(bulb)
-	body := sphere.New(mgl32.Vec3{PointLightPosition_1.X(), PointLightPosition_1.Y(), PointLightPosition_1.Z() + 0.2}, mgl32.Vec3{1, 1, 1}, float32(0.2), shaderProgram)
-	body.SetMaterial(material.Blackplastic)
-	body.SetPrecision(15)
-	body.DrawMode(cuboid.DRAW_MODE_LIGHT)
-	app.AddItem(body)
-	leftEye := sphere.New(mgl32.Vec3{PointLightPosition_1.X() + 0.1, PointLightPosition_1.Y(), PointLightPosition_1.Z() + 0.35}, mgl32.Vec3{1, 1, 1}, float32(0.05), shaderProgram)
-	leftEye.SetMaterial(material.Ruby)
-	leftEye.SetPrecision(15)
-	leftEye.DrawMode(cuboid.DRAW_MODE_LIGHT)
-	app.AddItem(leftEye)
-	rightEye := sphere.New(mgl32.Vec3{PointLightPosition_1.X() - 0.1, PointLightPosition_1.Y(), PointLightPosition_1.Z() + 0.35}, mgl32.Vec3{1, 1, 1}, float32(0.05), shaderProgram)
-	rightEye.SetMaterial(material.Ruby)
-	rightEye.SetPrecision(15)
-	rightEye.DrawMode(cuboid.DRAW_MODE_LIGHT)
-	app.AddItem(rightEye)
+	bug := bug.Firefly(PointLightPosition_1, 0.1, [3]*material.Material{mat, material.Blackplastic, material.Ruby}, shaderProgram)
+	app.AddItem(bug)
 }
 
 // It creates a new camera with the necessary setup
