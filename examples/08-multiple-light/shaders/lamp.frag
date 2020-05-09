@@ -48,7 +48,7 @@ in vec3 Normal;
 
 #define MAX_DIRECTION_LIGHTS 1
 #define MAX_POINT_LIGHTS 1
-#define MAX_SPOT_LIGHTS 1
+#define MAX_SPOT_LIGHTS 2
 
 uniform DirectionalLight dirLight[MAX_DIRECTION_LIGHTS];
 uniform PointLight pointLight[MAX_POINT_LIGHTS];
