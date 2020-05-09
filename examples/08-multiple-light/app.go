@@ -34,7 +34,6 @@ const (
 	DOWN     = glfw.KeyE
 
 	moveSpeed            = 0.005
-	rotationSpeed        = float32(60.0)
 	cameraDirectionSpeed = float32(0.100)
 	CameraMoveSpeed      = 0.005
 	cameraDistance       = 0.1
@@ -42,9 +41,17 @@ const (
 
 var (
 	app                       *application.Application
+	Bug1                      *bug.Bug
+	BugOneLastRotate          int64
 	lastUpdate                int64
 	ShaderProgramsWithViewPos []*shader.Shader
+	DirectionalLightSource    *light.Light
+	PointLightSource_1        *light.Light
+	PointLightSource_2        *light.Light
+	SpotLightSource_1         *light.Light
+	SpotLightSource_2         *light.Light
 
+	BugOneForwardMove         = float64(1000)
 	DirectionalLightDirection = (mgl32.Vec3{0.7, 0.7, 0.7}).Normalize()
 	DirectionalLightAmbient   = mgl32.Vec3{0.1, 0.1, 0.1}
 	DirectionalLightDiffuse   = mgl32.Vec3{0.1, 0.1, 0.1}
@@ -123,15 +130,29 @@ func Lamp(shaderProgram *shader.Shader, baseX, baseZ float32, lightPosition mgl3
 // It generates the bug. This stuff will be the point light source. In the furure, i want to make it fly around.
 func Bug(shaderProgram *shader.Shader) {
 	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 128.0)
-	bug := bug.Firefly(PointLightPosition_1, 0.1, [3]*material.Material{mat, material.Blackplastic, material.Ruby}, shaderProgram)
-	app.AddItem(bug)
+	Bug1 = bug.Firefly(PointLightPosition_1, 0.1, [3]*material.Material{mat, material.Blackplastic, material.Ruby}, shaderProgram)
+	Bug1.SetDirection(mgl32.Vec3{1, 0, 0})
+	Bug1.SetSpeed(moveSpeed)
+	app.AddItem(Bug1)
 }
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{0.9, -5.2, 9.0}, mgl32.Vec3{0, 1, 0}, -96.0, -2.0)
+	camera := camera.NewCamera(mgl32.Vec3{11.2, -5.0, 12.2}, mgl32.Vec3{0, 1, 0}, -96.0, -2.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 1000.0)
 	return camera
+}
+func RotateBugOne(now int64) {
+	moveTime := float64(now-BugOneLastRotate) / float64(time.Millisecond)
+	if moveTime > BugOneForwardMove {
+		BugOneLastRotate = now
+		// rotate 45 deg
+		rotationAngleRadian := mgl32.DegToRad(-45)
+		directionRotationMatrix := mgl32.HomogRotate3D(rotationAngleRadian, mgl32.Vec3{0, -1, 0})
+
+		currenDirection := Bug1.GetDirection()
+		Bug1.SetDirection(mgl32.TransformNormal(currenDirection, directionRotationMatrix))
+	}
 }
 func Update() {
 	nowNano := time.Now().UnixNano()
@@ -140,6 +161,9 @@ func Update() {
 	for index, _ := range ShaderProgramsWithViewPos {
 		ShaderProgramsWithViewPos[index].SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
 	}
+	RotateBugOne(nowNano)
+	PointLightSource_1.SetPosition(Bug1.GetCenterPoint())
+	app.Update(moveTime)
 
 	forward := 0.0
 	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
@@ -221,26 +245,26 @@ func main() {
 	app.SetCamera(CreateCamera())
 
 	// directional light is coming from the up direction but not from too up.
-	DirectionalLightSource := light.NewDirectionalLight([4]mgl32.Vec3{
+	DirectionalLightSource = light.NewDirectionalLight([4]mgl32.Vec3{
 		DirectionalLightDirection,
 		DirectionalLightAmbient,
 		DirectionalLightDiffuse,
 		DirectionalLightSpecular,
 	})
-	PointLightSource_1 := light.NewPointLight([4]mgl32.Vec3{
+	PointLightSource_1 = light.NewPointLight([4]mgl32.Vec3{
 		PointLightPosition_1,
 		PointLightAmbient,
 		PointLightDiffuse,
 		PointLightSpecular},
 		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
-	SpotLightSource_1 := light.NewSpotLight([5]mgl32.Vec3{
+	SpotLightSource_1 = light.NewSpotLight([5]mgl32.Vec3{
 		SpotLightPosition_1,
 		SpotLightDirection_1,
 		SpotLightAmbient,
 		SpotLightDiffuse,
 		SpotLightSpecular},
 		[5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, SpotLightCutoff, SpotLightOuterCutoff})
-	SpotLightSource_2 := light.NewSpotLight([5]mgl32.Vec3{
+	SpotLightSource_2 = light.NewSpotLight([5]mgl32.Vec3{
 		SpotLightPosition_2,
 		SpotLightDirection_2,
 		SpotLightAmbient,
@@ -298,6 +322,7 @@ func main() {
 	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
+	BugOneLastRotate = lastUpdate
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
