@@ -47,7 +47,7 @@ in vec3 Normal;
 in vec2 TexCoords;
 
 #define MAX_DIRECTION_LIGHTS 1
-#define MAX_POINT_LIGHTS 1
+#define MAX_POINT_LIGHTS 2
 #define MAX_SPOT_LIGHTS 2
 
 uniform DirectionalLight dirLight[MAX_DIRECTION_LIGHTS];
