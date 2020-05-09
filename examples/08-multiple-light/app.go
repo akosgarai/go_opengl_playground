@@ -50,7 +50,7 @@ var (
 	PointLightAmbient         = mgl32.Vec3{0, 0, 0}
 	PointLightDiffuse         = mgl32.Vec3{0, 0, 0}
 	PointLightSpecular        = mgl32.Vec3{0, 0, 0}
-	PointLightPosition_1      = mgl32.Vec3{40, -5, 10}
+	PointLightPosition_1      = mgl32.Vec3{8, -0.5, -1.0}
 	PointLightPosition_2      = mgl32.Vec3{2, 2, 2}
 	LightConstantTerm         = float32(6.0)
 	LightLinearTerm           = float32(0.14)
@@ -60,7 +60,7 @@ var (
 	SpotLightSpecular         = mgl32.Vec3{1, 1, 1}
 	SpotLightDirection_1      = (mgl32.Vec3{0, 1, 0}).Normalize()
 	SpotLightDirection_2      = (mgl32.Vec3{2, 2, 2}).Normalize()
-	SpotLightPosition_1       = mgl32.Vec3{1, -30, -3}
+	SpotLightPosition_1       = mgl32.Vec3{0.20, -6, -0.7}
 	SpotLightPosition_2       = mgl32.Vec3{4, 4, 4}
 	SpotLightCutoff           = float32(250)
 	SpotLightOuterCutoff      = float32(350)
@@ -77,14 +77,14 @@ func Grass(shaderProgram *shader.Shader) {
 // It generates the box.
 func Box(shaderProgram *shader.Shader) {
 	numberOfBoxes := 3
-	baseX := float32(-30)
-	sideLength := float32(10)
-	baseY := float32(-5)
-	diffBetweenBoxes := float32(15)
+	baseX := float32(-6)
+	sideLength := float32(2)
+	baseY := float32(-1)
+	diffBetweenBoxes := float32(3)
 	for i := 0; i < numberOfBoxes; i++ {
 		x1_pos := baseX + float32(i)*(sideLength+diffBetweenBoxes)
 		bottomRect := rectangle.NewSquare(mgl32.Vec3{x1_pos + sideLength, 0, baseY}, mgl32.Vec3{x1_pos, 0, baseY + sideLength}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0.0, 1.0, 1.0}, shaderProgram)
-		box := cuboid.New(bottomRect, 10.0, shaderProgram)
+		box := cuboid.New(bottomRect, sideLength, shaderProgram)
 		mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 64.0)
 		box.SetMaterial(mat)
 		box.DrawMode(cuboid.DRAW_MODE_TEXTURED_LIGHT)
@@ -95,10 +95,10 @@ func Box(shaderProgram *shader.Shader) {
 // It generates the lamp
 func Lamp(shaderProgram *shader.Shader) {
 	baseX := float32(0)
-	baseZ := float32(-11)
-	width := float32(2)
-	height := float32(30)
-	length := float32(10)
+	baseZ := float32(-3)
+	width := float32(0.4)
+	height := float32(6)
+	length := float32(2.5)
 
 	bottomRect := rectangle.NewSquare(mgl32.Vec3{baseX, 0, baseZ}, mgl32.Vec3{baseX + width, 0, baseZ + width}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0, 0, 0}, shaderProgram)
 	pole := cuboid.New(bottomRect, height, shaderProgram)
@@ -112,7 +112,7 @@ func Lamp(shaderProgram *shader.Shader) {
 	top.DrawMode(cuboid.DRAW_MODE_LIGHT)
 	top.SetPrecision(10)
 	app.AddItem(top)
-	bulb := sphere.New(SpotLightPosition_1, mgl32.Vec3{1, 1, 1}, float32(0.5), shaderProgram)
+	bulb := sphere.New(SpotLightPosition_1, mgl32.Vec3{1, 1, 1}, float32(0.1), shaderProgram)
 	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 128.0)
 	bulb.SetMaterial(mat)
 	bulb.SetPrecision(15)
@@ -122,7 +122,7 @@ func Lamp(shaderProgram *shader.Shader) {
 
 // It generates the bug. This stuff will be the point light source. In the furure, i want to make it fly around.
 func Bug(shaderProgram *shader.Shader) {
-	bulb := sphere.New(PointLightPosition_1, mgl32.Vec3{1, 1, 1}, float32(0.5), shaderProgram)
+	bulb := sphere.New(PointLightPosition_1, mgl32.Vec3{1, 1, 1}, float32(0.1), shaderProgram)
 	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 128.0)
 	bulb.SetMaterial(mat)
 	bulb.SetPrecision(15)
@@ -132,7 +132,7 @@ func Bug(shaderProgram *shader.Shader) {
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{5.3, -19, 49.0}, mgl32.Vec3{0, 1, 0}, -91.0, -4.5)
+	camera := camera.NewCamera(mgl32.Vec3{0.9, -5.2, 9.0}, mgl32.Vec3{0, 1, 0}, -96.0, -2.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 1000.0)
 	return camera
 }
