@@ -458,3 +458,15 @@ func TestDrawWithLight(t *testing.T) {
 		t.Errorf("Vao should be 36 long. Instead of it, it's '%d'", len(square.vao.Get()))
 	}
 }
+func TestDrawWithUniformsTexturedLight(t *testing.T) {
+	shader.HasTextureValue = true
+	square := New(DefaultCoordinates, DefaultColors, shader)
+	square.DrawMode(DRAW_MODE_TEXTURED_LIGHT)
+	if len(square.vao.Get()) != 0 {
+		t.Error("Vao is not empty before the first setup.")
+	}
+	square.DrawWithUniforms(mgl32.Ident4(), mgl32.Ident4())
+	if len(square.vao.Get()) != 48 {
+		t.Errorf("Vao should be 48 long. Instead of it, it's '%d'", len(square.vao.Get()))
+	}
+}
