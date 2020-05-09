@@ -61,7 +61,7 @@ var (
 	PointLightDiffuse         = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightSpecular        = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightPosition_1      = mgl32.Vec3{8, -0.5, -1.0}
-	PointLightPosition_2      = mgl32.Vec3{8, -5, -10}
+	PointLightPosition_2      = mgl32.Vec3{8, -5, -30}
 	LightConstantTerm         = float32(1.0)
 	LightLinearTerm           = float32(0.14)
 	LightQuadraticTerm        = float32(0.07)
