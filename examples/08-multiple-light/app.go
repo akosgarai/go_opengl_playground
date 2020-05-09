@@ -10,6 +10,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
@@ -32,7 +33,7 @@ const (
 	DOWN     = glfw.KeyE
 
 	moveSpeed            = 0.005
-	rotationSpeed        = float32(2.0)
+	rotationSpeed        = float32(10.0)
 	cameraDirectionSpeed = float32(0.00500)
 	CameraMoveSpeed      = 0.005
 	cameraDistance       = 0.1
@@ -45,24 +46,24 @@ var (
 	DirectionalLightDirection = (mgl32.Vec3{0.7, 0.7, 0.7}).Normalize()
 	DirectionalLightAmbient   = mgl32.Vec3{0.2, 0.2, 0.2}
 	DirectionalLightDiffuse   = mgl32.Vec3{0.5, 0.5, 0.5}
-	DirectionalLightSpecular  = mgl32.Vec3{1.0, 1.0, 1.0}
-	PointLightAmbient         = mgl32.Vec3{1, 1, 1}
-	PointLightDiffuse         = mgl32.Vec3{1, 1, 1}
-	PointLightSpecular        = mgl32.Vec3{1, 1, 1}
+	DirectionalLightSpecular  = mgl32.Vec3{0.1, 0.1, 0.1}
+	PointLightAmbient         = mgl32.Vec3{0, 0, 0}
+	PointLightDiffuse         = mgl32.Vec3{0, 0, 0}
+	PointLightSpecular        = mgl32.Vec3{0, 0, 0}
 	PointLightDirection_1     = mgl32.Vec3{1, 1, 1}
 	PointLightDirection_2     = mgl32.Vec3{2, 2, 2}
 	LightConstantTerm         = float32(1.0)
-	LightLinearTerm           = float32(1.0)
-	LightQuadraticTerm        = float32(1.0)
+	LightLinearTerm           = float32(0.14)
+	LightQuadraticTerm        = float32(0.07)
 	SpotLightAmbient          = mgl32.Vec3{1, 1, 1}
 	SpotLightDiffuse          = mgl32.Vec3{1, 1, 1}
 	SpotLightSpecular         = mgl32.Vec3{1, 1, 1}
-	SpotLightDirection_1      = (mgl32.Vec3{1, 1, 1}).Normalize()
+	SpotLightDirection_1      = (mgl32.Vec3{0, 1, 0}).Normalize()
 	SpotLightDirection_2      = (mgl32.Vec3{2, 2, 2}).Normalize()
-	SpotLightPosition_1       = mgl32.Vec3{3, 3, 3}
+	SpotLightPosition_1       = mgl32.Vec3{1, -30, -3}
 	SpotLightPosition_2       = mgl32.Vec3{4, 4, 4}
-	SpotLightCutoff           = float32(20)
-	SpotLightOuterCutoff      = float32(22)
+	SpotLightCutoff           = float32(250)
+	SpotLightOuterCutoff      = float32(350)
 )
 
 // It generates a square.
@@ -75,31 +76,47 @@ func Grass(shaderProgram *shader.Shader) {
 
 // It generates the box.
 func Box(shaderProgram *shader.Shader) {
-	bottomRect := rectangle.NewSquare(mgl32.Vec3{5, 0, -5}, mgl32.Vec3{-5, 0, 5}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0.0, 1.0, 1.0}, shaderProgram)
-	box := cuboid.New(bottomRect, 10.0, shaderProgram)
-	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 64.0)
-	box.SetMaterial(mat)
-	box.DrawMode(cuboid.DRAW_MODE_TEXTURED_LIGHT)
-	app.AddItem(box)
+	numberOfBoxes := 3
+	baseX := float32(-30)
+	sideLength := float32(10)
+	baseY := float32(-5)
+	diffBetweenBoxes := float32(15)
+	for i := 0; i < numberOfBoxes; i++ {
+		x1_pos := baseX + float32(i)*(sideLength+diffBetweenBoxes)
+		bottomRect := rectangle.NewSquare(mgl32.Vec3{x1_pos + sideLength, 0, baseY}, mgl32.Vec3{x1_pos, 0, baseY + sideLength}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0.0, 1.0, 1.0}, shaderProgram)
+		box := cuboid.New(bottomRect, 10.0, shaderProgram)
+		mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 64.0)
+		box.SetMaterial(mat)
+		box.DrawMode(cuboid.DRAW_MODE_TEXTURED_LIGHT)
+		app.AddItem(box)
+	}
 }
 
 // It generates the lamp
 func Lamp(shaderProgram *shader.Shader) {
-	bottomRect := rectangle.NewSquare(mgl32.Vec3{10, 0, 9}, mgl32.Vec3{12, 0, 11}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0, 0, 0}, shaderProgram)
+	bottomRect := rectangle.NewSquare(mgl32.Vec3{0, 0, -11}, mgl32.Vec3{2, 0, -9}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0, 0, 0}, shaderProgram)
 	pole := cuboid.New(bottomRect, 30.0, shaderProgram)
 	pole.SetMaterial(material.Chrome)
+	pole.SetPrecision(10)
 	pole.DrawMode(cuboid.DRAW_MODE_LIGHT)
 	app.AddItem(pole)
-	bottomRect = rectangle.NewSquare(mgl32.Vec3{10, -30, 9}, mgl32.Vec3{12, -30, 9}, mgl32.Vec3{0, 0, -1}, mgl32.Vec3{0, 0, 0}, shaderProgram)
+	bottomRect = rectangle.NewSquare(mgl32.Vec3{0, -30, -11}, mgl32.Vec3{2, -32, -11}, mgl32.Vec3{0, 0, -1}, mgl32.Vec3{0, 0, 0}, shaderProgram)
 	top := cuboid.New(bottomRect, 10.0, shaderProgram)
 	top.SetMaterial(material.Chrome)
 	top.DrawMode(cuboid.DRAW_MODE_LIGHT)
+	top.SetPrecision(10)
 	app.AddItem(top)
+	bulb := sphere.New(SpotLightPosition_1, mgl32.Vec3{1, 1, 1}, float32(0.5), shaderProgram)
+	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 128.0)
+	bulb.SetMaterial(mat)
+	bulb.SetPrecision(15)
+	bulb.DrawMode(cuboid.DRAW_MODE_LIGHT)
+	app.AddItem(bulb)
 }
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{12.3, -30, 31.0}, mgl32.Vec3{0, 1, 0}, -101.0, -4.5)
+	camera := camera.NewCamera(mgl32.Vec3{5.3, -19, 49.0}, mgl32.Vec3{0, 1, 0}, -91.0, -4.5)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 1000.0)
 	return camera
 }
@@ -207,12 +224,14 @@ func main() {
 		PointLightSpecular},
 		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
 	SpotLightSource_1 := light.NewSpotLight([5]mgl32.Vec3{
+		SpotLightPosition_1,
 		SpotLightDirection_1,
 		SpotLightAmbient,
 		SpotLightDiffuse,
 		SpotLightSpecular},
 		[5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, SpotLightCutoff, SpotLightOuterCutoff})
 	SpotLightSource_2 := light.NewSpotLight([5]mgl32.Vec3{
+		SpotLightPosition_2,
 		SpotLightDirection_2,
 		SpotLightAmbient,
 		SpotLightDiffuse,
