@@ -125,3 +125,8 @@ func TestLog(t *testing.T) {
 		t.Errorf("Log too short. only '%d' chars.", len(log))
 	}
 }
+func TestUpdateWithMotion(t *testing.T) {
+	ff := Firefly(DefaultPosition, DefaultSize, [3]*material.Material{Material_1, Material_2, Material_3}, shader)
+	ff.SetDirection(mgl32.Vec3{1, 0, 0})
+	ff.Update(10)
+}
