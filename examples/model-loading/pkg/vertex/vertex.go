@@ -14,7 +14,7 @@ type Vertex struct {
 
 type Verticies []Vertex
 
-func (v Verticies) VAO() []float32 {
+func (v Verticies) Get() []float32 {
 	var vao []float32
 	for _, vertex := range v {
 		vao = append(vao, vertex.Position.X())
