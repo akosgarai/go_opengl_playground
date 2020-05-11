@@ -5,4 +5,7 @@ type Texture struct {
 	Id uint32
 	// The type of the texture. diffuse or specular.
 	Type string
+
+	// The Uniform name of the texture
+	UniformName string
 }
