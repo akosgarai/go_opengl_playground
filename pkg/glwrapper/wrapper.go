@@ -7,6 +7,13 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 )
 
+// The following constants are storing the gl version that we are using.
+// It is used in the window pkg for windowhints.
+const (
+	GL_MAJOR_VERSION = 4
+	GL_MINOR_VERSION = 1
+)
+
 const (
 	ARRAY_BUFFER         = gl.ARRAY_BUFFER
 	ELEMENT_ARRAY_BUFFER = gl.ELEMENT_ARRAY_BUFFER
