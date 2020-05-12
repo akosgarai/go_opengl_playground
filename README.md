@@ -39,3 +39,7 @@ glxinfo | grep "OpenGL version"
 ```
 
 The output is something like: `OpenGL version string: 4.6.0 NVIDIA 440.82`.
+
+## I want to use different gl version.
+
+In this case, you have to modify the wrapper package. The gl lib is included there. If you updated it (eg to `v3.3-core`), you have to update the `GL_MAJOR_VERSION`, `GL_MINOR_VERSION` version constants also.

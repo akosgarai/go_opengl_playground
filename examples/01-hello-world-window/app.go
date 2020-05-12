@@ -3,11 +3,10 @@ package main
 import (
 	"runtime"
 
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
-	"github.com/akosgarai/opengl_playground/pkg/shader"
+	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 )
 
@@ -28,20 +27,20 @@ func main() {
 
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	shader.InitOpenGL()
+	wrapper.InitOpenGL()
 
-	program := gl.CreateProgram()
-	gl.LinkProgram(program)
-	gl.UseProgram(program)
+	program := wrapper.CreateProgram()
+	wrapper.LinkProgram(program)
+	wrapper.UseProgram(program)
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(window.DummyKeyCallback)
 	// register mouse button callback
 	app.GetWindow().SetMouseButtonCallback(window.DummyMouseButtonCallback)
 
-	gl.ClearColor(ClearColor[0], ClearColor[1], ClearColor[2], ClearColor[3])
+	wrapper.ClearColor(ClearColor[0], ClearColor[1], ClearColor[2], ClearColor[3])
 
 	for !app.GetWindow().ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT)
+		wrapper.Clear(wrapper.COLOR_BUFFER_BIT)
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}

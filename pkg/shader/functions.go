@@ -9,25 +9,17 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-gl/gl/v4.1-core/gl"
+	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 )
 
-// InitOpenGL is for initializing the gl lib. It also prints out the gl version.
-func InitOpenGL() {
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
-	version := gl.GoStr(gl.GetString(gl.VERSION))
-	fmt.Println("OpenGL version", version)
-}
 func textureMap(index int) uint32 {
 	switch index {
 	case 0:
-		return gl.TEXTURE0
+		return wrapper.TEXTURE0
 	case 1:
-		return gl.TEXTURE1
+		return wrapper.TEXTURE1
 	case 2:
-		return gl.TEXTURE2
+		return wrapper.TEXTURE2
 	}
 	return 0
 }
@@ -57,21 +49,21 @@ func loadImageFromFile(path string) (image.Image, error) {
 
 }
 func CompileShader(source string, shaderType uint32) (uint32, error) {
-	shader := gl.CreateShader(shaderType)
+	shader := wrapper.CreateShader(shaderType)
 
-	csources, free := gl.Strs(source)
-	gl.ShaderSource(shader, 1, csources, nil)
+	csources, free := wrapper.Strs(source)
+	wrapper.ShaderSource(shader, 1, csources, nil)
 	free()
-	gl.CompileShader(shader)
+	wrapper.CompileShader(shader)
 
 	var status int32
-	gl.GetShaderiv(shader, gl.COMPILE_STATUS, &status)
-	if status == gl.FALSE {
+	wrapper.GetShaderiv(shader, wrapper.COMPILE_STATUS, &status)
+	if status == wrapper.FALSE {
 		var logLength int32
-		gl.GetShaderiv(shader, gl.INFO_LOG_LENGTH, &logLength)
+		wrapper.GetShaderiv(shader, wrapper.INFO_LOG_LENGTH, &logLength)
 
 		log := strings.Repeat("\x00", int(logLength+1))
-		gl.GetShaderInfoLog(shader, logLength, nil, gl.Str(log))
+		wrapper.GetShaderInfoLog(shader, logLength, nil, wrapper.Str(log))
 
 		return 0, fmt.Errorf("failed to compile %v: %v", source, log)
 	}

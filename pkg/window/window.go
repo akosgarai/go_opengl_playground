@@ -3,6 +3,8 @@ package window
 import (
 	"fmt"
 
+	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
@@ -12,8 +14,8 @@ func InitGlfw(windowWidth, windowHeight int, windowTitle string) *glfw.Window {
 		panic(fmt.Errorf("could not initialize glfw: %v", err))
 	}
 
-	glfw.WindowHint(glfw.ContextVersionMajor, 4)
-	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+	glfw.WindowHint(glfw.ContextVersionMajor, wrapper.GL_MAJOR_VERSION)
+	glfw.WindowHint(glfw.ContextVersionMinor, wrapper.GL_MINOR_VERSION)
 	glfw.WindowHint(glfw.Resizable, glfw.False)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)

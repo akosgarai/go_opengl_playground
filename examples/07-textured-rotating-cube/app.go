@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
+	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
@@ -12,7 +13,6 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -166,24 +166,24 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	shader.InitOpenGL()
+	wrapper.InitOpenGL()
 
 	shaderProgram := shader.NewShader("examples/07-textured-rotating-cube/vertexshader.vert", "examples/07-textured-rotating-cube/fragmentshader.frag")
-	shaderProgram.AddTexture("examples/07-textured-rotating-cube/image-texture.jpg", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "textureOne")
+	shaderProgram.AddTexture("examples/07-textured-rotating-cube/image-texture.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
 
 	app.SetCamera(CreateCamera())
 	GenerateCube(shaderProgram)
 
-	gl.Enable(gl.DEPTH_TEST)
-	gl.DepthFunc(gl.LESS)
-	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
+	wrapper.Enable(wrapper.DEPTH_TEST)
+	wrapper.DepthFunc(wrapper.LESS)
+	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		Update()
 		app.DrawWithUniforms()
 		glfw.PollEvents()

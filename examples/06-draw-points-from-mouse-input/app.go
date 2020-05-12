@@ -5,12 +5,12 @@ import (
 	"runtime"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
+	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/point"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -48,17 +48,17 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	shader.InitOpenGL()
+	wrapper.InitOpenGL()
 
 	shaderProgram := shader.NewShader("examples/06-draw-points-from-mouse-input/vertexshader.vert", "examples/06-draw-points-from-mouse-input/fragmentshader.frag")
 	points = point.New(shaderProgram)
 	app.AddItem(points)
 	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
 
-	gl.Enable(gl.PROGRAM_POINT_SIZE)
+	wrapper.Enable(wrapper.PROGRAM_POINT_SIZE)
 
 	for !app.GetWindow().ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT)
+		wrapper.Clear(wrapper.COLOR_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
 		if points.Count() > 0 {
