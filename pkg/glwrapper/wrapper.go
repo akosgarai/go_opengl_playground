@@ -258,3 +258,8 @@ func Enable(cap uint32) {
 func DepthFunc(xfunc uint32) {
 	gl.DepthFunc(xfunc)
 }
+
+// Wrapper for gl.Viewport function.
+func Viewport(x int32, y int32, width int32, height int32) {
+	gl.Viewport(x, y, width, height)
+}
