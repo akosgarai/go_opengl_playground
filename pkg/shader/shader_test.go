@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/go-gl/gl/v4.1-core/gl"
+	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 
@@ -192,7 +192,7 @@ func NewTestShader(t *testing.T, validFragmentShaderContent, validVertexShaderCo
 	defer DeleteFile(VertexShaderFileName)
 	runtime.LockOSThread()
 	InitGlfw()
-	InitOpenGL()
+	wrapper.InitOpenGL()
 	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
@@ -203,18 +203,6 @@ func NewTestShader(t *testing.T, validFragmentShaderContent, validVertexShaderCo
 		t.Fail()
 	}
 	return shader
-}
-func TestInitOpenGL(t *testing.T) {
-	func() {
-		defer func() {
-			defer glfw.Terminate()
-			if r := recover(); r != nil {
-				t.Errorf("InitOpenGL shouldn't panicked!")
-			}
-		}()
-		runtime.LockOSThread()
-		InitOpenGL()
-	}()
 }
 func TestLoadShaderFromFile(t *testing.T) {
 	// Create tmp file with a known content.
@@ -250,12 +238,12 @@ func TestCompileShader(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGL()
-	_, err := CompileShader(InvalidShaderStringWithTrailingChars, gl.VERTEX_SHADER)
+	wrapper.InitOpenGL()
+	_, err := CompileShader(InvalidShaderStringWithTrailingChars, wrapper.VERTEX_SHADER)
 	if err == nil {
 		t.Error("Compile should fail with wrong content.")
 	}
-	prog, err := CompileShader(ValidVertexShaderWithUniformsStringWithTrailingChars, gl.VERTEX_SHADER)
+	prog, err := CompileShader(ValidVertexShaderWithUniformsStringWithTrailingChars, wrapper.VERTEX_SHADER)
 	if err != nil {
 		t.Error(err)
 	}
@@ -281,7 +269,7 @@ func TestNewShaderPanicOnVertexContent(t *testing.T) {
 		runtime.LockOSThread()
 		InitGlfw()
 		defer glfw.Terminate()
-		InitOpenGL()
+		wrapper.InitOpenGL()
 		NewShader(VertexShaderFileName, FragmentShaderFileName)
 	}()
 }
@@ -303,7 +291,7 @@ func TestNewShaderPanicOnFragmentContent(t *testing.T) {
 		runtime.LockOSThread()
 		InitGlfw()
 		defer glfw.Terminate()
-		InitOpenGL()
+		wrapper.InitOpenGL()
 		NewShader(VertexShaderFileName, FragmentShaderFileName)
 	}()
 }
@@ -323,7 +311,7 @@ func TestNewShaderPanicOnFragmentFile(t *testing.T) {
 		runtime.LockOSThread()
 		InitGlfw()
 		defer glfw.Terminate()
-		InitOpenGL()
+		wrapper.InitOpenGL()
 		NewShader(VertexShaderFileName, FragmentShaderFileName)
 	}()
 }
@@ -343,7 +331,7 @@ func TestNewShaderPanicOnVertexFile(t *testing.T) {
 		runtime.LockOSThread()
 		InitGlfw()
 		defer glfw.Terminate()
-		InitOpenGL()
+		wrapper.InitOpenGL()
 		NewShader(VertexShaderFileName, FragmentShaderFileName)
 	}()
 }
@@ -358,7 +346,7 @@ func TestNewShader(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGL()
+	wrapper.InitOpenGL()
 	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
@@ -375,7 +363,7 @@ func TestUse(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGL()
+	wrapper.InitOpenGL()
 	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
@@ -393,7 +381,7 @@ func TestSetUniformMat4(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGL()
+	wrapper.InitOpenGL()
 	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
@@ -412,7 +400,7 @@ func TestSetUniformMat3(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGL()
+	wrapper.InitOpenGL()
 	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
@@ -431,7 +419,7 @@ func TestSetUniform3f(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGL()
+	wrapper.InitOpenGL()
 	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
@@ -450,7 +438,7 @@ func TestSetUniform1f(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGL()
+	wrapper.InitOpenGL()
 	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
 	if shader.shaderProgramId == 0 {
 		t.Error("Invalid shader program id")
@@ -471,7 +459,7 @@ func TestGetUniformLocation(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	InitOpenGL()
+	wrapper.InitOpenGL()
 	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
 	shader.Use()
 	if shader.shaderProgramId == 0 {
@@ -487,7 +475,7 @@ func TestGetUniformLocation(t *testing.T) {
 		{"notValidUniformName", -1},
 	}
 	for _, tt := range testData {
-		location := shader.getUniformLocation(tt.Name)
+		location := wrapper.GetUniformLocation(shader.shaderProgramId, tt.Name)
 		if location != tt.Location {
 			t.Error("Invalid location identifier")
 		}
@@ -613,7 +601,7 @@ func TestDrawTrianglesTextures(t *testing.T) {
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer glfw.Terminate()
-	shader.AddTexture("transparent-image-for-texture-testing.jpg", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "textureOne")
+	shader.AddTexture("transparent-image-for-texture-testing.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
 	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
 	shader.BindBufferData(bufferData)
 	shader.BindVertexArray()
@@ -646,7 +634,7 @@ func TestAddTexture(t *testing.T) {
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer glfw.Terminate()
-	shader.AddTexture("transparent-image-for-texture-testing.jpg", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "textureOne")
+	shader.AddTexture("transparent-image-for-texture-testing.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
 	if len(shader.textures) != 1 {
 		t.Error("Invalid shader length.")
 	}
@@ -666,7 +654,7 @@ func TestAddTextureInvalidFilename(t *testing.T) {
 		runtime.LockOSThread()
 		shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 		defer glfw.Terminate()
-		shader.AddTexture("this-file-does-not-exist.jpg", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "textureOne")
+		shader.AddTexture("this-file-does-not-exist.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
 	}()
 }
 func TestTextureBind(t *testing.T) {
@@ -676,11 +664,11 @@ func TestTextureBind(t *testing.T) {
 	runtime.LockOSThread()
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer glfw.Terminate()
-	shader.AddTexture("transparent-image-for-texture-testing.jpg", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "textureOne")
-	shader.textures[0].Bind(gl.TEXTURE0)
+	shader.AddTexture("transparent-image-for-texture-testing.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
+	shader.textures[0].Bind(wrapper.TEXTURE0)
 	defer shader.textures[0].UnBind()
 
-	if shader.textures[0].texUnitId != gl.TEXTURE0 {
+	if shader.textures[0].texUnitId != wrapper.TEXTURE0 {
 		t.Error("Invalid texUnitId")
 	}
 	shader.Close(2)
@@ -693,8 +681,8 @@ func TestTextureIsBinded(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	shader.AddTexture("transparent-image-for-texture-testing.jpg", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "textureOne")
-	shader.textures[0].Bind(gl.TEXTURE0)
+	shader.AddTexture("transparent-image-for-texture-testing.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
+	shader.textures[0].Bind(wrapper.TEXTURE0)
 	if !shader.textures[0].IsBinded() {
 		t.Error("Texture should be binded")
 	}
@@ -712,8 +700,8 @@ func TestTextureUnbind(t *testing.T) {
 	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
 	defer shader.Close(2)
 	defer glfw.Terminate()
-	shader.AddTexture("transparent-image-for-texture-testing.jpg", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "textureOne")
-	shader.textures[0].Bind(gl.TEXTURE0)
+	shader.AddTexture("transparent-image-for-texture-testing.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
+	shader.textures[0].Bind(wrapper.TEXTURE0)
 	if !shader.textures[0].IsBinded() {
 		t.Error("Texture should be binded")
 	}
@@ -733,7 +721,7 @@ func TestHasTexture(t *testing.T) {
 	if shader.HasTexture() {
 		t.Error("Shouldn't have texture")
 	}
-	shader.AddTexture("transparent-image-for-texture-testing.jpg", gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, "textureOne")
+	shader.AddTexture("transparent-image-for-texture-testing.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
 	if !shader.HasTexture() {
 		t.Error("it has texture")
 	}

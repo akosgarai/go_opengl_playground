@@ -6,10 +6,6 @@ This package is a kind of wrapper for the gl.\* commands.
 
 The stuff that we can do with the shaders.
 
-### InitOpenGL
-
-InitOpenGL is for initializing the gl lib. It also prints out the gl version.
-
 ### LoadShaderFromFile
 
 LoadShaderFromFile takes a filepath string arguments. It loads the file and returns it as a `\x00` terminated string. It returns an error also.

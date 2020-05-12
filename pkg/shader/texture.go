@@ -1,7 +1,7 @@
 package shader
 
 import (
-	"github.com/go-gl/gl/v4.1-core/gl"
+	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 )
 
 type texture struct {
@@ -12,8 +12,8 @@ type texture struct {
 }
 
 func (t *texture) Bind(id uint32) {
-	gl.ActiveTexture(id)
-	gl.BindTexture(t.targetId, t.textureId)
+	wrapper.ActiveTexture(id)
+	wrapper.BindTexture(t.targetId, t.textureId)
 	t.texUnitId = id
 }
 func (t *texture) IsBinded() bool {
@@ -24,5 +24,5 @@ func (t *texture) IsBinded() bool {
 }
 func (t *texture) UnBind() {
 	t.texUnitId = 0
-	gl.BindTexture(t.targetId, t.texUnitId)
+	wrapper.BindTexture(t.targetId, t.texUnitId)
 }
