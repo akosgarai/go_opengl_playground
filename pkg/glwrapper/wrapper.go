@@ -91,7 +91,7 @@ func VertexAttribPointer(index uint32, size int32, xtype uint32, normalized bool
 
 // Wrapper for gl.ActiveTexture function.
 func ActiveTexture(id uint32) {
-	gl.ActiveTexture(gl.TEXTURE0 + id)
+	gl.ActiveTexture(id)
 }
 
 // Wrapper for gl.BindTexture function.
