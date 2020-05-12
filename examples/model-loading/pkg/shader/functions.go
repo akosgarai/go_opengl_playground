@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	wrapper "github.com/akosgarai/opengl_playground/examples/model-loading/pkg/glwrapper"
+	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 )
 
 // LoadShaderFromFile takes a filepath string arguments.

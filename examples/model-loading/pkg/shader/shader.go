@@ -1,7 +1,7 @@
 package shader
 
 import (
-	wrapper "github.com/akosgarai/opengl_playground/examples/model-loading/pkg/glwrapper"
+	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 )
 
 type Shader struct {
@@ -40,5 +40,5 @@ func NewShader(vertexShaderPath, fragmentShaderPath string) *Shader {
 
 // Use is a wrapper for gl.UseProgram
 func (s *Shader) Use() {
-	wrapper.Use(s.Id)
+	wrapper.UseProgram(s.Id)
 }

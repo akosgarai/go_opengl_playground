@@ -1,9 +1,9 @@
 package mesh
 
 import (
-	wrapper "github.com/akosgarai/opengl_playground/examples/model-loading/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/texture"
 	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/vertex"
+	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 )
 
 type Shader interface {
@@ -33,7 +33,7 @@ func (m *Mesh) Draw(shader Shader) {
 	for i := 0; i < len(m.Textures); i++ {
 		tex := m.Textures[i]
 		wrapper.ActiveTexture(uint32(i))
-		wrapper.Uniform1i(wrapper.GetUniformLocation(tex.UniformName, shader.GetId()), int32(i))
+		wrapper.Uniform1i(wrapper.GetUniformLocation(shader.GetId(), tex.UniformName), int32(i))
 		wrapper.BindTexture(wrapper.TEXTURE_2D, tex.Id)
 	}
 	wrapper.BindVertexArray(m.vao)
@@ -44,7 +44,7 @@ func (m *Mesh) Draw(shader Shader) {
 }
 
 func (m *Mesh) setup() {
-	m.vao = wrapper.GenVertexArray()
+	m.vao = wrapper.GenVertexArrays()
 	m.vbo = wrapper.GenBuffers()
 	m.ebo = wrapper.GenBuffers()
 
@@ -57,11 +57,11 @@ func (m *Mesh) setup() {
 	wrapper.ElementBufferData(m.Indicies)
 
 	// setup coordinates
-	wrapper.VertexAttribPointer(0, 3, 4*8, 0)
+	wrapper.VertexAttribPointer(0, 3, wrapper.FLOAT, false, 4*8, wrapper.PtrOffset(0))
 	// setup normals
-	wrapper.VertexAttribPointer(1, 3, 4*8, 4*3)
+	wrapper.VertexAttribPointer(1, 3, wrapper.FLOAT, false, 4*8, wrapper.PtrOffset(4*3))
 	// setup texture position
-	wrapper.VertexAttribPointer(2, 2, 4*8, 4*6)
+	wrapper.VertexAttribPointer(2, 2, wrapper.FLOAT, false, 4*8, wrapper.PtrOffset(4*6))
 
 	// close
 	wrapper.BindVertexArray(0)
