@@ -35,6 +35,7 @@ const (
 	DEPTH_BUFFER_BIT     = gl.DEPTH_BUFFER_BIT
 	DEPTH_TEST           = gl.DEPTH_TEST
 	LESS                 = gl.LESS
+	PROGRAM_POINT_SIZE   = gl.PROGRAM_POINT_SIZE
 )
 
 // Wrapper for gl.GenVertexArrays function.
