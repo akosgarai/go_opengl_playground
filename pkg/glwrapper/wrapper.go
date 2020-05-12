@@ -2,9 +2,9 @@ package glwrapper
 
 import (
 	"fmt"
+	"unsafe"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
-	"github.com/go-gl/mathgl/mgl32"
 )
 
 const (
@@ -16,10 +16,25 @@ const (
 	COMPILE_STATUS       = gl.COMPILE_STATUS
 	INFO_LOG_LENGTH      = gl.INFO_LOG_LENGTH
 	FALSE                = gl.FALSE
+	TEXTURE0             = gl.TEXTURE0
+	TEXTURE1             = gl.TEXTURE1
+	TEXTURE2             = gl.TEXTURE2
+	TEXTURE_WRAP_R       = gl.TEXTURE_WRAP_R
+	TEXTURE_WRAP_S       = gl.TEXTURE_WRAP_S
+	TEXTURE_MIN_FILTER   = gl.TEXTURE_MIN_FILTER
+	TEXTURE_MAG_FILTER   = gl.TEXTURE_MAG_FILTER
+	RGBA                 = gl.RGBA
+	UNSIGNED_BYTE        = gl.UNSIGNED_BYTE
+	FLOAT                = gl.FLOAT
+	POINTS               = gl.POINTS
+	TRIANGLES            = gl.TRIANGLES
+	TEXTURE_BORDER_COLOR = gl.TEXTURE_BORDER_COLOR
+	CLAMP_TO_EDGE        = gl.CLAMP_TO_EDGE
+	LINEAR               = gl.LINEAR
 )
 
-// Wrapper for gl.GenVertexArray function.
-func GenVertexArray() uint32 {
+// Wrapper for gl.GenVertexArrays function.
+func GenVertexArrays() uint32 {
 	var vertexArrayObject uint32
 	gl.GenVertexArrays(1, &vertexArrayObject)
 	return vertexArrayObject
@@ -57,9 +72,9 @@ func ElementBufferData(bufferData []uint32) {
 }
 
 // VertexAttribPointer enables and sets the pointer.
-func VertexAttribPointer(index uint32, size, stride int32, offset int) {
+func VertexAttribPointer(index uint32, size int32, xtype uint32, normalized bool, stride int32, pointer unsafe.Pointer) {
 	gl.EnableVertexAttribArray(index)
-	gl.VertexAttribPointer(index, size, gl.FLOAT, false, stride, gl.PtrOffset(offset))
+	gl.VertexAttribPointer(index, size, xtype, normalized, stride, pointer)
 }
 
 // Wrapper for gl.ActiveTexture function.
@@ -77,13 +92,13 @@ func DrawTriangleElements(count int32) {
 	gl.DrawElements(gl.TRIANGLES, count, gl.UNSIGNED_INT, gl.PtrOffset(0))
 }
 
-// Use is a wrapper for gl.UseProgram
-func Use(id uint32) {
+// Wrapper for gl.UseProgram function.
+func UseProgram(id uint32) {
 	gl.UseProgram(id)
 }
 
 // Use is a wrapper for gl.GetUniformLocation
-func GetUniformLocation(uniformName string, shaderProgramId uint32) int32 {
+func GetUniformLocation(shaderProgramId uint32, uniformName string) int32 {
 	return gl.GetUniformLocation(shaderProgramId, gl.Str(uniformName+"\x00"))
 }
 
@@ -110,8 +125,8 @@ func LinkProgram(program uint32) {
 }
 
 // Wrapper for gl.UniformMatrix4fv function.
-func UniformMatrix4fv(location int32, mat mgl32.Mat4) {
-	gl.UniformMatrix4fv(location, 1, false, &mat[0])
+func UniformMatrix4fv(location int32, count int32, transpose bool, value *float32) {
+	gl.UniformMatrix4fv(location, count, transpose, value)
 }
 
 // Wrapper for gl.CreateShader function.
@@ -158,4 +173,64 @@ func InitOpenGL() {
 	}
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
+}
+
+// Wrapper for gl.TexImage2D function.
+func TexImage2D(target uint32, level int32, internalformat int32, width int32, height int32, border int32, format uint32, xtype uint32, pixels unsafe.Pointer) {
+	gl.TexImage2D(target, level, internalformat, width, height, border, format, xtype, pixels)
+}
+
+// Wrapper for gl.Ptr function.
+func Ptr(data interface{}) unsafe.Pointer {
+	return gl.Ptr(data)
+}
+
+// Wrapper for gl.GenerateMipmap function.
+func GenerateMipmap(target uint32) {
+	gl.GenerateMipmap(target)
+}
+
+// Wrapper for gl.GenTextures function.
+func GenTextures(n int32, textures *uint32) {
+	gl.GenTextures(n, textures)
+}
+
+// Wrapper for gl.UniformMatrix3fv function.
+func UniformMatrix3fv(location int32, count int32, transpose bool, value *float32) {
+	gl.UniformMatrix3fv(location, count, transpose, value)
+}
+
+// Wrapper for gl.Uniform3f function
+func Uniform3f(location int32, v0 float32, v1 float32, v2 float32) {
+	gl.Uniform3f(location, v0, v1, v2)
+}
+
+// Wrapper for gl.Uniform1f function.
+func Uniform1f(location int32, v0 float32) {
+	gl.Uniform1f(location, v0)
+}
+
+// Wrapper for gl.PtrOffset function.
+func PtrOffset(offset int) unsafe.Pointer {
+	return gl.PtrOffset(offset)
+}
+
+// Wrapper for gl.DisableVertexAttribArray function.
+func DisableVertexAttribArray(index uint32) {
+	gl.DisableVertexAttribArray(index)
+}
+
+// Wrapper for gl.DrawArrays function.
+func DrawArrays(mode uint32, first int32, count int32) {
+	gl.DrawArrays(mode, first, count)
+}
+
+// Wrapper for gl.TexParameteri function.
+func TexParameteri(target uint32, pname uint32, param int32) {
+	gl.TexParameteri(target, pname, param)
+}
+
+// Wrapper fro gl.TexParameterfv function.
+func TexParameterfv(target uint32, pname uint32, params *float32) {
+	gl.TexParameterfv(target, pname, params)
 }
