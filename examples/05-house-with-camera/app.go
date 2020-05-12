@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
+	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -240,7 +240,7 @@ func main() {
 
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	shader.InitOpenGL()
+	wrapper.InitOpenGL()
 
 	shaderProgram := shader.NewShader("examples/05-house-with-camera/vertexshader.vert", "examples/05-house-with-camera/fragmentshader.frag")
 
@@ -261,11 +261,11 @@ func main() {
 	RoomRight2(shaderProgram)
 	RoomRight3(shaderProgram)
 
-	gl.ClearColor(0.3, 0.3, 0.3, 1.0)
-	gl.Viewport(0, 0, WindowWidth, WindowHeight)
+	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	wrapper.Viewport(0, 0, WindowWidth, WindowHeight)
 
-	gl.Enable(gl.DEPTH_TEST)
-	gl.DepthFunc(gl.LESS)
+	wrapper.Enable(wrapper.DEPTH_TEST)
+	wrapper.DepthFunc(wrapper.LESS)
 
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
@@ -273,7 +273,7 @@ func main() {
 	app.GetWindow().SetMouseButtonCallback(window.DummyMouseButtonCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
 		app.DrawWithUniforms()
