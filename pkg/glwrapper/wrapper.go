@@ -31,6 +31,7 @@ const (
 	TEXTURE_BORDER_COLOR = gl.TEXTURE_BORDER_COLOR
 	CLAMP_TO_EDGE        = gl.CLAMP_TO_EDGE
 	LINEAR               = gl.LINEAR
+	COLOR_BUFFER_BIT     = gl.COLOR_BUFFER_BIT
 )
 
 // Wrapper for gl.GenVertexArrays function.
@@ -233,4 +234,14 @@ func TexParameteri(target uint32, pname uint32, param int32) {
 // Wrapper fro gl.TexParameterfv function.
 func TexParameterfv(target uint32, pname uint32, params *float32) {
 	gl.TexParameterfv(target, pname, params)
+}
+
+// Wrapper for gl.ClearColor function.
+func ClearColor(red float32, green float32, blue float32, alpha float32) {
+	gl.ClearColor(red, green, blue, alpha)
+}
+
+// Wrapper fro gl.Clear function.
+func Clear(mask uint32) {
+	gl.Clear(mask)
 }
