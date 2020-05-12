@@ -13,15 +13,15 @@ type Rectangle struct {
 // NewSquare creates a rectangle with origo as middle point.
 // The normal points to -Y.
 // The longest side is scaled to one, and the same downscale is done with the other edge.
-// - width represents the lenght on the X axis.
-// - height represents the lenght on the Z axis.
+// - width represents the length on the X axis.
+// - height represents the length on the Z axis.
 // ratio = width / length
 // ratio == 1 => return NewSquare.
 // ratio > 1 => width is the longer -> X [-0.5, 0.5], Y [-1/(ratio*2), 1/(ratio*2)].
 // ratio < 1 => length is the longer -> X [-ratio/2, ratio/2], Y [-0.5, 0.5].
-func New(width, length float32) *Rectangle {
+func New(width, height float32) *Rectangle {
 	normal := mgl32.Vec3{0, -1, 0}
-	ratio := width / length
+	ratio := width / height
 	var x0, x1, y0, y1 float32
 	if ratio == 1 {
 		return NewSquare()
