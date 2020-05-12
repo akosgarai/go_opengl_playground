@@ -32,6 +32,9 @@ const (
 	CLAMP_TO_EDGE        = gl.CLAMP_TO_EDGE
 	LINEAR               = gl.LINEAR
 	COLOR_BUFFER_BIT     = gl.COLOR_BUFFER_BIT
+	DEPTH_BUFFER_BIT     = gl.DEPTH_BUFFER_BIT
+	DEPTH_TEST           = gl.DEPTH_TEST
+	LESS                 = gl.LESS
 )
 
 // Wrapper for gl.GenVertexArrays function.
@@ -244,4 +247,14 @@ func ClearColor(red float32, green float32, blue float32, alpha float32) {
 // Wrapper fro gl.Clear function.
 func Clear(mask uint32) {
 	gl.Clear(mask)
+}
+
+// Wrapper for gl.Enable function.
+func Enable(cap uint32) {
+	gl.Enable(cap)
+}
+
+// Wrapper for gl.DepthFunc function.
+func DepthFunc(xfunc uint32) {
+	gl.DepthFunc(xfunc)
 }
