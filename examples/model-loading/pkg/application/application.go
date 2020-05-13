@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/mesh"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -41,6 +43,8 @@ type Application struct {
 	directionalLightSources []DirectionalLightSource
 	pointLightSources       []PointLightSource
 	spotLightSources        []SpotLightSource
+
+	keyDowns map[glfw.Key]bool
 }
 
 type Window interface {
@@ -59,6 +63,7 @@ func New() *Application {
 		directionalLightSources: []DirectionalLightSource{},
 		pointLightSources:       []PointLightSource{},
 		spotLightSources:        []SpotLightSource{},
+		keyDowns:                make(map[glfw.Key]bool),
 	}
 }
 
@@ -280,4 +285,34 @@ func (a *Application) AddSpotLightSource(lightSource SpotLight, uniformNames [10
 	sSource.OuterCutoffUniformName = uniformNames[8]
 
 	a.spotLightSources = append(a.spotLightSources, sSource)
+}
+
+// KeyCallback is responsible for the keyboard event handling.
+func (a *Application) KeyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+	switch key {
+	case DEBUG:
+		if action != glfw.Release {
+			fmt.Printf("%s\n", a.Log())
+		}
+		break
+	default:
+		a.SetKeyState(key, action)
+		break
+	}
+}
+
+// SetKeyState setups the keyDowns based on the key and action
+func (a *Application) SetKeyState(key glfw.Key, action glfw.Action) {
+	var isButtonPressed bool
+	if action != glfw.Release {
+		isButtonPressed = true
+	} else {
+		isButtonPressed = false
+	}
+	a.keyDowns[key] = isButtonPressed
+}
+
+// GetKeyState returns the state of the given key
+func (a *Application) GetKeyState(key glfw.Key) bool {
+	return a.keyDowns[key]
 }
