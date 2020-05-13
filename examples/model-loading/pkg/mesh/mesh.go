@@ -11,6 +11,8 @@ import (
 type Shader interface {
 	GetId() uint32
 	SetUniformMat4(string, mgl32.Mat4)
+	SetUniform1f(string, float32)
+	SetUniform1i(string, int32)
 }
 type Mesh struct {
 	Verticies vertex.Verticies
@@ -33,16 +35,16 @@ func New(v []vertex.Vertex, i []uint32, t texture.Textures) *Mesh {
 }
 
 func (m *Mesh) Draw(shader Shader) {
-	for i := 0; i < len(m.Textures); i++ {
-		tex := m.Textures[i]
-		wrapper.ActiveTexture(uint32(i))
-		wrapper.Uniform1i(wrapper.GetUniformLocation(shader.GetId(), tex.UniformName), int32(i))
-		wrapper.BindTexture(wrapper.TEXTURE_2D, tex.Id)
+	for _, item := range m.Textures {
+		item.Bind()
+		shader.SetUniform1i(item.UniformName, int32(item.Id-wrapper.TEXTURE0))
 	}
 	shader.SetUniformMat4("model", mgl32.Ident4())
+	shader.SetUniform1f("material.shininess", float32(32))
 	wrapper.BindVertexArray(m.vao)
 	wrapper.DrawTriangleElements(int32(len(m.Indicies)))
 
+	m.Textures.UnBind()
 	wrapper.BindVertexArray(0)
 	wrapper.ActiveTexture(0)
 }
