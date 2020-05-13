@@ -44,7 +44,7 @@ type Texture struct {
 
 func (t *Texture) Bind() {
 	wrapper.ActiveTexture(t.Id)
-	wrapper.BindTexture(t.TargetId, t.Id)
+	wrapper.BindTexture(t.TargetId, t.TextureName)
 }
 func (t *Texture) UnBind() {
 	wrapper.BindTexture(t.TargetId, wrapper.TEXTURE0)
@@ -52,7 +52,7 @@ func (t *Texture) UnBind() {
 
 type Textures []*Texture
 
-func (t Textures) AddTexture(filePath string, wrapR, wrapS, minificationFilter, magnificationFilter int32, uniformName string) {
+func (t *Textures) AddTexture(filePath string, wrapR, wrapS, minificationFilter, magnificationFilter int32, uniformName string) {
 	img, err := loadImageFromFile(filePath)
 	if err != nil {
 		panic(err)
@@ -66,7 +66,7 @@ func (t Textures) AddTexture(filePath string, wrapR, wrapS, minificationFilter, 
 	tex := &Texture{
 		TextureName: genTextures(),
 		TargetId:    wrapper.TEXTURE_2D,
-		Id:          wrapper.TEXTURE0 + uint32(len(t)),
+		Id:          wrapper.TEXTURE0 + uint32(len(*t)),
 		UniformName: uniformName,
 	}
 
@@ -82,5 +82,11 @@ func (t Textures) AddTexture(filePath string, wrapR, wrapS, minificationFilter, 
 
 	wrapper.GenerateMipmap(tex.TextureName)
 
-	t = append(t, tex)
+	*t = append(*t, tex)
+}
+
+func (t Textures) UnBind() {
+	for i, _ := range t {
+		t[i].UnBind()
+	}
 }
