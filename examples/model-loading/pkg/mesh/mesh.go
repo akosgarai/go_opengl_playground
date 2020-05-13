@@ -62,6 +62,9 @@ func (m *Mesh) SetRotationAngle(a float32) {
 func (m *Mesh) SetRotationAxis(a mgl32.Vec3) {
 	m.axis = a
 }
+func (m *Mesh) SetPosition(p mgl32.Vec3) {
+	m.position = p
+}
 
 func (m *Mesh) Draw(shader Shader) {
 	for _, item := range m.Textures {
