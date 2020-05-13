@@ -65,6 +65,18 @@ func (m *Mesh) SetRotationAxis(a mgl32.Vec3) {
 func (m *Mesh) SetPosition(p mgl32.Vec3) {
 	m.position = p
 }
+func (m *Mesh) SetDirection(p mgl32.Vec3) {
+	m.direction = p
+}
+func (m *Mesh) SetSpeed(a float32) {
+	m.velocity = a
+}
+func (m *Mesh) GetPosition() mgl32.Vec3 {
+	return m.position
+}
+func (m *Mesh) GetDirection() mgl32.Vec3 {
+	return m.direction
+}
 
 func (m *Mesh) Draw(shader Shader) {
 	for _, item := range m.Textures {
