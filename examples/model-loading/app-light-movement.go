@@ -35,12 +35,16 @@ const (
 	cameraDirectionSpeed = float32(0.05)
 	CameraMoveSpeed      = 0.005
 	cameraDistance       = 0.1
+
+	rotationSpeed = float32(2.0)
 )
 
 var (
 	app *application.Application
 
 	Shader *shader.Shader
+
+	RotatingCube *mesh.Mesh
 
 	lastUpdate int64
 
@@ -62,6 +66,8 @@ var (
 	SpotLightPosition_1       = mgl32.Vec3{0.20, -6, -0.7}
 	SpotLightCutoff_1         = float32(4)
 	SpotLightOuterCutoff_1    = float32(5)
+
+	rotationAngle = float32(0.0)
 )
 
 // It creates a new camera with the necessary setup
@@ -85,10 +91,21 @@ func GenerateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.Mesh {
 	m.SetPosition(pos)
 	return m
 }
+func GenerateRotatingCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.Mesh {
+	cube := primitives.NewCube()
+	v, i := cube.MeshInput()
+	m := mesh.New(v, i, t)
+	m.SetPosition(pos)
+	m.SetRotationAxis(mgl32.Vec3{0, 1, 0})
+	return m
+}
 func Update() {
 	nowNano := time.Now().UnixNano()
 	moveTime := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
+
+	rotationAngle = rotationAngle + float32(moveTime)*rotationSpeed
+	RotatingCube.SetRotationAngle(mgl32.DegToRad(mgl32.DegToRad(rotationAngle)))
 
 	forward := 0.0
 	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
@@ -183,6 +200,8 @@ func main() {
 	app.AddMeshToShader(grassMesh, Shader)
 	cubeMesh := GenerateCubeMesh(TexturesCube, mgl32.Vec3{0, -0.5, 0})
 	app.AddMeshToShader(cubeMesh, Shader)
+	RotatingCube = GenerateRotatingCubeMesh(TexturesCube, mgl32.Vec3{3, -0.5, 0})
+	app.AddMeshToShader(RotatingCube, Shader)
 
 	// setup lighsources.
 	// directional light is coming from the up direction but not from too up.
