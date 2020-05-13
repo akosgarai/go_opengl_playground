@@ -32,6 +32,9 @@ type Mesh struct {
 	// angle has to be in radian
 	angle float32
 	axis  mgl32.Vec3
+	// for scaling - if a want to make other rectangles than unit ones.
+	// This vector contains the scale factor for each axis.
+	scale mgl32.Vec3
 }
 
 func New(v []vertex.Vertex, i []uint32, t texture.Textures) *Mesh {
@@ -45,9 +48,19 @@ func New(v []vertex.Vertex, i []uint32, t texture.Textures) *Mesh {
 		velocity:  0,
 		angle:     0,
 		axis:      mgl32.Vec3{0, 0, 0},
+		scale:     mgl32.Vec3{1, 1, 1},
 	}
 	mesh.setup()
 	return mesh
+}
+func (m *Mesh) SetScale(s mgl32.Vec3) {
+	m.scale = s
+}
+func (m *Mesh) SetRotationAngle(a float32) {
+	m.angle = a
+}
+func (m *Mesh) SetRotationAxis(a mgl32.Vec3) {
+	m.axis = a
 }
 
 func (m *Mesh) Draw(shader Shader) {
@@ -101,5 +114,9 @@ func (m *Mesh) modelTransformation() mgl32.Mat4 {
 	return mgl32.Translate3D(
 		m.position.X(),
 		m.position.Y(),
-		m.position.Z()).Mul4(mgl32.HomogRotate3D(m.angle, m.axis))
+		m.position.Z()).Mul4(mgl32.HomogRotate3D(m.angle, m.axis)).Mul4(mgl32.Scale3D(
+		m.scale.X(),
+		m.scale.Y(),
+		m.scale.Z(),
+	))
 }
