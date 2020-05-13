@@ -45,13 +45,14 @@ var (
 	Shader *shader.Shader
 
 	RotatingCube *mesh.Mesh
+	LiftingCube  *mesh.Mesh
 
 	lastUpdate int64
 
 	DirectionalLightDirection = (mgl32.Vec3{0.7, 0.7, 0.7}).Normalize()
-	DirectionalLightAmbient   = mgl32.Vec3{0.5, 0.5, 0.5}
-	DirectionalLightDiffuse   = mgl32.Vec3{0.5, 0.5, 0.5}
-	DirectionalLightSpecular  = mgl32.Vec3{0.5, 0.5, 0.5}
+	DirectionalLightAmbient   = mgl32.Vec3{0.1, 0.1, 0.1}
+	DirectionalLightDiffuse   = mgl32.Vec3{0.1, 0.1, 0.1}
+	DirectionalLightSpecular  = mgl32.Vec3{0.1, 0.1, 0.1}
 	PointLightAmbient         = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightDiffuse         = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightSpecular        = mgl32.Vec3{0.5, 0.5, 0.5}
@@ -72,7 +73,7 @@ var (
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{-10.0, -5.0, 4.0}, mgl32.Vec3{0, 1, 0}, -37.0, -2.0)
+	camera := camera.NewCamera(mgl32.Vec3{-11.5, -4.8, 9.5}, mgl32.Vec3{0, 1, 0}, -37.0, -2.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
 	return camera
 }
@@ -99,6 +100,15 @@ func GenerateRotatingCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.Mesh {
 	m.SetRotationAxis(mgl32.Vec3{0, 1, 0})
 	return m
 }
+func GenerateLiftingCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.Mesh {
+	cube := primitives.NewCube()
+	v, i := cube.MeshInput()
+	m := mesh.New(v, i, t)
+	m.SetPosition(pos)
+	m.SetDirection(mgl32.Vec3{0, 1, 0})
+	m.SetSpeed(moveSpeed)
+	return m
+}
 func Update() {
 	nowNano := time.Now().UnixNano()
 	moveTime := float64(nowNano-lastUpdate) / float64(time.Millisecond)
@@ -106,6 +116,12 @@ func Update() {
 
 	rotationAngle = rotationAngle + float32(moveTime)*rotationSpeed
 	RotatingCube.SetRotationAngle(mgl32.DegToRad(mgl32.DegToRad(rotationAngle)))
+
+	if LiftingCube.GetPosition().Y() < -10 || LiftingCube.GetPosition().Y() > -0.5 {
+		LiftingCube.SetDirection(LiftingCube.GetDirection().Mul(-1))
+	}
+
+	app.Update(moveTime)
 
 	forward := 0.0
 	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
@@ -202,6 +218,8 @@ func main() {
 	app.AddMeshToShader(cubeMesh, Shader)
 	RotatingCube = GenerateRotatingCubeMesh(TexturesCube, mgl32.Vec3{3, -0.5, 0})
 	app.AddMeshToShader(RotatingCube, Shader)
+	LiftingCube = GenerateLiftingCubeMesh(TexturesCube, mgl32.Vec3{2, -10, 3})
+	app.AddMeshToShader(LiftingCube, Shader)
 
 	// setup lighsources.
 	// directional light is coming from the up direction but not from too up.
@@ -230,7 +248,7 @@ func main() {
 
 	wrapper.Enable(wrapper.DEPTH_TEST)
 	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	wrapper.ClearColor(0.0, 0.0, 0.0, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
