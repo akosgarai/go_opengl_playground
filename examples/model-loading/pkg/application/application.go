@@ -316,3 +316,12 @@ func (a *Application) SetKeyState(key glfw.Key, action glfw.Action) {
 func (a *Application) GetKeyState(key glfw.Key) bool {
 	return a.keyDowns[key]
 }
+
+// Update calls the Update function in every drawable item.
+func (a *Application) Update(dt float64) {
+	for s, _ := range a.shaderMap {
+		for index, _ := range a.shaderMap[s] {
+			a.shaderMap[s][index].Update(dt)
+		}
+	}
+}
