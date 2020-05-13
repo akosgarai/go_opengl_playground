@@ -5,13 +5,13 @@ import (
 	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/texture"
 	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/vertex"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
 
 type Mesh struct {
 	Verticies vertex.Verticies
-	Textures  texture.Textures
 	Indicies  []uint32
 
 	vbo uint32
@@ -78,6 +78,7 @@ func (m *Mesh) ModelTransformation() mgl32.Mat4 {
 
 type TexturedMesh struct {
 	Mesh
+	Textures texture.Textures
 }
 
 func (m *TexturedMesh) setup() {
@@ -119,18 +120,48 @@ func (m *TexturedMesh) Draw(shader interfaces.Shader) {
 	wrapper.ActiveTexture(0)
 }
 func NewTexturedMesh(v []vertex.Vertex, i []uint32, t texture.Textures) *TexturedMesh {
-	mesh := &TexturedMesh{Mesh{
-		Verticies: v,
-		Textures:  t,
-		Indicies:  i,
+	mesh := &TexturedMesh{
+		Mesh{
+			Verticies: v,
+			Indicies:  i,
 
-		position:  mgl32.Vec3{0, 0, 0},
-		direction: mgl32.Vec3{0, 0, 0},
-		velocity:  0,
-		angle:     0,
-		axis:      mgl32.Vec3{0, 0, 0},
-		scale:     mgl32.Vec3{1, 1, 1},
-	}}
+			position:  mgl32.Vec3{0, 0, 0},
+			direction: mgl32.Vec3{0, 0, 0},
+			velocity:  0,
+			angle:     0,
+			axis:      mgl32.Vec3{0, 0, 0},
+			scale:     mgl32.Vec3{1, 1, 1},
+		},
+		t,
+	}
 	mesh.setup()
 	return mesh
+}
+
+type MaterialMesh struct {
+	Mesh
+	Material material.Material
+}
+
+func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat material.Material) *MaterialMesh {
+	mesh := &MaterialMesh{
+		Mesh{
+			Verticies: v,
+			Indicies:  i,
+
+			position:  mgl32.Vec3{0, 0, 0},
+			direction: mgl32.Vec3{0, 0, 0},
+			velocity:  0,
+			angle:     0,
+			axis:      mgl32.Vec3{0, 0, 0},
+			scale:     mgl32.Vec3{1, 1, 1},
+		},
+		mat,
+	}
+	mesh.setup()
+	return mesh
+}
+func (m *MaterialMesh) setup() {
+}
+func (m *MaterialMesh) Draw(shader interfaces.Shader) {
 }
