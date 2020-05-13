@@ -91,6 +91,11 @@ func (a *Application) GetCamera() Camera {
 	return a.camera
 }
 
+// AddShader method inserts the new shader to the shaderMap
+func (a *Application) AddShader(s Shader) {
+	a.shaderMap[s] = []*mesh.Mesh{}
+}
+
 // AddMeshToShader attaches the mest to a shader.
 func (a *Application) AddMeshToShader(m *mesh.Mesh, s Shader) {
 	a.shaderMap[s] = append(a.shaderMap[s], m)
@@ -112,8 +117,6 @@ func (a *Application) Draw() {
 		for index, _ := range a.shaderMap[s] {
 			a.shaderMap[s][index].Draw(s)
 		}
-		// Set the lighting, viewPosition, etc uniforms.
-		// loop meshes, call the draw function.
 	}
 }
 
