@@ -50,12 +50,6 @@ func CompileShader(source string, shaderType uint32) (uint32, error) {
 
 type Shader struct {
 	id uint32
-
-	directionalLightSources []DirectionalLightSource
-	pointLightSources       []PointLightSource
-	spotLightSources        []SpotLightSource
-	viewPosition            mgl32.Vec3
-	viewPositionUniformName string
 }
 
 // NewShader returns a Shader. It's inputs are the filenames of the shaders.
@@ -84,13 +78,7 @@ func NewShader(vertexShaderPath, fragmentShaderPath string) *Shader {
 	wrapper.LinkProgram(program)
 
 	return &Shader{
-		id:                      program,
-		directionalLightSources: []DirectionalLightSource{},
-		pointLightSources:       []PointLightSource{},
-		spotLightSources:        []SpotLightSource{},
-
-		viewPosition:            mgl32.Vec3{0, 0, 0},
-		viewPositionUniformName: "",
+		id: program,
 	}
 }
 
