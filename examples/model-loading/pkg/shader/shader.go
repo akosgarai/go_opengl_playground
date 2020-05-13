@@ -49,7 +49,7 @@ func CompileShader(source string, shaderType uint32) (uint32, error) {
 }
 
 type Shader struct {
-	Id uint32
+	id uint32
 
 	directionalLightSources []DirectionalLightSource
 	pointLightSources       []PointLightSource
@@ -84,7 +84,7 @@ func NewShader(vertexShaderPath, fragmentShaderPath string) *Shader {
 	wrapper.LinkProgram(program)
 
 	return &Shader{
-		Id:                      program,
+		id:                      program,
 		directionalLightSources: []DirectionalLightSource{},
 		pointLightSources:       []PointLightSource{},
 		spotLightSources:        []SpotLightSource{},
@@ -96,5 +96,17 @@ func NewShader(vertexShaderPath, fragmentShaderPath string) *Shader {
 
 // Use is a wrapper for gl.UseProgram
 func (s *Shader) Use() {
-	wrapper.UseProgram(s.Id)
+	wrapper.UseProgram(s.id)
+}
+
+// GetId returns the program identifier of the shader.
+func (s *Shader) GetId() uint32 {
+	return s.id
+}
+
+// SetUniformMat4 gets an uniform name string and the value matrix as input and
+// calls the gl.UniformMatrix4fv function
+func (s *Shader) SetUniformMat4(uniformName string, mat mgl32.Mat4) {
+	location := wrapper.GetUniformLocation(s.id, uniformName)
+	wrapper.UniformMatrix4fv(location, 1, false, &mat[0])
 }
