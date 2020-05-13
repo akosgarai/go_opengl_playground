@@ -1,6 +1,7 @@
 package mesh
 
 import (
+	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/interfaces"
 	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/texture"
 	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/vertex"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
@@ -8,12 +9,6 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-type Shader interface {
-	GetId() uint32
-	SetUniformMat4(string, mgl32.Mat4)
-	SetUniform1f(string, float32)
-	SetUniform1i(string, int32)
-}
 type Mesh struct {
 	Verticies vertex.Verticies
 	Textures  texture.Textures
@@ -78,7 +73,7 @@ func (m *Mesh) GetDirection() mgl32.Vec3 {
 	return m.direction
 }
 
-func (m *Mesh) Draw(shader Shader) {
+func (m *Mesh) Draw(shader interfaces.Shader) {
 	for _, item := range m.Textures {
 		item.Bind()
 		shader.SetUniform1i(item.UniformName, int32(item.Id-wrapper.TEXTURE0))

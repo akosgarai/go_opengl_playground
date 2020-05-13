@@ -3,7 +3,7 @@ package application
 import (
 	"fmt"
 
-	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/interfaces"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -12,15 +12,6 @@ import (
 const (
 	DEBUG = glfw.KeyH
 )
-
-type Shader interface {
-	Use()
-	SetUniformMat4(string, mgl32.Mat4)
-	GetId() uint32
-	SetUniform3f(string, float32, float32, float32)
-	SetUniform1f(string, float32)
-	SetUniform1i(string, int32)
-}
 
 type Camera interface {
 	Log() string
@@ -33,12 +24,17 @@ type Camera interface {
 	GetPosition() mgl32.Vec3
 }
 
+type Mesh interface {
+	Draw(interfaces.Shader)
+	Update(float64)
+}
+
 type Application struct {
 	window    Window
 	camera    Camera
 	cameraSet bool
 
-	shaderMap map[Shader][]*mesh.Mesh
+	shaderMap map[interfaces.Shader][]Mesh
 
 	directionalLightSources []DirectionalLightSource
 	pointLightSources       []PointLightSource
@@ -59,7 +55,7 @@ type Window interface {
 func New() *Application {
 	return &Application{
 		cameraSet:               false,
-		shaderMap:               make(map[Shader][]*mesh.Mesh),
+		shaderMap:               make(map[interfaces.Shader][]Mesh),
 		directionalLightSources: []DirectionalLightSource{},
 		pointLightSources:       []PointLightSource{},
 		spotLightSources:        []SpotLightSource{},
@@ -98,12 +94,12 @@ func (a *Application) GetCamera() Camera {
 }
 
 // AddShader method inserts the new shader to the shaderMap
-func (a *Application) AddShader(s Shader) {
-	a.shaderMap[s] = []*mesh.Mesh{}
+func (a *Application) AddShader(s interfaces.Shader) {
+	a.shaderMap[s] = []Mesh{}
 }
 
 // AddMeshToShader attaches the mest to a shader.
-func (a *Application) AddMeshToShader(m *mesh.Mesh, s Shader) {
+func (a *Application) AddMeshToShader(m Mesh, s interfaces.Shader) {
 	a.shaderMap[s] = append(a.shaderMap[s], m)
 }
 
@@ -127,7 +123,7 @@ func (a *Application) Draw() {
 }
 
 // Setup light related uniforms.
-func (a *Application) lightHandler(s Shader) {
+func (a *Application) lightHandler(s interfaces.Shader) {
 	a.setupDirectionalLightForShader(s)
 	a.setupPointLightForShader(s)
 	a.setupSpotLightForShader(s)
@@ -135,7 +131,7 @@ func (a *Application) lightHandler(s Shader) {
 
 // Setup directional light related uniforms. It iterates over the directional sources
 // and setups each uniform, where the name is not empty.
-func (a *Application) setupDirectionalLightForShader(s Shader) {
+func (a *Application) setupDirectionalLightForShader(s interfaces.Shader) {
 	for _, source := range a.directionalLightSources {
 		if source.DirectionUniformName != "" {
 			direction := source.LightSource.GetDirection()
@@ -159,7 +155,7 @@ func (a *Application) setupDirectionalLightForShader(s Shader) {
 
 // Setup point light relates uniforms. It iterates over the point light sources and sets
 // up every uniform, where the name is not empty.
-func (a *Application) setupPointLightForShader(s Shader) {
+func (a *Application) setupPointLightForShader(s interfaces.Shader) {
 	for _, source := range a.pointLightSources {
 		if source.PositionUniformName != "" {
 			position := source.LightSource.GetPosition()
@@ -191,7 +187,7 @@ func (a *Application) setupPointLightForShader(s Shader) {
 
 // Setup spot light related uniforms. It iterates over the spot light sources and sets up
 // every uniform, where the name is not empty.
-func (a *Application) setupSpotLightForShader(s Shader) {
+func (a *Application) setupSpotLightForShader(s interfaces.Shader) {
 	for _, source := range a.spotLightSources {
 		if source.DirectionUniformName != "" {
 			direction := source.LightSource.GetDirection()
