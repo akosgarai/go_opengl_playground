@@ -110,3 +110,17 @@ func (s *Shader) SetUniformMat4(uniformName string, mat mgl32.Mat4) {
 	location := wrapper.GetUniformLocation(s.id, uniformName)
 	wrapper.UniformMatrix4fv(location, 1, false, &mat[0])
 }
+
+// SetUniform3f gets an uniform name string and 3 float values as input and
+// calls the gl.Uniform3f function
+func (s *Shader) SetUniform3f(uniformName string, v1, v2, v3 float32) {
+	location := wrapper.GetUniformLocation(s.id, uniformName)
+	wrapper.Uniform3f(location, v1, v2, v3)
+}
+
+// SetUniform1f gets an uniform name string and a float value as input and
+// calls the gl.Uniform1f function
+func (s *Shader) SetUniform1f(uniformName string, v1 float32) {
+	location := wrapper.GetUniformLocation(s.id, uniformName)
+	wrapper.Uniform1f(location, v1)
+}
