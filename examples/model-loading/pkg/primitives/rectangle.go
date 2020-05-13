@@ -1,6 +1,8 @@
 package primitives
 
 import (
+	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/vertex"
+
 	"github.com/go-gl/mathgl/mgl32"
 )
 
@@ -63,4 +65,21 @@ func NewSquare() *Rectangle {
 		Points: points,
 		Normal: normal,
 	}
+}
+
+// MeshImput method returns the verticies, indicies inputs for the New Mesh function.
+// TODO: find a better name.
+func (r *Rectangle) MeshImput() (vertex.Verticies, []uint32) {
+	textureCoords := [4]mgl32.Vec2{
+		{0.0, 1.0},
+		{1.0, 1.0},
+		{1.0, 0.0},
+		{0.0, 0.0},
+	}
+	indicies := []uint32{0, 1, 2, 0, 2, 3}
+	var verticies vertex.Verticies
+	for i := 0; i < 4; i++ {
+		verticies = append(verticies, vertex.Vertex{r.Points[i], r.Normal, textureCoords[i]})
+	}
+	return verticies, indicies
 }
