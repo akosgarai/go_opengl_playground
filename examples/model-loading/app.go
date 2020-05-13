@@ -74,8 +74,8 @@ func main() {
 	Shader = shader.NewShader("examples/model-loading/shaders/texture.vert", "examples/model-loading/shaders/texture.frag")
 	app.AddShader(Shader)
 
-	Textures.AddTexture("examples/07-textured-lighting-map/colored-image-for-texture-testing-diffuse.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse")
-	Textures.AddTexture("examples/07-textured-lighting-map/colored-image-for-texture-testing-specular.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular")
+	Textures.AddTexture("examples/model-loading/assets/texture-diffuse.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse")
+	Textures.AddTexture("examples/model-loading/assets/texture-specular.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular")
 
 	squareMesh := GenerateSquareMesh(Textures)
 	app.AddMeshToShader(squareMesh, Shader)
