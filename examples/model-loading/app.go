@@ -58,7 +58,7 @@ func CreateCamera() *camera.Camera {
 
 func GenerateSquareMesh(t texture.Textures) *mesh.Mesh {
 	square := primitives.NewSquare()
-	v, i := square.MeshImput()
+	v, i := square.MeshInput()
 	return mesh.New(v, i, t)
 }
 func main() {
