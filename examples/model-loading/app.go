@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"runtime"
 
 	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/application"
@@ -31,9 +30,9 @@ var (
 	Shader   *shader.Shader
 
 	DirectionalLightDirection = (mgl32.Vec3{0.7, 0.7, 0.7}).Normalize()
-	DirectionalLightAmbient   = mgl32.Vec3{0.1, 0.1, 0.1}
-	DirectionalLightDiffuse   = mgl32.Vec3{0.1, 0.1, 0.1}
-	DirectionalLightSpecular  = mgl32.Vec3{0.1, 0.1, 0.1}
+	DirectionalLightAmbient   = mgl32.Vec3{0.5, 0.5, 0.5}
+	DirectionalLightDiffuse   = mgl32.Vec3{0.5, 0.5, 0.5}
+	DirectionalLightSpecular  = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightAmbient         = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightDiffuse         = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightSpecular        = mgl32.Vec3{0.5, 0.5, 0.5}
@@ -52,7 +51,7 @@ var (
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{0.0, 10.0, 0.0}, mgl32.Vec3{0, 1, 0}, -90.0, -90.0)
+	camera := camera.NewCamera(mgl32.Vec3{0.0, 5.0, 0.0}, mgl32.Vec3{0, 1, 0}, -90.0, -90.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
 	return camera
 }
@@ -116,5 +115,4 @@ func main() {
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}
-	fmt.Println(app.Log())
 }
