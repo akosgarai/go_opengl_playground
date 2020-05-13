@@ -32,22 +32,6 @@ type Mesh struct {
 	scale mgl32.Vec3
 }
 
-func New(v []vertex.Vertex, i []uint32, t texture.Textures) *Mesh {
-	mesh := &Mesh{
-		Verticies: v,
-		Textures:  t,
-		Indicies:  i,
-
-		position:  mgl32.Vec3{0, 0, 0},
-		direction: mgl32.Vec3{0, 0, 0},
-		velocity:  0,
-		angle:     0,
-		axis:      mgl32.Vec3{0, 0, 0},
-		scale:     mgl32.Vec3{1, 1, 1},
-	}
-	mesh.setup()
-	return mesh
-}
 func (m *Mesh) SetScale(s mgl32.Vec3) {
 	m.scale = s
 }
@@ -73,23 +57,30 @@ func (m *Mesh) GetDirection() mgl32.Vec3 {
 	return m.direction
 }
 
-func (m *Mesh) Draw(shader interfaces.Shader) {
-	for _, item := range m.Textures {
-		item.Bind()
-		shader.SetUniform1i(item.UniformName, int32(item.Id-wrapper.TEXTURE0))
+func (m *Mesh) Update(dt float64) {
+	delta := float32(dt)
+	motionVector := m.direction
+	if motionVector.Len() > 0 {
+		motionVector = motionVector.Normalize().Mul(delta * m.velocity)
 	}
-	M := m.modelTransformation()
-	shader.SetUniformMat4("model", M)
-	shader.SetUniform1f("material.shininess", float32(32))
-	wrapper.BindVertexArray(m.vao)
-	wrapper.DrawTriangleElements(int32(len(m.Indicies)))
-
-	m.Textures.UnBind()
-	wrapper.BindVertexArray(0)
-	wrapper.ActiveTexture(0)
+	m.position = m.position.Add(motionVector)
+}
+func (m *Mesh) ModelTransformation() mgl32.Mat4 {
+	return mgl32.Translate3D(
+		m.position.X(),
+		m.position.Y(),
+		m.position.Z()).Mul4(mgl32.HomogRotate3D(m.angle, m.axis)).Mul4(mgl32.Scale3D(
+		m.scale.X(),
+		m.scale.Y(),
+		m.scale.Z(),
+	))
 }
 
-func (m *Mesh) setup() {
+type TexturedMesh struct {
+	Mesh
+}
+
+func (m *TexturedMesh) setup() {
 	m.vao = wrapper.GenVertexArrays()
 	m.vbo = wrapper.GenBuffers()
 	m.ebo = wrapper.GenBuffers()
@@ -112,21 +103,34 @@ func (m *Mesh) setup() {
 	// close
 	wrapper.BindVertexArray(0)
 }
-func (m *Mesh) Update(dt float64) {
-	delta := float32(dt)
-	motionVector := m.direction
-	if motionVector.Len() > 0 {
-		motionVector = motionVector.Normalize().Mul(delta * m.velocity)
+func (m *TexturedMesh) Draw(shader interfaces.Shader) {
+	for _, item := range m.Textures {
+		item.Bind()
+		shader.SetUniform1i(item.UniformName, int32(item.Id-wrapper.TEXTURE0))
 	}
-	m.position = m.position.Add(motionVector)
+	M := m.ModelTransformation()
+	shader.SetUniformMat4("model", M)
+	shader.SetUniform1f("material.shininess", float32(32))
+	wrapper.BindVertexArray(m.vao)
+	wrapper.DrawTriangleElements(int32(len(m.Indicies)))
+
+	m.Textures.UnBind()
+	wrapper.BindVertexArray(0)
+	wrapper.ActiveTexture(0)
 }
-func (m *Mesh) modelTransformation() mgl32.Mat4 {
-	return mgl32.Translate3D(
-		m.position.X(),
-		m.position.Y(),
-		m.position.Z()).Mul4(mgl32.HomogRotate3D(m.angle, m.axis)).Mul4(mgl32.Scale3D(
-		m.scale.X(),
-		m.scale.Y(),
-		m.scale.Z(),
-	))
+func NewTexturedMesh(v []vertex.Vertex, i []uint32, t texture.Textures) *TexturedMesh {
+	mesh := &TexturedMesh{Mesh{
+		Verticies: v,
+		Textures:  t,
+		Indicies:  i,
+
+		position:  mgl32.Vec3{0, 0, 0},
+		direction: mgl32.Vec3{0, 0, 0},
+		velocity:  0,
+		angle:     0,
+		axis:      mgl32.Vec3{0, 0, 0},
+		scale:     mgl32.Vec3{1, 1, 1},
+	}}
+	mesh.setup()
+	return mesh
 }
