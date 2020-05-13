@@ -91,8 +91,11 @@ func (a *Application) AddMeshToShader(m *mesh.Mesh, s Shader) {
 func (a *Application) Draw() {
 	for s, _ := range a.shaderMap {
 		s.Use()
-		s.SetUniformMat4("view", a.camera.GetViewMatrix())
-		s.SetUniformMat4("projection", a.camera.GetProjectionMatrix())
+		if a.cameraSet {
+			s.SetUniformMat4("view", a.camera.GetViewMatrix())
+			s.SetUniformMat4("projection", a.camera.GetProjectionMatrix())
+			s.SetUniformMat4("viewPosition", a.camera.GetPosition())
+		}
 		for index, _ := range a.shaderMap[s] {
 			a.shaderMap[s][index].Draw(s)
 		}
