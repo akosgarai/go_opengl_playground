@@ -4,14 +4,17 @@ import (
 	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/texture"
 	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/vertex"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type Shader interface {
 	GetId() uint32
+	SetUniformMat4(string, mgl32.Mat4)
 }
 type Mesh struct {
 	Verticies vertex.Verticies
-	Textures  []texture.Texture
+	Textures  texture.Textures
 	Indicies  []uint32
 
 	vbo uint32
@@ -19,7 +22,7 @@ type Mesh struct {
 	vao uint32
 }
 
-func New(v []vertex.Vertex, i []uint32, t []texture.Texture) *Mesh {
+func New(v []vertex.Vertex, i []uint32, t texture.Textures) *Mesh {
 	mesh := &Mesh{
 		Verticies: v,
 		Textures:  t,
@@ -36,6 +39,7 @@ func (m *Mesh) Draw(shader Shader) {
 		wrapper.Uniform1i(wrapper.GetUniformLocation(shader.GetId(), tex.UniformName), int32(i))
 		wrapper.BindTexture(wrapper.TEXTURE_2D, tex.Id)
 	}
+	shader.SetUniformMat4("model", mgl32.Ident4())
 	wrapper.BindVertexArray(m.vao)
 	wrapper.DrawTriangleElements(int32(len(m.Indicies)))
 
