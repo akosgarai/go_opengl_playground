@@ -22,6 +22,16 @@ type Mesh struct {
 	vbo uint32
 	ebo uint32
 	vao uint32
+
+	// the center position of the mesh. the model transformation is calculated based on this.
+	position mgl32.Vec3
+	// movement paramteres
+	direction mgl32.Vec3
+	velocity  float32
+	// rotation parameters
+	// angle has to be in radian
+	angle float32
+	axis  mgl32.Vec3
 }
 
 func New(v []vertex.Vertex, i []uint32, t texture.Textures) *Mesh {
@@ -29,6 +39,12 @@ func New(v []vertex.Vertex, i []uint32, t texture.Textures) *Mesh {
 		Verticies: v,
 		Textures:  t,
 		Indicies:  i,
+
+		position:  mgl32.Vec3{0, 0, 0},
+		direction: mgl32.Vec3{0, 0, 0},
+		velocity:  0,
+		angle:     0,
+		axis:      mgl32.Vec3{0, 0, 0},
 	}
 	mesh.setup()
 	return mesh
@@ -39,7 +55,8 @@ func (m *Mesh) Draw(shader Shader) {
 		item.Bind()
 		shader.SetUniform1i(item.UniformName, int32(item.Id-wrapper.TEXTURE0))
 	}
-	shader.SetUniformMat4("model", mgl32.Ident4())
+	M := m.modelTransformation()
+	shader.SetUniformMat4("model", M)
 	shader.SetUniform1f("material.shininess", float32(32))
 	wrapper.BindVertexArray(m.vao)
 	wrapper.DrawTriangleElements(int32(len(m.Indicies)))
@@ -71,4 +88,18 @@ func (m *Mesh) setup() {
 
 	// close
 	wrapper.BindVertexArray(0)
+}
+func (m *Mesh) Update(dt float64) {
+	delta := float32(dt)
+	motionVector := m.direction
+	if motionVector.Len() > 0 {
+		motionVector = motionVector.Normalize().Mul(delta * m.velocity)
+	}
+	m.position = m.position.Add(motionVector)
+}
+func (m *Mesh) modelTransformation() mgl32.Mat4 {
+	return mgl32.Translate3D(
+		m.position.X(),
+		m.position.Y(),
+		m.position.Z()).Mul4(mgl32.HomogRotate3D(m.angle, m.axis))
 }
