@@ -112,3 +112,10 @@ func (s *Shader) SetUniform1f(uniformName string, v1 float32) {
 	location := wrapper.GetUniformLocation(s.id, uniformName)
 	wrapper.Uniform1f(location, v1)
 }
+
+// SetUniform1i gets an uniform name string and an integer value as input and
+// calls the gl.Uniform1i function
+func (s *Shader) SetUniform1i(uniformName string, v1 int32) {
+	location := wrapper.GetUniformLocation(s.id, uniformName)
+	wrapper.Uniform1i(location, v1)
+}

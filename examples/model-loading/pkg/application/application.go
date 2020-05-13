@@ -17,6 +17,7 @@ type Shader interface {
 	GetId() uint32
 	SetUniform3f(string, float32, float32, float32)
 	SetUniform1f(string, float32)
+	SetUniform1i(string, int32)
 }
 
 type Camera interface {
