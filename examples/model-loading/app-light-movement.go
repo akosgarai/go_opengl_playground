@@ -44,8 +44,8 @@ var (
 
 	Shader *shader.Shader
 
-	RotatingCube *mesh.Mesh
-	LiftingCube  *mesh.Mesh
+	RotatingCube *mesh.TexturedMesh
+	LiftingCube  *mesh.TexturedMesh
 
 	lastUpdate int64
 
@@ -78,32 +78,32 @@ func CreateCamera() *camera.Camera {
 	return camera
 }
 
-func GenerateGrassMesh(t texture.Textures) *mesh.Mesh {
+func GenerateGrassMesh(t texture.Textures) *mesh.TexturedMesh {
 	square := primitives.NewSquare()
 	v, i := square.MeshInput()
-	m := mesh.New(v, i, t)
+	m := mesh.NewTexturedMesh(v, i, t)
 	m.SetScale(mgl32.Vec3{100, 1, 100})
 	return m
 }
-func GenerateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.Mesh {
+func GenerateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 	cube := primitives.NewCube()
 	v, i := cube.MeshInput()
-	m := mesh.New(v, i, t)
+	m := mesh.NewTexturedMesh(v, i, t)
 	m.SetPosition(pos)
 	return m
 }
-func GenerateRotatingCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.Mesh {
+func GenerateRotatingCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 	cube := primitives.NewCube()
 	v, i := cube.MeshInput()
-	m := mesh.New(v, i, t)
+	m := mesh.NewTexturedMesh(v, i, t)
 	m.SetPosition(pos)
 	m.SetRotationAxis(mgl32.Vec3{0, 1, 0})
 	return m
 }
-func GenerateLiftingCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.Mesh {
+func GenerateLiftingCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 	cube := primitives.NewCube()
 	v, i := cube.MeshInput()
-	m := mesh.New(v, i, t)
+	m := mesh.NewTexturedMesh(v, i, t)
 	m.SetPosition(pos)
 	m.SetDirection(mgl32.Vec3{0, 1, 0})
 	m.SetSpeed(moveSpeed)

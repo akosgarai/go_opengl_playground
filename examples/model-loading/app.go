@@ -56,10 +56,10 @@ func CreateCamera() *camera.Camera {
 	return camera
 }
 
-func GenerateSquareMesh(t texture.Textures) *mesh.Mesh {
+func GenerateSquareMesh(t texture.Textures) *mesh.TexturedMesh {
 	square := primitives.NewSquare()
 	v, i := square.MeshInput()
-	return mesh.New(v, i, t)
+	return mesh.NewTexturedMesh(v, i, t)
 }
 func main() {
 	runtime.LockOSThread()
