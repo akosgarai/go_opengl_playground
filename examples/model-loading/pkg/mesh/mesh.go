@@ -89,7 +89,7 @@ func (m *TexturedMesh) setup() {
 	wrapper.BindVertexArray(m.vao)
 
 	wrapper.BindBuffer(wrapper.ARRAY_BUFFER, m.vbo)
-	wrapper.ArrayBufferData(m.Verticies.Get())
+	wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_NORMAL_TEXCOORD))
 
 	wrapper.BindBuffer(wrapper.ELEMENT_ARRAY_BUFFER, m.ebo)
 	wrapper.ElementBufferData(m.Indicies)
@@ -140,10 +140,10 @@ func NewTexturedMesh(v []vertex.Vertex, i []uint32, t texture.Textures) *Texture
 
 type MaterialMesh struct {
 	Mesh
-	Material material.Material
+	Material *material.Material
 }
 
-func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat material.Material) *MaterialMesh {
+func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat *material.Material) *MaterialMesh {
 	mesh := &MaterialMesh{
 		Mesh{
 			Verticies: v,
@@ -162,6 +162,40 @@ func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat material.Material) *Mate
 	return mesh
 }
 func (m *MaterialMesh) setup() {
+	m.vao = wrapper.GenVertexArrays()
+	m.vbo = wrapper.GenBuffers()
+	m.ebo = wrapper.GenBuffers()
+
+	wrapper.BindVertexArray(m.vao)
+
+	wrapper.BindBuffer(wrapper.ARRAY_BUFFER, m.vbo)
+	wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_NORMAL))
+
+	wrapper.BindBuffer(wrapper.ELEMENT_ARRAY_BUFFER, m.ebo)
+	wrapper.ElementBufferData(m.Indicies)
+
+	// setup coordinates
+	wrapper.VertexAttribPointer(0, 3, wrapper.FLOAT, false, 4*6, wrapper.PtrOffset(0))
+	// setup normal vector
+	wrapper.VertexAttribPointer(1, 3, wrapper.FLOAT, false, 4*6, wrapper.PtrOffset(4*3))
+
+	// close
+	wrapper.BindVertexArray(0)
 }
 func (m *MaterialMesh) Draw(shader interfaces.Shader) {
+	M := m.ModelTransformation()
+	shader.SetUniformMat4("model", M)
+	diffuse := m.Material.GetDiffuse()
+	ambient := m.Material.GetAmbient()
+	specular := m.Material.GetSpecular()
+	shininess := m.Material.GetShininess()
+	shader.SetUniform3f("material.diffuse", diffuse.X(), diffuse.Y(), diffuse.Z())
+	shader.SetUniform3f("material.ambient", ambient.X(), ambient.Y(), ambient.Z())
+	shader.SetUniform3f("material.specular", specular.X(), specular.Y(), specular.Z())
+	shader.SetUniform1f("material.shininess", shininess)
+	wrapper.BindVertexArray(m.vao)
+	wrapper.DrawTriangleElements(int32(len(m.Indicies)))
+
+	wrapper.BindVertexArray(0)
+	wrapper.ActiveTexture(0)
 }
