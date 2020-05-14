@@ -79,7 +79,11 @@ func (r *Rectangle) MeshInput() (vertex.Verticies, []uint32) {
 	indicies := []uint32{0, 1, 2, 0, 2, 3}
 	var verticies vertex.Verticies
 	for i := 0; i < 4; i++ {
-		verticies = append(verticies, vertex.Vertex{r.Points[i], r.Normal, textureCoords[i]})
+		verticies = append(verticies, vertex.Vertex{
+			Position:  r.Points[i],
+			Normal:    r.Normal,
+			TexCoords: textureCoords[i],
+		})
 	}
 	return verticies, indicies
 }

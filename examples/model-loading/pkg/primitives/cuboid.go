@@ -77,7 +77,11 @@ func (c *Cuboid) MeshInput() (vertex.Verticies, []uint32) {
 	for i := 0; i < 6; i++ {
 		for j := 0; j < 4; j++ {
 			pointIndex := i*4 + j
-			verticies = append(verticies, vertex.Vertex{c.Points[pointIndex], c.Normals[i], textureCoords[j]})
+			verticies = append(verticies, vertex.Vertex{
+				Position:  c.Points[pointIndex],
+				Normal:    c.Normals[i],
+				TexCoords: textureCoords[j],
+			})
 		}
 	}
 	return verticies, c.Indicies
