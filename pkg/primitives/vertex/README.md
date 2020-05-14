@@ -2,11 +2,11 @@
 
 This package is container the possible values that we could use as vertex buffer data. Now it has support for the following options:
 
-**Position**: It stores the position coordinate. (Where is the vertex)
-**Normal**: The normal vector of the surface in the given position.
-**TexCoords**: If we use textures, we store it for storing the texture coordinates.
-**Color**: The color of the surface in the given position. We can use it instead of textures.
-**PointSize**: If we draw points, we can modify it's size with this float number.
+- **Position**: It stores the position coordinate. (Where is the vertex)
+- **Normal**: The normal vector of the surface in the given position.
+- **TexCoords**: If we use textures, we store it for storing the texture coordinates.
+- **Color**: The color of the surface in the given position. We can use it instead of textures.
+- **PointSize**: If we draw points, we can modify it's size with this float number.
 
 ## Verticies
 
