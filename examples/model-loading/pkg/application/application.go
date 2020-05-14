@@ -34,7 +34,10 @@ type Application struct {
 	camera    Camera
 	cameraSet bool
 
-	shaderMap map[interfaces.Shader][]Mesh
+	shaderMap  map[interfaces.Shader][]Mesh
+	mouseDowns map[glfw.MouseButton]bool
+	MousePosX  float64
+	MousePosY  float64
 
 	directionalLightSources []DirectionalLightSource
 	pointLightSources       []PointLightSource
@@ -56,6 +59,7 @@ func New() *Application {
 	return &Application{
 		cameraSet:               false,
 		shaderMap:               make(map[interfaces.Shader][]Mesh),
+		mouseDowns:              make(map[glfw.MouseButton]bool),
 		directionalLightSources: []DirectionalLightSource{},
 		pointLightSources:       []PointLightSource{},
 		spotLightSources:        []SpotLightSource{},
@@ -320,4 +324,30 @@ func (a *Application) Update(dt float64) {
 			a.shaderMap[s][index].Update(dt)
 		}
 	}
+}
+
+// MouseButtonCallback is responsible for the mouse button event handling.
+func (a *Application) MouseButtonCallback(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
+	a.MousePosX, a.MousePosY = w.GetCursorPos()
+	switch button {
+	default:
+		a.SetButtonState(button, action)
+		break
+	}
+}
+
+// SetKeyState setups the keyDowns based on the key and action
+func (a *Application) SetButtonState(button glfw.MouseButton, action glfw.Action) {
+	var isButtonPressed bool
+	if action != glfw.Release {
+		isButtonPressed = true
+	} else {
+		isButtonPressed = false
+	}
+	a.mouseDowns[button] = isButtonPressed
+}
+
+// GetMouseButtonState returns the state of the given button
+func (a *Application) GetMouseButtonState(button glfw.MouseButton) bool {
+	return a.mouseDowns[button]
 }
