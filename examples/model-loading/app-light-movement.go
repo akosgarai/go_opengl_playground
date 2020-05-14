@@ -12,6 +12,7 @@ import (
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
@@ -41,8 +42,6 @@ const (
 
 var (
 	app *application.Application
-
-	Shader *shader.Shader
 
 	RotatingCube *mesh.TexturedMesh
 	LiftingCube  *mesh.TexturedMesh
@@ -107,6 +106,13 @@ func GenerateLiftingCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedM
 	m.SetPosition(pos)
 	m.SetDirection(mgl32.Vec3{0, 1, 0})
 	m.SetSpeed(moveSpeed)
+	return m
+}
+func GenerateMaterialCubeMesh(mat *material.Material, pos mgl32.Vec3) *mesh.MaterialMesh {
+	cube := primitives.NewCube()
+	v, i := cube.MeshInput()
+	m := mesh.NewMaterialMesh(v, i, mat)
+	m.SetPosition(pos)
 	return m
 }
 func Update() {
@@ -202,8 +208,10 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 
-	Shader = shader.NewShader("examples/model-loading/shaders/texture.vert", "examples/model-loading/shaders/texture.frag")
-	app.AddShader(Shader)
+	textureShader := shader.NewShader("examples/model-loading/shaders/texture.vert", "examples/model-loading/shaders/texture.frag")
+	app.AddShader(textureShader)
+	materialShader := shader.NewShader("examples/model-loading/shaders/material.vert", "examples/model-loading/shaders/material.frag")
+	app.AddShader(materialShader)
 
 	var TexturesGrass texture.Textures
 	TexturesGrass.AddTexture("examples/model-loading/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse")
@@ -213,13 +221,15 @@ func main() {
 	TexturesCube.AddTexture("examples/model-loading/assets/texture-specular.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular")
 
 	grassMesh := GenerateGrassMesh(TexturesGrass)
-	app.AddMeshToShader(grassMesh, Shader)
+	app.AddMeshToShader(grassMesh, textureShader)
 	cubeMesh := GenerateCubeMesh(TexturesCube, mgl32.Vec3{0, -0.5, 0})
-	app.AddMeshToShader(cubeMesh, Shader)
+	app.AddMeshToShader(cubeMesh, textureShader)
 	RotatingCube = GenerateRotatingCubeMesh(TexturesCube, mgl32.Vec3{3, -0.5, 0})
-	app.AddMeshToShader(RotatingCube, Shader)
+	app.AddMeshToShader(RotatingCube, textureShader)
 	LiftingCube = GenerateLiftingCubeMesh(TexturesCube, mgl32.Vec3{2, -10, 3})
-	app.AddMeshToShader(LiftingCube, Shader)
+	app.AddMeshToShader(LiftingCube, textureShader)
+	materialCube := GenerateMaterialCubeMesh(material.Silver, mgl32.Vec3{3, -0.5, -3})
+	app.AddMeshToShader(materialCube, materialShader)
 
 	// setup lighsources.
 	// directional light is coming from the up direction but not from too up.
