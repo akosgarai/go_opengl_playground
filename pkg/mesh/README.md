@@ -14,7 +14,7 @@ Those parameters that are always needed for managing an object.
 - velocity - The mesh is moving to the direction with this speed. if this value is null, then the mash is not moving.
 - angle - The mesh is rotated with this angle. This value has to be radian. The model transformation is calculated based on this.
 - axis - The mesh is rotated on this axis. If this vector is null, then the mesh is not rotated. The model transformation is calculated based on this.
-- scale - The mesh is scaled by this value. The model transformation is calculated based on this.
+- scale - The mesh is scaled by this vector. The model transformation is calculated based on this.
 
 It has setter functions for the parameters, and getters for the necessary ones.
 
