@@ -199,3 +199,56 @@ func (m *MaterialMesh) Draw(shader interfaces.Shader) {
 	wrapper.BindVertexArray(0)
 	wrapper.ActiveTexture(0)
 }
+
+type PointMesh struct {
+	Mesh
+}
+
+func NewPointMesh() *PointMesh {
+	mesh := &PointMesh{
+		Mesh{
+			Verticies: []vertex.Vertex{},
+			Indicies:  []uint32{},
+
+			position:  mgl32.Vec3{0, 0, 0},
+			direction: mgl32.Vec3{0, 0, 0},
+			velocity:  0,
+			angle:     0,
+			axis:      mgl32.Vec3{0, 0, 0},
+			scale:     mgl32.Vec3{1, 1, 1},
+		},
+	}
+	return mesh
+}
+func (m *PointMesh) setup() {
+	m.vao = wrapper.GenVertexArrays()
+	m.vbo = wrapper.GenBuffers()
+
+	wrapper.BindVertexArray(m.vao)
+
+	wrapper.BindBuffer(wrapper.ARRAY_BUFFER, m.vbo)
+	wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_COLOR_SIZE))
+
+	// setup coordinates
+	wrapper.VertexAttribPointer(0, 3, wrapper.FLOAT, false, 4*7, wrapper.PtrOffset(0))
+	// setup color vector
+	wrapper.VertexAttribPointer(1, 3, wrapper.FLOAT, false, 4*7, wrapper.PtrOffset(4*3))
+	// setup point size
+	wrapper.VertexAttribPointer(2, 1, wrapper.FLOAT, false, 4*7, wrapper.PtrOffset(4*6))
+
+	// close
+	wrapper.BindVertexArray(0)
+}
+func (m *PointMesh) Draw(shader interfaces.Shader) {
+	M := m.ModelTransformation()
+	shader.SetUniformMat4("model", M)
+	wrapper.BindVertexArray(m.vao)
+	wrapper.DrawArrays(wrapper.POINTS, 0, int32(len(m.Verticies)))
+
+	wrapper.BindVertexArray(0)
+	wrapper.ActiveTexture(0)
+}
+func (m *PointMesh) AddVertex(v vertex.Vertex) {
+	m.Verticies.Add(v)
+	m.setup()
+}
