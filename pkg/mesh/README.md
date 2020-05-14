@@ -16,7 +16,7 @@ Those parameters that are always needed for managing an object.
 - **axis** - The mesh is rotated on this axis. If this vector is null, then the mesh is not rotated. The model transformation is calculated based on this.
 - **scale** - The mesh is scaled by this vector. The model transformation is calculated based on this.
 
-It has setter functions for the parameters, and getters for the necessary ones.
+It has setter functions for the parameters, and getters for the necessary ones, also one for the model transformation matrix calculation and one for updating the state of the mesh.
 
 ## Textured mesh
 
