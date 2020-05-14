@@ -6,15 +6,15 @@ It contains everything that we need for drawing a stuff. Now i have 3 kind of me
 
 Those parameters that are always needed for managing an object.
 
-- Verticies - The verticies of the mesh.
-- vbo - vertex buffer object.
-- vao - vertex array object.
-- position - The center position of the mesh. The model transformation is calculated based on this.
-- direction - The mesh is moving to this direction. If this value is null vector, then the mes is not moving.
-- velocity - The mesh is moving to the direction with this speed. if this value is null, then the mash is not moving.
-- angle - The mesh is rotated with this angle. This value has to be radian. The model transformation is calculated based on this.
-- axis - The mesh is rotated on this axis. If this vector is null, then the mesh is not rotated. The model transformation is calculated based on this.
-- scale - The mesh is scaled by this vector. The model transformation is calculated based on this.
+- **Verticies** - The verticies of the mesh.
+- **vbo** - vertex buffer object.
+- **vao** - vertex array object.
+- **position** - The center position of the mesh. The model transformation is calculated based on this.
+- **direction** - The mesh is moving to this direction. If this value is null vector, then the mes is not moving.
+- **velocity** - The mesh is moving to the direction with this speed. if this value is null, then the mash is not moving.
+- **angle** - The mesh is rotated with this angle. This value has to be radian. The model transformation is calculated based on this.
+- **axis** - The mesh is rotated on this axis. If this vector is null, then the mesh is not rotated. The model transformation is calculated based on this.
+- **scale** - The mesh is scaled by this vector. The model transformation is calculated based on this.
 
 It has setter functions for the parameters, and getters for the necessary ones.
 
@@ -22,9 +22,9 @@ It has setter functions for the parameters, and getters for the necessary ones.
 
 It is a mesh extension for textured objects. It's parameter list is extended with the followings:
 
-- Indicies - In the Draw function the gl.DrawElements function is used, so that i have to maintain a buffer for the indicies. These are the values that i can pass to the buffer.
-- Textures - The textures that are used for covering the drew mesh.
-- ebo - The element buffer object identifier. the indicies are stored here.
+- **Indicies** - In the Draw function the gl.DrawElements function is used, so that i have to maintain a buffer for the indicies. These are the values that i can pass to the buffer.
+- **Textures** - The textures that are used for covering the drew mesh.
+- **ebo** - The element buffer object identifier. the indicies are stored here.
 
 It's `Draw` function gets the Shader as input. It makes the uniform setup, buffer bindings, draws with triangles, and then cleans up. The `NewTexturedMesh` function returns a textured mesh.
 
@@ -32,9 +32,9 @@ It's `Draw` function gets the Shader as input. It makes the uniform setup, buffe
 
 It is a mesh extension for material objects. It's parameter list is extended with the followings:
 
-- Indicies - In the Draw function the gl.DrawElements function is used, so that i have to maintain a buffer for the indicies. These are the values that i can pass to the buffer.
-- Material - The material that is used for calculating the color of the mesh.
-- ebo - The element buffer object identifier. the indicies are stored here.
+- **Indicies** - In the Draw function the gl.DrawElements function is used, so that i have to maintain a buffer for the indicies. These are the values that i can pass to the buffer.
+- **Material** - The material that is used for calculating the color of the mesh.
+- **ebo** - The element buffer object identifier. the indicies are stored here.
 
 It's `Draw` function gets the Shader as input. It makes the uniform setup, buffer bindings, draws with triangles, and then cleans up. The `NewMaterialMesh` function returns a material mesh.
 
