@@ -2,6 +2,11 @@ package vertex
 
 import "github.com/go-gl/mathgl/mgl32"
 
+const (
+	POSITION_NORMAL          = 1
+	POSITION_NORMAL_TEXCOORD = 2
+)
+
 type Vertex struct {
 	// Position vector
 	Position mgl32.Vec3
@@ -14,7 +19,7 @@ type Vertex struct {
 
 type Verticies []Vertex
 
-func (v Verticies) Get() []float32 {
+func (v Verticies) Get(resultMode int) []float32 {
 	var vao []float32
 	for _, vertex := range v {
 		vao = append(vao, vertex.Position.X())
@@ -25,8 +30,10 @@ func (v Verticies) Get() []float32 {
 		vao = append(vao, vertex.Normal.Y())
 		vao = append(vao, vertex.Normal.Z())
 
-		vao = append(vao, vertex.TexCoords.X())
-		vao = append(vao, vertex.TexCoords.Y())
+		if resultMode == POSITION_NORMAL_TEXCOORD {
+			vao = append(vao, vertex.TexCoords.X())
+			vao = append(vao, vertex.TexCoords.Y())
+		}
 	}
 
 	return vao
