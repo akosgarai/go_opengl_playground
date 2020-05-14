@@ -1,11 +1,11 @@
 package mesh
 
 import (
-	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/interfaces"
-	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/texture"
-	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/vertex"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/interfaces"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
+	"github.com/akosgarai/opengl_playground/pkg/texture"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
