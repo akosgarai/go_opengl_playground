@@ -36,7 +36,7 @@ func TestGet(t *testing.T) {
 	if !reflect.DeepEqual(verticies.Get(POSITION_NORMAL), expectedMaterial) {
 		t.Error("Invalid material vao")
 	}
-	if reflect.DeepEqual(verticies.Get(POSITION_COLOR_SIZE), expectedPoint) {
+	if !reflect.DeepEqual(verticies.Get(POSITION_COLOR_SIZE), expectedPoint) {
 		t.Error("Invalid point vao")
 	}
 }
