@@ -40,7 +40,7 @@ func main() {
 	defer glfw.Terminate()
 	wrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/02-static-square/vertexshader.vert", "examples/02-static-square/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/02-static-square/shaders/vertexshader.vert", "examples/02-static-square/shaders/fragmentshader.frag")
 	app.AddShader(shaderProgram)
 
 	square := GenerateColoredMesh(color)
