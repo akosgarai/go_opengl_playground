@@ -31,7 +31,9 @@ type Verticies []Vertex
 // Modes: 'POSITION_NORMAL' (1) the position and the normal vectors are returned in this order.
 // 'POSITION_NORMAL_TEXCOORD' (2) the position, normal and the tex coords vectors are
 // returned in this order. 'POSITION_COLOR_SIZE' (3) the position, the color and the point size
-// are retuned in this order.
+// are retuned in this order. 'POSITION_COLOR' (4) the position and the color vectors are
+// returned in this order. 'POSITION_COLOR_TEXCOORD' (5) the position, the color and the tex coords
+// vectors are returned in this order.
 func (v Verticies) Get(resultMode int) []float32 {
 	if resultMode == POSITION_COLOR_SIZE {
 		return v.getPoint()
