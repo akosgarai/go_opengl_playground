@@ -2,27 +2,11 @@ package shader
 
 import (
 	"fmt"
-	"image"
-	_ "image/jpeg"
-	_ "image/png"
 	"io/ioutil"
-	"os"
 	"strings"
 
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 )
-
-func textureMap(index int) uint32 {
-	switch index {
-	case 0:
-		return wrapper.TEXTURE0
-	case 1:
-		return wrapper.TEXTURE1
-	case 2:
-		return wrapper.TEXTURE2
-	}
-	return 0
-}
 
 // LoadShaderFromFile takes a filepath string arguments.
 // It loads the file and returns it as a '\x00' terminated string.
@@ -36,18 +20,9 @@ func LoadShaderFromFile(path string) (string, error) {
 	return result, nil
 }
 
-// LoadImageFromFile takes a filepath string argument.
-// It loads the file, decodes it as PNG or jpg, and returns the image and error
-func loadImageFromFile(path string) (image.Image, error) {
-	imgFile, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer imgFile.Close()
-	img, _, err := image.Decode(imgFile)
-	return img, err
-
-}
+// CompileShader creeates a shader, compiles the shader source, and returns
+// the uint32 identifier of the shader and nil. If the compile fails, it returns
+// an error and 0 as shader id.
 func CompileShader(source string, shaderType uint32) (uint32, error) {
 	shader := wrapper.CreateShader(shaderType)
 

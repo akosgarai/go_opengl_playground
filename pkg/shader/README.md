@@ -1,5 +1,8 @@
 # Shader
 
+
+This readme is outdated. the package tests are broken. Needs to be fixed and updated.
+
 This package is a kind of wrapper for the gl.\* commands.
 
 ## Functions
