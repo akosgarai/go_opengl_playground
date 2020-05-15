@@ -101,3 +101,25 @@ func (c *Cuboid) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32)
 	}
 	return verticies, c.Indicies
 }
+
+// TexturedColoredMeshInput method returns the verticies, indicies inputs for the NewTexturedColoredMesh function.
+func (c *Cuboid) TexturedColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
+	textureCoords := [4]mgl32.Vec2{
+		{0.0, 1.0},
+		{1.0, 1.0},
+		{1.0, 0.0},
+		{0.0, 0.0},
+	}
+	var verticies vertex.Verticies
+	for i := 0; i < 6; i++ {
+		for j := 0; j < 4; j++ {
+			pointIndex := i*4 + j
+			verticies = append(verticies, vertex.Vertex{
+				Position:  c.Points[pointIndex],
+				Color:     col[i%len(col)],
+				TexCoords: textureCoords[j],
+			})
+		}
+	}
+	return verticies, c.Indicies
+}
