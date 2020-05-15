@@ -100,3 +100,23 @@ func (r *Rectangle) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint
 	}
 	return verticies, indicies
 }
+
+// TexturedColoredMeshInput method returns the verticies, indicies inputs for the NewTexturedColoredMesh function.
+func (r *Rectangle) TexturedColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
+	textureCoords := [4]mgl32.Vec2{
+		{0.0, 1.0},
+		{1.0, 1.0},
+		{1.0, 0.0},
+		{0.0, 0.0},
+	}
+	indicies := []uint32{0, 1, 2, 0, 2, 3}
+	var verticies vertex.Verticies
+	for i := 0; i < 4; i++ {
+		verticies = append(verticies, vertex.Vertex{
+			Position:  r.Points[i],
+			Color:     col[i%len(col)],
+			TexCoords: textureCoords[i],
+		})
+	}
+	return verticies, indicies
+}

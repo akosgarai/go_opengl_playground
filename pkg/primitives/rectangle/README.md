@@ -29,3 +29,7 @@ MeshInput method returns the verticies, indicies - inputs for the New Mesh funct
 ## ColoredMeshInput
 
 ColoredMeshInput method returns the verticies, indicies - inputs for the New Mesh function.
+
+## TexturedColoredMeshInput
+
+This method returns the verticies, indicies - inputs for the NewTexturedColoredMesh function.

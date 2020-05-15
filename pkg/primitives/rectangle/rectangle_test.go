@@ -127,3 +127,14 @@ func TestColoredMeshInput(t *testing.T) {
 		t.Log(indicies)
 	}
 }
+func TestColoredTexturesMeshInput(t *testing.T) {
+	square := NewSquare()
+	color := []mgl32.Vec3{mgl32.Vec3{1, 1, 1}}
+	verticies, indicies := square.TexturedColoredMeshInput(color)
+	expectedIndicies := []uint32{0, 1, 2, 0, 2, 3}
+	if !reflect.DeepEqual(expectedIndicies, indicies) {
+		t.Error("Invalid indicies")
+		t.Log(verticies)
+		t.Log(indicies)
+	}
+}
