@@ -127,6 +127,9 @@ func (a *Application) Draw() {
 			s.SetUniformMat4("projection", a.camera.GetProjectionMatrix())
 			cameraPos := a.camera.GetPosition()
 			s.SetUniform3f("viewPosition", cameraPos.X(), cameraPos.Y(), cameraPos.Z())
+		} else {
+			s.SetUniformMat4("view", mgl32.Ident4())
+			s.SetUniformMat4("projection", mgl32.Ident4())
 		}
 		a.lightHandler(s)
 		for index, _ := range a.shaderMap[s] {
