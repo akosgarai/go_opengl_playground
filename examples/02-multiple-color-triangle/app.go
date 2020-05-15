@@ -5,6 +5,7 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
@@ -20,12 +21,7 @@ const (
 )
 
 var (
-	coordinates = [3]mgl32.Vec3{
-		mgl32.Vec3{-0.75, 0.75, 0}, // top
-		mgl32.Vec3{-0.75, 0.25, 0}, // left
-		mgl32.Vec3{-0.25, 0.25, 0}, // right
-	}
-	colors = [3]mgl32.Vec3{
+	color = []mgl32.Vec3{
 		mgl32.Vec3{0, 1, 0}, // top
 		mgl32.Vec3{1, 0, 0}, // left
 		mgl32.Vec3{0, 0, 1}, // right
@@ -33,6 +29,12 @@ var (
 
 	app *application.Application
 )
+
+func GenerateColoredTriangleMesh(col []mgl32.Vec3) *mesh.ColorMesh {
+	triang := triangle.New(30, 60, 90)
+	v, i := triang.ColoredMeshInput(col)
+	return mesh.NewColorMesh(v, i)
+}
 
 func main() {
 	runtime.LockOSThread()
@@ -42,10 +44,13 @@ func main() {
 	defer glfw.Terminate()
 	wrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/02-static-triangle/vertexshader.vert", "examples/02-static-triangle/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/02-static-triangle/shaders/vertexshader.vert", "examples/02-static-triangle/shaders/fragmentshader.frag")
+	app.AddShader(shaderProgram)
 
-	item := triangle.New(coordinates, colors, shaderProgram)
-	app.AddItem(item)
+	triang := GenerateColoredTriangleMesh(color)
+	triang.SetRotationAngle(mgl32.DegToRad(90))
+	triang.SetRotationAxis(mgl32.Vec3{1, 1, 0})
+	app.AddMeshToShader(triang, shaderProgram)
 
 	wrapper.Enable(wrapper.DEPTH_TEST)
 	wrapper.DepthFunc(wrapper.LESS)
