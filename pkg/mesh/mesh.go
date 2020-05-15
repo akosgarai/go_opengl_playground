@@ -268,6 +268,7 @@ func NewPointMesh() *PointMesh {
 func (m *PointMesh) setup() {
 	m.vao = wrapper.GenVertexArrays()
 	m.vbo = wrapper.GenBuffers()
+	m.ebo = wrapper.GenBuffers()
 
 	wrapper.BindVertexArray(m.vao)
 
@@ -304,4 +305,64 @@ func (m *PointMesh) Draw(shader interfaces.Shader) {
 func (m *PointMesh) AddVertex(v vertex.Vertex) {
 	m.Verticies.Add(v)
 	m.setup()
+}
+
+type ColorMesh struct {
+	Mesh
+	Indicies []uint32
+	ebo      uint32
+}
+
+// NewColorMesh gets the verticies, indicies as inputs and makes the necessary setup for a
+// standing (not moving) colored mesh before returning it. The vbo, vao, ebo is also set.
+func NewColorMesh(v []vertex.Vertex, i []uint32) *ColorMesh {
+	mesh := &ColorMesh{
+		Mesh: Mesh{
+			Verticies: v,
+
+			position:  mgl32.Vec3{0, 0, 0},
+			direction: mgl32.Vec3{0, 0, 0},
+			velocity:  0,
+			angle:     0,
+			axis:      mgl32.Vec3{0, 0, 0},
+			scale:     mgl32.Vec3{1, 1, 1},
+		},
+		Indicies: i,
+	}
+	mesh.setup()
+	return mesh
+}
+func (m *ColorMesh) setup() {
+	m.vao = wrapper.GenVertexArrays()
+	m.vbo = wrapper.GenBuffers()
+
+	wrapper.BindVertexArray(m.vao)
+
+	wrapper.BindBuffer(wrapper.ARRAY_BUFFER, m.vbo)
+	wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_COLOR))
+
+	wrapper.BindBuffer(wrapper.ELEMENT_ARRAY_BUFFER, m.ebo)
+	wrapper.ElementBufferData(m.Indicies)
+
+	// setup coordinates
+	wrapper.VertexAttribPointer(0, 3, wrapper.FLOAT, false, 4*6, wrapper.PtrOffset(0))
+	// setup color vector
+	wrapper.VertexAttribPointer(1, 3, wrapper.FLOAT, false, 4*6, wrapper.PtrOffset(4*3))
+
+	// close
+	wrapper.BindVertexArray(0)
+}
+
+// Draw function is responsible for the actual drawing. It's input is a shader.
+// First it binds the  model uniform with the help of the shader (i expect that the shader
+// is activated with the UseProgram gl function).
+// Then it binds the vertex array and draws the mesh with arrays (points). Finally it cleans up.
+func (m *ColorMesh) Draw(shader interfaces.Shader) {
+	M := m.ModelTransformation()
+	shader.SetUniformMat4("model", M)
+	wrapper.BindVertexArray(m.vao)
+	wrapper.DrawTriangleElements(int32(len(m.Indicies)))
+
+	wrapper.BindVertexArray(0)
+	wrapper.ActiveTexture(0)
 }
