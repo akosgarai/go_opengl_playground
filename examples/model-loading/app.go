@@ -3,13 +3,12 @@ package main
 import (
 	"runtime"
 
-	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
-
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/texture"
 	"github.com/akosgarai/opengl_playground/pkg/window"
