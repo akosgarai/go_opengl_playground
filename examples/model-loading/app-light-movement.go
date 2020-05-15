@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/primitives"
-	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/shader"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
@@ -14,6 +13,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
+	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/texture"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
