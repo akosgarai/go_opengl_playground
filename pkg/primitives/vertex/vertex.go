@@ -7,6 +7,7 @@ const (
 	POSITION_NORMAL_TEXCOORD = 2
 	POSITION_COLOR_SIZE      = 3
 	POSITION_COLOR           = 4
+	POSITION_COLOR_TEXCOORD  = 5
 )
 
 type Vertex struct {
@@ -37,6 +38,9 @@ func (v Verticies) Get(resultMode int) []float32 {
 	}
 	if resultMode == POSITION_COLOR {
 		return v.positionColor()
+	}
+	if resultMode == POSITION_COLOR_TEXCOORD {
+		return v.positionColorTexCoords()
 	}
 	var vao []float32
 	for _, vertex := range v {
@@ -82,6 +86,23 @@ func (v Verticies) positionColor() []float32 {
 		vao = append(vao, vertex.Color.X())
 		vao = append(vao, vertex.Color.Y())
 		vao = append(vao, vertex.Color.Z())
+	}
+
+	return vao
+}
+func (v Verticies) positionColorTexCoords() []float32 {
+	var vao []float32
+	for _, vertex := range v {
+		vao = append(vao, vertex.Position.X())
+		vao = append(vao, vertex.Position.Y())
+		vao = append(vao, vertex.Position.Z())
+
+		vao = append(vao, vertex.Color.X())
+		vao = append(vao, vertex.Color.Y())
+		vao = append(vao, vertex.Color.Z())
+
+		vao = append(vao, vertex.TexCoords.X())
+		vao = append(vao, vertex.TexCoords.Y())
 	}
 
 	return vao

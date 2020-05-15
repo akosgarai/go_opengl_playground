@@ -31,6 +31,7 @@ func TestGet(t *testing.T) {
 	expectedMaterial := []float32{0, 0, 0, 1, 0, 0}
 	expectedPoint := []float32{0, 0, 0, 0, 1, 1, 11}
 	expectedColored := []float32{0, 0, 0, 0, 1, 1}
+	expectedTextureColor := []float32{0, 0, 0, 0, 1, 1, 1, 1}
 	if !reflect.DeepEqual(verticies.Get(POSITION_NORMAL_TEXCOORD), expectedTextures) {
 		t.Error("Invalid texture vao")
 	}
@@ -41,6 +42,9 @@ func TestGet(t *testing.T) {
 		t.Error("Invalid point vao")
 	}
 	if !reflect.DeepEqual(verticies.Get(POSITION_COLOR), expectedColored) {
+		t.Error("Invalid point vao")
+	}
+	if !reflect.DeepEqual(verticies.Get(POSITION_COLOR_TEXCOORD), expectedTextureColor) {
 		t.Error("Invalid point vao")
 	}
 }
