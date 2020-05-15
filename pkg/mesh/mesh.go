@@ -268,7 +268,6 @@ func NewPointMesh() *PointMesh {
 func (m *PointMesh) setup() {
 	m.vao = wrapper.GenVertexArrays()
 	m.vbo = wrapper.GenBuffers()
-	m.ebo = wrapper.GenBuffers()
 
 	wrapper.BindVertexArray(m.vao)
 
@@ -335,6 +334,7 @@ func NewColorMesh(v []vertex.Vertex, i []uint32) *ColorMesh {
 func (m *ColorMesh) setup() {
 	m.vao = wrapper.GenVertexArrays()
 	m.vbo = wrapper.GenBuffers()
+	m.ebo = wrapper.GenBuffers()
 
 	wrapper.BindVertexArray(m.vao)
 
