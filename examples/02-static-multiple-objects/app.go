@@ -24,7 +24,7 @@ const (
 var (
 	app *application.Application
 
-	color = mgl32.Vec3{0, 1, 0}
+	color = []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
 )
 
 func GenerateColoredRectangleMesh(col mgl32.Vec3) *mesh.ColorMesh {
@@ -32,7 +32,7 @@ func GenerateColoredRectangleMesh(col mgl32.Vec3) *mesh.ColorMesh {
 	v, i := square.ColoredMeshInput(col)
 	return mesh.NewColorMesh(v, i)
 }
-func GenerateColoredTriangleMesh(col mgl32.Vec3) *mesh.ColorMesh {
+func GenerateColoredTriangleMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	square := triangle.New(30, 60, 90)
 	v, i := square.ColoredMeshInput(col)
 	return mesh.NewColorMesh(v, i)
@@ -55,7 +55,7 @@ func main() {
 	triang.SetPosition(mgl32.Vec3{-0.4, 0.2, 0})
 	app.AddMeshToShader(triang, shaderProgram)
 
-	square := GenerateColoredRectangleMesh(color)
+	square := GenerateColoredRectangleMesh(color[0])
 	square.SetRotationAngle(mgl32.DegToRad(90))
 	square.SetRotationAxis(mgl32.Vec3{1, 0, 0})
 	square.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})

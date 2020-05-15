@@ -21,12 +21,12 @@ const (
 )
 
 var (
-	color = mgl32.Vec3{0, 1, 0}
+	color = []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
 
 	app *application.Application
 )
 
-func GenerateColoredMesh(col mgl32.Vec3) *mesh.ColorMesh {
+func GenerateColoredMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	triang := triangle.New(60, 60, 60)
 	v, i := triang.ColoredMeshInput(col)
 	return mesh.NewColorMesh(v, i)

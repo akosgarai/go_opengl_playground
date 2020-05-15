@@ -23,7 +23,7 @@ const (
 var (
 	app *application.Application
 
-	color = mgl32.Vec3{0, 1, 0}
+	color = []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
 )
 
 // GenerateTriangles fills up the triangles.
