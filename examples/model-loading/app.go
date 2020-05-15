@@ -3,7 +3,7 @@ package main
 import (
 	"runtime"
 
-	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/primitives"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
@@ -58,7 +58,7 @@ func CreateCamera() *camera.Camera {
 }
 
 func GenerateSquareMesh(t texture.Textures) *mesh.TexturedMesh {
-	square := primitives.NewSquare()
+	square := rectangle.NewSquare()
 	v, i := square.MeshInput()
 	return mesh.NewTexturedMesh(v, i, t)
 }
