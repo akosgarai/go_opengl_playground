@@ -6,11 +6,12 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
+	"github.com/akosgarai/opengl_playground/pkg/texture"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -49,8 +50,8 @@ func CreateCamera() *camera.Camera {
 }
 
 // It generates a cube.
-func GenerateCube(shaderProgram *shader.Shader) {
-	colors := [6]mgl32.Vec3{
+func GenerateCubeMesh(t texture.Textures) *mesh.TexturedColoredMesh {
+	colors := []mgl32.Vec3{
 		mgl32.Vec3{1.0, 0.0, 0.0},
 		mgl32.Vec3{1.0, 1.0, 0.0},
 		mgl32.Vec3{0.0, 1.0, 0.0},
@@ -58,24 +59,10 @@ func GenerateCube(shaderProgram *shader.Shader) {
 		mgl32.Vec3{0.0, 0.0, 1.0},
 		mgl32.Vec3{1.0, 0.0, 1.0},
 	}
-	bottomCoordinates := [4]mgl32.Vec3{
-		mgl32.Vec3{-0.5, -0.5, -0.5},
-		mgl32.Vec3{-0.5, -0.5, 0.5},
-		mgl32.Vec3{0.5, -0.5, 0.5},
-		mgl32.Vec3{0.5, -0.5, -0.5},
-	}
-	bottomColor := [4]mgl32.Vec3{
-		colors[0],
-		colors[0],
-		colors[0],
-		colors[0],
-	}
-	bottomRect := rectangle.New(bottomCoordinates, bottomColor, shaderProgram)
-	cube := cuboid.New(bottomRect, 1.0, shaderProgram)
-	for i := 0; i < 6; i++ {
-		cube.SetSideColor(i, colors[i])
-	}
-	app.AddItem(cube)
+	cube := cuboid.NewCube()
+	v, i := cube.TexturedColoredMeshInput(colors)
+	m := mesh.NewTexturedColoredMesh(v, i, t)
+	return m
 }
 
 // Update the z coordinates of the vectors.
@@ -163,11 +150,14 @@ func main() {
 	defer glfw.Terminate()
 	wrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/07-textured-cube/vertexshader.vert", "examples/07-textured-cube/fragmentshader.frag")
-	shaderProgram.AddTexture("examples/07-textured-cube/image-texture.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
+	shaderProgram := shader.NewShader("examples/07-textured-cube/shaders/vertexshader.vert", "examples/07-textured-cube/shaders/fragmentshader.frag")
+	app.AddShader(shaderProgram)
+	var tex texture.Textures
+	tex.AddTexture("examples/07-textured-cube/assets/image-texture.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
 
 	app.SetCamera(CreateCamera())
-	GenerateCube(shaderProgram)
+	cube := GenerateCubeMesh(tex)
+	app.AddMeshToShader(cube, shaderProgram)
 
 	wrapper.Enable(wrapper.DEPTH_TEST)
 	wrapper.DepthFunc(wrapper.LESS)
@@ -180,7 +170,7 @@ func main() {
 	for !app.GetWindow().ShouldClose() {
 		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		Update()
-		app.DrawWithUniforms()
+		app.Draw()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}
