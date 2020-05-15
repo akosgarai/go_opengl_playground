@@ -6,8 +6,9 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/point"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
@@ -24,8 +25,8 @@ const (
 var (
 	addPoint = false
 
-	app    *application.Application
-	points *point.Points
+	app       *application.Application
+	PointMesh *mesh.PointMesh
 
 	RED   = glfw.KeyR // red color component
 	GREEN = glfw.KeyG // green color component
@@ -56,7 +57,12 @@ func Update() {
 		coords := mgl32.Vec3{float32(mX), float32(mY), 0.0}
 		color := mgl32.Vec3{r, g, b}
 		size := float32(3 + rand.Intn(17))
-		points.Add(coords, color, size)
+		vert := vertex.Vertex{
+			Position:  coords,
+			Color:     color,
+			PointSize: size,
+		}
+		PointMesh.AddVertex(vert)
 		addPoint = false
 	} else if app.GetMouseButtonState(LEFT_MOUSE_BUTTON) {
 		addPoint = true
@@ -70,22 +76,25 @@ func main() {
 	defer glfw.Terminate()
 	wrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/06-draw-points-from-mouse-keyboard-input/vertexshader.vert", "examples/06-draw-points-from-mouse-keyboard-input/fragmentshader.frag")
-	points = point.New(shaderProgram)
-	app.AddItem(points)
+	shaderProgram := shader.NewShader("examples/06-draw-points-from-mouse-keyboard-input/shaders/vertexshader.vert", "examples/06-draw-points-from-mouse-keyboard-input/shaders/fragmentshader.frag")
+	app.AddShader(shaderProgram)
+
+	PointMesh = mesh.NewPointMesh()
+	app.AddMeshToShader(PointMesh, shaderProgram)
+
 	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	wrapper.Enable(wrapper.PROGRAM_POINT_SIZE)
+	wrapper.Enable(wrapper.DEPTH_TEST)
+	wrapper.DepthFunc(wrapper.LESS)
 	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT)
+		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
-		if points.Count() > 0 {
-			app.Draw()
-		}
+		app.Draw()
 		app.GetWindow().SwapBuffers()
 	}
 }
