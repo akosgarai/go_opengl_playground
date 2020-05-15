@@ -1,6 +1,7 @@
 package rectangle
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -103,5 +104,26 @@ func TestNewHighScale(t *testing.T) {
 	calculatedNormal := v1.Cross(v2).Normalize()
 	if calculatedNormal != square.Normal {
 		t.Error("Invalid normal vs calculated normal")
+	}
+}
+func TestMeshInput(t *testing.T) {
+	square := NewSquare()
+	verticies, indicies := square.MeshInput()
+	expectedIndicies := []uint32{0, 1, 2, 0, 2, 3}
+	if !reflect.DeepEqual(expectedIndicies, indicies) {
+		t.Error("Invalid indicies")
+		t.Log(verticies)
+		t.Log(indicies)
+	}
+}
+func TestColoredMeshInput(t *testing.T) {
+	square := NewSquare()
+	color := mgl32.Vec3{1, 1, 1}
+	verticies, indicies := square.ColoredMeshInput(color)
+	expectedIndicies := []uint32{0, 1, 2, 0, 2, 3}
+	if !reflect.DeepEqual(expectedIndicies, indicies) {
+		t.Error("Invalid indicies")
+		t.Log(verticies)
+		t.Log(indicies)
 	}
 }

@@ -87,3 +87,16 @@ func (r *Rectangle) MeshInput() (vertex.Verticies, []uint32) {
 	}
 	return verticies, indicies
 }
+
+// ColoredMeshInput method returns the verticies, indicies inputs for the New Mesh function.
+func (r *Rectangle) ColoredMeshInput(col mgl32.Vec3) (vertex.Verticies, []uint32) {
+	indicies := []uint32{0, 1, 2, 0, 2, 3}
+	var verticies vertex.Verticies
+	for i := 0; i < 4; i++ {
+		verticies = append(verticies, vertex.Vertex{
+			Position: r.Points[i],
+			Color:    col,
+		})
+	}
+	return verticies, indicies
+}
