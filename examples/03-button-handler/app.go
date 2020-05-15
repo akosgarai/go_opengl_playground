@@ -6,6 +6,7 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -17,7 +18,7 @@ import (
 
 const (
 	WindowWidth  = 800
-	WindowHeight = 600
+	WindowHeight = 800
 	WindowTitle  = "Example - static button handler"
 	epsilon      = 30
 	speed        = float32(0.15) / float32(1000.0)
@@ -31,77 +32,58 @@ const (
 )
 
 var (
-	triangleCoordinates = [3]mgl32.Vec3{
-		mgl32.Vec3{-0.75, 0.75, 0}, // top
-		mgl32.Vec3{-0.75, 0.25, 0}, // left
-		mgl32.Vec3{-0.25, 0.25, 0}, // right
+	triangleColors = []mgl32.Vec3{
+		mgl32.Vec3{0, 1, 0},
 	}
-	triangleColors = [3]mgl32.Vec3{
-		mgl32.Vec3{0, 1, 0}, // top
-		mgl32.Vec3{0, 1, 0}, // left
-		mgl32.Vec3{0, 1, 0}, // right
-	}
-	squareCoordinates = [4]mgl32.Vec3{
-		mgl32.Vec3{0.25, -0.25, 0}, // top-left
-		mgl32.Vec3{0.25, -0.75, 0}, // bottom-left
-		mgl32.Vec3{0.75, -0.75, 0}, // bottom-right
-		mgl32.Vec3{0.75, -0.25, 0}, // top-right
-	}
-	squareColors = [4]mgl32.Vec3{
-		mgl32.Vec3{0, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-		mgl32.Vec3{0, 1, 0},
+	squareColors = []mgl32.Vec3{
+		mgl32.Vec3{0, 0, 1},
 	}
 	lastUpdate = time.Now().UnixNano() / 1000000
 
 	app *application.Application
 
-	item   *triangle.Triangle
-	square *rectangle.Rectangle
+	TriangMesh *mesh.ColorMesh
+	SquareMesh *mesh.ColorMesh
 )
 
-func SetupKeyMap() map[glfw.Key]bool {
-	keyDowns := make(map[glfw.Key]bool)
-	keyDowns[FORWARD] = false
-	keyDowns[LEFT] = false
-	keyDowns[RIGHT] = false
-	keyDowns[BACKWARD] = false
-	keyDowns[SWAP] = false
-	keyDowns[DEBUG] = false
-
-	return keyDowns
+func GenerateTriangleMesh(col []mgl32.Vec3) *mesh.ColorMesh {
+	triang := triangle.New(60, 60, 60)
+	v, i := triang.ColoredMeshInput(col)
+	return mesh.NewColorMesh(v, i)
 }
+func GenerateSquareMesh(col []mgl32.Vec3) *mesh.ColorMesh {
+	square := rectangle.NewSquare()
+	v, i := square.ColoredMeshInput(col)
+	return mesh.NewColorMesh(v, i)
+}
+
 func Update() {
-	if app.GetKeyState(SWAP) {
-		item.SetColor(mgl32.Vec3{0, 1, 0})
-		square.SetColor(mgl32.Vec3{1, 0, 0})
-	} else {
-		item.SetColor(mgl32.Vec3{1, 0, 0})
-		square.SetColor(mgl32.Vec3{0, 1, 0})
-	}
 	// now in milisec.
 	nowUnixM := time.Now().UnixNano() / 1000000
 	delta := nowUnixM - lastUpdate
+	sqDir := SquareMesh.GetDirection()
+	trDir := TriangMesh.GetDirection()
 	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
-		square.SetIndexDirection(1, 1.0)
-		item.SetIndexDirection(1, -1.0)
+		SquareMesh.SetDirection(mgl32.Vec3{sqDir.X(), 1, sqDir.Y()})
+		TriangMesh.SetDirection(mgl32.Vec3{trDir.X(), -1, trDir.Y()})
 	} else if app.GetKeyState(BACKWARD) && !app.GetKeyState(FORWARD) {
-		square.SetIndexDirection(1, -1.0)
-		item.SetIndexDirection(1, 1.0)
+		SquareMesh.SetDirection(mgl32.Vec3{sqDir.X(), -1, sqDir.Y()})
+		TriangMesh.SetDirection(mgl32.Vec3{trDir.X(), 1, trDir.Y()})
 	} else {
-		square.SetIndexDirection(1, 0.0)
-		item.SetIndexDirection(1, 0.0)
+		SquareMesh.SetDirection(mgl32.Vec3{sqDir.X(), 0, sqDir.Y()})
+		TriangMesh.SetDirection(mgl32.Vec3{trDir.X(), 0, trDir.Y()})
 	}
+	sqDir = SquareMesh.GetDirection()
+	trDir = TriangMesh.GetDirection()
 	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
-		square.SetIndexDirection(0, -1.0)
-		item.SetIndexDirection(0, 1.0)
+		SquareMesh.SetDirection(mgl32.Vec3{-1, sqDir.Y(), sqDir.Z()})
+		TriangMesh.SetDirection(mgl32.Vec3{1, trDir.Y(), trDir.Z()})
 	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
-		square.SetIndexDirection(0, 1.0)
-		item.SetIndexDirection(0, -1.0)
+		SquareMesh.SetDirection(mgl32.Vec3{1, sqDir.Y(), sqDir.Z()})
+		TriangMesh.SetDirection(mgl32.Vec3{-1, trDir.Y(), trDir.Z()})
 	} else {
-		square.SetIndexDirection(0, 0.0)
-		item.SetIndexDirection(0, 0.0)
+		SquareMesh.SetDirection(mgl32.Vec3{0, sqDir.Y(), sqDir.Z()})
+		TriangMesh.SetDirection(mgl32.Vec3{0, trDir.Y(), trDir.Z()})
 	}
 	if epsilon > delta {
 		return
@@ -118,15 +100,24 @@ func main() {
 	defer glfw.Terminate()
 	wrapper.InitOpenGL()
 
-	app.SetKeys(SetupKeyMap())
-	shaderProgram := shader.NewShader("examples/03-button-handler/vertexshader.vert", "examples/03-button-handler/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/03-button-handler/shaders/vertexshader.vert", "examples/03-button-handler/shaders/fragmentshader.frag")
+	app.AddShader(shaderProgram)
 
-	item = triangle.New(triangleCoordinates, triangleColors, shaderProgram)
-	item.SetSpeed(speed)
-	app.AddItem(item)
-	square = rectangle.New(squareCoordinates, squareColors, shaderProgram)
-	square.SetSpeed(speed)
-	app.AddItem(square)
+	TriangMesh = GenerateTriangleMesh(triangleColors)
+	TriangMesh.SetRotationAngle(mgl32.DegToRad(90))
+	TriangMesh.SetRotationAxis(mgl32.Vec3{1, 0, 0})
+	TriangMesh.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
+	TriangMesh.SetPosition(mgl32.Vec3{-0.4, 0, 0.3})
+	TriangMesh.SetSpeed(speed)
+	app.AddMeshToShader(TriangMesh, shaderProgram)
+
+	SquareMesh = GenerateSquareMesh(squareColors)
+	SquareMesh.SetRotationAngle(mgl32.DegToRad(90))
+	SquareMesh.SetRotationAxis(mgl32.Vec3{1, 0, 0})
+	SquareMesh.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
+	SquareMesh.SetPosition(mgl32.Vec3{0.4, 0, -0.3})
+	SquareMesh.SetSpeed(speed)
+	app.AddMeshToShader(SquareMesh, shaderProgram)
 
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
