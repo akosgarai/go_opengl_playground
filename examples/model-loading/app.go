@@ -3,14 +3,15 @@ package main
 import (
 	"runtime"
 
-	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/application"
-	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/primitives"
 	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/shader"
-	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/texture"
+
+	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
+	"github.com/akosgarai/opengl_playground/pkg/texture"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"

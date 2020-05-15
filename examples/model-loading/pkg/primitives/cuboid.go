@@ -1,7 +1,7 @@
 package primitives
 
 import (
-	"github.com/akosgarai/opengl_playground/examples/model-loading/pkg/vertex"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
