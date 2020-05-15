@@ -6,9 +6,9 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
@@ -48,22 +48,9 @@ func CreateCamera() *camera.Camera {
 	return camera
 }
 
-// Create the keymap
-func SetupKeyMap() map[glfw.Key]bool {
-	keyDowns := make(map[glfw.Key]bool)
-	keyDowns[FORWARD] = false
-	keyDowns[LEFT] = false
-	keyDowns[RIGHT] = false
-	keyDowns[BACKWARD] = false
-	keyDowns[UP] = false
-	keyDowns[DOWN] = false
-
-	return keyDowns
-}
-
 // It generates a cube.
 func GenerateCube(shaderProgram *shader.Shader) {
-	colors := [6]mgl32.Vec3{
+	colors := []mgl32.Vec3{
 		mgl32.Vec3{1.0, 0.0, 0.0},
 		mgl32.Vec3{1.0, 1.0, 0.0},
 		mgl32.Vec3{0.0, 1.0, 0.0},
@@ -71,24 +58,11 @@ func GenerateCube(shaderProgram *shader.Shader) {
 		mgl32.Vec3{0.0, 0.0, 1.0},
 		mgl32.Vec3{1.0, 0.0, 1.0},
 	}
-	bottomCoordinates := [4]mgl32.Vec3{
-		mgl32.Vec3{-0.5, -0.5, -0.5},
-		mgl32.Vec3{-0.5, -0.5, 0.5},
-		mgl32.Vec3{0.5, -0.5, 0.5},
-		mgl32.Vec3{0.5, -0.5, -0.5},
-	}
-	bottomColor := [4]mgl32.Vec3{
-		colors[0],
-		colors[0],
-		colors[0],
-		colors[0],
-	}
-	bottomRect := rectangle.New(bottomCoordinates, bottomColor, shaderProgram)
-	cube := cuboid.New(bottomRect, 1.0, shaderProgram)
-	for i := 0; i < 6; i++ {
-		cube.SetSideColor(i, colors[i])
-	}
-	app.AddItem(cube)
+	cube := cuboid.NewCube()
+	v, i := cube.ColoredMeshInput(colors)
+	m := mesh.NewColorMesh(v, i)
+	m.SetRotationAxis(mgl32.Vec3{0, 1, 0})
+	app.AddMeshToShader(m, shaderProgram)
 }
 
 func Update() {
@@ -176,7 +150,7 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 
-	shaderProgram := shader.NewShader("examples/05-cube-with-camera/vertexshader.vert", "examples/05-cube-with-camera/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/05-cube-with-camera/shaders/vertexshader.vert", "examples/05-cube-with-camera/shaders/fragmentshader.frag")
 	GenerateCube(shaderProgram)
 
 	wrapper.Enable(wrapper.DEPTH_TEST)
@@ -191,7 +165,7 @@ func main() {
 		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
-		app.DrawWithUniforms()
+		app.Draw()
 		app.GetWindow().SwapBuffers()
 	}
 }
