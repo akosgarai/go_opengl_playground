@@ -118,7 +118,7 @@ func TestMeshInput(t *testing.T) {
 }
 func TestColoredMeshInput(t *testing.T) {
 	square := NewSquare()
-	color := mgl32.Vec3{1, 1, 1}
+	color := []mgl32.Vec3{mgl32.Vec3{1, 1, 1}}
 	verticies, indicies := square.ColoredMeshInput(color)
 	expectedIndicies := []uint32{0, 1, 2, 0, 2, 3}
 	if !reflect.DeepEqual(expectedIndicies, indicies) {

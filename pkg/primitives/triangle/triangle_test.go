@@ -40,7 +40,7 @@ func TestSortAngles(t *testing.T) {
 
 func TestColoredMeshInput(t *testing.T) {
 	triangle := New(60, 60, 60)
-	vert, ind := triangle.ColoredMeshInput(mgl32.Vec3{1, 1, 1})
+	vert, ind := triangle.ColoredMeshInput([]mgl32.Vec3{mgl32.Vec3{1, 1, 1}})
 	if ind[0] != 0 || ind[1] != 1 || ind[2] != 2 {
 		t.Error("Invalid indicies")
 		t.Log(vert)
