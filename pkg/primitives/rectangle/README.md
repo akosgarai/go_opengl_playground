@@ -1,67 +1,31 @@
 # Rectangle
 
-This readme is outated, the tests are broken. Review, update, test fixes are necessary.
-
-
-It represents a rectangle, so it contains 4 `coordinate vectors`, 4 `color vectors`, a direction vector + speed (for moving objects).
-It has a VAO and a Shader also. It implements the Drawable interface.
-
-## Functions
-
-The stuff that we can do with a rectangle.
+This package represents a rectangle, that is described with the 4 points and it's normal vector. The structure also contains indicies, that is used for populating the element array buffer.
 
 ## New
 
-It creates a new rectangle. The inputs of this functions are the coordinates, the colors and the shader. The direction & speed is initialized as null vector & 0 speed.
+New creates a rectangle with origo as middle point. The normal points to -Y. The longest side is scaled to one, and the same downscale is done with the other edge.
 
-### SetColor
+- width represents the length on the X axis.
+- height represents the length on the Z axis.
 
-It updates the colors for the given one. It has one input, the new color Vector.
+The math for the calculation:
 
-### SetIndexColor
+```
+ratio = width / length
+ratio == 1 => return NewSquare.
+ratio > 1 => width is the longer -> X [-0.5, 0.5], Y [-1/(ratio*2), 1/(ratio*2)].
+ratio < 1 => length is the longer -> X [-ratio/2, ratio/2], Y [-0.5, 0.5].
+```
 
-It updates the color with the new color for the given index. It has 2 inputs, the index and the new color Vector.
+## NewSquare
 
-### SetDirection
+NewSquare creates a rectangle with origo as middle point. Each side is 1 unit long, and it's plane is the X-Z plane. The normal points to -Y.
 
-It updates the direction of the rectangle with the given new one.
+## MeshInput
 
-### SetIndexDirection
+MeshInput method returns the verticies, indicies - inputs for the New Mesh function.
 
-It updates the indexed direction of the rectangle to the given value.
+## ColoredMeshInput
 
-### SetSpeed
-
-It updates the speed of the rectangle.
-
-### SetAngle
-
-It updates the rotation angle (radian) of the rectangle.
-
-### SetAxis
-
-It updates the rotation axis of the rectangle.
-
-### Log
-
-The string representation of the current state of the object.
-
-### Draw
-
-It draws the rectangle. The MVP uniform matrix is set to ident. matrix for the shader program.
-
-### DrawWithUniforms
-
-It draws the rectangle. It gets the V & P matrices as inputs. It sets the model, view, projection uniforms for the shader program.
-
-### Update
-
-It updates the state of the rectangle. It gets the delta time as input and it calculates the movement of the rectangle.
-
-### Coordinates
-
-It returns the coordinates of the rectangle.
-
-### Color
-
-It returns the colors of the rectangle.
+ColoredMeshInput method returns the verticies, indicies - inputs for the New Mesh function.

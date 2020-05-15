@@ -67,7 +67,7 @@ func NewSquare() *Rectangle {
 	}
 }
 
-// MeshImput method returns the verticies, indicies inputs for the New Mesh function.
+// MeshInput method returns the verticies, indicies inputs for the New Mesh function.
 // TODO: find a better name.
 func (r *Rectangle) MeshInput() (vertex.Verticies, []uint32) {
 	textureCoords := [4]mgl32.Vec2{
