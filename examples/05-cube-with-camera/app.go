@@ -151,6 +151,7 @@ func main() {
 	app.SetCamera(CreateCamera())
 
 	shaderProgram := shader.NewShader("examples/05-cube-with-camera/shaders/vertexshader.vert", "examples/05-cube-with-camera/shaders/fragmentshader.frag")
+	app.AddShader(shaderProgram)
 	GenerateCube(shaderProgram)
 
 	wrapper.Enable(wrapper.DEPTH_TEST)
