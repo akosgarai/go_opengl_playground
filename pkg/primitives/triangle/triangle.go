@@ -59,13 +59,13 @@ func sortAngles(a, b, c float32) [3]float32 {
 }
 
 // ColoredMeshInput method returns the verticies, indicies inputs for the New Mesh function.
-func (t *Triangle) ColoredMeshInput(col mgl32.Vec3) (vertex.Verticies, []uint32) {
+func (t *Triangle) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
 	indicies := []uint32{0, 1, 2}
 	var verticies vertex.Verticies
 	for i := 0; i < 3; i++ {
 		verticies = append(verticies, vertex.Vertex{
 			Position: t.Points[i],
-			Color:    col,
+			Color:    col[i%len(col)],
 		})
 	}
 	return verticies, indicies
