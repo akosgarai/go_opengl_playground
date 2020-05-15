@@ -1,5 +1,8 @@
 # Cuboid
 
+
+Outdated readme. Needs to be updated!!!!
+
 It represents a cuboid, so it contains 6 `rectangles` as it's sides. It has a VAO and a Shader also. It implements the Drawable interface.
 
 ## Functions
