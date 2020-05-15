@@ -6,11 +6,12 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
+	"github.com/akosgarai/opengl_playground/pkg/texture"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -35,7 +36,7 @@ const (
 
 var (
 	app  *application.Application
-	cube *cuboid.Cuboid
+	Cube *mesh.TexturedColoredMesh
 
 	lastUpdate int64
 
@@ -52,8 +53,8 @@ func CreateCamera() *camera.Camera {
 }
 
 // It generates a cube.
-func GenerateCube(shaderProgram *shader.Shader) {
-	colors := [6]mgl32.Vec3{
+func GenerateRotatingCubeMesh(t texture.Textures) *mesh.TexturedColoredMesh {
+	colors := []mgl32.Vec3{
 		mgl32.Vec3{1.0, 0.0, 0.0},
 		mgl32.Vec3{1.0, 1.0, 0.0},
 		mgl32.Vec3{0.0, 1.0, 0.0},
@@ -61,25 +62,11 @@ func GenerateCube(shaderProgram *shader.Shader) {
 		mgl32.Vec3{0.0, 0.0, 1.0},
 		mgl32.Vec3{1.0, 0.0, 1.0},
 	}
-	bottomCoordinates := [4]mgl32.Vec3{
-		mgl32.Vec3{-0.5, -0.5, -0.5},
-		mgl32.Vec3{-0.5, -0.5, 0.5},
-		mgl32.Vec3{0.5, -0.5, 0.5},
-		mgl32.Vec3{0.5, -0.5, -0.5},
-	}
-	bottomColor := [4]mgl32.Vec3{
-		colors[0],
-		colors[0],
-		colors[0],
-		colors[0],
-	}
-	bottomRect := rectangle.New(bottomCoordinates, bottomColor, shaderProgram)
-	cube = cuboid.New(bottomRect, 1.0, shaderProgram)
-	for i := 0; i < 6; i++ {
-		cube.SetSideColor(i, colors[i])
-	}
-	cube.SetAxis(mgl32.Vec3{0, 1, 0})
-	app.AddItem(cube)
+	cube := cuboid.NewCube()
+	v, i := cube.TexturedColoredMeshInput(colors)
+	m := mesh.NewTexturedColoredMesh(v, i, t)
+	m.SetRotationAxis(mgl32.Vec3{0, 1, 0})
+	return m
 }
 
 func Update() {
@@ -88,7 +75,7 @@ func Update() {
 	moveTime := delta / float64(time.Millisecond)
 	lastUpdate = nowNano
 	rotationAngle = rotationAngle + float32(moveTime)*rotationSpeed
-	cube.SetAngle(mgl32.DegToRad(mgl32.DegToRad(rotationAngle)))
+	Cube.SetRotationAngle(mgl32.DegToRad(mgl32.DegToRad(rotationAngle)))
 
 	forward := 0.0
 	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
@@ -168,11 +155,14 @@ func main() {
 	defer glfw.Terminate()
 	wrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/07-textured-rotating-cube/vertexshader.vert", "examples/07-textured-rotating-cube/fragmentshader.frag")
-	shaderProgram.AddTexture("examples/07-textured-rotating-cube/image-texture.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
+	shaderProgram := shader.NewShader("examples/07-textured-rotating-cube/shaders/vertexshader.vert", "examples/07-textured-rotating-cube/shaders/fragmentshader.frag")
+	app.AddShader(shaderProgram)
+	var tex texture.Textures
+	tex.AddTexture("examples/07-textured-rotating-cube/assets/image-texture.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
 
 	app.SetCamera(CreateCamera())
-	GenerateCube(shaderProgram)
+	Cube = GenerateRotatingCubeMesh(tex)
+	app.AddMeshToShader(Cube, shaderProgram)
 
 	wrapper.Enable(wrapper.DEPTH_TEST)
 	wrapper.DepthFunc(wrapper.LESS)
@@ -185,7 +175,7 @@ func main() {
 	for !app.GetWindow().ShouldClose() {
 		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		Update()
-		app.DrawWithUniforms()
+		app.Draw()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}
