@@ -1,5 +1,8 @@
 # Rectangle
 
+This readme is outated, the tests are broken. Review, update, test fixes are necessary.
+
+
 It represents a rectangle, so it contains 4 `coordinate vectors`, 4 `color vectors`, a direction vector + speed (for moving objects).
 It has a VAO and a Shader also. It implements the Drawable interface.
 
