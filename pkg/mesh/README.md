@@ -41,3 +41,23 @@ It's `Draw` function gets the Shader as input. It makes the uniform setup, buffe
 ## Point mesh
 
 It is a mesh extension for point objects. It's parameter list isn't extended, but it has an `Add` function for extending the mesh. It's necessary, because the `NewPointMesh` function returns an empty mesh, so that we have to fill it with the verticies one by one. It's `Draw` function gets the Shader as input. It makes the uniform setup, buffer bindings, draws with points, and then cleans up.
+
+## Color mesh
+
+It is a mesh extension for colored opbjects. The colors are set in the verticies. Its parameter list is exended with the followings:
+
+- **Indicies** - In the Draw function the gl.DrawElements function is used, so that i have to maintain a buffer for the indicies. These are the values that i can pass to the buffer.
+- **ebo** - The element buffer object identifier. the indicies are stored here.
+
+Its `Draw` function gets the Shader as input. It makes the uniform setup, buffer bindings, draws with triangles and then cleans up. The `NewColorMesh` returns a color mesh.
+
+
+## Textured color mesh
+
+It is a mesh extension for textured object where the object color also counts. Its parameter list is extended with the followings:
+
+- **Indicies** - In the Draw function the gl.DrawElements function is used, so that i have to maintain a buffer for the indicies. These are the values that i can pass to the buffer.
+- **Textures** - The textures that are used for covering the drew mesh.
+- **ebo** - The element buffer object identifier. the indicies are stored here.
+
+It's `Draw` function gets the Shader as input. It makes the uniform setup, buffer bindings, draws with triangles, and then cleans up. The `NewTexturedColoredMesh` function returns a textured colored mesh.
