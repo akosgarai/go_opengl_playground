@@ -86,3 +86,18 @@ func (c *Cuboid) MeshInput() (vertex.Verticies, []uint32) {
 	}
 	return verticies, c.Indicies
 }
+
+// ColoredMeshInput method returns the verticies, indicies inputs for the New Mesh function.
+func (c *Cuboid) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
+	var verticies vertex.Verticies
+	for i := 0; i < 6; i++ {
+		for j := 0; j < 4; j++ {
+			pointIndex := i*4 + j
+			verticies = append(verticies, vertex.Vertex{
+				Position: c.Points[pointIndex],
+				Color:    col[i%len(col)],
+			})
+		}
+	}
+	return verticies, c.Indicies
+}
