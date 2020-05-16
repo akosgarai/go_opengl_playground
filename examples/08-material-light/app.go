@@ -49,6 +49,8 @@ var (
 
 	InitialCenterPointLight = mgl32.Vec3{-3, 0, -3}
 	CenterPointObject       = mgl32.Vec3{0, 0, 0}
+
+	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -61,7 +63,7 @@ func CreateCamera() *camera.Camera {
 func CreateMaterialMesh(mat *material.Material, pos mgl32.Vec3) *mesh.MaterialMesh {
 	cube := cuboid.NewCube()
 	v, i := cube.MeshInput()
-	m := mesh.NewMaterialMesh(v, i, mat)
+	m := mesh.NewMaterialMesh(v, i, mat, glWrapper)
 	m.SetPosition(pos)
 	return m
 }
@@ -157,14 +159,14 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 
 	LightSource = light.NewPointLight([4]mgl32.Vec3{InitialCenterPointLight, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
 	app.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
 
-	materialShader := shader.NewShader("examples/08-material-light/shaders/vertexshader.vert", "examples/08-material-light/shaders/fragmentshader.frag")
+	materialShader := shader.NewShader("examples/08-material-light/shaders/vertexshader.vert", "examples/08-material-light/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(materialShader)
 
 	JadeCube = CreateMaterialMesh(material.Jade, mgl32.Vec3{0.0, 0.0, 0.0})
@@ -191,16 +193,16 @@ func main() {
 	LightSourceCube.SetSpeed((float32(2) * float32(3.1415) * distance) / LightSourceRoundSpeed)
 	app.AddMeshToShader(LightSourceCube, materialShader)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
 		app.Draw()
