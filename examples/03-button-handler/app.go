@@ -44,17 +44,19 @@ var (
 
 	TriangMesh *mesh.ColorMesh
 	SquareMesh *mesh.ColorMesh
+
+	glWrapper wrapper.Wrapper
 )
 
 func GenerateTriangleMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	triang := triangle.New(60, 60, 60)
 	v, i := triang.ColoredMeshInput(col)
-	return mesh.NewColorMesh(v, i)
+	return mesh.NewColorMesh(v, i, glWrapper)
 }
 func GenerateSquareMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	square := rectangle.NewSquare()
 	v, i := square.ColoredMeshInput(col)
-	return mesh.NewColorMesh(v, i)
+	return mesh.NewColorMesh(v, i, glWrapper)
 }
 
 func Update() {
@@ -98,9 +100,9 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/03-button-handler/shaders/vertexshader.vert", "examples/03-button-handler/shaders/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/03-button-handler/shaders/vertexshader.vert", "examples/03-button-handler/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
 	TriangMesh = GenerateTriangleMesh(triangleColors)
@@ -122,11 +124,11 @@ func main() {
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
 		app.Draw()
