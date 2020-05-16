@@ -39,6 +39,8 @@ var (
 
 	cameraDistance       = 0.1
 	cameraDirectionSpeed = float32(0.00500)
+
+	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -60,7 +62,7 @@ func GenerateCube(shaderProgram *shader.Shader) {
 	}
 	cube := cuboid.NewCube()
 	v, i := cube.ColoredMeshInput(colors)
-	m := mesh.NewColorMesh(v, i)
+	m := mesh.NewColorMesh(v, i, glWrapper)
 	m.SetRotationAxis(mgl32.Vec3{0, 1, 0})
 	app.AddMeshToShader(m, shaderProgram)
 }
@@ -146,24 +148,24 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 
-	shaderProgram := shader.NewShader("examples/05-cube-with-camera/shaders/vertexshader.vert", "examples/05-cube-with-camera/shaders/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/05-cube-with-camera/shaders/vertexshader.vert", "examples/05-cube-with-camera/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 	GenerateCube(shaderProgram)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
 		app.Draw()
