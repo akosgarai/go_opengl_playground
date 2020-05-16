@@ -6,14 +6,15 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
+	"github.com/akosgarai/opengl_playground/pkg/texture"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -23,7 +24,7 @@ import (
 const (
 	WindowWidth  = 800
 	WindowHeight = 800
-	WindowTitle  = "Example - textured rotating cube"
+	WindowTitle  = "Example - textured lighting map"
 
 	FORWARD  = glfw.KeyW // Go forward
 	BACKWARD = glfw.KeyS // Go backward
@@ -49,11 +50,13 @@ var (
 	InitialCenterPointLight = mgl32.Vec3{-3, 0, -3}
 
 	LightSource       *light.Light
-	LightSourceSphere *sphere.Sphere
-	JadeCube          *cuboid.Cuboid
+	LightSourceSphere *mesh.MaterialMesh
+	CubeMesh          *mesh.TexturedMesh
 
 	cameraDistance = 0.1
 	rotationAngle  = float32(0.0)
+
+	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -64,27 +67,24 @@ func CreateCamera() *camera.Camera {
 }
 
 // It generates the lightsource sphere.
-func GenerateWhiteSphere(shaderProgram *shader.Shader) {
-	LightSourceSphere = sphere.New(mgl32.Vec3{-3.0, -0.5, -3.0}, mgl32.Vec3{1, 1, 1}, 0.1, shaderProgram)
-	LightSourceSphere.SetPrecision(15)
+func CreateWhiteSphere() {
 	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 64.0)
-	LightSourceSphere.SetMaterial(mat)
+	sph := sphere.New(15)
+	v, i := sph.MaterialMeshInput()
+	LightSourceSphere = mesh.NewMaterialMesh(v, i, mat, glWrapper)
+	LightSourceSphere.SetPosition(mgl32.Vec3{-3.0, -0.5, -3.0})
 	LightSourceSphere.SetDirection((mgl32.Vec3{9, 0, -3}).Normalize())
-	distance := (LightSourceSphere.GetCenterPoint().Sub(JadeCube.GetCenterPoint())).Len()
-
+	distance := (LightSourceSphere.GetPosition().Sub(CubeMesh.GetPosition())).Len()
 	LightSourceSphere.SetSpeed((float32(2) * float32(3.1415) * distance) / LightSourceRoundSpeed)
-	LightSourceSphere.DrawMode(sphere.DRAW_MODE_LIGHT)
-	app.AddItem(LightSourceSphere)
+	LightSourceSphere.SetScale(mgl32.Vec3{0.15, 0.15, 0.15})
 }
 
-// It generates the Jade cube.
-func GenerateCube(shaderProgram *shader.Shader) {
-	bottomRect := rectangle.NewSquare(mgl32.Vec3{0.5, -0.5, -0.5}, mgl32.Vec3{-0.5, -0.5, 0.5}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0.0, 1.0, 1.0}, shaderProgram)
-	JadeCube = cuboid.New(bottomRect, 1.0, shaderProgram)
-	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 64.0)
-	JadeCube.SetMaterial(mat)
-	JadeCube.DrawMode(cuboid.DRAW_MODE_TEXTURED_LIGHT)
-	app.AddItem(JadeCube)
+// It generates a cube.
+func CreateCubeMesh(t texture.Textures) *mesh.TexturedMesh {
+	cube := cuboid.NewCube()
+	v, i := cube.MeshInput()
+	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
+	return m
 }
 
 func Update() {
@@ -99,7 +99,7 @@ func Update() {
 	lightDirectionRotationMatrix := mgl32.HomogRotate3D(lightSourceRotationAngleRadian, mgl32.Vec3{0, -1, 0})
 	currentLightSourceDirection := LightSourceSphere.GetDirection()
 	LightSourceSphere.SetDirection(mgl32.TransformNormal(currentLightSourceDirection, lightDirectionRotationMatrix))
-	LightSource.SetPosition(LightSourceSphere.GetCenterPoint())
+	LightSource.SetPosition(LightSourceSphere.GetPosition())
 
 	app.Update(moveTime)
 
@@ -179,34 +179,40 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 
 	LightSource = light.NewPointLight([4]mgl32.Vec3{InitialCenterPointLight, mgl32.Vec3{0.2, 0.2, 0.2}, mgl32.Vec3{0.5, 0.5, 0.5}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
+	app.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
 
-	shaderProgramTexture := shader.NewShader("examples/07-textured-lighting-map/texture.vert", "examples/07-textured-lighting-map/texture.frag")
-	shaderProgramTexture.AddTexture("examples/07-textured-lighting-map/colored-image-for-texture-testing-diffuse.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse")
-	shaderProgramTexture.AddTexture("examples/07-textured-lighting-map/colored-image-for-texture-testing-specular.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular")
-	shaderProgramTexture.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
-	GenerateCube(shaderProgramTexture)
+	shaderProgramTexture := shader.NewShader("examples/07-textured-lighting-map/shaders/texture.vert", "examples/07-textured-lighting-map/shaders/texture.frag", glWrapper)
+	app.AddShader(shaderProgramTexture)
 
-	shaderProgramWhite := shader.NewShader("examples/07-textured-lighting-map/lightsource.vert", "examples/07-textured-lighting-map/lightsource.frag")
-	shaderProgramWhite.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
-	GenerateWhiteSphere(shaderProgramWhite)
+	var tex texture.Textures
+	tex.AddTexture("examples/07-textured-lighting-map/assets/colored-image-for-texture-testing-diffuse.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
+	tex.AddTexture("examples/07-textured-lighting-map/assets/colored-image-for-texture-testing-specular.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
+	CubeMesh = CreateCubeMesh(tex)
+	app.AddMeshToShader(CubeMesh, shaderProgramTexture)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	shaderProgramWhite := shader.NewShader("examples/07-textured-lighting-map/shaders/lightsource.vert", "examples/07-textured-lighting-map/shaders/lightsource.frag", glWrapper)
+	app.AddShader(shaderProgramWhite)
+
+	CreateWhiteSphere()
+	app.AddMeshToShader(LightSourceSphere, shaderProgramWhite)
+
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		Update()
-		app.DrawWithUniforms()
+		app.Draw()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}
