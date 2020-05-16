@@ -16,7 +16,7 @@ import (
 
 const (
 	WindowWidth  = 800
-	WindowHeight = 600
+	WindowHeight = 800
 	WindowTitle  = "Example - static triangles, lots of them"
 )
 
@@ -24,6 +24,8 @@ var (
 	app *application.Application
 
 	color = []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
+
+	glWrapper wrapper.Wrapper
 )
 
 // GenerateTriangles fills up the triangles.
@@ -38,7 +40,7 @@ func GenerateTriangles(rows int, shaderProgram *shader.Shader) {
 			topY := -1.0 + (float32(i) * length)
 			topZ := float32(0.0)
 
-			m := mesh.NewColorMesh(v, indicies)
+			m := mesh.NewColorMesh(v, indicies, glWrapper)
 			m.SetPosition(mgl32.Vec3{topX, topY, topZ})
 			m.SetRotationAngle(mgl32.DegToRad(90))
 			m.SetRotationAxis(mgl32.Vec3{1, 0, 0})
@@ -54,18 +56,18 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/02-static-triangles/shaders/vertexshader.vert", "examples/02-static-triangles/shaders/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/02-static-triangles/shaders/vertexshader.vert", "examples/02-static-triangles/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
 	GenerateTriangles(50, shaderProgram)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 
 		app.Draw()
 		glfw.PollEvents()
