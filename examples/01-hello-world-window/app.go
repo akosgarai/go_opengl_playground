@@ -18,6 +18,7 @@ const (
 
 var (
 	ClearColor = [4]float32{0.3, 0.3, 0.3, 1.0}
+	glWrapper  wrapper.Wrapper
 )
 
 func main() {
@@ -27,20 +28,20 @@ func main() {
 
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
-	program := wrapper.CreateProgram()
-	wrapper.LinkProgram(program)
-	wrapper.UseProgram(program)
+	program := glWrapper.CreateProgram()
+	glWrapper.LinkProgram(program)
+	glWrapper.UseProgram(program)
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(window.DummyKeyCallback)
 	// register mouse button callback
 	app.GetWindow().SetMouseButtonCallback(window.DummyMouseButtonCallback)
 
-	wrapper.ClearColor(ClearColor[0], ClearColor[1], ClearColor[2], ClearColor[3])
+	glWrapper.ClearColor(ClearColor[0], ClearColor[1], ClearColor[2], ClearColor[3])
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT)
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}
