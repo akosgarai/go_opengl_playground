@@ -15,6 +15,7 @@ Those parameters that are always needed for managing an object.
 - **angle** - The mesh is rotated with this angle. This value has to be radian. The model transformation is calculated based on this.
 - **axis** - The mesh is rotated on this axis. If this vector is null, then the mesh is not rotated. The model transformation is calculated based on this.
 - **scale** - The mesh is scaled by this vector. The model transformation is calculated based on this.
+- **wrapper** - The glwrapper, that we can use for calling gl functions.
 
 It has setter functions for the parameters, and getters for the necessary ones, also one for the model transformation matrix calculation and one for updating the state of the mesh.
 

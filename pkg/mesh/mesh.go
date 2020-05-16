@@ -1,7 +1,7 @@
 package mesh
 
 import (
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/interfaces"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
@@ -30,6 +30,8 @@ type Mesh struct {
 	// for scaling - if a want to make other rectangles than unit ones.
 	// This vector contains the scale factor for each axis.
 	scale mgl32.Vec3
+	// For calling gl functions.
+	wrapper interfaces.GLWrapper
 }
 
 // SetScale updates the scale of the mesh.
@@ -109,27 +111,27 @@ type TexturedMesh struct {
 }
 
 func (m *TexturedMesh) setup() {
-	m.vao = wrapper.GenVertexArrays()
-	m.vbo = wrapper.GenBuffers()
-	m.ebo = wrapper.GenBuffers()
+	m.vao = m.wrapper.GenVertexArrays()
+	m.vbo = m.wrapper.GenBuffers()
+	m.ebo = m.wrapper.GenBuffers()
 
-	wrapper.BindVertexArray(m.vao)
+	m.wrapper.BindVertexArray(m.vao)
 
-	wrapper.BindBuffer(wrapper.ARRAY_BUFFER, m.vbo)
-	wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_NORMAL_TEXCOORD))
+	m.wrapper.BindBuffer(glwrapper.ARRAY_BUFFER, m.vbo)
+	m.wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_NORMAL_TEXCOORD))
 
-	wrapper.BindBuffer(wrapper.ELEMENT_ARRAY_BUFFER, m.ebo)
-	wrapper.ElementBufferData(m.Indicies)
+	m.wrapper.BindBuffer(glwrapper.ELEMENT_ARRAY_BUFFER, m.ebo)
+	m.wrapper.ElementBufferData(m.Indicies)
 
 	// setup coordinates
-	wrapper.VertexAttribPointer(0, 3, wrapper.FLOAT, false, 4*8, wrapper.PtrOffset(0))
+	m.wrapper.VertexAttribPointer(0, 3, glwrapper.FLOAT, false, 4*8, m.wrapper.PtrOffset(0))
 	// setup normals
-	wrapper.VertexAttribPointer(1, 3, wrapper.FLOAT, false, 4*8, wrapper.PtrOffset(4*3))
+	m.wrapper.VertexAttribPointer(1, 3, glwrapper.FLOAT, false, 4*8, m.wrapper.PtrOffset(4*3))
 	// setup texture position
-	wrapper.VertexAttribPointer(2, 2, wrapper.FLOAT, false, 4*8, wrapper.PtrOffset(4*6))
+	m.wrapper.VertexAttribPointer(2, 2, glwrapper.FLOAT, false, 4*8, m.wrapper.PtrOffset(4*6))
 
 	// close
-	wrapper.BindVertexArray(0)
+	m.wrapper.BindVertexArray(0)
 }
 
 // Draw function is responsible for the actual drawing. It's input is a shader.
@@ -139,22 +141,22 @@ func (m *TexturedMesh) setup() {
 func (m *TexturedMesh) Draw(shader interfaces.Shader) {
 	for _, item := range m.Textures {
 		item.Bind()
-		shader.SetUniform1i(item.UniformName, int32(item.Id-wrapper.TEXTURE0))
+		shader.SetUniform1i(item.UniformName, int32(item.Id-glwrapper.TEXTURE0))
 	}
 	M := m.ModelTransformation()
 	shader.SetUniformMat4("model", M)
 	shader.SetUniform1f("material.shininess", float32(32))
-	wrapper.BindVertexArray(m.vao)
-	wrapper.DrawTriangleElements(int32(len(m.Indicies)))
+	m.wrapper.BindVertexArray(m.vao)
+	m.wrapper.DrawTriangleElements(int32(len(m.Indicies)))
 
 	m.Textures.UnBind()
-	wrapper.BindVertexArray(0)
-	wrapper.ActiveTexture(0)
+	m.wrapper.BindVertexArray(0)
+	m.wrapper.ActiveTexture(0)
 }
 
-// NewTexturedMesh gets the verticies, indicies, textures as inputs and makes the necessary setup for a
+// NewTexturedMesh gets the verticies, indicies, textures, glwrapper as inputs and makes the necessary setup for a
 // standing (not moving) textured mesh before returning it. The vbo, vao, ebo is also set.
-func NewTexturedMesh(v []vertex.Vertex, i []uint32, t texture.Textures) *TexturedMesh {
+func NewTexturedMesh(v []vertex.Vertex, i []uint32, t texture.Textures, wrapper interfaces.GLWrapper) *TexturedMesh {
 	mesh := &TexturedMesh{
 		Mesh: Mesh{
 			Verticies: v,
@@ -165,6 +167,7 @@ func NewTexturedMesh(v []vertex.Vertex, i []uint32, t texture.Textures) *Texture
 			angle:     0,
 			axis:      mgl32.Vec3{0, 0, 0},
 			scale:     mgl32.Vec3{1, 1, 1},
+			wrapper:   wrapper,
 		},
 		Indicies: i,
 		Textures: t,
@@ -180,9 +183,9 @@ type MaterialMesh struct {
 	ebo      uint32
 }
 
-// NewMaterialMesh gets the verticies, indicies, material as inputs and makes the necessary setup for a
+// NewMaterialMesh gets the verticies, indicies, material, glwrapper as inputs and makes the necessary setup for a
 // standing (not moving) material mesh before returning it. The vbo, vao, ebo is also set.
-func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat *material.Material) *MaterialMesh {
+func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat *material.Material, wrapper interfaces.GLWrapper) *MaterialMesh {
 	mesh := &MaterialMesh{
 		Mesh: Mesh{
 			Verticies: v,
@@ -193,6 +196,7 @@ func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat *material.Material) *Mat
 			angle:     0,
 			axis:      mgl32.Vec3{0, 0, 0},
 			scale:     mgl32.Vec3{1, 1, 1},
+			wrapper:   wrapper,
 		},
 		Indicies: i,
 		Material: mat,
@@ -201,25 +205,25 @@ func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat *material.Material) *Mat
 	return mesh
 }
 func (m *MaterialMesh) setup() {
-	m.vao = wrapper.GenVertexArrays()
-	m.vbo = wrapper.GenBuffers()
-	m.ebo = wrapper.GenBuffers()
+	m.vao = m.wrapper.GenVertexArrays()
+	m.vbo = m.wrapper.GenBuffers()
+	m.ebo = m.wrapper.GenBuffers()
 
-	wrapper.BindVertexArray(m.vao)
+	m.wrapper.BindVertexArray(m.vao)
 
-	wrapper.BindBuffer(wrapper.ARRAY_BUFFER, m.vbo)
-	wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_NORMAL))
+	m.wrapper.BindBuffer(glwrapper.ARRAY_BUFFER, m.vbo)
+	m.wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_NORMAL))
 
-	wrapper.BindBuffer(wrapper.ELEMENT_ARRAY_BUFFER, m.ebo)
-	wrapper.ElementBufferData(m.Indicies)
+	m.wrapper.BindBuffer(glwrapper.ELEMENT_ARRAY_BUFFER, m.ebo)
+	m.wrapper.ElementBufferData(m.Indicies)
 
 	// setup coordinates
-	wrapper.VertexAttribPointer(0, 3, wrapper.FLOAT, false, 4*6, wrapper.PtrOffset(0))
+	m.wrapper.VertexAttribPointer(0, 3, glwrapper.FLOAT, false, 4*6, m.wrapper.PtrOffset(0))
 	// setup normal vector
-	wrapper.VertexAttribPointer(1, 3, wrapper.FLOAT, false, 4*6, wrapper.PtrOffset(4*3))
+	m.wrapper.VertexAttribPointer(1, 3, glwrapper.FLOAT, false, 4*6, m.wrapper.PtrOffset(4*3))
 
 	// close
-	wrapper.BindVertexArray(0)
+	m.wrapper.BindVertexArray(0)
 }
 
 // Draw function is responsible for the actual drawing. It's input is a shader.
@@ -237,20 +241,20 @@ func (m *MaterialMesh) Draw(shader interfaces.Shader) {
 	shader.SetUniform3f("material.ambient", ambient.X(), ambient.Y(), ambient.Z())
 	shader.SetUniform3f("material.specular", specular.X(), specular.Y(), specular.Z())
 	shader.SetUniform1f("material.shininess", shininess)
-	wrapper.BindVertexArray(m.vao)
-	wrapper.DrawTriangleElements(int32(len(m.Indicies)))
+	m.wrapper.BindVertexArray(m.vao)
+	m.wrapper.DrawTriangleElements(int32(len(m.Indicies)))
 
-	wrapper.BindVertexArray(0)
-	wrapper.ActiveTexture(0)
+	m.wrapper.BindVertexArray(0)
+	m.wrapper.ActiveTexture(0)
 }
 
 type PointMesh struct {
 	Mesh
 }
 
-// NewPointMesh hasn't got any input, because it returns an empty mesh (without Verticies).
+// NewPointMesh has only a glwrapper input, because it returns an empty mesh (without Verticies).
 // Due to this, the vao, vbo setup is unnecessary now.
-func NewPointMesh() *PointMesh {
+func NewPointMesh(wrapper interfaces.GLWrapper) *PointMesh {
 	mesh := &PointMesh{
 		Mesh{
 			Verticies: []vertex.Vertex{},
@@ -261,28 +265,29 @@ func NewPointMesh() *PointMesh {
 			angle:     0,
 			axis:      mgl32.Vec3{0, 0, 0},
 			scale:     mgl32.Vec3{1, 1, 1},
+			wrapper:   wrapper,
 		},
 	}
 	return mesh
 }
 func (m *PointMesh) setup() {
-	m.vao = wrapper.GenVertexArrays()
-	m.vbo = wrapper.GenBuffers()
+	m.vao = m.wrapper.GenVertexArrays()
+	m.vbo = m.wrapper.GenBuffers()
 
-	wrapper.BindVertexArray(m.vao)
+	m.wrapper.BindVertexArray(m.vao)
 
-	wrapper.BindBuffer(wrapper.ARRAY_BUFFER, m.vbo)
-	wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_COLOR_SIZE))
+	m.wrapper.BindBuffer(glwrapper.ARRAY_BUFFER, m.vbo)
+	m.wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_COLOR_SIZE))
 
 	// setup coordinates
-	wrapper.VertexAttribPointer(0, 3, wrapper.FLOAT, false, 4*7, wrapper.PtrOffset(0))
+	m.wrapper.VertexAttribPointer(0, 3, glwrapper.FLOAT, false, 4*7, m.wrapper.PtrOffset(0))
 	// setup color vector
-	wrapper.VertexAttribPointer(1, 3, wrapper.FLOAT, false, 4*7, wrapper.PtrOffset(4*3))
+	m.wrapper.VertexAttribPointer(1, 3, glwrapper.FLOAT, false, 4*7, m.wrapper.PtrOffset(4*3))
 	// setup point size
-	wrapper.VertexAttribPointer(2, 1, wrapper.FLOAT, false, 4*7, wrapper.PtrOffset(4*6))
+	m.wrapper.VertexAttribPointer(2, 1, glwrapper.FLOAT, false, 4*7, m.wrapper.PtrOffset(4*6))
 
 	// close
-	wrapper.BindVertexArray(0)
+	m.wrapper.BindVertexArray(0)
 }
 
 // Draw function is responsible for the actual drawing. It's input is a shader.
@@ -292,11 +297,11 @@ func (m *PointMesh) setup() {
 func (m *PointMesh) Draw(shader interfaces.Shader) {
 	M := m.ModelTransformation()
 	shader.SetUniformMat4("model", M)
-	wrapper.BindVertexArray(m.vao)
-	wrapper.DrawArrays(wrapper.POINTS, 0, int32(len(m.Verticies)))
+	m.wrapper.BindVertexArray(m.vao)
+	m.wrapper.DrawArrays(glwrapper.POINTS, 0, int32(len(m.Verticies)))
 
-	wrapper.BindVertexArray(0)
-	wrapper.ActiveTexture(0)
+	m.wrapper.BindVertexArray(0)
+	m.wrapper.ActiveTexture(0)
 }
 
 // AddVertex inserts a new vertex to the verticies. Then it calls setup
@@ -312,9 +317,9 @@ type ColorMesh struct {
 	ebo      uint32
 }
 
-// NewColorMesh gets the verticies, indicies as inputs and makes the necessary setup for a
+// NewColorMesh gets the verticies, indicies, glwrapper as inputs and makes the necessary setup for a
 // standing (not moving) colored mesh before returning it. The vbo, vao, ebo is also set.
-func NewColorMesh(v []vertex.Vertex, i []uint32) *ColorMesh {
+func NewColorMesh(v []vertex.Vertex, i []uint32, wrapper interfaces.GLWrapper) *ColorMesh {
 	mesh := &ColorMesh{
 		Mesh: Mesh{
 			Verticies: v,
@@ -325,6 +330,7 @@ func NewColorMesh(v []vertex.Vertex, i []uint32) *ColorMesh {
 			angle:     0,
 			axis:      mgl32.Vec3{0, 0, 0},
 			scale:     mgl32.Vec3{1, 1, 1},
+			wrapper:   wrapper,
 		},
 		Indicies: i,
 	}
@@ -332,25 +338,25 @@ func NewColorMesh(v []vertex.Vertex, i []uint32) *ColorMesh {
 	return mesh
 }
 func (m *ColorMesh) setup() {
-	m.vao = wrapper.GenVertexArrays()
-	m.vbo = wrapper.GenBuffers()
-	m.ebo = wrapper.GenBuffers()
+	m.vao = m.wrapper.GenVertexArrays()
+	m.vbo = m.wrapper.GenBuffers()
+	m.ebo = m.wrapper.GenBuffers()
 
-	wrapper.BindVertexArray(m.vao)
+	m.wrapper.BindVertexArray(m.vao)
 
-	wrapper.BindBuffer(wrapper.ARRAY_BUFFER, m.vbo)
-	wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_COLOR))
+	m.wrapper.BindBuffer(glwrapper.ARRAY_BUFFER, m.vbo)
+	m.wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_COLOR))
 
-	wrapper.BindBuffer(wrapper.ELEMENT_ARRAY_BUFFER, m.ebo)
-	wrapper.ElementBufferData(m.Indicies)
+	m.wrapper.BindBuffer(glwrapper.ELEMENT_ARRAY_BUFFER, m.ebo)
+	m.wrapper.ElementBufferData(m.Indicies)
 
 	// setup coordinates
-	wrapper.VertexAttribPointer(0, 3, wrapper.FLOAT, false, 4*6, wrapper.PtrOffset(0))
+	m.wrapper.VertexAttribPointer(0, 3, glwrapper.FLOAT, false, 4*6, m.wrapper.PtrOffset(0))
 	// setup color vector
-	wrapper.VertexAttribPointer(1, 3, wrapper.FLOAT, false, 4*6, wrapper.PtrOffset(4*3))
+	m.wrapper.VertexAttribPointer(1, 3, glwrapper.FLOAT, false, 4*6, m.wrapper.PtrOffset(4*3))
 
 	// close
-	wrapper.BindVertexArray(0)
+	m.wrapper.BindVertexArray(0)
 }
 
 // Draw function is responsible for the actual drawing. It's input is a shader.
@@ -360,11 +366,11 @@ func (m *ColorMesh) setup() {
 func (m *ColorMesh) Draw(shader interfaces.Shader) {
 	M := m.ModelTransformation()
 	shader.SetUniformMat4("model", M)
-	wrapper.BindVertexArray(m.vao)
-	wrapper.DrawTriangleElements(int32(len(m.Indicies)))
+	m.wrapper.BindVertexArray(m.vao)
+	m.wrapper.DrawTriangleElements(int32(len(m.Indicies)))
 
-	wrapper.BindVertexArray(0)
-	wrapper.ActiveTexture(0)
+	m.wrapper.BindVertexArray(0)
+	m.wrapper.ActiveTexture(0)
 }
 
 type TexturedColoredMesh struct {
@@ -374,9 +380,9 @@ type TexturedColoredMesh struct {
 	ebo      uint32
 }
 
-// NewTexturedColoredMesh gets the verticies, indicies, textures as inputs and makes the necessary setup for a
+// NewTexturedColoredMesh gets the verticies, indicies, textures, glwrapper as inputs and makes the necessary setup for a
 // standing (not moving) textured colored mesh before returning it. The vbo, vao, ebo is also set.
-func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures) *TexturedColoredMesh {
+func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures, wrapper interfaces.GLWrapper) *TexturedColoredMesh {
 	mesh := &TexturedColoredMesh{
 		Mesh: Mesh{
 			Verticies: v,
@@ -387,6 +393,7 @@ func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures) *
 			angle:     0,
 			axis:      mgl32.Vec3{0, 0, 0},
 			scale:     mgl32.Vec3{1, 1, 1},
+			wrapper:   wrapper,
 		},
 		Indicies: i,
 		Textures: t,
@@ -395,27 +402,27 @@ func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures) *
 	return mesh
 }
 func (m *TexturedColoredMesh) setup() {
-	m.vao = wrapper.GenVertexArrays()
-	m.vbo = wrapper.GenBuffers()
-	m.ebo = wrapper.GenBuffers()
+	m.vao = m.wrapper.GenVertexArrays()
+	m.vbo = m.wrapper.GenBuffers()
+	m.ebo = m.wrapper.GenBuffers()
 
-	wrapper.BindVertexArray(m.vao)
+	m.wrapper.BindVertexArray(m.vao)
 
-	wrapper.BindBuffer(wrapper.ARRAY_BUFFER, m.vbo)
-	wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_COLOR_TEXCOORD))
+	m.wrapper.BindBuffer(glwrapper.ARRAY_BUFFER, m.vbo)
+	m.wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_COLOR_TEXCOORD))
 
-	wrapper.BindBuffer(wrapper.ELEMENT_ARRAY_BUFFER, m.ebo)
-	wrapper.ElementBufferData(m.Indicies)
+	m.wrapper.BindBuffer(glwrapper.ELEMENT_ARRAY_BUFFER, m.ebo)
+	m.wrapper.ElementBufferData(m.Indicies)
 
 	// setup coordinates
-	wrapper.VertexAttribPointer(0, 3, wrapper.FLOAT, false, 4*8, wrapper.PtrOffset(0))
+	m.wrapper.VertexAttribPointer(0, 3, glwrapper.FLOAT, false, 4*8, m.wrapper.PtrOffset(0))
 	// setup normals
-	wrapper.VertexAttribPointer(1, 3, wrapper.FLOAT, false, 4*8, wrapper.PtrOffset(4*3))
+	m.wrapper.VertexAttribPointer(1, 3, glwrapper.FLOAT, false, 4*8, m.wrapper.PtrOffset(4*3))
 	// setup texture position
-	wrapper.VertexAttribPointer(2, 2, wrapper.FLOAT, false, 4*8, wrapper.PtrOffset(4*6))
+	m.wrapper.VertexAttribPointer(2, 2, glwrapper.FLOAT, false, 4*8, m.wrapper.PtrOffset(4*6))
 
 	// close
-	wrapper.BindVertexArray(0)
+	m.wrapper.BindVertexArray(0)
 }
 
 // Draw function is responsible for the actual drawing. Its input is a shader.
@@ -425,14 +432,14 @@ func (m *TexturedColoredMesh) setup() {
 func (m *TexturedColoredMesh) Draw(shader interfaces.Shader) {
 	for _, item := range m.Textures {
 		item.Bind()
-		shader.SetUniform1i(item.UniformName, int32(item.Id-wrapper.TEXTURE0))
+		shader.SetUniform1i(item.UniformName, int32(item.Id-glwrapper.TEXTURE0))
 	}
 	M := m.ModelTransformation()
 	shader.SetUniformMat4("model", M)
-	wrapper.BindVertexArray(m.vao)
-	wrapper.DrawTriangleElements(int32(len(m.Indicies)))
+	m.wrapper.BindVertexArray(m.vao)
+	m.wrapper.DrawTriangleElements(int32(len(m.Indicies)))
 
 	m.Textures.UnBind()
-	wrapper.BindVertexArray(0)
-	wrapper.ActiveTexture(0)
+	m.wrapper.BindVertexArray(0)
+	m.wrapper.ActiveTexture(0)
 }
