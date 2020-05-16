@@ -69,6 +69,8 @@ var (
 	SpotLightOuterCutoff_1    = float32(5)
 
 	rotationAngle = float32(0.0)
+
+	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -81,21 +83,21 @@ func CreateCamera() *camera.Camera {
 func GenerateGrassMesh(t texture.Textures) *mesh.TexturedMesh {
 	square := primitives.NewSquare()
 	v, i := square.MeshInput()
-	m := mesh.NewTexturedMesh(v, i, t)
+	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	m.SetScale(mgl32.Vec3{100, 1, 100})
 	return m
 }
 func GenerateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 	cube := primitives.NewCube()
 	v, i := cube.MeshInput()
-	m := mesh.NewTexturedMesh(v, i, t)
+	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	m.SetPosition(pos)
 	return m
 }
 func GenerateRotatingCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 	cube := primitives.NewCube()
 	v, i := cube.MeshInput()
-	m := mesh.NewTexturedMesh(v, i, t)
+	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	m.SetPosition(pos)
 	m.SetRotationAxis(mgl32.Vec3{0, 1, 0})
 	return m
@@ -103,7 +105,7 @@ func GenerateRotatingCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.Textured
 func GenerateLiftingCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 	cube := primitives.NewCube()
 	v, i := cube.MeshInput()
-	m := mesh.NewTexturedMesh(v, i, t)
+	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	m.SetPosition(pos)
 	m.SetDirection(mgl32.Vec3{0, 1, 0})
 	m.SetSpeed(moveSpeed)
@@ -112,7 +114,14 @@ func GenerateLiftingCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedM
 func GenerateMaterialCubeMesh(mat *material.Material, pos mgl32.Vec3) *mesh.MaterialMesh {
 	cube := primitives.NewCube()
 	v, i := cube.MeshInput()
-	m := mesh.NewMaterialMesh(v, i, mat)
+	m := mesh.NewMaterialMesh(v, i, mat, glWrapper)
+	m.SetPosition(pos)
+	return m
+}
+func GenerateMaterialSphereMesh(mat *material.Material, pos mgl32.Vec3) *mesh.MaterialMesh {
+	sphere := primitives.NewSphere(20)
+	v, i := sphere.MaterialMeshInput()
+	m := mesh.NewMaterialMesh(v, i, mat, glWrapper)
 	m.SetPosition(pos)
 	return m
 }
@@ -205,21 +214,21 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 
-	textureShader := shader.NewShader("examples/model-loading/shaders/texture.vert", "examples/model-loading/shaders/texture.frag")
+	textureShader := shader.NewShader("examples/model-loading/shaders/texture.vert", "examples/model-loading/shaders/texture.frag", glWrapper)
 	app.AddShader(textureShader)
-	materialShader := shader.NewShader("examples/model-loading/shaders/material.vert", "examples/model-loading/shaders/material.frag")
+	materialShader := shader.NewShader("examples/model-loading/shaders/material.vert", "examples/model-loading/shaders/material.frag", glWrapper)
 	app.AddShader(materialShader)
 
 	var TexturesGrass texture.Textures
-	TexturesGrass.AddTexture("examples/model-loading/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse")
-	TexturesGrass.AddTexture("examples/model-loading/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular")
+	TexturesGrass.AddTexture("examples/model-loading/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
+	TexturesGrass.AddTexture("examples/model-loading/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
 	var TexturesCube texture.Textures
-	TexturesCube.AddTexture("examples/model-loading/assets/texture-diffuse.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse")
-	TexturesCube.AddTexture("examples/model-loading/assets/texture-specular.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular")
+	TexturesCube.AddTexture("examples/model-loading/assets/texture-diffuse.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
+	TexturesCube.AddTexture("examples/model-loading/assets/texture-specular.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
 
 	grassMesh := GenerateGrassMesh(TexturesGrass)
 	app.AddMeshToShader(grassMesh, textureShader)
@@ -231,6 +240,8 @@ func main() {
 	app.AddMeshToShader(LiftingCube, textureShader)
 	materialCube := GenerateMaterialCubeMesh(material.Silver, mgl32.Vec3{3, -0.5, -3})
 	app.AddMeshToShader(materialCube, materialShader)
+	materialSphere := GenerateMaterialSphereMesh(material.Silver, mgl32.Vec3{-3, -0.5, 3})
+	app.AddMeshToShader(materialSphere, materialShader)
 
 	// setup lighsources.
 	// directional light is coming from the up direction but not from too up.
@@ -257,15 +268,15 @@ func main() {
 	app.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
 	app.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.0, 0.0, 0.0, 1.0)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.0, 0.0, 0.0, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		Update()
 		app.Draw()
 		glfw.PollEvents()
