@@ -40,6 +40,8 @@ var (
 
 	cameraDistance       = 0.1
 	cameraDirectionSpeed = float32(0.00500)
+
+	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -52,7 +54,7 @@ func CreateCamera() *camera.Camera {
 func CreateColoredCubeMesh(pos mgl32.Vec3, col []mgl32.Vec3) *mesh.ColorMesh {
 	cube := cuboid.NewCube()
 	v, i := cube.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i)
+	m := mesh.NewColorMesh(v, i, glWrapper)
 	m.SetPosition(pos)
 	return m
 }
@@ -138,11 +140,11 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 
-	shaderProgram := shader.NewShader("examples/08-colors/shaders/vertexshader.vert", "examples/08-colors/shaders/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/08-colors/shaders/vertexshader.vert", "examples/08-colors/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 	lightSource := light.NewPointLight([4]mgl32.Vec3{mgl32.Vec3{0, 0, 0}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
 	app.AddPointLightSource(lightSource, [7]string{"", "light.ambient", "", "", "", "", ""})
@@ -160,16 +162,16 @@ func main() {
 	coloredCube := CreateColoredCubeMesh(mgl32.Vec3{0.0, 0.0, 0.0}, colors)
 	app.AddMeshToShader(coloredCube, shaderProgram)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
 		app.Draw()
