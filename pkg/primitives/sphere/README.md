@@ -10,3 +10,7 @@ This function returns the unit sphere. The precision is the only input of this f
 ## MaterialMeshInput
 
 MaterialMeshInput method returns the verticies, indicies - inputs for the NewMaterialMesh function.
+
+## ColoredMeshInput
+
+ColoredMeshInput method returns the verticies, indicies - inputs for the NewColorMesh function.

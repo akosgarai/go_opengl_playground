@@ -77,3 +77,15 @@ func (s *Sphere) MaterialMeshInput() (vertex.Verticies, []uint32) {
 	}
 	return verticies, s.Indicies
 }
+
+// ColorMeshInput method returns the verticies, indicies inputs for the NewColorMesh function.
+func (s *Sphere) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
+	var verticies vertex.Verticies
+	for i := 0; i < len(s.Points); i++ {
+		verticies = append(verticies, vertex.Vertex{
+			Position: s.Points[i],
+			Color:    col[i%len(col)],
+		})
+	}
+	return verticies, s.Indicies
+}
