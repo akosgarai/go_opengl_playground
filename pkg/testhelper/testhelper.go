@@ -2,6 +2,9 @@ package testhelper
 
 import (
 	"unsafe"
+
+	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type GLWrapperMock struct{}
@@ -73,3 +76,24 @@ func (g GLWrapperMock) Clear(mask uint32)                                       
 func (g GLWrapperMock) Enable(cap uint32)                                                  {}
 func (g GLWrapperMock) DepthFunc(xfunc uint32)                                             {}
 func (g GLWrapperMock) Viewport(x int32, y int32, width int32, height int32)               {}
+
+type WindowMock struct{}
+
+func (wm WindowMock) GetCursorPos() (float64, float64)                    { return 0.0, 0.0 }
+func (wm WindowMock) SetKeyCallback(cb glfw.KeyCallback) glfw.KeyCallback { return cb }
+func (wm WindowMock) SetMouseButtonCallback(cb glfw.MouseButtonCallback) glfw.MouseButtonCallback {
+	return cb
+}
+func (wm WindowMock) ShouldClose() bool { return false }
+func (wm WindowMock) SwapBuffers()      {}
+
+type CameraMock struct{}
+
+func (cm CameraMock) Log() string                      { return "" }
+func (cm CameraMock) GetViewMatrix() mgl32.Mat4        { return mgl32.Ident4() }
+func (cm CameraMock) GetProjectionMatrix() mgl32.Mat4  { return mgl32.Ident4() }
+func (cm CameraMock) Walk(float32)                     {}
+func (cm CameraMock) Strafe(float32)                   {}
+func (cm CameraMock) Lift(float32)                     {}
+func (cm CameraMock) UpdateDirection(float32, float32) {}
+func (cm CameraMock) GetPosition() mgl32.Vec3          { return mgl32.Vec3{0, 0, 0} }

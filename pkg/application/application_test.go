@@ -4,70 +4,15 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/akosgarai/opengl_playground/pkg/testhelper"
+
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-type WindowMock struct {
-}
+var wm testhelper.WindowMock
 
-func (wm WindowMock) GetCursorPos() (float64, float64) {
-	return 0.0, 0.0
-}
-func (wm WindowMock) SetKeyCallback(cb glfw.KeyCallback) glfw.KeyCallback {
-	return cb
-}
-func (wm WindowMock) SetMouseButtonCallback(cb glfw.MouseButtonCallback) glfw.MouseButtonCallback {
-	return cb
-}
-func (wm WindowMock) ShouldClose() bool {
-	return false
-}
-func (wm WindowMock) SwapBuffers() {
-}
-
-var wm WindowMock
-
-type CameraMock struct {
-}
-
-func (cm CameraMock) Log() string {
-	return ""
-}
-func (cm CameraMock) GetViewMatrix() mgl32.Mat4 {
-	return mgl32.Ident4()
-}
-func (cm CameraMock) GetProjectionMatrix() mgl32.Mat4 {
-	return mgl32.Ident4()
-}
-func (cm CameraMock) Walk(float32) {
-}
-func (cm CameraMock) Strafe(float32) {
-}
-func (cm CameraMock) Lift(float32) {
-}
-func (cm CameraMock) UpdateDirection(float32, float32) {
-}
-func (cm CameraMock) GetPosition() mgl32.Vec3 {
-	return mgl32.Vec3{0, 0, 0}
-}
-
-var cm CameraMock
-
-type DrawableMock struct {
-}
-
-func (dm DrawableMock) Draw() {
-}
-func (dm DrawableMock) DrawWithUniforms(m1, m2 mgl32.Mat4) {
-}
-func (dm DrawableMock) Update(float64) {
-}
-func (dm DrawableMock) Log() string {
-	return ""
-}
-
-var dm DrawableMock
+var cm testhelper.CameraMock
 
 func TestNew(t *testing.T) {
 	app := New()
