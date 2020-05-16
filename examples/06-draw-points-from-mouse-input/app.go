@@ -30,6 +30,8 @@ var (
 	app *application.Application
 
 	PointMesh *mesh.PointMesh
+
+	glWrapper wrapper.Wrapper
 )
 
 func Update() {
@@ -56,24 +58,24 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/06-draw-points-from-mouse-input/shaders/vertexshader.vert", "examples/06-draw-points-from-mouse-input/shaders/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/06-draw-points-from-mouse-input/shaders/vertexshader.vert", "examples/06-draw-points-from-mouse-input/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
-	PointMesh = mesh.NewPointMesh()
+	PointMesh = mesh.NewPointMesh(glWrapper)
 	app.AddMeshToShader(PointMesh, shaderProgram)
 
 	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
-	wrapper.Enable(wrapper.PROGRAM_POINT_SIZE)
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	glWrapper.Enable(wrapper.PROGRAM_POINT_SIZE)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
 		app.Draw()
