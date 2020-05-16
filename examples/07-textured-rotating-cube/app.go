@@ -43,6 +43,8 @@ var (
 	cameraDistance       = 0.1
 	cameraDirectionSpeed = float32(0.00500)
 	rotationAngle        = float32(0.0)
+
+	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -64,7 +66,7 @@ func GenerateRotatingCubeMesh(t texture.Textures) *mesh.TexturedColoredMesh {
 	}
 	cube := cuboid.NewCube()
 	v, i := cube.TexturedColoredMeshInput(colors)
-	m := mesh.NewTexturedColoredMesh(v, i, t)
+	m := mesh.NewTexturedColoredMesh(v, i, t, glWrapper)
 	m.SetRotationAxis(mgl32.Vec3{0, 1, 0})
 	return m
 }
@@ -153,27 +155,27 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/07-textured-rotating-cube/shaders/vertexshader.vert", "examples/07-textured-rotating-cube/shaders/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/07-textured-rotating-cube/shaders/vertexshader.vert", "examples/07-textured-rotating-cube/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 	var tex texture.Textures
-	tex.AddTexture("examples/07-textured-rotating-cube/assets/image-texture.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
+	tex.AddTexture("examples/07-textured-rotating-cube/assets/image-texture.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne", glWrapper)
 
 	app.SetCamera(CreateCamera())
 	Cube = GenerateRotatingCubeMesh(tex)
 	app.AddMeshToShader(Cube, shaderProgram)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		Update()
 		app.Draw()
 		glfw.PollEvents()
