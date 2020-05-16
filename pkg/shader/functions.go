@@ -5,7 +5,8 @@ import (
 	"io/ioutil"
 	"strings"
 
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/interfaces"
 )
 
 // LoadShaderFromFile takes a filepath string arguments.
@@ -23,7 +24,7 @@ func LoadShaderFromFile(path string) (string, error) {
 // CompileShader creeates a shader, compiles the shader source, and returns
 // the uint32 identifier of the shader and nil. If the compile fails, it returns
 // an error and 0 as shader id.
-func CompileShader(source string, shaderType uint32) (uint32, error) {
+func CompileShader(source string, shaderType uint32, wrapper interfaces.GLWrapper) (uint32, error) {
 	shader := wrapper.CreateShader(shaderType)
 
 	csources, free := wrapper.Strs(source)
@@ -32,10 +33,10 @@ func CompileShader(source string, shaderType uint32) (uint32, error) {
 	wrapper.CompileShader(shader)
 
 	var status int32
-	wrapper.GetShaderiv(shader, wrapper.COMPILE_STATUS, &status)
-	if status == wrapper.FALSE {
+	wrapper.GetShaderiv(shader, glwrapper.COMPILE_STATUS, &status)
+	if status == glwrapper.FALSE {
 		var logLength int32
-		wrapper.GetShaderiv(shader, wrapper.INFO_LOG_LENGTH, &logLength)
+		wrapper.GetShaderiv(shader, glwrapper.INFO_LOG_LENGTH, &logLength)
 
 		log := strings.Repeat("\x00", int(logLength+1))
 		wrapper.GetShaderInfoLog(shader, logLength, nil, wrapper.Str(log))

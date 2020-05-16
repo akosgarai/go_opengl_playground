@@ -1,9 +1,7 @@
 # Shader
 
+This structure helps us to create shader applications. It stores an `id`, that was generated with the gl.CreateProgram command, and the wrapper, that is ued to call gl. functions.
 
-This readme is outdated. the package tests are broken. Needs to be fixed and updated.
-
-This package is a kind of wrapper for the gl.\* commands.
 
 ## Functions
 
@@ -19,48 +17,28 @@ It compiles the given shader program string as the given type of shader. In case
 
 ### NewShader
 
-NewShader returns a Shader. It's inputs are the filenames of the shaders. It reads the files and compiles them. The shaders are attached to the shader program.
+NewShader returns a Shader. It's inputs are the filenames of the shaders, and the glwrapper instance. It reads the files and compiles them. The shaders are attached to the shader program.
 
 ### Use
 
 Use is a wrapper for gl.UseProgram
 
+### GetId
+
+GetId returns the shader program id.
+
 ### SetUniformMat4
 
-SetUniformMat4 gets an uniform name string and the value matrix as input and calls the gl.UniformMatrix4fv function
-
-### SetUniformMat3
-
-SetUniformMat3 gets an uniform name string and the value matrix as input and calls the gl.UniformMatrix3fv function
+SetUniformMat4 gets an uniform name string and the value matrix as input and calls the gl.UniformMatrix4fv function through its wrapper.
 
 ### SetUniform3f
 
-SetUniform3f gets an uniform name string and 3 float values as input and calls the gl.Uniform3f function
+SetUniform3f gets an uniform name string and 3 float values as input and calls the gl.Uniform3f function through its wrapper.
 
 ### SetUniform1f
 
-SetUniform1f gets an uniform name string and a float value as input and calls the gl.Uniform1f function
+SetUniform1f gets an uniform name string and a float value as input and calls the gl.Uniform1f function through its wrapper.
 
-### BindBufferData
+### SetUniform1i
 
-BindBufferData gets a float array as an input, generates a buffer binds it as array buffer, and sets the input as buffer data.
-
-### BindVertexArray
-
-BindVertexArray generates a vertex array and binds it.
-
-### VertexAttribPointer
-
-VertexAttribPointer sets the pointer.
-
-### Close
-
-Close disables the vertexarraypointers and the vertex array.
-
-### DrawPoints
-
-DrawPoints is the draw functions for points
-
-### DrawTriangles
-
-DrawTriangles is the draw function for triangles
+SetUniform1i gets an uniform name string and an integer value as input and calls the gl.Uniform1i function through its wrapper.

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/testhelper"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 
@@ -140,6 +141,9 @@ var (
 	LightQuadraticTerm = float32(0.05)
 	LightCutoff        = float32(12.0)
 	LightOuterCutoff   = float32(20.0)
+
+	testGlWrapper testhelper.GLWrapperMock
+	realGlWrapper wrapper.Wrapper
 )
 
 func NewPointLightSource() *light.Light {
@@ -192,14 +196,10 @@ func NewTestShader(t *testing.T, validFragmentShaderContent, validVertexShaderCo
 	defer DeleteFile(VertexShaderFileName)
 	runtime.LockOSThread()
 	InitGlfw()
-	wrapper.InitOpenGL()
-	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
-	if shader.shaderProgramId == 0 {
+	testGlWrapper.InitOpenGL()
+	shader := NewShader(VertexShaderFileName, FragmentShaderFileName, testGlWrapper)
+	if shader.id == 0 {
 		t.Error("Invalid shader program id")
-		t.Fail()
-	}
-	if len(shader.textures) != 0 {
-		t.Error("Invalid shader texture length.")
 		t.Fail()
 	}
 	return shader
@@ -238,12 +238,12 @@ func TestCompileShader(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
-	_, err := CompileShader(InvalidShaderStringWithTrailingChars, wrapper.VERTEX_SHADER)
+	realGlWrapper.InitOpenGL()
+	_, err := CompileShader(InvalidShaderStringWithTrailingChars, wrapper.VERTEX_SHADER, realGlWrapper)
 	if err == nil {
 		t.Error("Compile should fail with wrong content.")
 	}
-	prog, err := CompileShader(ValidVertexShaderWithUniformsStringWithTrailingChars, wrapper.VERTEX_SHADER)
+	prog, err := CompileShader(ValidVertexShaderWithUniformsStringWithTrailingChars, wrapper.VERTEX_SHADER, realGlWrapper)
 	if err != nil {
 		t.Error(err)
 	}
@@ -269,8 +269,8 @@ func TestNewShaderPanicOnVertexContent(t *testing.T) {
 		runtime.LockOSThread()
 		InitGlfw()
 		defer glfw.Terminate()
-		wrapper.InitOpenGL()
-		NewShader(VertexShaderFileName, FragmentShaderFileName)
+		realGlWrapper.InitOpenGL()
+		NewShader(VertexShaderFileName, FragmentShaderFileName, realGlWrapper)
 	}()
 }
 func TestNewShaderPanicOnFragmentContent(t *testing.T) {
@@ -291,8 +291,8 @@ func TestNewShaderPanicOnFragmentContent(t *testing.T) {
 		runtime.LockOSThread()
 		InitGlfw()
 		defer glfw.Terminate()
-		wrapper.InitOpenGL()
-		NewShader(VertexShaderFileName, FragmentShaderFileName)
+		realGlWrapper.InitOpenGL()
+		NewShader(VertexShaderFileName, FragmentShaderFileName, realGlWrapper)
 	}()
 }
 func TestNewShaderPanicOnFragmentFile(t *testing.T) {
@@ -311,8 +311,8 @@ func TestNewShaderPanicOnFragmentFile(t *testing.T) {
 		runtime.LockOSThread()
 		InitGlfw()
 		defer glfw.Terminate()
-		wrapper.InitOpenGL()
-		NewShader(VertexShaderFileName, FragmentShaderFileName)
+		realGlWrapper.InitOpenGL()
+		NewShader(VertexShaderFileName, FragmentShaderFileName, realGlWrapper)
 	}()
 }
 func TestNewShaderPanicOnVertexFile(t *testing.T) {
@@ -331,8 +331,8 @@ func TestNewShaderPanicOnVertexFile(t *testing.T) {
 		runtime.LockOSThread()
 		InitGlfw()
 		defer glfw.Terminate()
-		wrapper.InitOpenGL()
-		NewShader(VertexShaderFileName, FragmentShaderFileName)
+		realGlWrapper.InitOpenGL()
+		NewShader(VertexShaderFileName, FragmentShaderFileName, realGlWrapper)
 	}()
 }
 func TestNewShader(t *testing.T) {
@@ -346,9 +346,9 @@ func TestNewShader(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
-	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
-	if shader.shaderProgramId == 0 {
+	realGlWrapper.InitOpenGL()
+	shader := NewShader(VertexShaderFileName, FragmentShaderFileName, realGlWrapper)
+	if shader.id == 0 || shader.GetId() == 0 {
 		t.Error("Invalid shader program id")
 	}
 }
@@ -363,9 +363,9 @@ func TestUse(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
-	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
-	if shader.shaderProgramId == 0 {
+	realGlWrapper.InitOpenGL()
+	shader := NewShader(VertexShaderFileName, FragmentShaderFileName, realGlWrapper)
+	if shader.id == 0 || shader.GetId() == 0 {
 		t.Error("Invalid shader program id")
 	}
 	shader.Use()
@@ -381,32 +381,13 @@ func TestSetUniformMat4(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
-	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
-	if shader.shaderProgramId == 0 {
+	realGlWrapper.InitOpenGL()
+	shader := NewShader(VertexShaderFileName, FragmentShaderFileName, realGlWrapper)
+	if shader.id == 0 || shader.GetId() == 0 {
 		t.Error("Invalid shader program id")
 	}
 	shader.Use()
 	shader.SetUniformMat4("model", mgl32.Ident4())
-}
-func TestSetUniformMat3(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	CreateFileWithContent(FragmentShaderFileName, ValidFragmentShaderString)
-	defer DeleteFile(FragmentShaderFileName)
-	CreateFileWithContent(VertexShaderFileName, ValidVertexShaderWithMat3String)
-	defer DeleteFile(VertexShaderFileName)
-	runtime.LockOSThread()
-	InitGlfw()
-	defer glfw.Terminate()
-	wrapper.InitOpenGL()
-	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
-	if shader.shaderProgramId == 0 {
-		t.Error("Invalid shader program id")
-	}
-	shader.Use()
-	shader.SetUniformMat3("model", mgl32.Ident3())
 }
 func TestSetUniform3f(t *testing.T) {
 	if testing.Short() {
@@ -419,9 +400,9 @@ func TestSetUniform3f(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
-	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
-	if shader.shaderProgramId == 0 {
+	realGlWrapper.InitOpenGL()
+	shader := NewShader(VertexShaderFileName, FragmentShaderFileName, realGlWrapper)
+	if shader.id == 0 || shader.GetId() == 0 {
 		t.Error("Invalid shader program id")
 	}
 	shader.Use()
@@ -438,9 +419,9 @@ func TestSetUniform1f(t *testing.T) {
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
-	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
-	if shader.shaderProgramId == 0 {
+	realGlWrapper.InitOpenGL()
+	shader := NewShader(VertexShaderFileName, FragmentShaderFileName, realGlWrapper)
+	if shader.id == 0 || shader.GetId() == 0 {
 		t.Error("Invalid shader program id")
 	}
 	var valueToSet float32
@@ -448,514 +429,24 @@ func TestSetUniform1f(t *testing.T) {
 	shader.Use()
 	shader.SetUniform1f("pointSize", valueToSet)
 }
-func TestGetUniformLocation(t *testing.T) {
+func TestSetUniform1i(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping it in short mode")
 	}
 	CreateFileWithContent(FragmentShaderFileName, ValidFragmentShaderString)
 	defer DeleteFile(FragmentShaderFileName)
-	CreateFileWithContent(VertexShaderFileName, ValidVertexShaderWithUniformsString)
+	CreateFileWithContent(VertexShaderFileName, ValidVertexShaderWithFloatUniformString)
 	defer DeleteFile(VertexShaderFileName)
 	runtime.LockOSThread()
 	InitGlfw()
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
-	shader := NewShader(VertexShaderFileName, FragmentShaderFileName)
-	shader.Use()
-	if shader.shaderProgramId == 0 {
+	realGlWrapper.InitOpenGL()
+	shader := NewShader(VertexShaderFileName, FragmentShaderFileName, realGlWrapper)
+	if shader.id == 0 || shader.GetId() == 0 {
 		t.Error("Invalid shader program id")
 	}
-	testData := []struct {
-		Name     string
-		Location int32
-	}{
-		{"model", 0},
-		{"view", 2},
-		{"projection", 1},
-		{"notValidUniformName", -1},
-	}
-	for _, tt := range testData {
-		location := wrapper.GetUniformLocation(shader.shaderProgramId, tt.Name)
-		if location != tt.Location {
-			t.Error("Invalid location identifier")
-		}
-	}
-}
-func TestBindBufferData(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer glfw.Terminate()
-	bufferData := []float32{0, 0, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-}
-func TestBindVertexArray(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer glfw.Terminate()
-	bufferData := []float32{0, 0, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-}
-func TestVertexAttribPointer(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer glfw.Terminate()
-	bufferData := []float32{0, 0, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(6*4), 0)
-}
-func TestClose(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer glfw.Terminate()
-	bufferData := []float32{0, 0, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(6*4), 0)
-	shader.VertexAttribPointer(uint32(1), int32(3), int32(6*4), 3*4)
-	shader.Close(1)
-}
-func TestDrawPoints(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer glfw.Terminate()
-	bufferData := []float32{0, 0, 0, 1, 1, 1, 5}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
-	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
-	shader.VertexAttribPointer(uint32(2), int32(1), int32(7*4), 6*4)
-	shader.DrawPoints(1)
-	shader.Close(2)
-}
-func TestDrawPointsLightColor(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	lightSource := NewPointLightSource()
-	shader.AddPointLightSource(lightSource, [7]string{"lightSourceName", "", "diffuseUniformName", "", "", "", ""})
-	defer glfw.Terminate()
-	bufferData := []float32{0, 0, 0, 1, 1, 1, 5}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
-	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
-	shader.VertexAttribPointer(uint32(2), int32(1), int32(7*4), 6*4)
-	shader.DrawPoints(1)
-	shader.Close(2)
-}
-func TestDrawTriangles(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer glfw.Terminate()
-	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
-	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
-	shader.DrawTriangles(1)
-	shader.Close(1)
-}
-func TestDrawTrianglesLight(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	lightSource := NewPointLightSource()
-	shader.AddPointLightSource(lightSource, [7]string{"lightSourceName", "", "diffuseUniformName", "", "", "", ""})
-	defer glfw.Terminate()
-	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
-	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
-	shader.DrawTriangles(1)
-	shader.Close(1)
-}
-func TestDrawTrianglesTextures(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer glfw.Terminate()
-	shader.AddTexture("transparent-image-for-texture-testing.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
-	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
-	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
-	shader.DrawTriangles(1)
-	shader.Close(1)
-}
-func TestTexParameteri(t *testing.T) {
-	t.Skip("Unimplemented")
-}
-func TestTextureBorderColor(t *testing.T) {
-	t.Skip("Unimplemented")
-}
-
-func TestLoadImageFromFile(t *testing.T) {
-	_, err := loadImageFromFile("this-image-does-not-exist.jpg")
-	if err == nil {
-		t.Error("Image load should be failed.")
-	}
-	_, err = loadImageFromFile("transparent-image-for-texture-testing.jpg")
-	if err != nil {
-		t.Error("Issue during load.")
-	}
-}
-func TestAddTexture(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer glfw.Terminate()
-	shader.AddTexture("transparent-image-for-texture-testing.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
-	if len(shader.textures) != 1 {
-		t.Error("Invalid shader length.")
-	}
-	shader.Close(2)
-}
-func TestAddTextureInvalidFilename(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	func() {
-		defer func() {
-			if r := recover(); r == nil {
-				defer glfw.Terminate()
-				t.Errorf("AddTexture should have panicked due to the missing file!")
-			}
-		}()
-		runtime.LockOSThread()
-		shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-		defer glfw.Terminate()
-		shader.AddTexture("this-file-does-not-exist.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
-	}()
-}
-func TestTextureBind(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer glfw.Terminate()
-	shader.AddTexture("transparent-image-for-texture-testing.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
-	shader.textures[0].Bind(wrapper.TEXTURE0)
-	defer shader.textures[0].UnBind()
-
-	if shader.textures[0].texUnitId != wrapper.TEXTURE0 {
-		t.Error("Invalid texUnitId")
-	}
-	shader.Close(2)
-}
-func TestTextureIsBinded(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	shader.AddTexture("transparent-image-for-texture-testing.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
-	shader.textures[0].Bind(wrapper.TEXTURE0)
-	if !shader.textures[0].IsBinded() {
-		t.Error("Texture should be binded")
-	}
-	shader.textures[0].UnBind()
-	if shader.textures[0].IsBinded() {
-		t.Log(shader.textures)
-		t.Errorf("Texture shouldn't be binded. id: '%d'", shader.textures[0].texUnitId)
-	}
-}
-func TestTextureUnbind(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	shader.AddTexture("transparent-image-for-texture-testing.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
-	shader.textures[0].Bind(wrapper.TEXTURE0)
-	if !shader.textures[0].IsBinded() {
-		t.Error("Texture should be binded")
-	}
-	shader.textures[0].UnBind()
-	if shader.textures[0].IsBinded() {
-		t.Error("Texture shouldn't be binded")
-	}
-}
-func TestHasTexture(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	if shader.HasTexture() {
-		t.Error("Shouldn't have texture")
-	}
-	shader.AddTexture("transparent-image-for-texture-testing.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne")
-	if !shader.HasTexture() {
-		t.Error("it has texture")
-	}
-}
-func TestLightDiffuseColor(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	lightSource := NewPointLightSource()
-	shader.AddPointLightSource(lightSource, [7]string{"lightSourceName", "", "diffuseUniformName", "", "", "", ""})
-	if shader.pointLightSources[0].DiffuseUniformName != "diffuseUniformName" {
-		t.Error("Invalid light uniform name")
-	}
-	if shader.pointLightSources[0].LightSource.GetDiffuse() != LightDiffuse {
-		t.Error("Invalid light color")
-	}
-}
-func TestSetLightAmbient(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	lightSource := NewPointLightSource()
-	ambientUniformName := "ambientStrengthName"
-	shader.AddPointLightSource(lightSource, [7]string{"lightSourceName", ambientUniformName, "", "", "", "", ""})
-
-	if shader.pointLightSources[0].LightSource.GetAmbient() != LightAmbient {
-		t.Error("Invalid light ambient strength")
-	}
-	if shader.pointLightSources[0].AmbientUniformName != ambientUniformName {
-		t.Error("Invalid light uniform name")
-	}
-}
-func TestDrawWithLightAmbient(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	lightSource := NewPointLightSource()
-	shader.AddPointLightSource(lightSource, [7]string{"lightSourceName", "ambientSourceName", "", "", "", "", ""})
-
-	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
-	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
-	shader.DrawTriangles(1)
-	shader.Close(1)
-
-}
-func TestUseLightPosition(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	lightPositionName := "lightPosName"
-	lightSource := NewPointLightSource()
-	shader.AddPointLightSource(lightSource, [7]string{lightPositionName, "", "", "", "", "", ""})
-	if shader.pointLightSources[0].PositionUniformName != lightPositionName {
-		t.Errorf("Invalid light uniform name. Instead of '%s', we have '%s'", lightPositionName, shader.pointLightSources[0].PositionUniformName)
-	}
-	if shader.pointLightSources[0].LightSource.GetPosition() != LightPosition {
-		t.Error("Invalid light Position")
-	}
-}
-func TestDrawTrianglesLightPosition(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	lightSource := NewPointLightSource()
-	shader.AddPointLightSource(lightSource, [7]string{"posUniform", "", "", "", "", "", ""})
-	defer glfw.Terminate()
-	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
-	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
-	shader.DrawTriangles(1)
-	shader.Close(1)
-}
-func TestSetViewPosition(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	viewPosition := mgl32.Vec3{1, 1, 1}
-	viewPositionName := "viewPosName"
-	shader.SetViewPosition(viewPosition, viewPositionName)
-	if shader.viewPositionUniformName != viewPositionName {
-		t.Errorf("Invalid view position uniform name. Instead of '%s', we have '%s'", viewPositionName, shader.viewPositionUniformName)
-	}
-	if shader.viewPosition != viewPosition {
-		t.Error("Invalid view Position")
-	}
-}
-func TestSetLightSpecular(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	lightSource := NewPointLightSource()
-	shader.AddPointLightSource(lightSource, [7]string{"", "", "", "specularUniform", "", "", ""})
-
-	if shader.pointLightSources[0].SpecularUniformName != "specularUniform" {
-		t.Error("Invalid light specular uniform name")
-	}
-	if shader.pointLightSources[0].LightSource.GetSpecular() != LightSpecular {
-		t.Error("Invalid light specular value")
-	}
-}
-func TestDrawWithLightSpecular(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	lightSource := NewPointLightSource()
-	shader.AddPointLightSource(lightSource, [7]string{"", "", "", "specularUniform", "", "", ""})
-	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
-	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
-	shader.DrawTriangles(1)
-	shader.Close(1)
-
-}
-func TestDrawWithLightViewPosition(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	lightSource := NewPointLightSource()
-	shader.AddPointLightSource(lightSource, [7]string{"posUniform", "ambientUniform", "diffuseUniform", "specularUniform", "", "", ""})
-	viewPosition := mgl32.Vec3{1, 1, 1}
-	viewPositionName := "viewPosName"
-	shader.SetViewPosition(viewPosition, viewPositionName)
-	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
-	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
-	shader.DrawTriangles(1)
-	shader.Close(1)
-
-}
-func TestDrawWithPointLightViewPositionFullLightParamList(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	lightSource := NewPointLightSource()
-	shader.AddPointLightSource(lightSource, [7]string{"posUniform", "ambientUniform", "diffuseUniform", "specularUniform", "constant", "linear", "quadratic"})
-	viewPosition := mgl32.Vec3{1, 1, 1}
-	viewPositionName := "viewPosName"
-	shader.SetViewPosition(viewPosition, viewPositionName)
-	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
-	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
-	shader.DrawTriangles(1)
-	shader.Close(1)
-
-}
-func TestDrawWithDirectionalLightViewPositionFullParamList(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	lightSource := NewDirectionalLightSource()
-	shader.AddDirectionalLightSource(lightSource, [4]string{"posUniform", "ambientUniform", "diffuseUniform", "specularUniform"})
-	viewPosition := mgl32.Vec3{1, 1, 1}
-	viewPositionName := "viewPosName"
-	shader.SetViewPosition(viewPosition, viewPositionName)
-	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
-	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
-	shader.DrawTriangles(1)
-	shader.Close(1)
-}
-func TestDrawWithSpotViewPositionFullLightParamList(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping it in short mode")
-	}
-	runtime.LockOSThread()
-	shader := NewTestShader(t, ValidTextureFragmentShader, ValidTextureVertexShader)
-	defer shader.Close(2)
-	defer glfw.Terminate()
-	lightSource := NewPointLightSource()
-	shader.AddSpotLightSource(lightSource, [10]string{"posUniform", "directionUniform", "ambientUniform", "diffuseUniform", "specularUniform", "constant", "linear", "quadratic", "cutoff", "outercutoff"})
-	viewPosition := mgl32.Vec3{1, 1, 1}
-	viewPositionName := "viewPosName"
-	shader.SetViewPosition(viewPosition, viewPositionName)
-	bufferData := []float32{0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1}
-	shader.BindBufferData(bufferData)
-	shader.BindVertexArray()
-	shader.VertexAttribPointer(uint32(0), int32(3), int32(7*4), 0)
-	shader.VertexAttribPointer(uint32(1), int32(3), int32(7*4), 3*4)
-	shader.DrawTriangles(1)
-	shader.Close(1)
-
+	var valueToSet int32
+	valueToSet = 20
+	shader.Use()
+	shader.SetUniform1i("pointSize", valueToSet)
 }
