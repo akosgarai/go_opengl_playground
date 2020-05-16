@@ -48,6 +48,8 @@ var (
 	cameraLastUpdate int64
 
 	addPoint = false
+
+	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -135,28 +137,28 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 
 	cameraLastUpdate = time.Now().UnixNano()
 
-	Shader = shader.NewShader("examples/model-loading/shaders/point.vert", "examples/model-loading/shaders/point.frag")
+	Shader = shader.NewShader("examples/model-loading/shaders/point.vert", "examples/model-loading/shaders/point.frag", glWrapper)
 	app.AddShader(Shader)
 
-	PointMesh = mesh.NewPointMesh()
+	PointMesh = mesh.NewPointMesh(glWrapper)
 	app.AddMeshToShader(PointMesh, Shader)
 
 	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
-	wrapper.Enable(wrapper.PROGRAM_POINT_SIZE)
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	glWrapper.Enable(wrapper.PROGRAM_POINT_SIZE)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		Update()
 		app.Draw()
 		glfw.PollEvents()
