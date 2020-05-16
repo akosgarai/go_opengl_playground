@@ -16,7 +16,7 @@ import (
 
 const (
 	WindowWidth  = 800
-	WindowHeight = 600
+	WindowHeight = 800
 	WindowTitle  = "Static triangle with multiple color"
 )
 
@@ -28,12 +28,14 @@ var (
 	}
 
 	app *application.Application
+
+	glWrapper wrapper.Wrapper
 )
 
 func GenerateColoredTriangleMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	triang := triangle.New(30, 60, 90)
 	v, i := triang.ColoredMeshInput(col)
-	return mesh.NewColorMesh(v, i)
+	return mesh.NewColorMesh(v, i, glWrapper)
 }
 
 func main() {
@@ -42,9 +44,9 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/02-static-triangle/shaders/vertexshader.vert", "examples/02-static-triangle/shaders/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/02-static-triangle/shaders/vertexshader.vert", "examples/02-static-triangle/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
 	triang := GenerateColoredTriangleMesh(color)
@@ -52,11 +54,11 @@ func main() {
 	triang.SetRotationAxis(mgl32.Vec3{1, 1, 0})
 	app.AddMeshToShader(triang, shaderProgram)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		app.Draw()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
