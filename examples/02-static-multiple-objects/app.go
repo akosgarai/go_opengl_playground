@@ -17,7 +17,7 @@ import (
 
 const (
 	WindowWidth  = 800
-	WindowHeight = 600
+	WindowHeight = 800
 	WindowTitle  = "Example - static triangle and square"
 )
 
@@ -25,17 +25,19 @@ var (
 	app *application.Application
 
 	color = []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
+
+	glWrapper wrapper.Wrapper
 )
 
 func GenerateColoredRectangleMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	square := rectangle.NewSquare()
 	v, i := square.ColoredMeshInput(col)
-	return mesh.NewColorMesh(v, i)
+	return mesh.NewColorMesh(v, i, glWrapper)
 }
 func GenerateColoredTriangleMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	square := triangle.New(30, 60, 90)
 	v, i := square.ColoredMeshInput(col)
-	return mesh.NewColorMesh(v, i)
+	return mesh.NewColorMesh(v, i, glWrapper)
 }
 func main() {
 	runtime.LockOSThread()
@@ -43,9 +45,9 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/02-static-multiple-objects/shaders/vertexshader.vert", "examples/02-static-multiple-objects/shaders/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/02-static-multiple-objects/shaders/vertexshader.vert", "examples/02-static-multiple-objects/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
 	triang := GenerateColoredTriangleMesh(color)
@@ -62,11 +64,11 @@ func main() {
 	square.SetPosition(mgl32.Vec3{0.4, -0.2, 0})
 	app.AddMeshToShader(square, shaderProgram)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		app.Draw()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
