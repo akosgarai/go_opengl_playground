@@ -5,6 +5,7 @@ This package contains the texture related data
 - **UniformName** The Uniform name of the texture
 - **TextureName** The generated name that was given by the GenTextures command
 - **TargetId** The target that we use for BindTexture. eg: `TEXTURE_2D`
+- **Wrapper** The glwrapper, that can be used for calling gl functions.
 
 We can bind or unbind the textures with the `Bind` or `UnBind` methods.
 
