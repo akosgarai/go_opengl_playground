@@ -32,6 +32,8 @@ const (
 var (
 	cameraLastUpdate int64
 	app              *application.Application
+
+	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -46,7 +48,7 @@ func Path(shaderProg *shader.Shader) {
 	rect := rectangle.New(30, 50)
 	col := []mgl32.Vec3{mgl32.Vec3{215.0 / 255.0, 100.0 / 255.0, 30.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i)
+	m := mesh.NewColorMesh(v, i, glWrapper)
 	m.SetPosition(mgl32.Vec3{75, 0, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 
@@ -58,7 +60,7 @@ func LeftFullWall(shaderProg *shader.Shader) {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i)
+	m := mesh.NewColorMesh(v, i, glWrapper)
 	m.SetPosition(mgl32.Vec3{90, 25, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))
@@ -72,7 +74,7 @@ func FrontPathWall(shaderProg *shader.Shader) {
 	rect := rectangle.New(30, 50)
 	col := []mgl32.Vec3{mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i)
+	m := mesh.NewColorMesh(v, i, glWrapper)
 	m.SetPosition(mgl32.Vec3{75, 25, 80})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))
@@ -85,7 +87,7 @@ func PathRoof(shaderProg *shader.Shader) {
 	rect := rectangle.New(30, 50)
 	col := []mgl32.Vec3{mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i)
+	m := mesh.NewColorMesh(v, i, glWrapper)
 	m.SetPosition(mgl32.Vec3{75, 50, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	app.AddMeshToShader(m, shaderProg)
@@ -96,7 +98,7 @@ func RoomFloor(shaderProg *shader.Shader) {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i)
+	m := mesh.NewColorMesh(v, i, glWrapper)
 	m.SetPosition(mgl32.Vec3{35, 0, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 
@@ -108,7 +110,7 @@ func RoomRoof(shaderProg *shader.Shader) {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i)
+	m := mesh.NewColorMesh(v, i, glWrapper)
 	m.SetPosition(mgl32.Vec3{35, 50, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 
@@ -120,7 +122,7 @@ func RoomFront(shaderProg *shader.Shader) {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i)
+	m := mesh.NewColorMesh(v, i, glWrapper)
 	m.SetPosition(mgl32.Vec3{35, 25, 80})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))
@@ -133,7 +135,7 @@ func RoomBack(shaderProg *shader.Shader) {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i)
+	m := mesh.NewColorMesh(v, i, glWrapper)
 	m.SetPosition(mgl32.Vec3{35, 25, 30})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))
@@ -146,7 +148,7 @@ func RoomLeft(shaderProg *shader.Shader) {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i)
+	m := mesh.NewColorMesh(v, i, glWrapper)
 	m.SetPosition(mgl32.Vec3{10, 25, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))
@@ -192,9 +194,9 @@ func main() {
 
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/05-house-with-camera/shaders/vertexshader.vert", "examples/05-house-with-camera/shaders/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/05-house-with-camera/shaders/vertexshader.vert", "examples/05-house-with-camera/shaders/fragmentshader.frag", glWrapper)
 
 	app.SetCamera(CreateCamera())
 	cameraLastUpdate = time.Now().UnixNano()
@@ -208,11 +210,11 @@ func main() {
 	RoomFront(shaderProgram)
 	RoomBack(shaderProgram)
 	RoomLeft(shaderProgram)
-	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
-	wrapper.Viewport(0, 0, WindowWidth, WindowHeight)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	glWrapper.Viewport(0, 0, WindowWidth, WindowHeight)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
 
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
@@ -220,7 +222,7 @@ func main() {
 	app.GetWindow().SetMouseButtonCallback(window.DummyMouseButtonCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
 		app.Draw()
