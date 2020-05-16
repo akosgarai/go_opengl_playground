@@ -63,9 +63,7 @@ func NewCube() *Cuboid {
 	}
 }
 
-// If i want to use (yes) the element buffer, i have to return 24 verticies instead of 8.
-// Because the normal vectors are not shared, i have to define the 6 side with 4 points.
-// Then i can define the normals properly.
+// MeshInput method returns the verticies, indicies inputs for the NewTexturedMesh function.
 func (c *Cuboid) MeshInput() (vertex.Verticies, []uint32) {
 	textureCoords := [4]mgl32.Vec2{
 		{0.0, 1.0},
