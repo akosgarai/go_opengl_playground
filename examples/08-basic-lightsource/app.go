@@ -6,11 +6,11 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
@@ -41,6 +41,8 @@ var (
 
 	cameraDistance       = 0.1
 	cameraDirectionSpeed = float32(0.00500)
+
+	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -50,61 +52,13 @@ func CreateCamera() *camera.Camera {
 	return camera
 }
 
-// Create the keymap
-func SetupKeyMap() map[glfw.Key]bool {
-	keyDowns := make(map[glfw.Key]bool)
-	keyDowns[FORWARD] = false
-	keyDowns[LEFT] = false
-	keyDowns[RIGHT] = false
-	keyDowns[BACKWARD] = false
-	keyDowns[UP] = false
-	keyDowns[DOWN] = false
-
-	return keyDowns
-}
-
-// It generates the colored cube.
-func GenerateWhiteCube(shaderProgram *shader.Shader) {
-	whiteBottomCoordinates := [4]mgl32.Vec3{
-		mgl32.Vec3{-3.5, -0.5, -3.5},
-		mgl32.Vec3{-3.5, -0.5, -2.5},
-		mgl32.Vec3{-2.5, -0.5, -2.5},
-		mgl32.Vec3{-2.5, -0.5, -3.5},
-	}
-	whiteBottomColor := [4]mgl32.Vec3{
-		mgl32.Vec3{1.0, 1.0, 1.0},
-		mgl32.Vec3{1.0, 1.0, 1.0},
-		mgl32.Vec3{1.0, 1.0, 1.0},
-		mgl32.Vec3{1.0, 1.0, 1.0},
-	}
-	bottomRect := rectangle.New(whiteBottomCoordinates, whiteBottomColor, shaderProgram)
-	cube := cuboid.New(bottomRect, 1.0, shaderProgram)
-	mat := material.New(mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, 36.0)
-	cube.SetMaterial(mat)
-	cube.DrawMode(cuboid.DRAW_MODE_LIGHT)
-	app.AddItem(cube)
-}
-
-// It generates the colored cube.
-func GenerateColoredCube(shaderProgram *shader.Shader) {
-	coloredBottomCoordinates := [4]mgl32.Vec3{
-		mgl32.Vec3{-0.5, -0.5, -0.5},
-		mgl32.Vec3{-0.5, -0.5, 0.5},
-		mgl32.Vec3{0.5, -0.5, 0.5},
-		mgl32.Vec3{0.5, -0.5, -0.5},
-	}
-	coloredBottomColor := [4]mgl32.Vec3{
-		mgl32.Vec3{0.0, 1.0, 1.0},
-		mgl32.Vec3{0.0, 1.0, 1.0},
-		mgl32.Vec3{0.0, 1.0, 1.0},
-		mgl32.Vec3{0.0, 1.0, 1.0},
-	}
-	bottomRect := rectangle.New(coloredBottomCoordinates, coloredBottomColor, shaderProgram)
-	cube := cuboid.New(bottomRect, 1.0, shaderProgram)
-	mat := material.New(mgl32.Vec3{0.0, 0.3, 0.3}, mgl32.Vec3{0, 1, 1}, mgl32.Vec3{0, 1, 1}, 36.0)
-	cube.SetMaterial(mat)
-	cube.DrawMode(cuboid.DRAW_MODE_LIGHT)
-	app.AddItem(cube)
+// It generates the material cube mesh.
+func CreateMaterialCubeMesh(position mgl32.Vec3, mat *material.Material) *mesh.MaterialMesh {
+	cube := cuboid.NewCube()
+	v, i := cube.MeshInput()
+	m := mesh.NewMaterialMesh(v, i, mat, glWrapper)
+	m.SetPosition(position)
+	return m
 }
 
 func Update() {
@@ -188,33 +142,34 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 
 	lightSource := light.NewPointLight([4]mgl32.Vec3{mgl32.Vec3{-3, 0, -3}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
-	shaderProgramColored := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
-	shaderProgramColored.AddPointLightSource(lightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
-	GenerateColoredCube(shaderProgramColored)
-	shaderProgramWhite := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
-	shaderProgramWhite.AddPointLightSource(lightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
-	GenerateWhiteCube(shaderProgramWhite)
+	app.AddPointLightSource(lightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
+	shaderProgram := shader.NewShader("examples/08-basic-lightsource/shaders/vertexshader.vert", "examples/08-basic-lightsource/shaders/fragmentshader.frag", glWrapper)
+	app.AddShader(shaderProgram)
+	whiteMat := material.New(mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, 36.0)
+	whiteCube := CreateMaterialCubeMesh(mgl32.Vec3{-3.0, 0.0, -3.0}, whiteMat)
+	app.AddMeshToShader(whiteCube, shaderProgram)
+	colorMat := material.New(mgl32.Vec3{0.0, 0.3, 0.3}, mgl32.Vec3{0, 1, 1}, mgl32.Vec3{0, 1, 1}, 36.0)
+	coloredCube := CreateMaterialCubeMesh(mgl32.Vec3{0.0, 0.0, 0.0}, colorMat)
+	app.AddMeshToShader(coloredCube, shaderProgram)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
-		shaderProgramColored.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
-		shaderProgramWhite.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
 		Update()
-		app.DrawWithUniforms()
+		app.Draw()
 		app.GetWindow().SwapBuffers()
 	}
 }
