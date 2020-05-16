@@ -6,10 +6,10 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
@@ -49,66 +49,12 @@ func CreateCamera() *camera.Camera {
 	return camera
 }
 
-// Create the keymap
-func SetupKeyMap() map[glfw.Key]bool {
-	keyDowns := make(map[glfw.Key]bool)
-	keyDowns[FORWARD] = false
-	keyDowns[LEFT] = false
-	keyDowns[RIGHT] = false
-	keyDowns[BACKWARD] = false
-	keyDowns[UP] = false
-	keyDowns[DOWN] = false
-
-	return keyDowns
-}
-
-// It generates the colored cube.
-func GenerateWhiteCube(shaderProgram *shader.Shader) {
-	whiteBottomCoordinates := [4]mgl32.Vec3{
-		mgl32.Vec3{-3.5, -0.5, -3.5},
-		mgl32.Vec3{-3.5, -0.5, -2.5},
-		mgl32.Vec3{-2.5, -0.5, -2.5},
-		mgl32.Vec3{-2.5, -0.5, -3.5},
-	}
-	whiteBottomColor := [4]mgl32.Vec3{
-		mgl32.Vec3{1.0, 1.0, 1.0},
-		mgl32.Vec3{1.0, 1.0, 1.0},
-		mgl32.Vec3{1.0, 1.0, 1.0},
-		mgl32.Vec3{1.0, 1.0, 1.0},
-	}
-	bottomRect := rectangle.New(whiteBottomCoordinates, whiteBottomColor, shaderProgram)
-	cube := cuboid.New(bottomRect, 1.0, shaderProgram)
-	app.AddItem(cube)
-}
-
-// It generates the colored cube.
-func GenerateColoredCube(shaderProgram *shader.Shader) {
-	colors := [6]mgl32.Vec3{
-		mgl32.Vec3{1.0, 0.0, 0.0},
-		mgl32.Vec3{1.0, 1.0, 0.0},
-		mgl32.Vec3{0.0, 1.0, 0.0},
-		mgl32.Vec3{0.0, 1.0, 1.0},
-		mgl32.Vec3{0.0, 0.0, 1.0},
-		mgl32.Vec3{1.0, 0.0, 1.0},
-	}
-	coloredBottomCoordinates := [4]mgl32.Vec3{
-		mgl32.Vec3{-0.5, -0.5, -0.5},
-		mgl32.Vec3{-0.5, -0.5, 0.5},
-		mgl32.Vec3{0.5, -0.5, 0.5},
-		mgl32.Vec3{0.5, -0.5, -0.5},
-	}
-	coloredBottomColor := [4]mgl32.Vec3{
-		colors[0],
-		colors[0],
-		colors[0],
-		colors[0],
-	}
-	bottomRect := rectangle.New(coloredBottomCoordinates, coloredBottomColor, shaderProgram)
-	cube := cuboid.New(bottomRect, 1.0, shaderProgram)
-	for i := 0; i < 6; i++ {
-		cube.SetSideColor(i, colors[i])
-	}
-	app.AddItem(cube)
+func CreateColoredCubeMesh(pos mgl32.Vec3, col []mgl32.Vec3) *mesh.ColorMesh {
+	cube := cuboid.NewCube()
+	v, i := cube.ColoredMeshInput(col)
+	m := mesh.NewColorMesh(v, i)
+	m.SetPosition(pos)
+	return m
 }
 
 func Update() {
@@ -196,11 +142,23 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 
-	shaderProgram := shader.NewShader("examples/08-colors/vertexshader.vert", "examples/08-colors/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/08-colors/shaders/vertexshader.vert", "examples/08-colors/shaders/fragmentshader.frag")
+	app.AddShader(shaderProgram)
 	lightSource := light.NewPointLight([4]mgl32.Vec3{mgl32.Vec3{0, 0, 0}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
-	shaderProgram.AddPointLightSource(lightSource, [7]string{"", "light.ambient", "", "", "", "", ""})
-	GenerateColoredCube(shaderProgram)
-	GenerateWhiteCube(shaderProgram)
+	app.AddPointLightSource(lightSource, [7]string{"", "light.ambient", "", "", "", "", ""})
+
+	whiteCube := CreateColoredCubeMesh(mgl32.Vec3{-3.0, -0.5, -3.0}, []mgl32.Vec3{mgl32.Vec3{1.0, 1.0, 1.0}})
+	app.AddMeshToShader(whiteCube, shaderProgram)
+	colors := []mgl32.Vec3{
+		mgl32.Vec3{1.0, 0.0, 0.0},
+		mgl32.Vec3{1.0, 1.0, 0.0},
+		mgl32.Vec3{0.0, 1.0, 0.0},
+		mgl32.Vec3{0.0, 1.0, 1.0},
+		mgl32.Vec3{0.0, 0.0, 1.0},
+		mgl32.Vec3{1.0, 0.0, 1.0},
+	}
+	coloredCube := CreateColoredCubeMesh(mgl32.Vec3{0.0, 0.0, 0.0}, colors)
+	app.AddMeshToShader(coloredCube, shaderProgram)
 
 	wrapper.Enable(wrapper.DEPTH_TEST)
 	wrapper.DepthFunc(wrapper.LESS)
@@ -214,7 +172,7 @@ func main() {
 		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
-		app.DrawWithUniforms()
+		app.Draw()
 		app.GetWindow().SwapBuffers()
 	}
 }
