@@ -1,6 +1,8 @@
 package interfaces
 
 import (
+	"unsafe"
+
 	"github.com/go-gl/mathgl/mgl32"
 )
 
@@ -38,4 +40,49 @@ type SpotLight interface {
 	GetQuadraticTerm() float32
 	GetCutoff() float32
 	GetOuterCutoff() float32
+}
+
+type GLWrapper interface {
+	GenVertexArrays() uint32
+	GenBuffers() uint32
+	BindVertexArray(vao uint32)
+	BindBuffer(bufferType, vbo uint32)
+	ArrayBufferData(bufferData []float32)
+	ElementBufferData(bufferData []uint32)
+	VertexAttribPointer(index uint32, size int32, xtype uint32, normalized bool, stride int32, pointer unsafe.Pointer)
+	ActiveTexture(id uint32)
+	BindTexture(id, textureId uint32)
+	DrawTriangleElements(count int32)
+	UseProgram(id uint32)
+	GetUniformLocation(shaderProgramId uint32, uniformName string) int32
+	Uniform1i(location int32, value int32)
+	CreateProgram() uint32
+	AttachShader(program, shader uint32)
+	LinkProgram(program uint32)
+	UniformMatrix4fv(location int32, count int32, transpose bool, value *float32)
+	CreateShader(shaderType uint32) uint32
+	Strs(strs string) (**uint8, func())
+	ShaderSource(shader uint32, count int32, xstring **uint8, length *int32)
+	CompileShader(id uint32)
+	GetShaderiv(shader uint32, pname uint32, params *int32)
+	GetShaderInfoLog(shader uint32, bufSize int32, length *int32, infoLog *uint8)
+	Str(str string) *uint8
+	InitOpenGL()
+	TexImage2D(target uint32, level int32, internalformat int32, width int32, height int32, border int32, format uint32, xtype uint32, pixels unsafe.Pointer)
+	Ptr(data interface{}) unsafe.Pointer
+	GenerateMipmap(target uint32)
+	GenTextures(n int32, textures *uint32)
+	UniformMatrix3fv(location int32, count int32, transpose bool, value *float32)
+	Uniform3f(location int32, v0 float32, v1 float32, v2 float32)
+	Uniform1f(location int32, v0 float32)
+	PtrOffset(offset int) unsafe.Pointer
+	DisableVertexAttribArray(index uint32)
+	DrawArrays(mode uint32, first int32, count int32)
+	TexParameteri(target uint32, pname uint32, param int32)
+	TexParameterfv(target uint32, pname uint32, params *float32)
+	ClearColor(red float32, green float32, blue float32, alpha float32)
+	Clear(mask uint32)
+	Enable(cap uint32)
+	DepthFunc(xfunc uint32)
+	Viewport(x int32, y int32, width int32, height int32)
 }
