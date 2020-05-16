@@ -7,7 +7,8 @@ import (
 	_ "image/png"
 	"os"
 
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/interfaces"
 )
 
 // LoadImageFromFile takes a filepath string argument.
@@ -24,7 +25,7 @@ func loadImageFromFile(path string) (image.Image, error) {
 }
 
 // GenTextures returns the generated uint32 name of the texture.
-func genTextures() uint32 {
+func genTextures(wrapper interfaces.GLWrapper) uint32 {
 	var id uint32
 	wrapper.GenTextures(1, &id)
 	return id
@@ -40,22 +41,23 @@ type Texture struct {
 
 	// The Uniform name of the texture
 	UniformName string
+	Wrapper     interfaces.GLWrapper
 }
 
 // Bing calls Activtexture with it's `Id`, then BindTexture with `TargetId` and `TextureName`.
 func (t *Texture) Bind() {
-	wrapper.ActiveTexture(t.Id)
-	wrapper.BindTexture(t.TargetId, t.TextureName)
+	t.Wrapper.ActiveTexture(t.Id)
+	t.Wrapper.BindTexture(t.TargetId, t.TextureName)
 }
 
 // UnBind binds the default texture. It is the cleanup for the texture.
 func (t *Texture) UnBind() {
-	wrapper.BindTexture(t.TargetId, wrapper.TEXTURE0)
+	t.Wrapper.BindTexture(t.TargetId, glwrapper.TEXTURE0)
 }
 
 type Textures []*Texture
 
-func (t *Textures) AddTexture(filePath string, wrapR, wrapS, minificationFilter, magnificationFilter int32, uniformName string) {
+func (t *Textures) AddTexture(filePath string, wrapR, wrapS, minificationFilter, magnificationFilter int32, uniformName string, wrapper interfaces.GLWrapper) {
 	img, err := loadImageFromFile(filePath)
 	if err != nil {
 		panic(err)
@@ -67,23 +69,24 @@ func (t *Textures) AddTexture(filePath string, wrapR, wrapS, minificationFilter,
 	}
 
 	tex := &Texture{
-		TextureName: genTextures(),
-		TargetId:    wrapper.TEXTURE_2D,
-		Id:          wrapper.TEXTURE0 + uint32(len(*t)),
+		TextureName: genTextures(wrapper),
+		TargetId:    glwrapper.TEXTURE_2D,
+		Id:          glwrapper.TEXTURE0 + uint32(len(*t)),
 		UniformName: uniformName,
+		Wrapper:     wrapper,
 	}
 
 	tex.Bind()
 	defer tex.UnBind()
 
-	wrapper.TexParameteri(wrapper.TEXTURE_2D, wrapper.TEXTURE_WRAP_R, wrapR)
-	wrapper.TexParameteri(wrapper.TEXTURE_2D, wrapper.TEXTURE_WRAP_S, wrapS)
-	wrapper.TexParameteri(wrapper.TEXTURE_2D, wrapper.TEXTURE_MIN_FILTER, minificationFilter)
-	wrapper.TexParameteri(wrapper.TEXTURE_2D, wrapper.TEXTURE_MAG_FILTER, magnificationFilter)
+	tex.Wrapper.TexParameteri(glwrapper.TEXTURE_2D, glwrapper.TEXTURE_WRAP_R, wrapR)
+	tex.Wrapper.TexParameteri(glwrapper.TEXTURE_2D, glwrapper.TEXTURE_WRAP_S, wrapS)
+	tex.Wrapper.TexParameteri(glwrapper.TEXTURE_2D, glwrapper.TEXTURE_MIN_FILTER, minificationFilter)
+	tex.Wrapper.TexParameteri(glwrapper.TEXTURE_2D, glwrapper.TEXTURE_MAG_FILTER, magnificationFilter)
 
-	wrapper.TexImage2D(tex.TargetId, 0, wrapper.RGBA, int32(rgba.Rect.Size().X), int32(rgba.Rect.Size().Y), 0, wrapper.RGBA, uint32(wrapper.UNSIGNED_BYTE), wrapper.Ptr(rgba.Pix))
+	tex.Wrapper.TexImage2D(tex.TargetId, 0, glwrapper.RGBA, int32(rgba.Rect.Size().X), int32(rgba.Rect.Size().Y), 0, glwrapper.RGBA, uint32(glwrapper.UNSIGNED_BYTE), tex.Wrapper.Ptr(rgba.Pix))
 
-	wrapper.GenerateMipmap(tex.TextureName)
+	tex.Wrapper.GenerateMipmap(tex.TextureName)
 
 	*t = append(*t, tex)
 }
