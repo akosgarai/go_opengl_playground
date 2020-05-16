@@ -24,12 +24,14 @@ var (
 	color = []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
 
 	app *application.Application
+
+	glWrapper wrapper.Wrapper
 )
 
 func GenerateColoredMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	square := rectangle.NewSquare()
 	v, i := square.ColoredMeshInput(col)
-	return mesh.NewColorMesh(v, i)
+	return mesh.NewColorMesh(v, i, glWrapper)
 }
 
 func main() {
@@ -38,9 +40,9 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/02-static-square/shaders/vertexshader.vert", "examples/02-static-square/shaders/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/02-static-square/shaders/vertexshader.vert", "examples/02-static-square/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
 	square := GenerateColoredMesh(color)
@@ -48,12 +50,12 @@ func main() {
 	square.SetRotationAxis(mgl32.Vec3{1, 0, 0})
 	app.AddMeshToShader(square, shaderProgram)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		app.Draw()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
