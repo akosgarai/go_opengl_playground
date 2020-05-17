@@ -1,5 +1,6 @@
 package bug
 
+/*
 import (
 	"github.com/go-gl/mathgl/mgl32"
 
@@ -166,3 +167,4 @@ func Firefly(position mgl32.Vec3, size float32, materials [3]*material.Material,
 		axis:  mgl32.Vec3{0, 0, 0},
 	}
 }
+*/
