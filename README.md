@@ -17,8 +17,6 @@ The gifs under the examples directory were made with [peek](https://github.com/p
 ## About the applications
 
 - Dependencies are handled with gomod.
-- The example readmes might be outdated.
-- Light application is very wip.
 - How to run the example apps?
 
 In the main directory run the following command, after you replaced the directory name to a valid one.
@@ -26,6 +24,8 @@ In the main directory run the following command, after you replaced the director
 ```
 go run examples/directory-name/app.go
 ```
+
+![Sample gif from outer space](./examples/07-textured-spheres/sample/sample.gif)
 
 ## Possible issues ubuntu.
 
@@ -42,4 +42,4 @@ The output is something like: `OpenGL version string: 4.6.0 NVIDIA 440.82`.
 
 ## I want to use different gl version.
 
-In this case, you have to modify the wrapper package. The gl lib is included there. If you updated it (eg to `v3.3-core`), you have to update the `GL_MAJOR_VERSION`, `GL_MINOR_VERSION` version constants also.
+In this case, you have to modify the wrapper package. The gl lib is included there. If you updated it (eg to `v3.3-core`), you have to update the `GL_MAJOR_VERSION`, `GL_MINOR_VERSION` version constants also. Unfortunately updating the shaders is a manual step. The versions are hardcoded to the shader applications.

@@ -15,34 +15,37 @@ const (
 )
 
 const (
-	ARRAY_BUFFER         = gl.ARRAY_BUFFER
-	ELEMENT_ARRAY_BUFFER = gl.ELEMENT_ARRAY_BUFFER
-	TEXTURE_2D           = gl.TEXTURE_2D
-	VERTEX_SHADER        = gl.VERTEX_SHADER
-	FRAGMENT_SHADER      = gl.FRAGMENT_SHADER
-	COMPILE_STATUS       = gl.COMPILE_STATUS
-	INFO_LOG_LENGTH      = gl.INFO_LOG_LENGTH
-	FALSE                = gl.FALSE
-	TEXTURE0             = gl.TEXTURE0
-	TEXTURE1             = gl.TEXTURE1
-	TEXTURE2             = gl.TEXTURE2
-	TEXTURE_WRAP_R       = gl.TEXTURE_WRAP_R
-	TEXTURE_WRAP_S       = gl.TEXTURE_WRAP_S
-	TEXTURE_MIN_FILTER   = gl.TEXTURE_MIN_FILTER
-	TEXTURE_MAG_FILTER   = gl.TEXTURE_MAG_FILTER
-	RGBA                 = gl.RGBA
-	UNSIGNED_BYTE        = gl.UNSIGNED_BYTE
-	FLOAT                = gl.FLOAT
-	POINTS               = gl.POINTS
-	TRIANGLES            = gl.TRIANGLES
-	TEXTURE_BORDER_COLOR = gl.TEXTURE_BORDER_COLOR
-	CLAMP_TO_EDGE        = gl.CLAMP_TO_EDGE
-	LINEAR               = gl.LINEAR
-	COLOR_BUFFER_BIT     = gl.COLOR_BUFFER_BIT
-	DEPTH_BUFFER_BIT     = gl.DEPTH_BUFFER_BIT
-	DEPTH_TEST           = gl.DEPTH_TEST
-	LESS                 = gl.LESS
-	PROGRAM_POINT_SIZE   = gl.PROGRAM_POINT_SIZE
+	ARRAY_BUFFER                = gl.ARRAY_BUFFER
+	ELEMENT_ARRAY_BUFFER        = gl.ELEMENT_ARRAY_BUFFER
+	TEXTURE_2D                  = gl.TEXTURE_2D
+	VERTEX_SHADER               = gl.VERTEX_SHADER
+	FRAGMENT_SHADER             = gl.FRAGMENT_SHADER
+	COMPILE_STATUS              = gl.COMPILE_STATUS
+	INFO_LOG_LENGTH             = gl.INFO_LOG_LENGTH
+	FALSE                       = gl.FALSE
+	TEXTURE0                    = gl.TEXTURE0
+	TEXTURE1                    = gl.TEXTURE1
+	TEXTURE2                    = gl.TEXTURE2
+	TEXTURE_WRAP_R              = gl.TEXTURE_WRAP_R
+	TEXTURE_WRAP_S              = gl.TEXTURE_WRAP_S
+	TEXTURE_MIN_FILTER          = gl.TEXTURE_MIN_FILTER
+	TEXTURE_MAG_FILTER          = gl.TEXTURE_MAG_FILTER
+	RGBA                        = gl.RGBA
+	UNSIGNED_BYTE               = gl.UNSIGNED_BYTE
+	FLOAT                       = gl.FLOAT
+	POINTS                      = gl.POINTS
+	TRIANGLES                   = gl.TRIANGLES
+	TEXTURE_BORDER_COLOR        = gl.TEXTURE_BORDER_COLOR
+	CLAMP_TO_EDGE               = gl.CLAMP_TO_EDGE
+	LINEAR                      = gl.LINEAR
+	COLOR_BUFFER_BIT            = gl.COLOR_BUFFER_BIT
+	DEPTH_BUFFER_BIT            = gl.DEPTH_BUFFER_BIT
+	DEPTH_TEST                  = gl.DEPTH_TEST
+	LESS                        = gl.LESS
+	PROGRAM_POINT_SIZE          = gl.PROGRAM_POINT_SIZE
+	TEXTURE_CUBE_MAP            = gl.TEXTURE_CUBE_MAP
+	TEXTURE_CUBE_MAP_POSITIVE_X = gl.TEXTURE_CUBE_MAP_POSITIVE_X
+	TEXTURE_WRAP_T              = gl.TEXTURE_WRAP_T
 )
 
 type Wrapper struct {
