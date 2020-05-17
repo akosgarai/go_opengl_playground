@@ -33,6 +33,8 @@ var (
 	triangleColorBack  = []mgl32.Vec3{mgl32.Vec3{0, 0.5, 1}}
 
 	lastUpdate int64
+
+	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -53,7 +55,7 @@ func GenerateTriangles(shaderProgram *shader.Shader) {
 			topY := float32(i * length)
 			topZ := float32(0.0)
 
-			m := mesh.NewColorMesh(v1, indicies1)
+			m := mesh.NewColorMesh(v1, indicies1, glWrapper)
 			m.SetPosition(mgl32.Vec3{topX, topY, topZ})
 			m.SetScale(mgl32.Vec3{length, length, length})
 			m.SetDirection(mgl32.Vec3{0, 0, 1})
@@ -61,7 +63,7 @@ func GenerateTriangles(shaderProgram *shader.Shader) {
 
 			app.AddMeshToShader(m, shaderProgram)
 
-			m2 := mesh.NewColorMesh(v2, indicies2)
+			m2 := mesh.NewColorMesh(v2, indicies2, glWrapper)
 			m2.SetPosition(mgl32.Vec3{topX, topY, topZ})
 			m2.SetScale(mgl32.Vec3{length, length, length})
 			m2.SetScale(mgl32.Vec3{length, length, length})
@@ -90,22 +92,22 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 
-	shaderProgram := shader.NewShader("examples/04-mesh-deformer/shaders/vertexshader.vert", "examples/04-mesh-deformer/shaders/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/04-mesh-deformer/shaders/vertexshader.vert", "examples/04-mesh-deformer/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
 	GenerateTriangles(shaderProgram)
 
 	lastUpdate = time.Now().UnixNano()
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
 		app.Draw()
