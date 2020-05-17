@@ -5,6 +5,7 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -16,57 +17,58 @@ import (
 
 const (
 	WindowWidth  = 800
-	WindowHeight = 600
+	WindowHeight = 800
 	WindowTitle  = "Example - static triangle and square"
 )
 
 var (
-	triangleCoordinates = [3]mgl32.Vec3{
-		mgl32.Vec3{-0.75, 0.75, 0}, // top
-		mgl32.Vec3{-0.75, 0.25, 0}, // left
-		mgl32.Vec3{-0.25, 0.25, 0}, // right
-	}
-	triangleColors = [3]mgl32.Vec3{
-		mgl32.Vec3{0, 1, 0}, // top
-		mgl32.Vec3{0, 1, 0}, // left
-		mgl32.Vec3{0, 1, 0}, // right
-	}
-	squareCoordinates = [4]mgl32.Vec3{
-		mgl32.Vec3{0.25, -0.25, 0}, // top-left
-		mgl32.Vec3{0.25, -0.75, 0}, // bottom-left
-		mgl32.Vec3{0.75, -0.75, 0}, // bottom-right
-		mgl32.Vec3{0.75, -0.25, 0}, // top-right
-	}
-	squareColors = [4]mgl32.Vec3{
-		mgl32.Vec3{0, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
-
 	app *application.Application
+
+	color = []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
+
+	glWrapper wrapper.Wrapper
 )
 
+func GenerateColoredRectangleMesh(col []mgl32.Vec3) *mesh.ColorMesh {
+	square := rectangle.NewSquare()
+	v, i := square.ColoredMeshInput(col)
+	return mesh.NewColorMesh(v, i, glWrapper)
+}
+func GenerateColoredTriangleMesh(col []mgl32.Vec3) *mesh.ColorMesh {
+	square := triangle.New(30, 60, 90)
+	v, i := square.ColoredMeshInput(col)
+	return mesh.NewColorMesh(v, i, glWrapper)
+}
 func main() {
 	runtime.LockOSThread()
 
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/02-static-multiple-objects/vertexshader.vert", "examples/02-static-multiple-objects/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/02-static-multiple-objects/shaders/vertexshader.vert", "examples/02-static-multiple-objects/shaders/fragmentshader.frag", glWrapper)
+	app.AddShader(shaderProgram)
 
-	triang := triangle.New(triangleCoordinates, triangleColors, shaderProgram)
-	app.AddItem(triang)
-	square := rectangle.New(squareCoordinates, squareColors, shaderProgram)
-	app.AddItem(square)
+	triang := GenerateColoredTriangleMesh(color)
+	triang.SetRotationAngle(mgl32.DegToRad(90))
+	triang.SetRotationAxis(mgl32.Vec3{1, 1, 0})
+	triang.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
+	triang.SetPosition(mgl32.Vec3{-0.4, 0.2, 0})
+	app.AddMeshToShader(triang, shaderProgram)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
+	square := GenerateColoredRectangleMesh(color)
+	square.SetRotationAngle(mgl32.DegToRad(90))
+	square.SetRotationAxis(mgl32.Vec3{1, 0, 0})
+	square.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
+	square.SetPosition(mgl32.Vec3{0.4, -0.2, 0})
+	app.AddMeshToShader(square, shaderProgram)
+
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		app.Draw()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()

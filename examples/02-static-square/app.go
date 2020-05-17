@@ -5,6 +5,7 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
@@ -15,26 +16,23 @@ import (
 
 const (
 	WindowWidth  = 800
-	WindowHeight = 600
+	WindowHeight = 800
 	WindowTitle  = "Example - static square"
 )
 
 var (
-	coordinates = [4]mgl32.Vec3{
-		mgl32.Vec3{0.25, -0.25, 0}, // top-left
-		mgl32.Vec3{0.25, -0.75, 0}, // bottom-left
-		mgl32.Vec3{0.75, -0.75, 0}, // bottom-right
-		mgl32.Vec3{0.75, -0.25, 0}, // top-right
-	}
-	colors = [4]mgl32.Vec3{
-		mgl32.Vec3{0, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-		mgl32.Vec3{0, 1, 0},
-	}
+	color = []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
 
 	app *application.Application
+
+	glWrapper wrapper.Wrapper
 )
+
+func GenerateColoredMesh(col []mgl32.Vec3) *mesh.ColorMesh {
+	square := rectangle.NewSquare()
+	v, i := square.ColoredMeshInput(col)
+	return mesh.NewColorMesh(v, i, glWrapper)
+}
 
 func main() {
 	runtime.LockOSThread()
@@ -42,18 +40,22 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/02-static-square/vertexshader.vert", "examples/02-static-square/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/02-static-square/shaders/vertexshader.vert", "examples/02-static-square/shaders/fragmentshader.frag", glWrapper)
+	app.AddShader(shaderProgram)
 
-	square := rectangle.New(coordinates, colors, shaderProgram)
-	app.AddItem(square)
+	square := GenerateColoredMesh(color)
+	square.SetRotationAngle(mgl32.DegToRad(90))
+	square.SetRotationAxis(mgl32.Vec3{1, 0, 0})
+	app.AddMeshToShader(square, shaderProgram)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		app.Draw()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()

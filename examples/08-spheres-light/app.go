@@ -6,6 +6,7 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
@@ -43,10 +44,12 @@ var (
 
 	cameraDistance    = 0.1
 	LightSource       *light.Light
-	LightSourceSphere *sphere.Sphere
-	JadeSphere        *sphere.Sphere
+	LightSourceSphere *mesh.MaterialMesh
+	JadeSphere        *mesh.MaterialMesh
 
 	InitialCenterPointLight = mgl32.Vec3{-3, 0, -3}
+
+	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -57,35 +60,33 @@ func CreateCamera() *camera.Camera {
 }
 
 // It generates the lightsource sphere.
-func GenerateWhiteSphere(shaderProgram *shader.Shader) {
-	LightSourceSphere = sphere.New(mgl32.Vec3{-3.0, -0.5, -3.0}, mgl32.Vec3{1, 1, 1}, 0.1, shaderProgram)
-	LightSourceSphere.SetPrecision(20)
-	mat := material.New(mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, 144.0)
-	LightSourceSphere.SetMaterial(mat)
+func CreateWhiteSphere() {
+	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 64.0)
+	sph := sphere.New(20)
+	v, i := sph.MaterialMeshInput()
+	LightSourceSphere = mesh.NewMaterialMesh(v, i, mat, glWrapper)
+	LightSourceSphere.SetPosition(mgl32.Vec3{-3.0, -0.5, -3.0})
 	LightSourceSphere.SetDirection((mgl32.Vec3{9, 0, -3}).Normalize())
-	distance := (LightSourceSphere.GetCenterPoint().Sub(JadeSphere.GetCenterPoint())).Len()
-
+	distance := (LightSourceSphere.GetPosition().Sub(JadeSphere.GetPosition())).Len()
 	LightSourceSphere.SetSpeed((float32(2) * float32(3.1415) * distance) / LightSourceRoundSpeed)
-	LightSourceSphere.DrawMode(sphere.DRAW_MODE_LIGHT)
-	app.AddItem(LightSourceSphere)
+	LightSourceSphere.SetScale(mgl32.Vec3{0.15, 0.15, 0.15})
 }
 
 // It generates the Jade sphere.
-func GenerateJadeSphere(shaderProgram *shader.Shader) {
-	JadeSphere = sphere.New(mgl32.Vec3{0.0, -0.5, 0.0}, mgl32.Vec3{0, 1, 0}, 1.0, shaderProgram)
-	JadeSphere.SetMaterial(material.Jade)
-	JadeSphere.SetPrecision(20)
-	JadeSphere.DrawMode(sphere.DRAW_MODE_LIGHT)
-	app.AddItem(JadeSphere)
+func CreateJadeSphere() {
+	sph := sphere.New(20)
+	v, i := sph.MaterialMeshInput()
+	JadeSphere = mesh.NewMaterialMesh(v, i, material.Jade, glWrapper)
+	JadeSphere.SetPosition(mgl32.Vec3{0.0, -0.5, 0.0})
 }
 
 // It generates the red plastic sphere.
-func GenerateRedPlasticSphere(shaderProgram *shader.Shader) {
-	sp := sphere.New(mgl32.Vec3{-6.5, -3.5, -4.5}, mgl32.Vec3{1, 0, 0}, 2.0, shaderProgram)
-	sp.SetMaterial(material.Redplastic)
-	sp.SetPrecision(20)
-	sp.DrawMode(sphere.DRAW_MODE_LIGHT)
-	app.AddItem(sp)
+func CreateRedPlasticSphere() *mesh.MaterialMesh {
+	sph := sphere.New(20)
+	v, i := sph.MaterialMeshInput()
+	m := mesh.NewMaterialMesh(v, i, material.Redplastic, glWrapper)
+	m.SetPosition(mgl32.Vec3{-6.5, -3.5, -4.5})
+	return m
 }
 
 func Update() {
@@ -100,7 +101,7 @@ func Update() {
 	lightDirectionRotationMatrix := mgl32.HomogRotate3D(lightSourceRotationAngleRadian, mgl32.Vec3{0, -1, 0})
 	currentLightSourceDirection := LightSourceSphere.GetDirection()
 	LightSourceSphere.SetDirection(mgl32.TransformNormal(currentLightSourceDirection, lightDirectionRotationMatrix))
-	LightSource.SetPosition(LightSourceSphere.GetCenterPoint())
+	LightSource.SetPosition(LightSourceSphere.GetPosition())
 
 	app.Update(moveTime)
 
@@ -179,34 +180,35 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 
 	LightSource = light.NewPointLight([4]mgl32.Vec3{InitialCenterPointLight, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
-	shaderProgramColored := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
-	shaderProgramColored.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
-	GenerateJadeSphere(shaderProgramColored)
-	GenerateRedPlasticSphere(shaderProgramColored)
-	shaderProgramWhite := shader.NewShader("examples/08-basic-lightsource/vertexshader.vert", "examples/08-basic-lightsource/fragmentshader.frag")
-	shaderProgramWhite.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
-	GenerateWhiteSphere(shaderProgramWhite)
+	app.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	shaderProgram := shader.NewShader("examples/08-spheres-light/shaders/vertexshader.vert", "examples/08-spheres-light/shaders/fragmentshader.frag", glWrapper)
+	app.AddShader(shaderProgram)
+	CreateJadeSphere()
+	app.AddMeshToShader(JadeSphere, shaderProgram)
+	redPlastic := CreateRedPlasticSphere()
+	app.AddMeshToShader(redPlastic, shaderProgram)
+	CreateWhiteSphere()
+	app.AddMeshToShader(LightSourceSphere, shaderProgram)
+
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
-		shaderProgramColored.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
-		shaderProgramWhite.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
 		Update()
-		app.DrawWithUniforms()
+		app.Draw()
 		app.GetWindow().SwapBuffers()
 	}
 }

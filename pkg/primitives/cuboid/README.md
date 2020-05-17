@@ -1,63 +1,23 @@
 # Cuboid
 
-It represents a cuboid, so it contains 6 `rectangles` as it's sides. It has a VAO and a Shader also. It implements the Drawable interface.
+This package represents a cuboid, that is described with the points of the rectangles of the sides. The cuboid has 6 sides, each side is describes with 4 points, so that we have 24 points. Each side point so different direction, so that the length of Normals is 6.
 
-## Functions
+## New
 
-The stuff that we can do with a cuboid.
+This function returns a cuboid. The inputs are the width (length in the `X` axis) the length (length in the `Z` axis) and the height (length in the `Y` axis) in this order. The sides are scaled, the longest side becomes 1. The center point is the origo, where center point is the intersection point of the diagonals.
 
-### New
+## NewCube
 
-It creates a new cuboid. The inputs of this functions are a side of the cuboid (rectangle) and the lengt of the perpendicular sides and the shader. The direction & speed is initialized as null vector & 0 speed. The rest of the sides are calculated based on the input side and length.
+This function returns a unit cube with origo as center point, where center point is the intersection point of the diagonals.
 
-### Log
+## MeshInput
 
-The string representation of the current state of the object.
+MeshInput method returns the verticies, indicies - inputs for the New Mesh function.
 
-### SetColor
+## ColoredMeshInput
 
-It updates the color of the sides to the given one.
+ColoredMeshInput method returns the verticies, indicies - inputs for the New Mesh function.
 
-### SetIndexColor
+## TexturedColoredMeshInput
 
-It updates the color of a given pont of each sides.
-
-### SetSideColor
-
-It updates every color of a given side.
-
-### SetDirection
-
-It updates the direction vector of the sides.
-
-### SetIndexDirection
-
-It updates the given direction component to the given value of each sides.
-
-### SetSpeed
-
-It updates the speed of the sides to the given one.
-
-### SetPrecision
-
-It updates the precision of the sides to the given one.
-
-### SetAngle
-
-It updates the rotation angle (radian) of the cube.
-
-### SetAxis
-
-It updates the rotation axis of the cube.
-
-### Draw
-
-It draws the cuboid (rectangles). Transformations are not applied.
-
-### DrawWithUniforms
-
-It draws the cuboid (rectangles). It gets the V & P matrices as inputs. It sets the model, view, projection uniforms for the shader program.
-
-### Update
-
-It updates the state of the cuboid (rectangles). It gets the delta time as input and it calculates the movement of the cuboid (rectangles).
+This method returns the verticies, indicies - inputs for the NewTexturedColoredMesh function.

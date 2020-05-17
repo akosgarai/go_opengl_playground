@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
-	"github.com/akosgarai/opengl_playground/pkg/composite/bug"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
@@ -15,6 +15,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
+	"github.com/akosgarai/opengl_playground/pkg/texture"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -41,8 +42,8 @@ const (
 
 var (
 	app                       *application.Application
-	Bug1                      *bug.Bug
-	Bug2                      *bug.Bug
+	Bug1                      *mesh.MaterialMesh
+	Bug2                      *mesh.TexturedMesh
 	BugOneLastRotate          int64
 	lastUpdate                int64
 	ShaderProgramsWithViewPos []*shader.Shader
@@ -76,32 +77,23 @@ var (
 	SpotLightCutoff_2         = float32(4)
 	SpotLightOuterCutoff_1    = float32(5)
 	SpotLightOuterCutoff_2    = float32(5)
+
+	glWrapper wrapper.Wrapper
 )
 
-// It generates a square.
-func Grass(shaderProgram *shader.Shader) {
-	square := rectangle.NewSquare(mgl32.Vec3{-1000, 0, -1000}, mgl32.Vec3{1000, 0, 1000}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0, 1, 0}, shaderProgram)
-	square.SetPrecision(1)
-	square.DrawMode(cuboid.DRAW_MODE_TEXTURED_LIGHT)
-	app.AddItem(square)
+func CreateGrassMesh(t texture.Textures) *mesh.TexturedMesh {
+	square := rectangle.NewSquare()
+	v, i := square.MeshInput()
+	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
+	m.SetScale(mgl32.Vec3{1000, 1, 1000})
+	return m
 }
-
-// It generates the box.
-func Box(shaderProgram *shader.Shader) {
-	numberOfBoxes := 3
-	baseX := float32(-6)
-	sideLength := float32(2)
-	baseY := float32(-1)
-	diffBetweenBoxes := float32(3)
-	for i := 0; i < numberOfBoxes; i++ {
-		x1_pos := baseX + float32(i)*(sideLength+diffBetweenBoxes)
-		bottomRect := rectangle.NewSquare(mgl32.Vec3{x1_pos + sideLength, 0, baseY}, mgl32.Vec3{x1_pos, 0, baseY + sideLength}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0.0, 1.0, 1.0}, shaderProgram)
-		box := cuboid.New(bottomRect, sideLength, shaderProgram)
-		mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 64.0)
-		box.SetMaterial(mat)
-		box.DrawMode(cuboid.DRAW_MODE_TEXTURED_LIGHT)
-		app.AddItem(box)
-	}
+func CreateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
+	cube := cuboid.NewCube()
+	v, i := cube.MeshInput()
+	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
+	m.SetPosition(pos)
+	return m
 }
 
 // It generates the lamp
@@ -109,41 +101,46 @@ func Lamp(shaderProgram *shader.Shader, baseX, baseZ float32, lightPosition mgl3
 	width := float32(0.4)
 	height := float32(6)
 	length := float32(2.5)
+	cub := cuboid.NewCube()
+	v, i := cub.MeshInput()
+	pole := mesh.NewMaterialMesh(v, i, material.Chrome, glWrapper)
+	pole.SetPosition(mgl32.Vec3{baseX - width/2, -height / 2, baseZ - width/2})
+	pole.SetScale(mgl32.Vec3{width, height, width})
+	app.AddMeshToShader(pole, shaderProgram)
 
-	bottomRect := rectangle.NewSquare(mgl32.Vec3{baseX, 0, baseZ}, mgl32.Vec3{baseX + width, 0, baseZ + width}, mgl32.Vec3{0, 1, 0}, mgl32.Vec3{0, 0, 0}, shaderProgram)
-	pole := cuboid.New(bottomRect, height, shaderProgram)
-	pole.SetMaterial(material.Chrome)
-	pole.SetPrecision(10)
-	pole.DrawMode(cuboid.DRAW_MODE_LIGHT)
-	app.AddItem(pole)
-	bottomRect = rectangle.NewSquare(mgl32.Vec3{baseX, -height, baseZ}, mgl32.Vec3{baseX + width, -height - width, baseZ}, mgl32.Vec3{0, 0, -1}, mgl32.Vec3{0, 0, 0}, shaderProgram)
-	top := cuboid.New(bottomRect, length, shaderProgram)
-	top.SetMaterial(material.Chrome)
-	top.DrawMode(cuboid.DRAW_MODE_LIGHT)
-	top.SetPrecision(10)
-	app.AddItem(top)
-	bulb := sphere.New(lightPosition, mgl32.Vec3{1, 1, 1}, float32(0.1), shaderProgram)
+	top := mesh.NewMaterialMesh(v, i, material.Chrome, glWrapper)
+	top.SetPosition(mgl32.Vec3{baseX - width/2, -height - width/2, baseZ + length/2 - width})
+	top.SetScale(mgl32.Vec3{width, width, length})
+	app.AddMeshToShader(top, shaderProgram)
+
+	sph := sphere.New(15)
+	v, i = sph.MaterialMeshInput()
 	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 256.0)
-	bulb.SetMaterial(mat)
-	bulb.SetPrecision(15)
-	bulb.DrawMode(cuboid.DRAW_MODE_LIGHT)
-	app.AddItem(bulb)
+	bulb := mesh.NewMaterialMesh(v, i, mat, glWrapper)
+	bulb.SetPosition(lightPosition)
+	bulb.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
+	app.AddMeshToShader(bulb, shaderProgram)
 }
 
-// It generates the bug. This stuff will be the point light source. In the furure, i want to make it fly around.
-func Bug(shaderProgram *shader.Shader) {
+func MaterialBug(shaderProgram *shader.Shader) {
+	sph := sphere.New(15)
+	v, i := sph.MaterialMeshInput()
 	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 128.0)
-	Bug1 = bug.Firefly(PointLightPosition_1, 0.1, [3]*material.Material{mat, material.Blackplastic, material.Ruby}, shaderProgram)
+	Bug1 = mesh.NewMaterialMesh(v, i, mat, glWrapper)
+	Bug1.SetPosition(PointLightPosition_1)
 	Bug1.SetDirection(mgl32.Vec3{1, 0, 0})
+	Bug1.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
 	Bug1.SetSpeed(moveSpeed)
-	app.AddItem(Bug1)
+	app.AddMeshToShader(Bug1, shaderProgram)
 }
-func BigBug(shaderProgram *shader.Shader) {
-	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 128.0)
-	Bug2 = bug.Firefly(PointLightPosition_2, 1.0, [3]*material.Material{mat, material.Blackplastic, material.Ruby}, shaderProgram)
+func TexturedBug(t texture.Textures, shaderProgram *shader.Shader) {
+	sph := sphere.New(15)
+	v, i := sph.TexturedMeshInput()
+	Bug2 = mesh.NewTexturedMesh(v, i, t, glWrapper)
+	Bug2.SetPosition(PointLightPosition_2)
 	Bug2.SetDirection(mgl32.Vec3{0, 0, 1})
 	Bug2.SetSpeed(moveSpeed)
-	app.AddItem(Bug2)
+	app.AddMeshToShader(Bug2, shaderProgram)
 }
 
 // It creates a new camera with the necessary setup
@@ -168,12 +165,9 @@ func Update() {
 	nowNano := time.Now().UnixNano()
 	moveTime := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
-	for index, _ := range ShaderProgramsWithViewPos {
-		ShaderProgramsWithViewPos[index].SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
-	}
 	RotateBugOne(nowNano)
-	PointLightSource_1.SetPosition(Bug1.GetCenterPoint())
-	PointLightSource_2.SetPosition(Bug2.GetCenterPoint())
+	PointLightSource_1.SetPosition(Bug1.GetPosition())
+	PointLightSource_2.SetPosition(Bug2.GetPosition())
 	app.Update(moveTime)
 
 	forward := 0.0
@@ -251,7 +245,7 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 
@@ -288,47 +282,58 @@ func main() {
 		PointLightDiffuse,
 		PointLightSpecular},
 		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
-	//Define the shader application for the grass
-	shaderProgramGrass := shader.NewShader("examples/08-multiple-light/shaders/texture.vert", "examples/08-multiple-light/shaders/texture.frag")
-	shaderProgramGrass.AddTexture("examples/08-multiple-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse")
-	shaderProgramGrass.AddTexture("examples/08-multiple-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular")
-	shaderProgramGrass.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
-	shaderProgramGrass.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
-	shaderProgramGrass.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
-	shaderProgramGrass.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
-	shaderProgramGrass.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
-	shaderProgramGrass.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
-	ShaderProgramsWithViewPos = append(ShaderProgramsWithViewPos, shaderProgramGrass)
-	Grass(shaderProgramGrass)
-	// Shader application for the box
-	shaderProgramBox := shader.NewShader("examples/08-multiple-light/shaders/texture.vert", "examples/08-multiple-light/shaders/texture.frag")
-	shaderProgramBox.AddTexture("examples/08-multiple-light/assets/box-diffuse.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse")
-	shaderProgramBox.AddTexture("examples/08-multiple-light/assets/box-specular.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular")
-	shaderProgramBox.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
-	shaderProgramBox.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
-	shaderProgramBox.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
-	shaderProgramBox.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
-	shaderProgramBox.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
-	shaderProgramBox.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
-	ShaderProgramsWithViewPos = append(ShaderProgramsWithViewPos, shaderProgramBox)
-	Box(shaderProgramBox)
-	// Shader application for the lamp
-	shaderProgramLamp := shader.NewShader("examples/08-multiple-light/shaders/lamp.vert", "examples/08-multiple-light/shaders/lamp.frag")
-	shaderProgramLamp.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
-	shaderProgramLamp.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
-	shaderProgramLamp.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
-	shaderProgramLamp.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
-	shaderProgramLamp.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
-	shaderProgramLamp.SetViewPosition(app.GetCamera().GetPosition(), "viewPosition")
-	ShaderProgramsWithViewPos = append(ShaderProgramsWithViewPos, shaderProgramLamp)
-	Lamp(shaderProgramLamp, 0, -3, SpotLightPosition_1)
-	Lamp(shaderProgramLamp, 10, -3, SpotLightPosition_2)
-	Bug(shaderProgramLamp)
-	BigBug(shaderProgramLamp)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.0, 0.0, 0.0, 1.0)
+	// Add the lightources to the application
+	app.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
+	app.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
+	app.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
+	app.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
+	app.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
+
+	// Define the shader application for the textured meshes.
+	shaderProgramTexture := shader.NewShader("examples/08-multiple-light/shaders/texture.vert", "examples/08-multiple-light/shaders/texture.frag", glWrapper)
+	app.AddShader(shaderProgramTexture)
+
+	// grass textures
+	var grassTexture texture.Textures
+	grassTexture.AddTexture("examples/08-multiple-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
+	grassTexture.AddTexture("examples/08-multiple-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
+
+	grassMesh := CreateGrassMesh(grassTexture)
+	app.AddMeshToShader(grassMesh, shaderProgramTexture)
+
+	// box textures
+	var boxTexture texture.Textures
+	boxTexture.AddTexture("examples/08-multiple-light/assets/box-diffuse.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
+	boxTexture.AddTexture("examples/08-multiple-light/assets/box-specular.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
+
+	// we have 3 boxes in the following coordinates.
+	boxPositions := []mgl32.Vec3{
+		mgl32.Vec3{-5.0, -1.0, 0.0},
+		mgl32.Vec3{0.0, -1.0, 0.0},
+		mgl32.Vec3{5.0, -1.0, 0.0},
+	}
+	for _, pos := range boxPositions {
+		box := CreateCubeMesh(boxTexture, pos)
+		app.AddMeshToShader(box, shaderProgramTexture)
+	}
+
+	// Shader application for the lamp
+	shaderProgramMaterial := shader.NewShader("examples/08-multiple-light/shaders/lamp.vert", "examples/08-multiple-light/shaders/lamp.frag", glWrapper)
+	app.AddShader(shaderProgramMaterial)
+
+	Lamp(shaderProgramMaterial, 0.4, -2.6, SpotLightPosition_1)
+	Lamp(shaderProgramMaterial, 10.4, -2.6, SpotLightPosition_2)
+	MaterialBug(shaderProgramMaterial)
+	// sun texture
+	var sunTexture texture.Textures
+	sunTexture.AddTexture("examples/08-multiple-light/assets/sun.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
+	sunTexture.AddTexture("examples/08-multiple-light/assets/sun.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
+	TexturedBug(sunTexture, shaderProgramTexture)
+
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.0, 0.0, 0.0, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	BugOneLastRotate = lastUpdate
@@ -336,9 +341,9 @@ func main() {
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		Update()
-		app.DrawWithUniforms()
+		app.Draw()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}

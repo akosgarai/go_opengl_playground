@@ -2,27 +2,12 @@ package shader
 
 import (
 	"fmt"
-	"image"
-	_ "image/jpeg"
-	_ "image/png"
 	"io/ioutil"
-	"os"
 	"strings"
 
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/interfaces"
 )
-
-func textureMap(index int) uint32 {
-	switch index {
-	case 0:
-		return wrapper.TEXTURE0
-	case 1:
-		return wrapper.TEXTURE1
-	case 2:
-		return wrapper.TEXTURE2
-	}
-	return 0
-}
 
 // LoadShaderFromFile takes a filepath string arguments.
 // It loads the file and returns it as a '\x00' terminated string.
@@ -36,19 +21,10 @@ func LoadShaderFromFile(path string) (string, error) {
 	return result, nil
 }
 
-// LoadImageFromFile takes a filepath string argument.
-// It loads the file, decodes it as PNG or jpg, and returns the image and error
-func loadImageFromFile(path string) (image.Image, error) {
-	imgFile, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer imgFile.Close()
-	img, _, err := image.Decode(imgFile)
-	return img, err
-
-}
-func CompileShader(source string, shaderType uint32) (uint32, error) {
+// CompileShader creeates a shader, compiles the shader source, and returns
+// the uint32 identifier of the shader and nil. If the compile fails, it returns
+// an error and 0 as shader id.
+func CompileShader(source string, shaderType uint32, wrapper interfaces.GLWrapper) (uint32, error) {
 	shader := wrapper.CreateShader(shaderType)
 
 	csources, free := wrapper.Strs(source)
@@ -57,10 +33,10 @@ func CompileShader(source string, shaderType uint32) (uint32, error) {
 	wrapper.CompileShader(shader)
 
 	var status int32
-	wrapper.GetShaderiv(shader, wrapper.COMPILE_STATUS, &status)
-	if status == wrapper.FALSE {
+	wrapper.GetShaderiv(shader, glwrapper.COMPILE_STATUS, &status)
+	if status == glwrapper.FALSE {
 		var logLength int32
-		wrapper.GetShaderiv(shader, wrapper.INFO_LOG_LENGTH, &logLength)
+		wrapper.GetShaderiv(shader, glwrapper.INFO_LOG_LENGTH, &logLength)
 
 		log := strings.Repeat("\x00", int(logLength+1))
 		wrapper.GetShaderInfoLog(shader, logLength, nil, wrapper.Str(log))

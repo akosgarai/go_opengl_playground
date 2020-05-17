@@ -6,6 +6,7 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
@@ -35,7 +36,7 @@ const (
 
 var (
 	app           *application.Application
-	ball          *sphere.Sphere
+	Ball          *mesh.ColorMesh
 	BallPrecision = 10
 
 	lastUpdate           int64
@@ -45,6 +46,8 @@ var (
 	BallInitialDirection = mgl32.Vec3{0, -1, 0}
 	BallTopPosition      = float32(-10)
 	BallBottomPosition   = float32(-2)
+
+	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -54,28 +57,26 @@ func CreateCamera() *camera.Camera {
 	return camera
 }
 
-// It generates a Sphere.
-func GenerateSphere(shaderProgram *shader.Shader) {
-	ball = sphere.New(mgl32.Vec3{0, -5, 0}, mgl32.Vec3{1, 0, 0}, 2.0, shaderProgram)
-	ball.SetDirection(BallInitialDirection)
-	ball.SetSpeed(ballSpeed)
-	ball.SetPrecision(BallPrecision)
-	app.AddItem(ball)
+func CreateSphereMesh() *mesh.ColorMesh {
+	s := sphere.New(BallPrecision)
+	cols := []mgl32.Vec3{mgl32.Vec3{1, 0, 0}}
+	v, i := s.ColoredMeshInput(cols)
+	m := mesh.NewColorMesh(v, i, glWrapper)
+	m.SetPosition(mgl32.Vec3{0, -5, 0})
+	m.SetScale(mgl32.Vec3{2, 2, 2})
+	m.SetDirection(BallInitialDirection)
+	m.SetSpeed(ballSpeed)
+	return m
 }
 
 // It generates a square.
-func GenerateSquare(shaderProgram *shader.Shader) {
-	squareColor := mgl32.Vec3{0, 1, 0}
-	coords := [4]mgl32.Vec3{
-		mgl32.Vec3{-20, 0, -20},
-		mgl32.Vec3{20, 0, -20},
-		mgl32.Vec3{20, 0, 20},
-		mgl32.Vec3{-20, 0, 20},
-	}
-	colors := [4]mgl32.Vec3{squareColor, squareColor, squareColor, squareColor}
-	square := rectangle.New(coords, colors, shaderProgram)
-	square.SetPrecision(1)
-	app.AddItem(square)
+func CreateSquareMesh() *mesh.ColorMesh {
+	squareColor := []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
+	s := rectangle.NewSquare()
+	v, i := s.ColoredMeshInput(squareColor)
+	m := mesh.NewColorMesh(v, i, glWrapper)
+	m.SetScale(mgl32.Vec3{40, 40, 40})
+	return m
 }
 
 // Update the z coordinates of the vectors.
@@ -84,13 +85,13 @@ func Update() {
 	delta := float64(nowNano - lastUpdate)
 	moveTime := delta / float64(time.Millisecond)
 	// handle ball
-	if ball.GetCenter().Y() <= BallTopPosition {
-		ball.SetCenter(mgl32.Vec3{ball.GetCenter().X(), BallTopPosition, ball.GetCenter().Z()})
-		ball.SetDirection(BallInitialDirection.Mul(-1.0))
+	if Ball.GetPosition().Y() <= BallTopPosition {
+		Ball.SetPosition(mgl32.Vec3{Ball.GetPosition().X(), BallTopPosition, Ball.GetPosition().Z()})
+		Ball.SetDirection(BallInitialDirection.Mul(-1.0))
 	}
-	if ball.GetCenter().Y() >= BallBottomPosition {
-		ball.SetCenter(mgl32.Vec3{ball.GetCenter().X(), BallBottomPosition, ball.GetCenter().Z()})
-		ball.SetDirection(BallInitialDirection)
+	if Ball.GetPosition().Y() >= BallBottomPosition {
+		Ball.SetPosition(mgl32.Vec3{Ball.GetPosition().X(), BallBottomPosition, Ball.GetPosition().Z()})
+		Ball.SetDirection(BallInitialDirection)
 	}
 	app.Update(delta)
 	lastUpdate = nowNano
@@ -172,26 +173,29 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 
-	shaderProgram := shader.NewShader("examples/05-ball-with-camera/vertexshader.vert", "examples/05-ball-with-camera/fragmentshader.frag")
-	GenerateSquare(shaderProgram)
-	GenerateSphere(shaderProgram)
+	shaderProgram := shader.NewShader("examples/05-ball-with-camera/shaders/vertexshader.vert", "examples/05-ball-with-camera/shaders/fragmentshader.frag", glWrapper)
+	app.AddShader(shaderProgram)
+	Ball = CreateSphereMesh()
+	app.AddMeshToShader(Ball, shaderProgram)
+	squareMesh := CreateSquareMesh()
+	app.AddMeshToShader(squareMesh, shaderProgram)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
-	wrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		Update()
-		app.DrawWithUniforms()
+		app.Draw()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
@@ -37,13 +38,15 @@ const (
 var (
 	app *application.Application
 
-	triangleColorFront = mgl32.Vec3{0, 0, 1}
-	triangleColorBack  = mgl32.Vec3{0, 0.5, 1}
+	triangleColorFront = []mgl32.Vec3{mgl32.Vec3{0, 0, 1}}
+	triangleColorBack  = []mgl32.Vec3{mgl32.Vec3{0, 0.5, 1}}
 
 	lastUpdate int64
 
 	cameraDistance       = 0.1
-	cameraDirectionSpeed = float32(0.500)
+	cameraDirectionSpeed = float32(0.005)
+
+	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -53,48 +56,35 @@ func CreateCamera() *camera.Camera {
 	return camera
 }
 
-// Create the keymap
-func SetupKeyMap() map[glfw.Key]bool {
-	keyDowns := make(map[glfw.Key]bool)
-	keyDowns[FORWARD] = false
-	keyDowns[LEFT] = false
-	keyDowns[RIGHT] = false
-	keyDowns[BACKWARD] = false
-	keyDowns[UP] = false
-	keyDowns[DOWN] = false
-
-	return keyDowns
-}
-
 // It generates a bunch of triangles and sets their color to static blue.
 func GenerateTriangles(shaderProgram *shader.Shader) {
+	triang := triangle.New(90, 45, 45)
+	v1, indicies1 := triang.ColoredMeshInput(triangleColorFront)
+	v2, indicies2 := triang.ColoredMeshInput(triangleColorBack)
 	for i := 0; i <= rows; i++ {
 		for j := 0; j <= cols; j++ {
 			topX := float32(j * length)
 			topY := float32(i * length)
 			topZ := float32(0.0)
 
-			coords := [3]mgl32.Vec3{
-				mgl32.Vec3{topX, topY, topZ},
-				mgl32.Vec3{topX, topY - float32(length), topZ},
-				mgl32.Vec3{topX - float32(length), topY - float32(length), topZ},
-			}
-			colors := [3]mgl32.Vec3{triangleColorFront, triangleColorFront, triangleColorFront}
-			item := triangle.New(coords, colors, shaderProgram)
-			item.SetDirection(mgl32.Vec3{0, 0, 1})
-			item.SetSpeed(float32(1.0) / float32(1000000000.0))
-			app.AddItem(item)
+			m := mesh.NewColorMesh(v1, indicies1, glWrapper)
+			m.SetPosition(mgl32.Vec3{topX, topY, topZ})
+			m.SetScale(mgl32.Vec3{length, length, length})
+			m.SetDirection(mgl32.Vec3{0, 0, 1})
+			m.SetSpeed(float32(1.0) / float32(1000000000.0))
 
-			coords = [3]mgl32.Vec3{
-				mgl32.Vec3{topX, topY, topZ},
-				mgl32.Vec3{topX - float32(length), topY - float32(length), topZ},
-				mgl32.Vec3{topX - float32(length), topY, topZ},
-			}
-			colors = [3]mgl32.Vec3{triangleColorBack, triangleColorBack, triangleColorBack}
-			item = triangle.New(coords, colors, shaderProgram)
-			item.SetDirection(mgl32.Vec3{0, 0, 1})
-			item.SetSpeed(float32(1.0) / float32(1000000000.0))
-			app.AddItem(item)
+			app.AddMeshToShader(m, shaderProgram)
+
+			m2 := mesh.NewColorMesh(v2, indicies2, glWrapper)
+			m2.SetPosition(mgl32.Vec3{topX, topY, topZ})
+			m2.SetScale(mgl32.Vec3{length, length, length})
+			m2.SetScale(mgl32.Vec3{length, length, length})
+			m2.SetRotationAngle(mgl32.DegToRad(45))
+			m2.SetRotationAxis(mgl32.Vec3{1, -1, 0})
+			m2.SetDirection(mgl32.Vec3{0, 0, 1})
+			m2.SetSpeed(float32(1.0) / float32(1000000000.0))
+
+			app.AddMeshToShader(m2, shaderProgram)
 		}
 	}
 }
@@ -184,11 +174,12 @@ func main() {
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
-	wrapper.InitOpenGL()
+	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
 
-	shaderProgram := shader.NewShader("examples/04-mesh-deformer-with-camera/vertexshader.vert", "examples/04-mesh-deformer-with-camera/fragmentshader.frag")
+	shaderProgram := shader.NewShader("examples/04-mesh-deformer-with-camera/vertexshader.vert", "examples/04-mesh-deformer-with-camera/fragmentshader.frag", glWrapper)
+	app.AddShader(shaderProgram)
 
 	GenerateTriangles(shaderProgram)
 
@@ -196,14 +187,14 @@ func main() {
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
-	wrapper.Enable(wrapper.DEPTH_TEST)
-	wrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(wrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(wrapper.LESS)
 
 	for !app.GetWindow().ShouldClose() {
-		wrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
-		app.DrawWithUniforms()
+		app.Draw()
 		app.GetWindow().SwapBuffers()
 	}
 }

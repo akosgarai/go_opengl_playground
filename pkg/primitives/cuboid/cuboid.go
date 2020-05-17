@@ -1,308 +1,189 @@
 package cuboid
 
 import (
+	"sort"
+
+	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
+
 	"github.com/go-gl/mathgl/mgl32"
-
-	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
-	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
-	"github.com/akosgarai/opengl_playground/pkg/vao"
-)
-
-const (
-	DRAW_MODE_COLOR          = 0
-	DRAW_MODE_LIGHT          = 1
-	DRAW_MODE_TEXTURED_LIGHT = 2
 )
 
 type Cuboid struct {
-	vao    *vao.VAO
-	shader rectangle.Shader
-
-	sides [6]*rectangle.Rectangle
-	// rotation parameters
-	// angle has to be in radian
-	angle    float32
-	axis     mgl32.Vec3
-	drawMode int
-
-	material *material.Material
+	Points   [24]mgl32.Vec3
+	Normals  [6]mgl32.Vec3
+	Indicies []uint32
 }
 
-func (c *Cuboid) Log() string {
-	logString := "Cuboid:\n"
-	logString += " - Rotation : Axis: Vector{" + trans.Vec3ToString(c.axis) + "}, angle: " + trans.Float32ToString(c.angle) + "}, DrawMode: " + trans.IntegerToString(c.drawMode) + "\n"
-	logString += " - " + c.material.Log() + "\n"
-	logString += " - Center: Vector{" + trans.Vec3ToString(c.GetCenterPoint()) + "}\n"
-	logString += " - Top:\n"
-	logString += c.sides[1].Log()
-	logString += " - Bottom:\n"
-	logString += c.sides[0].Log()
-	logString += " - Front:\n"
-	logString += c.sides[2].Log()
-	logString += " - Back:\n"
-	logString += c.sides[3].Log()
-	logString += " - Left:\n"
-	logString += c.sides[4].Log()
-	logString += " - Right:\n"
-	logString += c.sides[5].Log()
-	return logString
-
-}
-
-func New(bottom *rectangle.Rectangle, heightLength float32, shader rectangle.Shader) *Cuboid {
-	givenSidePoints := bottom.Coordinates()
-	// normal vector * (-1) * heightLength is the height vector.
-	// each point of the bottom + calculated prev vector -> top rectangle.
-	v1 := givenSidePoints[1].Sub(givenSidePoints[0])
-	v2 := givenSidePoints[3].Sub(givenSidePoints[0])
-	cp := v1.Cross(v2).Normalize()
-	height := cp.Mul(-1.0 * heightLength)
-
-	var sides [6]*rectangle.Rectangle
+// New function returns a cuboid. The inputs are the width,height,length attributes.
+// If the edges of the cuboid are parallel with the x,y,z axises, then  the width
+// means the length in the 'x' axis, the length is the length in the 'z' axis,
+// the height is the length in the 'y' axis.
+// The longest side os scaled to one, and the same scaling is done with the other
+// sides.
+func New(width, length, height float32) *Cuboid {
+	if width == height && width == length {
+		return NewCube()
+	}
+	// sort the side lengths for scaling.
+	sideLengths := []float32{width, length, height}
+	// Slice gets a less functions as input, so that the the last (3) item will be the greatest.
+	sort.Slice(sideLengths, func(i, j int) bool { return sideLengths[i] < sideLengths[j] })
+	sideWidth := width / sideLengths[2]
+	sideLength := length / sideLengths[2]
+	sideHeight := height / sideLengths[2]
 	// bottom
-	sides[0] = bottom
+	a := mgl32.Vec3{-sideWidth / 2, -sideHeight / 2, -sideLength / 2}
+	b := mgl32.Vec3{sideWidth / 2, -sideHeight / 2, -sideLength / 2}
+	c := mgl32.Vec3{sideWidth / 2, -sideHeight / 2, sideLength / 2}
+	d := mgl32.Vec3{-sideWidth / 2, -sideHeight / 2, sideLength / 2}
 	// top
-	topSide := [4]mgl32.Vec3{
-		givenSidePoints[0].Add(height),
-		givenSidePoints[3].Add(height),
-		givenSidePoints[2].Add(height),
-		givenSidePoints[1].Add(height),
+	e := mgl32.Vec3{-sideWidth / 2, sideHeight / 2, -sideLength / 2}
+	f := mgl32.Vec3{sideWidth / 2, sideHeight / 2, -sideLength / 2}
+	g := mgl32.Vec3{sideWidth / 2, sideHeight / 2, sideLength / 2}
+	h := mgl32.Vec3{-sideWidth / 2, sideHeight / 2, sideLength / 2}
+	points := [24]mgl32.Vec3{
+		// bottom
+		a, b, c, d,
+		// top
+		h, g, f, e,
+		// front
+		e, f, b, a,
+		// back
+		d, c, g, h,
+		// left
+		e, a, d, h,
+		// right
+		b, f, g, c,
 	}
-	top := rectangle.New(topSide, bottom.Colors(), shader)
-	sides[1] = top
-	oppositeSidePoints := top.Coordinates()
-	// front
-	frontSide := [4]mgl32.Vec3{
-		oppositeSidePoints[0],
-		oppositeSidePoints[3],
-		givenSidePoints[1],
-		givenSidePoints[0],
+	indicies := []uint32{
+		0, 1, 2, 0, 2, 3, // bottom
+		4, 5, 6, 4, 6, 7, // top
+		8, 9, 10, 8, 10, 11, // front
+		12, 13, 14, 12, 14, 15, // back
+		16, 17, 18, 16, 18, 19, // left
+		20, 21, 22, 20, 22, 23, // right
 	}
-	front := rectangle.New(frontSide, bottom.Colors(), shader)
-	sides[2] = front
-	// back
-	backSide := [4]mgl32.Vec3{
-		givenSidePoints[2],
-		oppositeSidePoints[2],
-		oppositeSidePoints[1],
-		givenSidePoints[3],
+	normals := [6]mgl32.Vec3{
+		mgl32.Vec3{0, -1, 0}, // bottom
+		mgl32.Vec3{0, 1, 0},  // top
+		mgl32.Vec3{0, 0, -1}, // front
+		mgl32.Vec3{0, 0, 1},  // back
+		mgl32.Vec3{-1, 0, 0}, // left
+		mgl32.Vec3{1, 0, 0},  // right
 	}
-	back := rectangle.New(backSide, bottom.Colors(), shader)
-	sides[3] = back
-	// left
-	leftSide := [4]mgl32.Vec3{
-		givenSidePoints[2],
-		givenSidePoints[1],
-		oppositeSidePoints[3],
-		oppositeSidePoints[2],
-	}
-	left := rectangle.New(leftSide, bottom.Colors(), shader)
-	sides[4] = left
-	// right
-	rightSide := [4]mgl32.Vec3{
-		givenSidePoints[0],
-		givenSidePoints[3],
-		oppositeSidePoints[1],
-		oppositeSidePoints[0],
-	}
-	right := rectangle.New(rightSide, bottom.Colors(), shader)
-	sides[5] = right
-
 	return &Cuboid{
-		vao:      vao.NewVAO(),
-		shader:   shader,
-		sides:    sides,
-		angle:    0,
-		axis:     mgl32.Vec3{0, 0, 0},
-		drawMode: DRAW_MODE_COLOR,
-		material: material.New((bottom.Colors())[0], (bottom.Colors())[0], (bottom.Colors())[0], 36.0),
+		Points:   points,
+		Normals:  normals,
+		Indicies: indicies,
 	}
 }
 
-// SetMaterial updates the material of the cuboid.
-func (c *Cuboid) SetMaterial(mat *material.Material) {
-	c.material = mat
+// NewCube returns a unit cube (side = 1).
+// The center point is the origo.
+// point[1-4] the bottom side, point[5-8] top.
+func NewCube() *Cuboid {
+	normals := [6]mgl32.Vec3{
+		mgl32.Vec3{0, -1, 0}, // bottom
+		mgl32.Vec3{0, 1, 0},  // top
+		mgl32.Vec3{0, 0, -1}, // front
+		mgl32.Vec3{0, 0, 1},  // back
+		mgl32.Vec3{-1, 0, 0}, // left
+		mgl32.Vec3{1, 0, 0},  // right
+	}
+	// bottom
+	a := mgl32.Vec3{-0.5, -0.5, -0.5}
+	b := mgl32.Vec3{0.5, -0.5, -0.5}
+	c := mgl32.Vec3{0.5, -0.5, 0.5}
+	d := mgl32.Vec3{-0.5, -0.5, 0.5}
+	// top
+	e := mgl32.Vec3{-0.5, 0.5, -0.5}
+	f := mgl32.Vec3{0.5, 0.5, -0.5}
+	g := mgl32.Vec3{0.5, 0.5, 0.5}
+	h := mgl32.Vec3{-0.5, 0.5, 0.5}
+	points := [24]mgl32.Vec3{
+		// bottom
+		a, b, c, d,
+		// top
+		h, g, f, e,
+		// front
+		e, f, b, a,
+		// back
+		d, c, g, h,
+		// left
+		e, a, d, h,
+		// right
+		b, f, g, c,
+	}
+	indicies := []uint32{
+		0, 1, 2, 0, 2, 3, // bottom
+		4, 5, 6, 4, 6, 7, // top
+		8, 9, 10, 8, 10, 11, // front
+		12, 13, 14, 12, 14, 15, // back
+		16, 17, 18, 16, 18, 19, // left
+		20, 21, 22, 20, 22, 23, // right
+	}
+	return &Cuboid{
+		Points:   points,
+		Normals:  normals,
+		Indicies: indicies,
+	}
 }
 
-// SetColor updates every color with the given one.
-func (c *Cuboid) SetColor(color mgl32.Vec3) {
+// MeshInput method returns the verticies, indicies inputs for the NewTexturedMesh function.
+func (c *Cuboid) MeshInput() (vertex.Verticies, []uint32) {
+	textureCoords := [4]mgl32.Vec2{
+		{0.0, 1.0},
+		{1.0, 1.0},
+		{1.0, 0.0},
+		{0.0, 0.0},
+	}
+	var verticies vertex.Verticies
 	for i := 0; i < 6; i++ {
-		c.sides[i].SetColor(color)
+		for j := 0; j < 4; j++ {
+			pointIndex := i*4 + j
+			verticies = append(verticies, vertex.Vertex{
+				Position:  c.Points[pointIndex],
+				Normal:    c.Normals[i],
+				TexCoords: textureCoords[j],
+			})
+		}
 	}
+	return verticies, c.Indicies
 }
 
-// SetIndexColor updates the color of the given index.
-func (c *Cuboid) SetIndexColor(index int, color mgl32.Vec3) {
+// ColoredMeshInput method returns the verticies, indicies inputs for the New Mesh function.
+func (c *Cuboid) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
+	var verticies vertex.Verticies
 	for i := 0; i < 6; i++ {
-		c.sides[i].SetIndexColor(index, color)
+		for j := 0; j < 4; j++ {
+			pointIndex := i*4 + j
+			verticies = append(verticies, vertex.Vertex{
+				Position: c.Points[pointIndex],
+				Color:    col[i%len(col)],
+			})
+		}
 	}
+	return verticies, c.Indicies
 }
 
-// SetSideColor updates the color of the given index.
-func (c *Cuboid) SetSideColor(index int, color mgl32.Vec3) {
+// TexturedColoredMeshInput method returns the verticies, indicies inputs for the NewTexturedColoredMesh function.
+func (c *Cuboid) TexturedColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
+	textureCoords := [4]mgl32.Vec2{
+		{0.0, 1.0},
+		{1.0, 1.0},
+		{1.0, 0.0},
+		{0.0, 0.0},
+	}
+	var verticies vertex.Verticies
 	for i := 0; i < 6; i++ {
-		c.sides[index].SetColor(color)
+		for j := 0; j < 4; j++ {
+			pointIndex := i*4 + j
+			verticies = append(verticies, vertex.Vertex{
+				Position:  c.Points[pointIndex],
+				Color:     col[i%len(col)],
+				TexCoords: textureCoords[j],
+			})
+		}
 	}
-}
-
-// SetDirection updates the direction vector.
-func (c *Cuboid) SetDirection(dir mgl32.Vec3) {
-	for i := 0; i < 6; i++ {
-		c.sides[i].SetDirection(dir)
-	}
-}
-
-// SetIndexDirection updates the direction vector.
-func (c *Cuboid) SetIndexDirection(index int, value float32) {
-	for i := 0; i < 6; i++ {
-		c.sides[i].SetIndexDirection(index, value)
-	}
-}
-
-// SetSpeed updates the speed.
-func (c *Cuboid) SetSpeed(speed float32) {
-	for i := 0; i < 6; i++ {
-		c.sides[i].SetSpeed(speed)
-	}
-}
-
-// SetPrecision updates the precision of the rectangles of the cuboid
-func (c *Cuboid) SetPrecision(p int) {
-	for i := 0; i < 6; i++ {
-		c.sides[i].SetPrecision(p)
-	}
-}
-
-// SetAngle updates the angle.
-// Input has to be radian.
-func (c *Cuboid) SetAngle(angle float32) {
-	c.angle = angle
-}
-
-// SetAxis updates the axis.
-func (c *Cuboid) SetAxis(axis mgl32.Vec3) {
-	c.axis = axis
-}
-
-// GetDirection returns the direction of the cuboid, aka the direction of the first side.
-func (c *Cuboid) GetDirection() mgl32.Vec3 {
-	return c.sides[0].GetDirection()
-}
-
-// GetCenterPoint return the center point of the cuboid.
-// In other words it returns the cross point of the diagonals
-func (c *Cuboid) GetCenterPoint() mgl32.Vec3 {
-	// calculate the diagonal:side[0][0] - side[1][2], then
-	// multiply it with 1/2 (make it half), and add it to side[0][X].
-	diagonalHalf := (c.sides[1].Coordinates()[2]).Sub(c.sides[0].Coordinates()[0]).Mul(0.5)
-	return (c.sides[0].Coordinates()[0]).Add(diagonalHalf)
-}
-
-func (c *Cuboid) setupVao() {
-	c.vao.Clear()
-	for i := 0; i < 6; i++ {
-		c.vao = c.sides[i].SetupExternalVao(c.vao)
-	}
-}
-func (c *Cuboid) buildVaoWithTexture() {
-	// Create the vao object
-	c.setupVao()
-
-	c.shader.BindBufferData(c.vao.Get())
-
-	c.shader.BindVertexArray()
-	// setup points
-	c.shader.VertexAttribPointer(0, 3, 4*8, 0)
-	// setup color
-	c.shader.VertexAttribPointer(1, 3, 4*8, 4*3)
-	c.shader.VertexAttribPointer(2, 2, 4*8, 4*6)
-}
-func (c *Cuboid) buildVaoWithoutTexture() {
-	// Create the vao object
-	c.setupVao()
-
-	c.shader.BindBufferData(c.vao.Get())
-
-	c.shader.BindVertexArray()
-	// setup points
-	c.shader.VertexAttribPointer(0, 3, 4*6, 0)
-	// setup color
-	c.shader.VertexAttribPointer(1, 3, 4*6, 4*3)
-}
-
-// Draw is for drawing the cuboid to the screen.
-func (c *Cuboid) Draw() {
-	c.shader.Use()
-
-	c.setupColorUniform()
-	if !c.shader.HasTexture() {
-		c.drawWithoutTextures()
-	} else {
-		c.drawWithTextures()
-	}
-}
-func (c *Cuboid) drawWithTextures() {
-	c.buildVaoWithTexture()
-	c.shader.DrawTriangles(int32(len(c.vao.Get()) / 8))
-	c.shader.Close(2)
-}
-func (c *Cuboid) drawWithoutTextures() {
-	c.buildVaoWithoutTexture()
-	c.shader.DrawTriangles(int32(len(c.vao.Get()) / 6))
-	c.shader.Close(1)
-}
-
-func (c *Cuboid) modelTransformation() mgl32.Mat4 {
-	return mgl32.HomogRotate3D(c.angle, c.axis)
-}
-func (c *Cuboid) setupColorUniform() {
-	if c.drawMode == DRAW_MODE_LIGHT {
-		diffuse := c.material.GetDiffuse()
-		ambient := c.material.GetAmbient()
-		specular := c.material.GetSpecular()
-		shininess := c.material.GetShininess()
-		c.shader.SetUniform3f("material.diffuse", diffuse.X(), diffuse.Y(), diffuse.Z())
-		c.shader.SetUniform3f("material.ambient", ambient.X(), ambient.Y(), ambient.Z())
-		c.shader.SetUniform3f("material.specular", specular.X(), specular.Y(), specular.Z())
-		c.shader.SetUniform1f("material.shininess", shininess)
-	} else if c.drawMode == DRAW_MODE_TEXTURED_LIGHT {
-		shininess := c.material.GetShininess()
-		c.shader.SetUniform1f("material.shininess", shininess)
-	}
-}
-
-// DrawWithUniforms is for drawing the rectangle to the screen. It setups the
-func (c *Cuboid) DrawWithUniforms(view, projection mgl32.Mat4) {
-	c.shader.Use()
-	c.shader.SetUniformMat4("view", view)
-	c.shader.SetUniformMat4("projection", projection)
-	M := c.modelTransformation()
-	c.shader.SetUniformMat4("model", M)
-
-	c.setupColorUniform()
-
-	if !c.shader.HasTexture() {
-		c.drawWithoutTextures()
-	} else {
-		c.drawWithTextures()
-	}
-}
-
-// Update
-func (c *Cuboid) Update(dt float64) {
-	for i := 0; i < 6; i++ {
-		c.sides[i].Update(dt)
-	}
-}
-
-// DrawMode updates the draw mode after validation. If it fails, it keeps the original value.
-func (c *Cuboid) DrawMode(mode int) {
-	if mode != DRAW_MODE_COLOR && mode != DRAW_MODE_LIGHT && mode != DRAW_MODE_TEXTURED_LIGHT {
-		return
-	}
-	c.drawMode = mode
-	for i := 0; i < 6; i++ {
-		c.sides[i].DrawMode(mode)
-	}
+	return verticies, c.Indicies
 }

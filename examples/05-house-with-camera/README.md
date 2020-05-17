@@ -7,7 +7,7 @@ This draws different rectangles formed something building like stuff to the scre
 
 - **W** - move to forward direction.
 - **S** - move to backward direction.
-- **A** - turn 90 degree left.
-- **D** - turn 90 degree right.
+- **A** - turn left.
+- **D** - turn right.
 
 ![Sample gif](./sample/sample.gif)
