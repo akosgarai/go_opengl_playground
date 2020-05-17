@@ -8,6 +8,7 @@ import (
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
@@ -68,10 +69,18 @@ func TexturedSphere(t texture.Textures, position mgl32.Vec3, scale float32, shad
 	return m
 }
 
+// It generates a cube map.
+func CubeMap(t texture.Textures) *mesh.TexturedMesh {
+	cube := cuboid.NewCube()
+	v, i := cube.MeshInput()
+	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
+	return m
+}
+
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{0.0, 0.0, -10.0}, mgl32.Vec3{0, 1, 0}, 90.0, 0.0)
-	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.01, 100.0)
+	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.01, 200.0)
 	return camera
 }
 func updateSun(moveTime float64) {
@@ -207,6 +216,14 @@ func main() {
 	Earth.SetSpeed((float32(2) * float32(3.1415) * distance) / EarthRoundSpeed)
 	Earth.SetDirection((mgl32.Vec3{0, 0, 1}).Normalize())
 	app.AddMeshToShader(Earth, shaderProgramTexture)
+
+	shaderProgramCubeMap := shader.NewShader("examples/07-textured-spheres/shaders/cubeMap.vert", "examples/07-textured-spheres/shaders/cubeMap.frag", glWrapper)
+	app.AddShader(shaderProgramCubeMap)
+	var cubeMapTexture texture.Textures
+	cubeMapTexture.AddCubeMapTexture("examples/07-textured-spheres/assets", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "skybox", glWrapper)
+	cubeMap := CubeMap(cubeMapTexture)
+	cubeMap.SetScale(mgl32.Vec3{100.0, 100.0, 100.0})
+	app.AddMeshToShader(cubeMap, shaderProgramCubeMap)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)
