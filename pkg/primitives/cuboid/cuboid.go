@@ -15,7 +15,7 @@ type Cuboid struct {
 }
 
 // New function returns a cuboid. The inputs are the width,height,length attributes.
-// If the edges of the cuboid are paralel with the x,y,z axises, then  the width
+// If the edges of the cuboid are parallel with the x,y,z axises, then  the width
 // means the length in the 'x' axis, the length is the length in the 'z' axis,
 // the height is the length in the 'y' axis.
 // The longest side os scaled to one, and the same scaling is done with the other
