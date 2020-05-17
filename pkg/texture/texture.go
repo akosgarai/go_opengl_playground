@@ -90,6 +90,38 @@ func (t *Textures) AddTexture(filePath string, wrapR, wrapS, minificationFilter,
 
 	*t = append(*t, tex)
 }
+func (t *Textures) AddCubeMapTexture(directoryPath string, wrapR, wrapS, wrapT, minificationFilter, magnificationFilter int32, uniformName string, wrapper interfaces.GLWrapper) {
+	tex := &Texture{
+		TextureName: genTextures(wrapper),
+		TargetId:    glwrapper.TEXTURE_CUBE_MAP,
+		Id:          glwrapper.TEXTURE0 + uint32(len(*t)),
+		UniformName: uniformName,
+		Wrapper:     wrapper,
+	}
+	tex.Bind()
+	defer tex.UnBind()
+	fileNames := []string{"skybox-right.png", "skybox-left.png", "skybox-top.png", "skybox-bottom.png", "skybox-front.png", "skybox-back.png"}
+
+	for index, file := range fileNames {
+		img, err := loadImageFromFile(directoryPath + "/" + file)
+		if err != nil {
+			panic(err)
+		}
+		rgba := image.NewRGBA(img.Bounds())
+		draw.Draw(rgba, rgba.Bounds(), img, image.Pt(0, 0), draw.Src)
+		if rgba.Stride != rgba.Rect.Size().X*4 {
+			panic("not 32 bit color")
+		}
+		tex.Wrapper.TexImage2D(glwrapper.TEXTURE_CUBE_MAP_POSITIVE_X+uint32(index), 0, glwrapper.RGBA, int32(rgba.Rect.Size().X), int32(rgba.Rect.Size().Y), 0, glwrapper.RGBA, uint32(glwrapper.UNSIGNED_BYTE), tex.Wrapper.Ptr(rgba.Pix))
+	}
+	tex.Wrapper.TexParameteri(glwrapper.TEXTURE_CUBE_MAP, glwrapper.TEXTURE_WRAP_R, wrapR)
+	tex.Wrapper.TexParameteri(glwrapper.TEXTURE_CUBE_MAP, glwrapper.TEXTURE_WRAP_S, wrapS)
+	tex.Wrapper.TexParameteri(glwrapper.TEXTURE_CUBE_MAP, glwrapper.TEXTURE_WRAP_T, wrapT)
+	tex.Wrapper.TexParameteri(glwrapper.TEXTURE_CUBE_MAP, glwrapper.TEXTURE_MIN_FILTER, minificationFilter)
+	tex.Wrapper.TexParameteri(glwrapper.TEXTURE_CUBE_MAP, glwrapper.TEXTURE_MAG_FILTER, magnificationFilter)
+
+	*t = append(*t, tex)
+}
 
 func (t Textures) UnBind() {
 	for i, _ := range t {
