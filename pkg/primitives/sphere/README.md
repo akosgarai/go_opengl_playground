@@ -14,3 +14,7 @@ MaterialMeshInput method returns the verticies, indicies - inputs for the NewMat
 ## ColoredMeshInput
 
 ColoredMeshInput method returns the verticies, indicies - inputs for the NewColorMesh function.
+
+## TexturedMeshInput
+
+TexturedMeshInput method returns the verticies, indicies - inputs for the NewTexturedMesh function.

@@ -89,3 +89,16 @@ func (s *Sphere) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32)
 	}
 	return verticies, s.Indicies
 }
+
+// TexturedMeshInput method returns the verticies, indicies inputs for the NewTexturedMesh function.
+func (s *Sphere) TexturedMeshInput() (vertex.Verticies, []uint32) {
+	var verticies vertex.Verticies
+	for i := 0; i < len(s.Points); i++ {
+		verticies = append(verticies, vertex.Vertex{
+			Position:  s.Points[i],
+			Normal:    s.Points[i],
+			TexCoords: s.TexCoords[i],
+		})
+	}
+	return verticies, s.Indicies
+}

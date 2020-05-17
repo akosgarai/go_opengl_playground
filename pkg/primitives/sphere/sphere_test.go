@@ -42,3 +42,13 @@ func TestColoredMeshInput(t *testing.T) {
 		t.Error("Invalid number of indicies")
 	}
 }
+func TestTexturedMeshInput(t *testing.T) {
+	sphere := New(2)
+	vert, ind := sphere.TexturedMeshInput()
+	if len(vert) != 9 {
+		t.Error("Invalid number of verticies")
+	}
+	if len(ind) != 12 {
+		t.Error("Invalid number of indicies")
+	}
+}
