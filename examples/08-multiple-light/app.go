@@ -43,7 +43,7 @@ const (
 var (
 	app                       *application.Application
 	Bug1                      *mesh.MaterialMesh
-	Bug2                      *mesh.MaterialMesh
+	Bug2                      *mesh.TexturedMesh
 	BugOneLastRotate          int64
 	lastUpdate                int64
 	ShaderProgramsWithViewPos []*shader.Shader
@@ -122,7 +122,7 @@ func Lamp(shaderProgram *shader.Shader, baseX, baseZ float32, lightPosition mgl3
 	app.AddMeshToShader(bulb, shaderProgram)
 }
 
-func Bugs(shaderProgram *shader.Shader) {
+func MaterialBug(shaderProgram *shader.Shader) {
 	sph := sphere.New(15)
 	v, i := sph.MaterialMeshInput()
 	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 128.0)
@@ -132,7 +132,11 @@ func Bugs(shaderProgram *shader.Shader) {
 	Bug1.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
 	Bug1.SetSpeed(moveSpeed)
 	app.AddMeshToShader(Bug1, shaderProgram)
-	Bug2 = mesh.NewMaterialMesh(v, i, mat, glWrapper)
+}
+func TexturedBug(t texture.Textures, shaderProgram *shader.Shader) {
+	sph := sphere.New(15)
+	v, i := sph.TexturedMeshInput()
+	Bug2 = mesh.NewTexturedMesh(v, i, t, glWrapper)
 	Bug2.SetPosition(PointLightPosition_2)
 	Bug2.SetDirection(mgl32.Vec3{0, 0, 1})
 	Bug2.SetSpeed(moveSpeed)
@@ -320,8 +324,12 @@ func main() {
 
 	Lamp(shaderProgramMaterial, 0.4, -2.6, SpotLightPosition_1)
 	Lamp(shaderProgramMaterial, 10.4, -2.6, SpotLightPosition_2)
-	Bugs(shaderProgramMaterial)
-	//BigBug(shaderProgramLamp)
+	MaterialBug(shaderProgramMaterial)
+	// sun texture
+	var sunTexture texture.Textures
+	sunTexture.AddTexture("examples/08-multiple-light/assets/sun.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
+	sunTexture.AddTexture("examples/08-multiple-light/assets/sun.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
+	TexturedBug(sunTexture, shaderProgramTexture)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)
