@@ -21,6 +21,50 @@ var (
 	}
 )
 
+func TestNew(t *testing.T) {
+	testData := []struct {
+		sideLengths         [3]float32
+		expectedCoordinates [3]float32
+	}{
+		{[3]float32{1, 1, 1}, [3]float32{0.5, 0.5, 0.5}},
+		{[3]float32{2, 1, 1}, [3]float32{0.5, 0.25, 0.25}},
+		{[3]float32{1, 2, 1}, [3]float32{0.25, 0.25, 0.5}},
+		{[3]float32{1, 1, 2}, [3]float32{0.25, 0.5, 0.25}},
+		{[3]float32{1, 1, 4}, [3]float32{0.125, 0.5, 0.125}},
+	}
+	for _, tt := range testData {
+		cube := New(tt.sideLengths[0], tt.sideLengths[1], tt.sideLengths[2])
+		// bottom
+		a := mgl32.Vec3{-tt.expectedCoordinates[0], -tt.expectedCoordinates[1], -tt.expectedCoordinates[2]}
+		b := mgl32.Vec3{tt.expectedCoordinates[0], -tt.expectedCoordinates[1], -tt.expectedCoordinates[2]}
+		c := mgl32.Vec3{tt.expectedCoordinates[0], -tt.expectedCoordinates[1], tt.expectedCoordinates[2]}
+		d := mgl32.Vec3{-tt.expectedCoordinates[0], -tt.expectedCoordinates[1], tt.expectedCoordinates[2]}
+		// top
+		e := mgl32.Vec3{-tt.expectedCoordinates[0], tt.expectedCoordinates[1], -tt.expectedCoordinates[2]}
+		f := mgl32.Vec3{tt.expectedCoordinates[0], tt.expectedCoordinates[1], -tt.expectedCoordinates[2]}
+		g := mgl32.Vec3{tt.expectedCoordinates[0], tt.expectedCoordinates[1], tt.expectedCoordinates[2]}
+		h := mgl32.Vec3{-tt.expectedCoordinates[0], tt.expectedCoordinates[1], tt.expectedCoordinates[2]}
+		points := [24]mgl32.Vec3{
+			// bottom
+			a, b, c, d,
+			// top
+			h, g, f, e,
+			// front
+			e, f, b, a,
+			// back
+			d, c, g, h,
+			// left
+			e, a, d, h,
+			// right
+			b, f, g, c,
+		}
+		if cube.Points != points {
+			t.Error("Invalid points")
+			t.Log(cube.Points)
+		}
+	}
+}
+
 func TestNewCube(t *testing.T) {
 	cube := NewCube()
 	expectedNormals := [6]mgl32.Vec3{
