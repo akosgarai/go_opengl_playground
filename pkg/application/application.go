@@ -32,17 +32,12 @@ type Window interface {
 	SwapBuffers()
 }
 
-type Mesh interface {
-	Draw(interfaces.Shader)
-	Update(float64)
-}
-
 type Application struct {
 	window    Window
 	camera    Camera
 	cameraSet bool
 
-	shaderMap  map[interfaces.Shader][]Mesh
+	shaderMap  map[interfaces.Shader][]interfaces.Mesh
 	mouseDowns map[glfw.MouseButton]bool
 	MousePosX  float64
 	MousePosY  float64
@@ -58,7 +53,7 @@ type Application struct {
 func New() *Application {
 	return &Application{
 		cameraSet:               false,
-		shaderMap:               make(map[interfaces.Shader][]Mesh),
+		shaderMap:               make(map[interfaces.Shader][]interfaces.Mesh),
 		mouseDowns:              make(map[glfw.MouseButton]bool),
 		directionalLightSources: []DirectionalLightSource{},
 		pointLightSources:       []PointLightSource{},
@@ -99,11 +94,11 @@ func (a *Application) GetCamera() Camera {
 
 // AddShader method inserts the new shader to the shaderMap
 func (a *Application) AddShader(s interfaces.Shader) {
-	a.shaderMap[s] = []Mesh{}
+	a.shaderMap[s] = []interfaces.Mesh{}
 }
 
 // AddMeshToShader attaches the mest to a shader.
-func (a *Application) AddMeshToShader(m Mesh, s interfaces.Shader) {
+func (a *Application) AddMeshToShader(m interfaces.Mesh, s interfaces.Shader) {
 	a.shaderMap[s] = append(a.shaderMap[s], m)
 }
 
