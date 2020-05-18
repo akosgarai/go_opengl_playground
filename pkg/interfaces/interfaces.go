@@ -91,3 +91,7 @@ type Mesh interface {
 	Draw(Shader)
 	Update(float64)
 }
+type Model interface {
+	Draw(Shader)
+	Update(float64)
+}
