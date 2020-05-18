@@ -1,8 +1,6 @@
-package main
+package model
 
 import (
-	"fmt"
-
 	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/interfaces"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
@@ -28,6 +26,11 @@ func NewModelFromFile(path string) *Model {
 	m := &Model{}
 	m.loadModel(path)
 	return m
+}
+func (m *Model) Update(dt float64) {
+	for i, _ := range m.meshes {
+		m.meshes[i].Update(dt)
+	}
 }
 
 // Draw function loops over each of the meshes and calls ther Draw function.
@@ -59,7 +62,7 @@ func (m *Model) loadModel(path string) {
 		for i := g.IndexBegin; i < g.IndexBegin+g.IndexCount; i++ {
 			indexValue := o.Indices[i]
 			if _, ok := indexMap[indexValue]; !ok {
-				mappedValue := uint32(i)
+				mappedValue := uint32(len(indexMap))
 				indexMap[indexValue] = mappedValue
 				var vert vertex.Vertex
 				positionFirstIndex := indexValue * (o.StrideSize / 4)
