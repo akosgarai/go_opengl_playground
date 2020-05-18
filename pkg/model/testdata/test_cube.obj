@@ -1,4 +1,4 @@
-mtllib test_cube.mtl
+mtllib testdata/test_cube.mtl
 o TestCube
 
 # Vertices
