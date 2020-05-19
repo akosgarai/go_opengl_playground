@@ -27,6 +27,13 @@ func NewModelFromFile(path string) *Model {
 	m.loadModel(path)
 	return m
 }
+
+// AddMesh function adds a mesh to the meshes.
+func (m *Model) AddMesh(msh interfaces.Mesh) {
+	m.meshes = append(m.meshes, msh)
+}
+
+// Update function loops over each of the meshes and calls ther Update function.
 func (m *Model) Update(dt float64) {
 	for i, _ := range m.meshes {
 		m.meshes[i].Update(dt)
