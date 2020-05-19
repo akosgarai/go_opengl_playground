@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -26,6 +27,7 @@ const (
 
 var (
 	addPoint = false
+	Model    = model.New()
 
 	app *application.Application
 
@@ -64,7 +66,8 @@ func main() {
 	app.AddShader(shaderProgram)
 
 	PointMesh = mesh.NewPointMesh(glWrapper)
-	app.AddMeshToShader(PointMesh, shaderProgram)
+	Model.AddMesh(PointMesh)
+	app.AddModelToShader(Model, shaderProgram)
 
 	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
 	app.GetWindow().SetKeyCallback(app.KeyCallback)

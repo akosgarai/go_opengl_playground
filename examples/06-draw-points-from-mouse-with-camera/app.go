@@ -8,6 +8,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
@@ -48,6 +49,7 @@ var (
 	cameraLastUpdate int64
 
 	addPoint = false
+	Model    = model.New()
 
 	glWrapper wrapper.Wrapper
 )
@@ -143,11 +145,12 @@ func main() {
 
 	cameraLastUpdate = time.Now().UnixNano()
 
-	Shader = shader.NewShader("examples/model-loading/shaders/point.vert", "examples/model-loading/shaders/point.frag", glWrapper)
+	Shader = shader.NewShader("examples/06-draw-points-from-mouse-with-camera/shaders/vertexshader.vert", "examples/06-draw-points-from-mouse-with-camera/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(Shader)
 
 	PointMesh = mesh.NewPointMesh(glWrapper)
-	app.AddMeshToShader(PointMesh, Shader)
+	Model.AddMesh(PointMesh)
+	app.AddModelToShader(Model, Shader)
 
 	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
