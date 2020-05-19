@@ -30,7 +30,7 @@ uniform Material material;
 uniform vec3 viewPosition;
 void main()
 {
-    // ambient componenet
+    // ambient component
     vec3 ambientColor = light.ambient * material.ambient;
 
     // diffuse component
