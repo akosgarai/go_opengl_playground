@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
@@ -45,6 +46,7 @@ var (
 
 	cameraDistance       = 0.1
 	cameraDirectionSpeed = float32(0.005)
+	Model                = model.New()
 
 	glWrapper wrapper.Wrapper
 )
@@ -57,7 +59,7 @@ func CreateCamera() *camera.Camera {
 }
 
 // It generates a bunch of triangles and sets their color to static blue.
-func GenerateTriangles(shaderProgram *shader.Shader) {
+func GenerateTriangles() {
 	triang := triangle.New(90, 45, 45)
 	v1, indicies1 := triang.ColoredMeshInput(triangleColorFront)
 	v2, indicies2 := triang.ColoredMeshInput(triangleColorBack)
@@ -73,7 +75,7 @@ func GenerateTriangles(shaderProgram *shader.Shader) {
 			m.SetDirection(mgl32.Vec3{0, 0, 1})
 			m.SetSpeed(float32(1.0) / float32(1000000000.0))
 
-			app.AddMeshToShader(m, shaderProgram)
+			Model.AddMesh(m)
 
 			m2 := mesh.NewColorMesh(v2, indicies2, glWrapper)
 			m2.SetPosition(mgl32.Vec3{topX, topY, topZ})
@@ -84,7 +86,7 @@ func GenerateTriangles(shaderProgram *shader.Shader) {
 			m2.SetDirection(mgl32.Vec3{0, 0, 1})
 			m2.SetSpeed(float32(1.0) / float32(1000000000.0))
 
-			app.AddMeshToShader(m2, shaderProgram)
+			Model.AddMesh(m2)
 		}
 	}
 }
@@ -181,7 +183,8 @@ func main() {
 	shaderProgram := shader.NewShader("examples/04-mesh-deformer-with-camera/vertexshader.vert", "examples/04-mesh-deformer-with-camera/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
-	GenerateTriangles(shaderProgram)
+	GenerateTriangles()
+	app.AddModelToShader(Model, shaderProgram)
 
 	lastUpdate = time.Now().UnixNano()
 	// register keyboard button callback
