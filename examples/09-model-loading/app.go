@@ -65,14 +65,14 @@ func Update() {
 	if forward != 0 {
 		app.GetCamera().Walk(float32(forward))
 	}
-	horisontal := 0.0
+	horizontal := 0.0
 	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
-		horisontal = -CameraMoveSpeed * moveTime
+		horizontal = -CameraMoveSpeed * moveTime
 	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
-		horisontal = CameraMoveSpeed * moveTime
+		horizontal = CameraMoveSpeed * moveTime
 	}
-	if horisontal != 0 {
-		app.GetCamera().Strafe(float32(horisontal))
+	if horizontal != 0 {
+		app.GetCamera().Strafe(float32(horizontal))
 	}
 	vertical := 0.0
 	if app.GetKeyState(UP) && !app.GetKeyState(DOWN) {
