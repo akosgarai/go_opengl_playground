@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
@@ -39,6 +40,7 @@ var (
 
 	cameraDistance       = 0.1
 	cameraDirectionSpeed = float32(0.00500)
+	Model                = model.New()
 
 	glWrapper wrapper.Wrapper
 )
@@ -51,7 +53,7 @@ func CreateCamera() *camera.Camera {
 }
 
 // It generates a cube.
-func GenerateCube(shaderProgram *shader.Shader) {
+func GenerateCube() {
 	colors := []mgl32.Vec3{
 		mgl32.Vec3{1.0, 0.0, 0.0},
 		mgl32.Vec3{1.0, 1.0, 0.0},
@@ -64,7 +66,7 @@ func GenerateCube(shaderProgram *shader.Shader) {
 	v, i := cube.ColoredMeshInput(colors)
 	m := mesh.NewColorMesh(v, i, glWrapper)
 	m.SetRotationAxis(mgl32.Vec3{0, 1, 0})
-	app.AddMeshToShader(m, shaderProgram)
+	Model.AddMesh(m)
 }
 
 func Update() {
@@ -154,7 +156,8 @@ func main() {
 
 	shaderProgram := shader.NewShader("examples/05-cube-with-camera/shaders/vertexshader.vert", "examples/05-cube-with-camera/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
-	GenerateCube(shaderProgram)
+	GenerateCube()
+	app.AddModelToShader(Model, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)

@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
@@ -46,6 +47,7 @@ var (
 	BallInitialDirection = mgl32.Vec3{0, -1, 0}
 	BallTopPosition      = float32(-10)
 	BallBottomPosition   = float32(-2)
+	Model                = model.New()
 
 	glWrapper wrapper.Wrapper
 )
@@ -180,9 +182,10 @@ func main() {
 	shaderProgram := shader.NewShader("examples/05-ball-with-camera/shaders/vertexshader.vert", "examples/05-ball-with-camera/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 	Ball = CreateSphereMesh()
-	app.AddMeshToShader(Ball, shaderProgram)
+	Model.AddMesh(Ball)
 	squareMesh := CreateSquareMesh()
-	app.AddMeshToShader(squareMesh, shaderProgram)
+	Model.AddMesh(squareMesh)
+	app.AddModelToShader(Model, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)
