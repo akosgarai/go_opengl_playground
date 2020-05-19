@@ -39,14 +39,14 @@ func (m *Model) AddMesh(msh interfaces.Mesh) {
 	m.meshes = append(m.meshes, msh)
 }
 
-// Update function loops over each of the meshes and calls ther Update function.
+// Update function loops over each of the meshes and calls their Update function.
 func (m *Model) Update(dt float64) {
 	for i, _ := range m.meshes {
 		m.meshes[i].Update(dt)
 	}
 }
 
-// Draw function loops over each of the meshes and calls ther Draw function.
+// Draw function loops over each of the meshes and calls their Draw function.
 func (m *Model) Draw(s interfaces.Shader) {
 	for i, _ := range m.meshes {
 		m.meshes[i].Draw(s)
