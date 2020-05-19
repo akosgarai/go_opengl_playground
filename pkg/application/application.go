@@ -97,8 +97,8 @@ func (a *Application) AddShader(s interfaces.Shader) {
 	a.shaderMap[s] = []interfaces.Model{}
 }
 
-// AddMeshToShader attaches the mest to a shader.
-func (a *Application) AddMeshToShader(m interfaces.Model, s interfaces.Shader) {
+// AddModelToShader attaches the model to a shader.
+func (a *Application) AddModelToShader(m interfaces.Model, s interfaces.Shader) {
 	a.shaderMap[s] = append(a.shaderMap[s], m)
 }
 
