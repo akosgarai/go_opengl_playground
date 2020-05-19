@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -39,6 +40,7 @@ var (
 		mgl32.Vec3{0, 0, 1},
 	}
 	lastUpdate = time.Now().UnixNano() / 1000000
+	mod        = model.New()
 
 	app *application.Application
 
@@ -111,7 +113,7 @@ func main() {
 	TriangMesh.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
 	TriangMesh.SetPosition(mgl32.Vec3{-0.4, 0, 0.3})
 	TriangMesh.SetSpeed(speed)
-	app.AddMeshToShader(TriangMesh, shaderProgram)
+	mod.AddMesh(TriangMesh)
 
 	SquareMesh = GenerateSquareMesh(squareColors)
 	SquareMesh.SetRotationAngle(mgl32.DegToRad(90))
@@ -119,7 +121,8 @@ func main() {
 	SquareMesh.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
 	SquareMesh.SetPosition(mgl32.Vec3{0.4, 0, -0.3})
 	SquareMesh.SetSpeed(speed)
-	app.AddMeshToShader(SquareMesh, shaderProgram)
+	mod.AddMesh(SquareMesh)
+	app.AddModelToShader(mod, shaderProgram)
 
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
