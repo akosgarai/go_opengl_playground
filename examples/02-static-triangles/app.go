@@ -6,6 +6,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
@@ -26,6 +27,8 @@ var (
 	color = []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
 
 	glWrapper wrapper.Wrapper
+
+	mod = model.New()
 )
 
 // GenerateTriangles fills up the triangles.
@@ -45,7 +48,7 @@ func GenerateTriangles(rows int, shaderProgram *shader.Shader) {
 			m.SetRotationAngle(mgl32.DegToRad(90))
 			m.SetRotationAxis(mgl32.Vec3{1, 0, 0})
 			m.SetScale(mgl32.Vec3{length, length, length})
-			app.AddMeshToShader(m, shaderProgram)
+			mod.AddMesh(m)
 
 		}
 	}
@@ -62,6 +65,7 @@ func main() {
 	app.AddShader(shaderProgram)
 
 	GenerateTriangles(50, shaderProgram)
+	app.AddModelToShader(mod, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)

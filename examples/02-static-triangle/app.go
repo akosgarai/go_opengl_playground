@@ -6,6 +6,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
@@ -48,7 +49,9 @@ func main() {
 	triang := GenerateColoredMesh(color)
 	triang.SetRotationAngle(mgl32.DegToRad(90))
 	triang.SetRotationAxis(mgl32.Vec3{1, 0, 0})
-	app.AddMeshToShader(triang, shaderProgram)
+	mod := model.New()
+	mod.AddMesh(triang)
+	app.AddModelToShader(mod, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)
