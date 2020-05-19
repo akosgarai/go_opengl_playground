@@ -20,6 +20,12 @@ type Model struct {
 	directory string
 }
 
+func New() *Model {
+	return &Model{
+		meshes: []interfaces.Mesh{},
+	}
+}
+
 // NewModelFromFile function gets a path as input. It loads the stuff from the paths to a model
 // that the function returns.
 func NewModelFromFile(path string) *Model {
