@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
@@ -77,6 +78,8 @@ var (
 	SpotLightCutoff_2         = float32(4)
 	SpotLightOuterCutoff_1    = float32(5)
 	SpotLightOuterCutoff_2    = float32(5)
+	TexModel                  = model.New()
+	MatModel                  = model.New()
 
 	glWrapper wrapper.Wrapper
 )
@@ -97,7 +100,7 @@ func CreateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 }
 
 // It generates the lamp
-func Lamp(shaderProgram *shader.Shader, baseX, baseZ float32, lightPosition mgl32.Vec3) {
+func Lamp(baseX, baseZ float32, lightPosition mgl32.Vec3) {
 	width := float32(0.4)
 	height := float32(6)
 	length := float32(2.5)
@@ -106,12 +109,12 @@ func Lamp(shaderProgram *shader.Shader, baseX, baseZ float32, lightPosition mgl3
 	pole := mesh.NewMaterialMesh(v, i, material.Chrome, glWrapper)
 	pole.SetPosition(mgl32.Vec3{baseX - width/2, -height / 2, baseZ - width/2})
 	pole.SetScale(mgl32.Vec3{width, height, width})
-	app.AddMeshToShader(pole, shaderProgram)
+	MatModel.AddMesh(pole)
 
 	top := mesh.NewMaterialMesh(v, i, material.Chrome, glWrapper)
 	top.SetPosition(mgl32.Vec3{baseX - width/2, -height - width/2, baseZ + length/2 - width})
 	top.SetScale(mgl32.Vec3{width, width, length})
-	app.AddMeshToShader(top, shaderProgram)
+	MatModel.AddMesh(top)
 
 	sph := sphere.New(15)
 	v, i = sph.MaterialMeshInput()
@@ -119,10 +122,10 @@ func Lamp(shaderProgram *shader.Shader, baseX, baseZ float32, lightPosition mgl3
 	bulb := mesh.NewMaterialMesh(v, i, mat, glWrapper)
 	bulb.SetPosition(lightPosition)
 	bulb.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
-	app.AddMeshToShader(bulb, shaderProgram)
+	MatModel.AddMesh(bulb)
 }
 
-func MaterialBug(shaderProgram *shader.Shader) {
+func MaterialBug() {
 	sph := sphere.New(15)
 	v, i := sph.MaterialMeshInput()
 	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 128.0)
@@ -131,16 +134,16 @@ func MaterialBug(shaderProgram *shader.Shader) {
 	Bug1.SetDirection(mgl32.Vec3{1, 0, 0})
 	Bug1.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
 	Bug1.SetSpeed(moveSpeed)
-	app.AddMeshToShader(Bug1, shaderProgram)
+	MatModel.AddMesh(Bug1)
 }
-func TexturedBug(t texture.Textures, shaderProgram *shader.Shader) {
+func TexturedBug(t texture.Textures) {
 	sph := sphere.New(15)
 	v, i := sph.TexturedMeshInput()
 	Bug2 = mesh.NewTexturedMesh(v, i, t, glWrapper)
 	Bug2.SetPosition(PointLightPosition_2)
 	Bug2.SetDirection(mgl32.Vec3{0, 0, 1})
 	Bug2.SetSpeed(moveSpeed)
-	app.AddMeshToShader(Bug2, shaderProgram)
+	TexModel.AddMesh(Bug2)
 }
 
 // It creates a new camera with the necessary setup
@@ -300,7 +303,7 @@ func main() {
 	grassTexture.AddTexture("examples/08-multiple-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
 
 	grassMesh := CreateGrassMesh(grassTexture)
-	app.AddMeshToShader(grassMesh, shaderProgramTexture)
+	TexModel.AddMesh(grassMesh)
 
 	// box textures
 	var boxTexture texture.Textures
@@ -315,21 +318,23 @@ func main() {
 	}
 	for _, pos := range boxPositions {
 		box := CreateCubeMesh(boxTexture, pos)
-		app.AddMeshToShader(box, shaderProgramTexture)
+		TexModel.AddMesh(box)
 	}
 
 	// Shader application for the lamp
 	shaderProgramMaterial := shader.NewShader("examples/08-multiple-light/shaders/lamp.vert", "examples/08-multiple-light/shaders/lamp.frag", glWrapper)
 	app.AddShader(shaderProgramMaterial)
 
-	Lamp(shaderProgramMaterial, 0.4, -2.6, SpotLightPosition_1)
-	Lamp(shaderProgramMaterial, 10.4, -2.6, SpotLightPosition_2)
-	MaterialBug(shaderProgramMaterial)
+	Lamp(0.4, -2.6, SpotLightPosition_1)
+	Lamp(10.4, -2.6, SpotLightPosition_2)
+	MaterialBug()
 	// sun texture
 	var sunTexture texture.Textures
 	sunTexture.AddTexture("examples/08-multiple-light/assets/sun.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
 	sunTexture.AddTexture("examples/08-multiple-light/assets/sun.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
-	TexturedBug(sunTexture, shaderProgramTexture)
+	TexturedBug(sunTexture)
+	app.AddModelToShader(TexModel, shaderProgramTexture)
+	app.AddModelToShader(MatModel, shaderProgramMaterial)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)
