@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
@@ -57,6 +58,8 @@ var (
 	LightLinearTerm    = float32(0.14)
 	LightQuadraticTerm = float32(0.07)
 	spherePrimitive    = sphere.New(20)
+	TexModel           = model.New()
+	CmModel            = model.New()
 
 	glWrapper wrapper.Wrapper
 )
@@ -206,7 +209,7 @@ func main() {
 	sunTexture.AddTexture("examples/07-textured-spheres/assets/sun.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
 	Sun = TexturedSphere(sunTexture, mgl32.Vec3{0.0, 0.0, 0.0}, 1, shaderProgramTexture)
 	Sun.SetRotationAxis(mgl32.Vec3{0.0, -1.0, 0.0})
-	app.AddMeshToShader(Sun, shaderProgramTexture)
+	TexModel.AddMesh(Sun)
 	// sun texture
 	var earthTexture texture.Textures
 	earthTexture.AddTexture("examples/07-textured-spheres/assets/earth.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
@@ -215,7 +218,8 @@ func main() {
 	distance := Earth.GetPosition().Len()
 	Earth.SetSpeed((float32(2) * float32(3.1415) * distance) / EarthRoundSpeed)
 	Earth.SetDirection((mgl32.Vec3{0, 0, 1}).Normalize())
-	app.AddMeshToShader(Earth, shaderProgramTexture)
+	TexModel.AddMesh(Earth)
+	app.AddModelToShader(TexModel, shaderProgramTexture)
 
 	shaderProgramCubeMap := shader.NewShader("examples/07-textured-spheres/shaders/cubeMap.vert", "examples/07-textured-spheres/shaders/cubeMap.frag", glWrapper)
 	app.AddShader(shaderProgramCubeMap)
@@ -223,7 +227,8 @@ func main() {
 	cubeMapTexture.AddCubeMapTexture("examples/07-textured-spheres/assets", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "skybox", glWrapper)
 	cubeMap := CubeMap(cubeMapTexture)
 	cubeMap.SetScale(mgl32.Vec3{100.0, 100.0, 100.0})
-	app.AddMeshToShader(cubeMap, shaderProgramCubeMap)
+	CmModel.AddMesh(cubeMap)
+	app.AddModelToShader(CmModel, shaderProgramCubeMap)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)

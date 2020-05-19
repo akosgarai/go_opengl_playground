@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
@@ -43,6 +44,7 @@ var (
 	cameraDistance       = 0.1
 	cameraDirectionSpeed = float32(0.00500)
 	rotationAngle        = float32(0.0)
+	Model                = model.New()
 
 	glWrapper wrapper.Wrapper
 )
@@ -164,7 +166,8 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 	Cube = GenerateRotatingCubeMesh(tex)
-	app.AddMeshToShader(Cube, shaderProgram)
+	Model.AddMesh(Cube)
+	app.AddModelToShader(Model, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)

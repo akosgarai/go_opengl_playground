@@ -6,6 +6,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/texture"
@@ -25,6 +26,7 @@ var (
 	app *application.Application
 
 	SquareColor = []mgl32.Vec3{mgl32.Vec3{0.58, 0.29, 0}}
+	Model       = model.New()
 
 	glWrapper wrapper.Wrapper
 )
@@ -51,7 +53,8 @@ func main() {
 	squareMesh := GenerateSquareMesh(tex)
 	squareMesh.SetRotationAngle(mgl32.DegToRad(90))
 	squareMesh.SetRotationAxis(mgl32.Vec3{1, 0, 0})
-	app.AddMeshToShader(squareMesh, shaderProgram)
+	Model.AddMesh(squareMesh)
+	app.AddModelToShader(Model, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)

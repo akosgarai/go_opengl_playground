@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
@@ -55,6 +56,8 @@ var (
 
 	cameraDistance = 0.1
 	rotationAngle  = float32(0.0)
+	TexModel       = model.New()
+	MatModel       = model.New()
 
 	glWrapper wrapper.Wrapper
 )
@@ -193,13 +196,15 @@ func main() {
 	tex.AddTexture("examples/07-textured-lighting-map/assets/colored-image-for-texture-testing-diffuse.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
 	tex.AddTexture("examples/07-textured-lighting-map/assets/colored-image-for-texture-testing-specular.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
 	CubeMesh = CreateCubeMesh(tex)
-	app.AddMeshToShader(CubeMesh, shaderProgramTexture)
+	TexModel.AddMesh(CubeMesh)
+	app.AddModelToShader(TexModel, shaderProgramTexture)
 
 	shaderProgramWhite := shader.NewShader("examples/07-textured-lighting-map/shaders/lightsource.vert", "examples/07-textured-lighting-map/shaders/lightsource.frag", glWrapper)
 	app.AddShader(shaderProgramWhite)
 
 	CreateWhiteSphere()
-	app.AddMeshToShader(LightSourceSphere, shaderProgramWhite)
+	MatModel.AddMesh(LightSourceSphere)
+	app.AddModelToShader(MatModel, shaderProgramWhite)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)
