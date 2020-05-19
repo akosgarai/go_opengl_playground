@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
@@ -47,6 +48,7 @@ var (
 		mgl32.Vec3{0.0, 0.0, 1.0},
 		mgl32.Vec3{1.0, 0.0, 1.0},
 	}
+	Model = model.New()
 
 	glWrapper wrapper.Wrapper
 )
@@ -170,9 +172,10 @@ func main() {
 	shaderProgram := shader.NewShader("examples/05-shapes-with-camera/shaders/vertexshader.vert", "examples/05-shapes-with-camera/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 	sphereMesh := CreateSphereMesh()
-	app.AddMeshToShader(sphereMesh, shaderProgram)
+	Model.AddMesh(sphereMesh)
 	cubeMesh := CreateCubeMesh()
-	app.AddMeshToShader(cubeMesh, shaderProgram)
+	Model.AddMesh(cubeMesh)
+	app.AddModelToShader(Model, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)

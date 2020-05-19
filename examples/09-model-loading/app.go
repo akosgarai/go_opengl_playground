@@ -6,10 +6,8 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
-	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -22,7 +20,7 @@ import (
 const (
 	WindowWidth  = 800
 	WindowHeight = 800
-	WindowTitle  = "Example - cubes with light source"
+	WindowTitle  = "Model loading example"
 
 	FORWARD  = glfw.KeyW
 	BACKWARD = glfw.KeyS
@@ -31,7 +29,8 @@ const (
 	UP       = glfw.KeyQ
 	DOWN     = glfw.KeyE
 
-	moveSpeed = 0.005
+	CameraMoveSpeed      = 0.005
+	CameraDirectionSpeed = float32(0.00500)
 )
 
 var (
@@ -39,57 +38,47 @@ var (
 
 	lastUpdate int64
 
-	cameraDistance       = 0.1
-	cameraDirectionSpeed = float32(0.00500)
-	Model                = model.New()
+	cameraDistance = 0.1
 
 	glWrapper wrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{0, 0, 10.0}, mgl32.Vec3{0, 1, 0}, -90.0, 0.0)
+	camera := camera.NewCamera(mgl32.Vec3{0.0, 0.0, -5.0}, mgl32.Vec3{0, 1, 0}, 90.0, 0.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
 	return camera
 }
-
-func CreateColoredCubeMesh(pos mgl32.Vec3, col []mgl32.Vec3) *mesh.ColorMesh {
-	cube := cuboid.NewCube()
-	v, i := cube.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i, glWrapper)
-	m.SetPosition(pos)
-	return m
-}
-
 func Update() {
 	nowNano := time.Now().UnixNano()
-	delta := float64(nowNano - lastUpdate)
-	moveTime := delta / float64(time.Millisecond)
+	moveTime := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
+
+	app.Update(moveTime)
 
 	forward := 0.0
 	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
-		forward = moveSpeed * moveTime
+		forward = CameraMoveSpeed * moveTime
 	} else if app.GetKeyState(BACKWARD) && !app.GetKeyState(FORWARD) {
-		forward = -moveSpeed * moveTime
+		forward = -CameraMoveSpeed * moveTime
 	}
 	if forward != 0 {
 		app.GetCamera().Walk(float32(forward))
 	}
-	horisontal := 0.0
+	horizontal := 0.0
 	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
-		horisontal = -moveSpeed * moveTime
+		horizontal = -CameraMoveSpeed * moveTime
 	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
-		horisontal = moveSpeed * moveTime
+		horizontal = CameraMoveSpeed * moveTime
 	}
-	if horisontal != 0 {
-		app.GetCamera().Strafe(float32(horisontal))
+	if horizontal != 0 {
+		app.GetCamera().Strafe(float32(horizontal))
 	}
 	vertical := 0.0
 	if app.GetKeyState(UP) && !app.GetKeyState(DOWN) {
-		vertical = -moveSpeed * moveTime
+		vertical = -CameraMoveSpeed * moveTime
 	} else if app.GetKeyState(DOWN) && !app.GetKeyState(UP) {
-		vertical = moveSpeed * moveTime
+		vertical = CameraMoveSpeed * moveTime
 	}
 	if vertical != 0 {
 		app.GetCamera().Lift(float32(vertical))
@@ -125,17 +114,18 @@ func Update() {
 	dX := float32(0.0)
 	dY := float32(0.0)
 	if KeyDowns["dUp"] && !KeyDowns["dDown"] {
-		dY = cameraDirectionSpeed
+		dY = CameraDirectionSpeed
 	} else if KeyDowns["dDown"] && !KeyDowns["dUp"] {
-		dY = -cameraDirectionSpeed
+		dY = -CameraDirectionSpeed
 	}
 	if KeyDowns["dLeft"] && !KeyDowns["dRight"] {
-		dX = -cameraDirectionSpeed
+		dX = -CameraDirectionSpeed
 	} else if KeyDowns["dRight"] && !KeyDowns["dLeft"] {
-		dX = cameraDirectionSpeed
+		dX = CameraDirectionSpeed
 	}
 	app.GetCamera().UpdateDirection(dX, dY)
 }
+
 func main() {
 	runtime.LockOSThread()
 
@@ -146,31 +136,16 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 
-	shaderProgram := shader.NewShader("examples/08-colors/shaders/vertexshader.vert", "examples/08-colors/shaders/fragmentshader.frag", glWrapper)
+	shaderProgram := shader.NewShader("examples/09-model-loading/shaders/vertexshader.vert", "examples/09-model-loading/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
-	lightSource := light.NewPointLight([4]mgl32.Vec3{mgl32.Vec3{0, 0, 0}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
-	app.AddPointLightSource(lightSource, [7]string{"", "light.ambient", "", "", "", "", ""})
-
-	whiteCube := CreateColoredCubeMesh(mgl32.Vec3{-3.0, -0.5, -3.0}, []mgl32.Vec3{mgl32.Vec3{1.0, 1.0, 1.0}})
-	Model.AddMesh(whiteCube)
-	colors := []mgl32.Vec3{
-		mgl32.Vec3{1.0, 0.0, 0.0},
-		mgl32.Vec3{1.0, 1.0, 0.0},
-		mgl32.Vec3{0.0, 1.0, 0.0},
-		mgl32.Vec3{0.0, 1.0, 1.0},
-		mgl32.Vec3{0.0, 0.0, 1.0},
-		mgl32.Vec3{1.0, 0.0, 1.0},
-	}
-	coloredCube := CreateColoredCubeMesh(mgl32.Vec3{0.0, 0.0, 0.0}, colors)
-	Model.AddMesh(coloredCube)
-	app.AddModelToShader(Model, shaderProgram)
+	lightSource := light.NewPointLight([4]mgl32.Vec3{mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
+	app.AddPointLightSource(lightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
+	cubeModel := model.NewModelFromFile("examples/09-model-loading/assets/cube.obj")
+	app.AddModelToShader(cubeModel, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)
-	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
-
 	lastUpdate = time.Now().UnixNano()
-	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {

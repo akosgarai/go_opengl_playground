@@ -86,3 +86,12 @@ type GLWrapper interface {
 	DepthFunc(xfunc uint32)
 	Viewport(x int32, y int32, width int32, height int32)
 }
+
+type Mesh interface {
+	Draw(Shader)
+	Update(float64)
+}
+type Model interface {
+	Draw(Shader)
+	Update(float64)
+}

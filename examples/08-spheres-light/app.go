@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
@@ -48,6 +49,7 @@ var (
 	JadeSphere        *mesh.MaterialMesh
 
 	InitialCenterPointLight = mgl32.Vec3{-3, 0, -3}
+	Model                   = model.New()
 
 	glWrapper wrapper.Wrapper
 )
@@ -190,11 +192,12 @@ func main() {
 	shaderProgram := shader.NewShader("examples/08-spheres-light/shaders/vertexshader.vert", "examples/08-spheres-light/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 	CreateJadeSphere()
-	app.AddMeshToShader(JadeSphere, shaderProgram)
+	Model.AddMesh(JadeSphere)
 	redPlastic := CreateRedPlasticSphere()
-	app.AddMeshToShader(redPlastic, shaderProgram)
+	Model.AddMesh(redPlastic)
 	CreateWhiteSphere()
-	app.AddMeshToShader(LightSourceSphere, shaderProgram)
+	Model.AddMesh(LightSourceSphere)
+	app.AddModelToShader(Model, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)

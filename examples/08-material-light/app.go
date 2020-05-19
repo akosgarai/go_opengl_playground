@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
@@ -49,6 +50,7 @@ var (
 
 	InitialCenterPointLight = mgl32.Vec3{-3, 0, -3}
 	CenterPointObject       = mgl32.Vec3{0, 0, 0}
+	Model                   = model.New()
 
 	glWrapper wrapper.Wrapper
 )
@@ -170,20 +172,20 @@ func main() {
 	app.AddShader(materialShader)
 
 	JadeCube = CreateMaterialMesh(material.Jade, mgl32.Vec3{0.0, 0.0, 0.0})
-	app.AddMeshToShader(JadeCube, materialShader)
+	Model.AddMesh(JadeCube)
 
 	rpCube := CreateMaterialMesh(material.Redplastic, mgl32.Vec3{-6.5, -3.5, -4.5})
 	rpCube.SetScale(mgl32.Vec3{2.0, 2.0, 2.0})
-	app.AddMeshToShader(rpCube, materialShader)
+	Model.AddMesh(rpCube)
 
 	obsidianCube := CreateMaterialMesh(material.Obsidian, mgl32.Vec3{-7.5, -4.5, -0.5})
-	app.AddMeshToShader(obsidianCube, materialShader)
+	Model.AddMesh(obsidianCube)
 
 	copperCube := CreateMaterialMesh(material.Copper, mgl32.Vec3{2.0, -4.5, -0.5})
-	app.AddMeshToShader(copperCube, materialShader)
+	Model.AddMesh(copperCube)
 
 	silverCube := CreateMaterialMesh(material.Silver, mgl32.Vec3{2.0, -2.5, -1.5})
-	app.AddMeshToShader(silverCube, materialShader)
+	Model.AddMesh(silverCube)
 
 	mat := material.New(mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, 144.0)
 	LightSourceCube = CreateMaterialMesh(mat, mgl32.Vec3{-3.0, -1.5, -3.0})
@@ -191,7 +193,8 @@ func main() {
 
 	distance := (LightSourceCube.GetPosition().Sub(JadeCube.GetPosition())).Len()
 	LightSourceCube.SetSpeed((float32(2) * float32(3.1415) * distance) / LightSourceRoundSpeed)
-	app.AddMeshToShader(LightSourceCube, materialShader)
+	Model.AddMesh(LightSourceCube)
+	app.AddModelToShader(Model, materialShader)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)

@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -20,19 +21,20 @@ const (
 	WindowWidth  = 800
 	WindowHeight = 800
 	WindowTitle  = "Example - draw points from mouse inputs and keyboard colors"
-)
-
-var (
-	addPoint = false
-
-	app       *application.Application
-	PointMesh *mesh.PointMesh
 
 	RED   = glfw.KeyR // red color component
 	GREEN = glfw.KeyG // green color component
 	BLUE  = glfw.KeyB // blue color component
 
 	LEFT_MOUSE_BUTTON = glfw.MouseButtonLeft
+)
+
+var (
+	addPoint = false
+	Model    = model.New()
+
+	app       *application.Application
+	PointMesh *mesh.PointMesh
 
 	glWrapper wrapper.Wrapper
 )
@@ -82,7 +84,8 @@ func main() {
 	app.AddShader(shaderProgram)
 
 	PointMesh = mesh.NewPointMesh(glWrapper)
-	app.AddMeshToShader(PointMesh, shaderProgram)
+	Model.AddMesh(PointMesh)
+	app.AddModelToShader(Model, shaderProgram)
 
 	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
 	app.GetWindow().SetKeyCallback(app.KeyCallback)

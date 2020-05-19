@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
+	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -34,6 +35,8 @@ var (
 	app              *application.Application
 
 	glWrapper wrapper.Wrapper
+
+	Model = model.New()
 )
 
 // It creates a new camera with the necessary setup
@@ -44,7 +47,7 @@ func CreateCamera() *camera.Camera {
 }
 
 // the path
-func Path(shaderProg *shader.Shader) {
+func Path() {
 	rect := rectangle.New(30, 50)
 	col := []mgl32.Vec3{mgl32.Vec3{215.0 / 255.0, 100.0 / 255.0, 30.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
@@ -52,11 +55,11 @@ func Path(shaderProg *shader.Shader) {
 	m.SetPosition(mgl32.Vec3{75, 0, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 
-	app.AddMeshToShader(m, shaderProg)
+	Model.AddMesh(m)
 }
 
 // the wall left of the path
-func LeftFullWall(shaderProg *shader.Shader) {
+func LeftFullWall() {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
@@ -66,11 +69,11 @@ func LeftFullWall(shaderProg *shader.Shader) {
 	m.SetRotationAngle(mgl32.DegToRad(90))
 	m.SetRotationAxis(mgl32.Vec3{0, 0, 1})
 
-	app.AddMeshToShader(m, shaderProg)
+	Model.AddMesh(m)
 }
 
 // the wall front of the path
-func FrontPathWall(shaderProg *shader.Shader) {
+func FrontPathWall() {
 	rect := rectangle.New(30, 50)
 	col := []mgl32.Vec3{mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
@@ -79,22 +82,22 @@ func FrontPathWall(shaderProg *shader.Shader) {
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))
 	m.SetRotationAxis(mgl32.Vec3{1, 0, 0})
-	app.AddMeshToShader(m, shaderProg)
+	Model.AddMesh(m)
 }
 
 // the roof of the path
-func PathRoof(shaderProg *shader.Shader) {
+func PathRoof() {
 	rect := rectangle.New(30, 50)
 	col := []mgl32.Vec3{mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
 	m := mesh.NewColorMesh(v, i, glWrapper)
 	m.SetPosition(mgl32.Vec3{75, 50, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
-	app.AddMeshToShader(m, shaderProg)
+	Model.AddMesh(m)
 }
 
 // the floor of the room
-func RoomFloor(shaderProg *shader.Shader) {
+func RoomFloor() {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
@@ -102,11 +105,11 @@ func RoomFloor(shaderProg *shader.Shader) {
 	m.SetPosition(mgl32.Vec3{35, 0, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 
-	app.AddMeshToShader(m, shaderProg)
+	Model.AddMesh(m)
 }
 
 // the roof of the room
-func RoomRoof(shaderProg *shader.Shader) {
+func RoomRoof() {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
@@ -114,11 +117,11 @@ func RoomRoof(shaderProg *shader.Shader) {
 	m.SetPosition(mgl32.Vec3{35, 50, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 
-	app.AddMeshToShader(m, shaderProg)
+	Model.AddMesh(m)
 }
 
 // the front wall of the room
-func RoomFront(shaderProg *shader.Shader) {
+func RoomFront() {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
@@ -127,11 +130,11 @@ func RoomFront(shaderProg *shader.Shader) {
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))
 	m.SetRotationAxis(mgl32.Vec3{1, 0, 0})
-	app.AddMeshToShader(m, shaderProg)
+	Model.AddMesh(m)
 }
 
 // the back wall of the room
-func RoomBack(shaderProg *shader.Shader) {
+func RoomBack() {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
@@ -140,11 +143,11 @@ func RoomBack(shaderProg *shader.Shader) {
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))
 	m.SetRotationAxis(mgl32.Vec3{1, 0, 0})
-	app.AddMeshToShader(m, shaderProg)
+	Model.AddMesh(m)
 }
 
 // the left wall of the room
-func RoomLeft(shaderProg *shader.Shader) {
+func RoomLeft() {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
@@ -153,7 +156,7 @@ func RoomLeft(shaderProg *shader.Shader) {
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))
 	m.SetRotationAxis(mgl32.Vec3{0, 0, 1})
-	app.AddMeshToShader(m, shaderProg)
+	Model.AddMesh(m)
 }
 
 func Update() {
@@ -197,19 +200,21 @@ func main() {
 	glWrapper.InitOpenGL()
 
 	shaderProgram := shader.NewShader("examples/05-house-with-camera/shaders/vertexshader.vert", "examples/05-house-with-camera/shaders/fragmentshader.frag", glWrapper)
+	app.AddShader(shaderProgram)
 
 	app.SetCamera(CreateCamera())
 	cameraLastUpdate = time.Now().UnixNano()
 
-	Path(shaderProgram)
-	LeftFullWall(shaderProgram)
-	FrontPathWall(shaderProgram)
-	PathRoof(shaderProgram)
-	RoomFloor(shaderProgram)
-	RoomRoof(shaderProgram)
-	RoomFront(shaderProgram)
-	RoomBack(shaderProgram)
-	RoomLeft(shaderProgram)
+	Path()
+	LeftFullWall()
+	FrontPathWall()
+	PathRoof()
+	RoomFloor()
+	RoomRoof()
+	RoomFront()
+	RoomBack()
+	RoomLeft()
+	app.AddModelToShader(Model, shaderProgram)
 	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 	glWrapper.Viewport(0, 0, WindowWidth, WindowHeight)
 
