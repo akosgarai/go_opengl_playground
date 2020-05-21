@@ -42,6 +42,8 @@ type Texture struct {
 	// The Uniform name of the texture
 	UniformName string
 	Wrapper     interfaces.GLWrapper
+	// The path of the file - used for exporting
+	FilePath string
 }
 
 // Bing calls Activtexture with it's `Id`, then BindTexture with `TargetId` and `TextureName`.
@@ -74,6 +76,7 @@ func (t *Textures) AddTexture(filePath string, wrapR, wrapS, minificationFilter,
 		Id:          glwrapper.TEXTURE0 + uint32(len(*t)),
 		UniformName: uniformName,
 		Wrapper:     wrapper,
+		FilePath:    filePath,
 	}
 
 	tex.Bind()
