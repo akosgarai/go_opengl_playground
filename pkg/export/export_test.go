@@ -1,6 +1,7 @@
 package export
 
 import (
+	"os"
 	"testing"
 
 	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
@@ -157,10 +158,12 @@ func TestExportTexturedColoredMesh(t *testing.T) {
 	tcMesh := mesh.NewTexturedColoredMesh(v, i, tex, colors, glWrapper)
 	meshes = append(meshes, tcMesh)
 	exporter := New(meshes)
-	result := exporter.Export("something/path")
-	if result != "texturedColoredMesh" {
+	result := exporter.Export("./tests")
+	if result != nil {
 		t.Error("Textured colored mesh should be handled as textured colored mesh")
 	}
+	os.Remove("./tests/material.mat")
+	os.Remove("./tests/object.obj")
 }
 func TestProcessTexturedColoredMesh(t *testing.T) {
 	var meshes []interfaces.Mesh
@@ -206,10 +209,12 @@ func TestExportTexturedMesh(t *testing.T) {
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
-	result := exporter.Export("something/path")
-	if result != "texturedMesh" {
+	result := exporter.Export("./tests")
+	if result != nil {
 		t.Error("Textured mesh should be handled as textured mesh")
 	}
+	os.Remove("./tests/material.mat")
+	os.Remove("./tests/object.obj")
 }
 func TestProcessTexturedGoodNamesMesh(t *testing.T) {
 	var meshes []interfaces.Mesh
@@ -316,10 +321,12 @@ func TestExportColorMesh(t *testing.T) {
 	colorMesh := mesh.NewColorMesh(v, i, col, glWrapper)
 	meshes = append(meshes, colorMesh)
 	exporter := New(meshes)
-	result := exporter.Export("something/path")
-	if result != "colorMesh" {
+	result := exporter.Export("./tests")
+	if result != nil {
 		t.Error("Color mesh should be handled as color mesh")
 	}
+	os.Remove("./tests/material.mat")
+	os.Remove("./tests/object.obj")
 }
 func TestProcessColorMesh(t *testing.T) {
 	var meshes []interfaces.Mesh
@@ -358,10 +365,12 @@ func TestExportMaterialMesh(t *testing.T) {
 	materialMesh := mesh.NewMaterialMesh(v, i, material.Jade, glWrapper)
 	meshes = append(meshes, materialMesh)
 	exporter := New(meshes)
-	result := exporter.Export("something/path")
-	if result != "materialMesh" {
+	result := exporter.Export("./tests")
+	if result != nil {
 		t.Error("Material mesh should be handled as material mesh")
 	}
+	os.Remove("./tests/material.mat")
+	os.Remove("./tests/object.obj")
 }
 func TestProcessMaterialMesh(t *testing.T) {
 	var meshes []interfaces.Mesh
@@ -397,10 +406,12 @@ func TestExportPointMesh(t *testing.T) {
 	pointMesh := mesh.NewPointMesh(glWrapper)
 	meshes = append(meshes, pointMesh)
 	exporter := New(meshes)
-	result := exporter.Export("something/path")
-	if result != "pointMesh" {
+	result := exporter.Export("./tests")
+	if result != nil {
 		t.Error("Point mesh should be handled as point mesh")
 	}
+	os.Remove("./tests/material.mat")
+	os.Remove("./tests/object.obj")
 }
 func TestProcessPointMesh(t *testing.T) {
 	var meshes []interfaces.Mesh

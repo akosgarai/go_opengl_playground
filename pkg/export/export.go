@@ -2,6 +2,8 @@ package export
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/akosgarai/opengl_playground/pkg/interfaces"
@@ -80,29 +82,57 @@ func New(meshes []interfaces.Mesh) *Export {
 }
 
 // Export gets a filepath as input. The files will be written into this directory.
-func (e *Export) Export(path string) string {
+func (e *Export) Export(path string) error {
 	for _, m := range e.meshes {
-		switch msh := m.(type) {
+		switch m.(type) {
 		case *mesh.ColorMesh:
 			e.processColorMesh(m.(*mesh.ColorMesh))
-			return "colorMesh"
+			break
 		case *mesh.MaterialMesh:
 			e.processMaterialMesh(m.(*mesh.MaterialMesh))
-			return "materialMesh"
+			break
 		case *mesh.TexturedMesh:
 			e.processTextureMesh(m.(*mesh.TexturedMesh))
-			return "texturedMesh"
+			break
 		case *mesh.TexturedColoredMesh:
 			e.processTexturedColorMesh(m.(*mesh.TexturedColoredMesh))
-			return "texturedColoredMesh"
+			break
 		case *mesh.PointMesh:
 			e.processPointMesh(m.(*mesh.PointMesh))
-			return "pointMesh"
+			break
 		default:
-			return "Unhandled type " + fmt.Sprintf("%v", msh)
+			break
 		}
 	}
-	return ""
+	// check that the directory exists. if not, return error
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return err
+	}
+	objectFileName := "object.obj"
+	materialFileName := "material.mat"
+	if len(e.materials) > 0 {
+		f, err := os.Create(filepath.Join(path, materialFileName))
+		if err != nil {
+			return err
+		}
+		content := e.materialExport()
+		_, err = f.WriteString(content)
+		f.Close()
+		if err != nil {
+			return err
+		}
+	}
+	f, err := os.Create(filepath.Join(path, objectFileName))
+	if err != nil {
+		return err
+	}
+	content := e.objectExport()
+	_, err = f.WriteString(content)
+	f.Close()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // It transforms the color to material, and saves it as material mesh, but without normal vectors.
