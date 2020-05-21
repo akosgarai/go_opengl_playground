@@ -318,7 +318,7 @@ type ColorMesh struct {
 	ebo      uint32
 }
 
-// NewColorMesh gets the verticies, indicies, glwrapper as inputs and makes the necessary setup for a
+// NewColorMesh gets the verticies, indicies, colors, glwrapper as inputs and makes the necessary setup for a
 // standing (not moving) colored mesh before returning it. The vbo, vao, ebo is also set.
 func NewColorMesh(v []vertex.Vertex, i []uint32, color []mgl32.Vec3, wrapper interfaces.GLWrapper) *ColorMesh {
 	mesh := &ColorMesh{
