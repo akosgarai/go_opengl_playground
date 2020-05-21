@@ -76,7 +76,7 @@ func CreateSquareMesh() *mesh.ColorMesh {
 	squareColor := []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
 	s := rectangle.NewSquare()
 	v, i := s.ColoredMeshInput(squareColor)
-	m := mesh.NewColorMesh(v, i, cols, glWrapper)
+	m := mesh.NewColorMesh(v, i, squareColor, glWrapper)
 	m.SetScale(mgl32.Vec3{40, 40, 40})
 	return m
 }
