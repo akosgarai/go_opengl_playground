@@ -60,6 +60,7 @@ It is a mesh extension for textured object where the object color also counts. I
 
 - **Indicies** - In the Draw function the gl.DrawElements function is used, so that i have to maintain a buffer for the indicies. These are the values that i can pass to the buffer.
 - **Textures** - The textures that are used for covering the drew mesh.
+- **Color** - The colors that was used to generate the color of the object. It is used in the export process.
 - **ebo** - The element buffer object identifier. the indicies are stored here.
 
 It's `Draw` function gets the Shader as input. It makes the uniform setup, buffer bindings, draws with triangles, and then cleans up. The `NewTexturedColoredMesh` function returns a textured colored mesh.

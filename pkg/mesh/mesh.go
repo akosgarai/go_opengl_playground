@@ -357,7 +357,7 @@ func (m *ColorMesh) setup() {
 	// setup color vector
 	m.wrapper.VertexAttribPointer(1, 3, glwrapper.FLOAT, false, 4*6, m.wrapper.PtrOffset(4*3))
 
-	// close
+	// closeColorMesh
 	m.wrapper.BindVertexArray(0)
 }
 
@@ -379,12 +379,13 @@ type TexturedColoredMesh struct {
 	Mesh
 	Indicies []uint32
 	Textures texture.Textures
+	Color    []mgl32.Vec3
 	ebo      uint32
 }
 
-// NewTexturedColoredMesh gets the verticies, indicies, textures, glwrapper as inputs and makes the necessary setup for a
+// NewTexturedColoredMesh gets the verticies, indicies, textures, colors, glwrapper as inputs and makes the necessary setup for a
 // standing (not moving) textured colored mesh before returning it. The vbo, vao, ebo is also set.
-func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures, wrapper interfaces.GLWrapper) *TexturedColoredMesh {
+func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures, color []mgl32.Vec3, wrapper interfaces.GLWrapper) *TexturedColoredMesh {
 	mesh := &TexturedColoredMesh{
 		Mesh: Mesh{
 			Verticies: v,
@@ -399,6 +400,7 @@ func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures, w
 		},
 		Indicies: i,
 		Textures: t,
+		Color:    color,
 	}
 	mesh.setup()
 	return mesh
