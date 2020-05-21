@@ -65,7 +65,7 @@ func GenerateCubeMesh(t texture.Textures) *mesh.TexturedColoredMesh {
 	}
 	cube := cuboid.NewCube()
 	v, i := cube.TexturedColoredMeshInput(colors)
-	m := mesh.NewTexturedColoredMesh(v, i, t, glWrapper)
+	m := mesh.NewTexturedColoredMesh(v, i, t, colors, glWrapper)
 	return m
 }
 

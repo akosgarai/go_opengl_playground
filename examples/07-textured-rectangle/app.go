@@ -35,7 +35,7 @@ var (
 func GenerateSquareMesh(t texture.Textures) *mesh.TexturedColoredMesh {
 	square := rectangle.NewSquare()
 	v, i := square.TexturedColoredMeshInput(SquareColor)
-	return mesh.NewTexturedColoredMesh(v, i, t, glWrapper)
+	return mesh.NewTexturedColoredMesh(v, i, t, SquareColor, glWrapper)
 }
 
 func main() {

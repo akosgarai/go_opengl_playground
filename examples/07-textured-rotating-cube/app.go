@@ -68,7 +68,7 @@ func GenerateRotatingCubeMesh(t texture.Textures) *mesh.TexturedColoredMesh {
 	}
 	cube := cuboid.NewCube()
 	v, i := cube.TexturedColoredMeshInput(colors)
-	m := mesh.NewTexturedColoredMesh(v, i, t, glWrapper)
+	m := mesh.NewTexturedColoredMesh(v, i, t, colors, glWrapper)
 	m.SetRotationAxis(mgl32.Vec3{0, 1, 0})
 	return m
 }
