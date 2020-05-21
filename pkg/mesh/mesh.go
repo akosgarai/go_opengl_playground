@@ -314,12 +314,13 @@ func (m *PointMesh) AddVertex(v vertex.Vertex) {
 type ColorMesh struct {
 	Mesh
 	Indicies []uint32
+	Color    []mgl32.Vec3
 	ebo      uint32
 }
 
-// NewColorMesh gets the verticies, indicies, glwrapper as inputs and makes the necessary setup for a
+// NewColorMesh gets the verticies, indicies, colors, glwrapper as inputs and makes the necessary setup for a
 // standing (not moving) colored mesh before returning it. The vbo, vao, ebo is also set.
-func NewColorMesh(v []vertex.Vertex, i []uint32, wrapper interfaces.GLWrapper) *ColorMesh {
+func NewColorMesh(v []vertex.Vertex, i []uint32, color []mgl32.Vec3, wrapper interfaces.GLWrapper) *ColorMesh {
 	mesh := &ColorMesh{
 		Mesh: Mesh{
 			Verticies: v,
@@ -333,6 +334,7 @@ func NewColorMesh(v []vertex.Vertex, i []uint32, wrapper interfaces.GLWrapper) *
 			wrapper:   wrapper,
 		},
 		Indicies: i,
+		Color:    color,
 	}
 	mesh.setup()
 	return mesh

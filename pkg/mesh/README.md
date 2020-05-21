@@ -48,6 +48,7 @@ It is a mesh extension for point objects. It's parameter list isn't extended, bu
 It is a mesh extension for colored opbjects. The colors are set in the verticies. Its parameter list is exended with the followings:
 
 - **Indicies** - In the Draw function the gl.DrawElements function is used, so that i have to maintain a buffer for the indicies. These are the values that i can pass to the buffer.
+- **Color** - The colors that was used to generate the color of the object. It is used in the export process.
 - **ebo** - The element buffer object identifier. the indicies are stored here.
 
 Its `Draw` function gets the Shader as input. It makes the uniform setup, buffer bindings, draws with triangles and then cleans up. The `NewColorMesh` returns a color mesh.

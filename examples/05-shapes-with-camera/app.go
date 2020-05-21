@@ -143,7 +143,7 @@ func Update() {
 func CreateCubeMesh() *mesh.ColorMesh {
 	cube := cuboid.NewCube()
 	v, i := cube.ColoredMeshInput(colors)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, colors, glWrapper)
 	m.SetPosition(mgl32.Vec3{-0.5, -0.5, 0.5})
 	return m
 }
@@ -153,7 +153,7 @@ func CreateSphereMesh() *mesh.ColorMesh {
 	s := sphere.New(20)
 	cols := []mgl32.Vec3{colors[4]}
 	v, i := s.ColoredMeshInput(cols)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, cols, glWrapper)
 	m.SetPosition(mgl32.Vec3{3, 3, 5})
 	m.SetScale(mgl32.Vec3{2, 2, 2})
 	return m

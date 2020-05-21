@@ -64,7 +64,7 @@ func GenerateCube() {
 	}
 	cube := cuboid.NewCube()
 	v, i := cube.ColoredMeshInput(colors)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, colors, glWrapper)
 	m.SetRotationAxis(mgl32.Vec3{0, 1, 0})
 	Model.AddMesh(m)
 }

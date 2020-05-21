@@ -56,7 +56,7 @@ func CreateCamera() *camera.Camera {
 func CreateColoredCubeMesh(pos mgl32.Vec3, col []mgl32.Vec3) *mesh.ColorMesh {
 	cube := cuboid.NewCube()
 	v, i := cube.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(pos)
 	return m
 }

@@ -32,7 +32,7 @@ var (
 func GenerateColoredMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	square := rectangle.NewSquare()
 	v, i := square.ColoredMeshInput(col)
-	return mesh.NewColorMesh(v, i, glWrapper)
+	return mesh.NewColorMesh(v, i, col, glWrapper)
 }
 
 func main() {
