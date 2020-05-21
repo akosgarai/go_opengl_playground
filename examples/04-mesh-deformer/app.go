@@ -57,7 +57,7 @@ func GenerateTriangles() {
 			topY := float32(i * length)
 			topZ := float32(0.0)
 
-			m := mesh.NewColorMesh(v1, indicies1, glWrapper)
+			m := mesh.NewColorMesh(v1, indicies1, triangleColorFront, glWrapper)
 			m.SetPosition(mgl32.Vec3{topX, topY, topZ})
 			m.SetScale(mgl32.Vec3{length, length, length})
 			m.SetDirection(mgl32.Vec3{0, 0, 1})
@@ -65,7 +65,7 @@ func GenerateTriangles() {
 
 			Model.AddMesh(m)
 
-			m2 := mesh.NewColorMesh(v2, indicies2, glWrapper)
+			m2 := mesh.NewColorMesh(v2, indicies2, triangleColorBack, glWrapper)
 			m2.SetPosition(mgl32.Vec3{topX, topY, topZ})
 			m2.SetScale(mgl32.Vec3{length, length, length})
 			m2.SetScale(mgl32.Vec3{length, length, length})

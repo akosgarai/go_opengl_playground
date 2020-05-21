@@ -43,7 +43,7 @@ func GenerateTriangles(rows int, shaderProgram *shader.Shader) {
 			topY := -1.0 + (float32(i) * length)
 			topZ := float32(0.0)
 
-			m := mesh.NewColorMesh(v, indicies, glWrapper)
+			m := mesh.NewColorMesh(v, indicies, color, glWrapper)
 			m.SetPosition(mgl32.Vec3{topX, topY, topZ})
 			m.SetRotationAngle(mgl32.DegToRad(90))
 			m.SetRotationAxis(mgl32.Vec3{1, 0, 0})

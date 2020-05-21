@@ -53,12 +53,12 @@ var (
 func GenerateTriangleMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	triang := triangle.New(60, 60, 60)
 	v, i := triang.ColoredMeshInput(col)
-	return mesh.NewColorMesh(v, i, glWrapper)
+	return mesh.NewColorMesh(v, i, col, glWrapper)
 }
 func GenerateSquareMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	square := rectangle.NewSquare()
 	v, i := square.ColoredMeshInput(col)
-	return mesh.NewColorMesh(v, i, glWrapper)
+	return mesh.NewColorMesh(v, i, col, glWrapper)
 }
 
 func Update() {

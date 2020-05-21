@@ -51,7 +51,7 @@ func Path() {
 	rect := rectangle.New(30, 50)
 	col := []mgl32.Vec3{mgl32.Vec3{215.0 / 255.0, 100.0 / 255.0, 30.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{75, 0, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 
@@ -63,7 +63,7 @@ func LeftFullWall() {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{90, 25, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))
@@ -77,7 +77,7 @@ func FrontPathWall() {
 	rect := rectangle.New(30, 50)
 	col := []mgl32.Vec3{mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{75, 25, 80})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))
@@ -90,7 +90,7 @@ func PathRoof() {
 	rect := rectangle.New(30, 50)
 	col := []mgl32.Vec3{mgl32.Vec3{165.0 / 255.0, 42.0 / 255.0, 42.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{75, 50, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	Model.AddMesh(m)
@@ -101,7 +101,7 @@ func RoomFloor() {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{35, 0, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 
@@ -113,7 +113,7 @@ func RoomRoof() {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{35, 50, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 
@@ -125,7 +125,7 @@ func RoomFront() {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{35, 25, 80})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))
@@ -138,7 +138,7 @@ func RoomBack() {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{35, 25, 30})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))
@@ -151,7 +151,7 @@ func RoomLeft() {
 	rect := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0}}
 	v, i := rect.ColoredMeshInput(col)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{10, 25, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
 	m.SetRotationAngle(mgl32.DegToRad(90))

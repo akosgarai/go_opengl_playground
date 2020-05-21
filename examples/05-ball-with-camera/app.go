@@ -63,7 +63,7 @@ func CreateSphereMesh() *mesh.ColorMesh {
 	s := sphere.New(BallPrecision)
 	cols := []mgl32.Vec3{mgl32.Vec3{1, 0, 0}}
 	v, i := s.ColoredMeshInput(cols)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, cols, glWrapper)
 	m.SetPosition(mgl32.Vec3{0, -5, 0})
 	m.SetScale(mgl32.Vec3{2, 2, 2})
 	m.SetDirection(BallInitialDirection)
@@ -76,7 +76,7 @@ func CreateSquareMesh() *mesh.ColorMesh {
 	squareColor := []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
 	s := rectangle.NewSquare()
 	v, i := s.ColoredMeshInput(squareColor)
-	m := mesh.NewColorMesh(v, i, glWrapper)
+	m := mesh.NewColorMesh(v, i, cols, glWrapper)
 	m.SetScale(mgl32.Vec3{40, 40, 40})
 	return m
 }
