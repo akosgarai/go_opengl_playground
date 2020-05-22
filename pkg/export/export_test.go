@@ -168,8 +168,8 @@ func TestExportTexturedColoredMesh(t *testing.T) {
 func TestProcessTexturedColoredMesh(t *testing.T) {
 	var meshes []interfaces.Mesh
 	var tex texture.Textures
-	tex.AddTexture("test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
-	tex.AddTexture("test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
+	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	colors := []mgl32.Vec3{
 		mgl32.Vec3{1.0, 0.0, 0.0},
 	}
@@ -192,7 +192,7 @@ func TestProcessTexturedColoredMesh(t *testing.T) {
 		t.Error("Invalid object length")
 	}
 	result := exporter.materialExport()
-	if result != "newmtl Textured_Color_Material_0\nKa 1.0000000000 0.0000000000 0.0000000000\nKd 1.0000000000 0.0000000000 0.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka test-image.jpg\nmap_Kd test-image.jpg\nmap_Ks test-image.jpg\n\n" {
+	if result != "newmtl Textured_Color_Material_0\nKa 1.0000000000 0.0000000000 0.0000000000\nKd 1.0000000000 0.0000000000 0.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka ./tests/test-image.jpg\nmap_Kd ./tests/test-image.jpg\nmap_Ks ./tests/test-image.jpg\n\n" {
 		t.Error("Invalid material string")
 	}
 	result = exporter.objectExport()
@@ -220,8 +220,8 @@ func TestExportTexturedMesh(t *testing.T) {
 func TestProcessTexturedGoodNamesMesh(t *testing.T) {
 	var meshes []interfaces.Mesh
 	var tex texture.Textures
-	tex.AddTexture("test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
-	tex.AddTexture("test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
+	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	cube := cuboid.NewCube()
 	v, i := cube.MeshInput()
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
@@ -241,7 +241,7 @@ func TestProcessTexturedGoodNamesMesh(t *testing.T) {
 		t.Error("Invalid object length")
 	}
 	result := exporter.materialExport()
-	if result != "newmtl Texture_Material_0\nKa 1.0000000000 1.0000000000 1.0000000000\nKd 1.0000000000 1.0000000000 1.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka test-image.jpg\nmap_Kd test-image.jpg\nmap_Ks test-image.jpg\n\n" {
+	if result != "newmtl Texture_Material_0\nKa 1.0000000000 1.0000000000 1.0000000000\nKd 1.0000000000 1.0000000000 1.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka ./tests/test-image.jpg\nmap_Kd ./tests/test-image.jpg\nmap_Ks ./tests/test-image.jpg\n\n" {
 		t.Error("Invalid material string")
 	}
 	result = exporter.objectExport()
@@ -253,7 +253,7 @@ func TestProcessTexturedGoodNamesMesh(t *testing.T) {
 func TestProcessTexturedNoSpecularMesh(t *testing.T) {
 	var meshes []interfaces.Mesh
 	var tex texture.Textures
-	tex.AddTexture("test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
 	cube := cuboid.NewCube()
 	v, i := cube.MeshInput()
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
@@ -273,7 +273,7 @@ func TestProcessTexturedNoSpecularMesh(t *testing.T) {
 		t.Error("Invalid object length")
 	}
 	result := exporter.materialExport()
-	if result != "newmtl Texture_Material_0\nKa 1.0000000000 1.0000000000 1.0000000000\nKd 1.0000000000 1.0000000000 1.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka test-image.jpg\nmap_Kd test-image.jpg\nmap_Ks test-image.jpg\n\n" {
+	if result != "newmtl Texture_Material_0\nKa 1.0000000000 1.0000000000 1.0000000000\nKd 1.0000000000 1.0000000000 1.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka ./tests/test-image.jpg\nmap_Kd ./tests/test-image.jpg\nmap_Ks ./tests/test-image.jpg\n\n" {
 		t.Error("Invalid material string")
 	}
 	result = exporter.objectExport()
@@ -285,7 +285,7 @@ func TestProcessTexturedNoSpecularMesh(t *testing.T) {
 func TestProcessTexturedNoDiffuseMesh(t *testing.T) {
 	var meshes []interfaces.Mesh
 	var tex texture.Textures
-	tex.AddTexture("test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
+	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	cube := cuboid.NewCube()
 	v, i := cube.MeshInput()
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
@@ -305,7 +305,7 @@ func TestProcessTexturedNoDiffuseMesh(t *testing.T) {
 		t.Error("Invalid object length")
 	}
 	result := exporter.materialExport()
-	if result != "newmtl Texture_Material_0\nKa 1.0000000000 1.0000000000 1.0000000000\nKd 1.0000000000 1.0000000000 1.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka test-image.jpg\nmap_Kd test-image.jpg\nmap_Ks test-image.jpg\n\n" {
+	if result != "newmtl Texture_Material_0\nKa 1.0000000000 1.0000000000 1.0000000000\nKd 1.0000000000 1.0000000000 1.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka ./tests/test-image.jpg\nmap_Kd ./tests/test-image.jpg\nmap_Ks ./tests/test-image.jpg\n\n" {
 		t.Error("Invalid material string")
 	}
 	result = exporter.objectExport()
