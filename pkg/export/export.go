@@ -177,7 +177,9 @@ func (e *Export) processColorMesh(m *mesh.ColorMesh) {
 	}
 	e.positionMaxIndex = e.positionMaxIndex + len(obj.Indices)
 	InverseMap := make(map[int][3]float32)
-	for pos, val := range objIndexPositionMap {
+	for origPos, val := range objIndexPositionMap {
+		trMatrix := m.ModelTransformation()
+		pos := mgl32.TransformCoordinate(origPos, trMatrix)
 		InverseMap[val] = [3]float32{pos.X(), pos.Y(), pos.Z()}
 	}
 	for i := 0; i < len(InverseMap); i++ {
@@ -220,14 +222,18 @@ func (e *Export) processMaterialMesh(m *mesh.MaterialMesh) {
 	e.positionMaxIndex = e.positionMaxIndex + len(objIndexPositionMap)
 	e.normalMaxIndex = e.normalMaxIndex + len(objIndexNormalMap)
 	orderedPos := make(map[int][3]float32)
-	for pos, val := range objIndexPositionMap {
+	for origPos, val := range objIndexPositionMap {
+		trMatrix := m.ModelTransformation()
+		pos := mgl32.TransformCoordinate(origPos, trMatrix)
 		orderedPos[val] = [3]float32{pos.X(), pos.Y(), pos.Z()}
 	}
 	for i := 0; i < len(orderedPos); i++ {
 		obj.V = append(obj.V, orderedPos[i])
 	}
 	orderedNorm := make(map[int][3]float32)
-	for normal, val := range objIndexNormalMap {
+	for origNormal, val := range objIndexNormalMap {
+		trMatrix := m.RotationTransformation()
+		normal := mgl32.TransformCoordinate(origNormal, trMatrix)
 		orderedNorm[val] = [3]float32{normal.X(), normal.Y(), normal.Z()}
 	}
 	for i := 0; i < len(orderedNorm); i++ {
@@ -294,14 +300,18 @@ func (e *Export) processTextureMesh(m *mesh.TexturedMesh) {
 	e.normalMaxIndex = e.normalMaxIndex + len(objIndexNormalMap)
 	e.tcMaxIndex = e.tcMaxIndex + len(objIndexTexCoordMap)
 	orderedPos := make(map[int][3]float32)
-	for pos, val := range objIndexPositionMap {
+	for origPos, val := range objIndexPositionMap {
+		trMatrix := m.ModelTransformation()
+		pos := mgl32.TransformCoordinate(origPos, trMatrix)
 		orderedPos[val] = [3]float32{pos.X(), pos.Y(), pos.Z()}
 	}
 	for i := 0; i < len(orderedPos); i++ {
 		obj.V = append(obj.V, orderedPos[i])
 	}
 	orderedNorm := make(map[int][3]float32)
-	for normal, val := range objIndexNormalMap {
+	for origNormal, val := range objIndexNormalMap {
+		trMatrix := m.RotationTransformation()
+		normal := mgl32.TransformCoordinate(origNormal, trMatrix)
 		orderedNorm[val] = [3]float32{normal.X(), normal.Y(), normal.Z()}
 	}
 	for i := 0; i < len(orderedNorm); i++ {
@@ -378,7 +388,9 @@ func (e *Export) processTexturedColorMesh(m *mesh.TexturedColoredMesh) {
 	e.positionMaxIndex = e.positionMaxIndex + len(objIndexPositionMap)
 	e.tcMaxIndex = e.tcMaxIndex + len(objIndexTexCoordMap)
 	orderedPos := make(map[int][3]float32)
-	for pos, val := range objIndexPositionMap {
+	for origPos, val := range objIndexPositionMap {
+		trMatrix := m.ModelTransformation()
+		pos := mgl32.TransformCoordinate(origPos, trMatrix)
 		orderedPos[val] = [3]float32{pos.X(), pos.Y(), pos.Z()}
 	}
 	for i := 0; i < len(orderedPos); i++ {
@@ -398,7 +410,9 @@ func (e *Export) processPointMesh(m *mesh.PointMesh) {
 	obj.HasFaces = false
 	obj.Name = fmt.Sprintf("Point_Object_%d", len(e.objects))
 	for _, vert := range m.Verticies {
-		obj.V = append(obj.V, [3]float32{vert.Position.X(), vert.Position.Y(), vert.Position.Z()})
+		trMatrix := m.ModelTransformation()
+		pos := mgl32.TransformCoordinate(vert.Position, trMatrix)
+		obj.V = append(obj.V, [3]float32{pos.X(), pos.Y(), pos.Z()})
 	}
 	for i := 0; i < len(obj.V); i++ {
 		obj.Indices = append(obj.Indices, fmt.Sprintf("%d", e.positionMaxIndex+i+1))
