@@ -69,15 +69,21 @@ type Obj struct {
 type Export struct {
 	meshes []interfaces.Mesh
 	// The directory path. Files will be written here.
-	directory string
-	materials []Mtl
-	objects   []Obj
+	directory        string
+	materials        []Mtl
+	objects          []Obj
+	positionMaxIndex int
+	normalMaxIndex   int
+	tcMaxIndex       int
 }
 
 // New gets the meshes as input and returns the Export populated with the given meshes.
 func New(meshes []interfaces.Mesh) *Export {
 	return &Export{
-		meshes: meshes,
+		meshes:           meshes,
+		positionMaxIndex: 0,
+		normalMaxIndex:   0,
+		tcMaxIndex:       0,
 	}
 }
 
@@ -166,9 +172,10 @@ func (e *Export) processColorMesh(m *mesh.ColorMesh) {
 	obj.Name = fmt.Sprintf("Color_Material_Object_%d", len(e.objects))
 	obj.MaterialName = mtl.Name
 	for _, indexValue := range m.Indicies {
-		index := fmt.Sprintf("%d", objIndexPositionMap[m.Verticies[indexValue].Position]+1)
+		index := fmt.Sprintf("%d", e.positionMaxIndex+objIndexPositionMap[m.Verticies[indexValue].Position]+1)
 		obj.Indices = append(obj.Indices, index)
 	}
+	e.positionMaxIndex = e.positionMaxIndex + len(obj.Indices)
 	InverseMap := make(map[int][3]float32)
 	for pos, val := range objIndexPositionMap {
 		InverseMap[val] = [3]float32{pos.X(), pos.Y(), pos.Z()}
@@ -207,9 +214,11 @@ func (e *Export) processMaterialMesh(m *mesh.MaterialMesh) {
 	obj.Name = fmt.Sprintf("Material_Object_%d", len(e.objects))
 	obj.MaterialName = mtl.Name
 	for _, indexValue := range m.Indicies {
-		index := fmt.Sprintf("%d//%d", objIndexPositionMap[m.Verticies[indexValue].Position]+1, objIndexNormalMap[m.Verticies[indexValue].Normal]+1)
+		index := fmt.Sprintf("%d//%d", e.positionMaxIndex+objIndexPositionMap[m.Verticies[indexValue].Position]+1, e.normalMaxIndex+objIndexNormalMap[m.Verticies[indexValue].Normal]+1)
 		obj.Indices = append(obj.Indices, index)
 	}
+	e.positionMaxIndex = e.positionMaxIndex + len(objIndexPositionMap)
+	e.normalMaxIndex = e.normalMaxIndex + len(objIndexNormalMap)
 	orderedPos := make(map[int][3]float32)
 	for pos, val := range objIndexPositionMap {
 		orderedPos[val] = [3]float32{pos.X(), pos.Y(), pos.Z()}
@@ -278,9 +287,12 @@ func (e *Export) processTextureMesh(m *mesh.TexturedMesh) {
 	obj.Name = fmt.Sprintf("Material_Object_%d", len(e.objects))
 	obj.MaterialName = mtl.Name
 	for _, indexValue := range m.Indicies {
-		index := fmt.Sprintf("%d/%d/%d", objIndexPositionMap[m.Verticies[indexValue].Position]+1, objIndexTexCoordMap[m.Verticies[indexValue].TexCoords]+1, objIndexNormalMap[m.Verticies[indexValue].Normal]+1)
+		index := fmt.Sprintf("%d/%d/%d", e.positionMaxIndex+objIndexPositionMap[m.Verticies[indexValue].Position]+1, e.tcMaxIndex+objIndexTexCoordMap[m.Verticies[indexValue].TexCoords]+1, e.normalMaxIndex+objIndexNormalMap[m.Verticies[indexValue].Normal]+1)
 		obj.Indices = append(obj.Indices, index)
 	}
+	e.positionMaxIndex = e.positionMaxIndex + len(objIndexPositionMap)
+	e.normalMaxIndex = e.normalMaxIndex + len(objIndexNormalMap)
+	e.tcMaxIndex = e.tcMaxIndex + len(objIndexTexCoordMap)
 	orderedPos := make(map[int][3]float32)
 	for pos, val := range objIndexPositionMap {
 		orderedPos[val] = [3]float32{pos.X(), pos.Y(), pos.Z()}
@@ -360,9 +372,11 @@ func (e *Export) processTexturedColorMesh(m *mesh.TexturedColoredMesh) {
 	obj.Name = fmt.Sprintf("Texture_Color_Material_Object_%d", len(e.objects))
 	obj.MaterialName = mtl.Name
 	for _, indexValue := range m.Indicies {
-		index := fmt.Sprintf("%d/%d", objIndexPositionMap[m.Verticies[indexValue].Position]+1, objIndexTexCoordMap[m.Verticies[indexValue].TexCoords]+1)
+		index := fmt.Sprintf("%d/%d", e.positionMaxIndex+objIndexPositionMap[m.Verticies[indexValue].Position]+1, e.tcMaxIndex+objIndexTexCoordMap[m.Verticies[indexValue].TexCoords]+1)
 		obj.Indices = append(obj.Indices, index)
 	}
+	e.positionMaxIndex = e.positionMaxIndex + len(objIndexPositionMap)
+	e.tcMaxIndex = e.tcMaxIndex + len(objIndexTexCoordMap)
 	orderedPos := make(map[int][3]float32)
 	for pos, val := range objIndexPositionMap {
 		orderedPos[val] = [3]float32{pos.X(), pos.Y(), pos.Z()}
@@ -387,8 +401,9 @@ func (e *Export) processPointMesh(m *mesh.PointMesh) {
 		obj.V = append(obj.V, [3]float32{vert.Position.X(), vert.Position.Y(), vert.Position.Z()})
 	}
 	for i := 0; i < len(obj.V); i++ {
-		obj.Indices = append(obj.Indices, fmt.Sprintf("%d", i+1))
+		obj.Indices = append(obj.Indices, fmt.Sprintf("%d", e.positionMaxIndex+i+1))
 	}
+	e.positionMaxIndex = e.positionMaxIndex + len(obj.Indices)
 	e.objects = append(e.objects, obj)
 }
 
@@ -437,6 +452,9 @@ func (e *Export) materialExport() string {
 // Create object file, write the content.
 func (e *Export) objectExport() string {
 	objectString := ""
+	if len(e.materials) > 0 {
+		objectString += "mtllib material.mat\n"
+	}
 	for _, obj := range e.objects {
 		objectString += "o " + obj.Name + "\n"
 		for _, vert := range obj.V {
