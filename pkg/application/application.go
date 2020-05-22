@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	DEBUG = glfw.KeyH
+	DEBUG  = glfw.KeyH
+	EXPORT = glfw.KeyP
 )
 
 type Camera interface {
@@ -139,6 +140,15 @@ func (a *Application) KeyCallback(w *glfw.Window, key glfw.Key, scancode int, ac
 	case DEBUG:
 		if action != glfw.Release {
 			fmt.Printf("%s\n", a.Log())
+		}
+		break
+	case EXPORT:
+		if action != glfw.Release {
+			for s, _ := range a.shaderMap {
+				for index, _ := range a.shaderMap[s] {
+					a.shaderMap[s][index].Export()
+				}
+			}
 		}
 		break
 	default:
