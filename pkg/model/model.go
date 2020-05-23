@@ -59,7 +59,7 @@ func (m *Model) Draw(s interfaces.Shader) {
 // Export function exports the meshes to a file
 func (m *Model) Export() {
 	exporter := export.New(m.meshes)
-	err := exporter.Export("./")
+	err := exporter.Export("./exports")
 	if err != nil {
 		fmt.Println("Export failed.")
 	}
