@@ -2,6 +2,9 @@ package application
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"time"
 
 	"github.com/akosgarai/opengl_playground/pkg/interfaces"
 
@@ -144,11 +147,7 @@ func (a *Application) KeyCallback(w *glfw.Window, key glfw.Key, scancode int, ac
 		break
 	case EXPORT:
 		if action != glfw.Release {
-			for s, _ := range a.shaderMap {
-				for index, _ := range a.shaderMap[s] {
-					a.shaderMap[s][index].Export()
-				}
-			}
+			a.export()
 		}
 		break
 	default:
@@ -358,4 +357,26 @@ func (a *Application) AddSpotLightSource(lightSource interfaces.SpotLight, unifo
 	sSource.OuterCutoffUniformName = uniformNames[8]
 
 	a.spotLightSources = append(a.spotLightSources, sSource)
+}
+
+// This function is called for starting the export process. It is attached to a key callback.
+func (a *Application) export() {
+	ExportBaseDir := "./exports"
+	Directory := time.Now().Format("20060102150405")
+	err := os.Mkdir(ExportBaseDir+"/"+Directory, os.ModeDir|os.ModePerm)
+	if err != nil {
+		fmt.Printf("Cannot create export directory. '%s'\n", err.Error())
+	}
+	i := 0
+	for s, _ := range a.shaderMap {
+		modelDir := strconv.Itoa(i)
+		err := os.Mkdir(ExportBaseDir+"/"+Directory+"/"+modelDir, os.ModeDir|os.ModePerm)
+		if err != nil {
+			fmt.Printf("Cannot create model directory. '%s'\n", err.Error())
+		}
+		for index, _ := range a.shaderMap[s] {
+			a.shaderMap[s][index].Export(ExportBaseDir + "/" + Directory + "/" + modelDir)
+		}
+		i++
+	}
 }

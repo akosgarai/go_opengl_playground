@@ -94,5 +94,5 @@ type Mesh interface {
 type Model interface {
 	Draw(Shader)
 	Update(float64)
-	Export()
+	Export(string)
 }
