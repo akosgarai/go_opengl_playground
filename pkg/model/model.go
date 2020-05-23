@@ -61,7 +61,7 @@ func (m *Model) Export(path string) {
 	exporter := export.New(m.meshes)
 	err := exporter.Export(path)
 	if err != nil {
-		fmt.Println("Export failed.")
+		fmt.Printf("Export failed. '%s'\n", err.Error())
 	}
 }
 
