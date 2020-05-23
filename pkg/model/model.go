@@ -1,6 +1,9 @@
 package model
 
 import (
+	"fmt"
+
+	"github.com/akosgarai/opengl_playground/pkg/export"
 	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/interfaces"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
@@ -52,6 +55,16 @@ func (m *Model) Draw(s interfaces.Shader) {
 		m.meshes[i].Draw(s)
 	}
 }
+
+// Export function exports the meshes to a file
+func (m *Model) Export(path string) {
+	exporter := export.New(m.meshes)
+	err := exporter.Export(path)
+	if err != nil {
+		fmt.Printf("Export failed. '%s'\n", err.Error())
+	}
+}
+
 func (m *Model) loadModel(path string) {
 	options := &gwob.ObjParserOptions{}
 

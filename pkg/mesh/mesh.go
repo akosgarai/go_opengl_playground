@@ -103,6 +103,12 @@ func (m *Mesh) ModelTransformation() mgl32.Mat4 {
 	))
 }
 
+// RotationTransformation returns the rotation part of the model transformation.
+// It is used in the export module, where we have to handle the normal vectors also.
+func (m *Mesh) RotationTransformation() mgl32.Mat4 {
+	return mgl32.HomogRotate3D(m.angle, m.axis)
+}
+
 type TexturedMesh struct {
 	Mesh
 	Indicies []uint32
