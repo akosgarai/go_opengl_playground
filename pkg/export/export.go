@@ -2,6 +2,7 @@ package export
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -114,6 +115,7 @@ func (e *Export) Export(path string) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return err
 	}
+	e.directory = path
 	objectFileName := "object.obj"
 	materialFileName := "material.mat"
 	if len(e.materials) > 0 {
@@ -434,32 +436,64 @@ func (e *Export) materialExport() string {
 		materialString += "Ns " + trans.Float32ToString(mat.Ns) + "\n"
 		if mat.MapKa != "" {
 			materialString += "map_Ka " + mat.MapKa + "\n"
+			e.copyFile(mat.MapKa)
 		}
 		if mat.MapKd != "" {
 			materialString += "map_Kd " + mat.MapKd + "\n"
+			e.copyFile(mat.MapKd)
 		}
 		if mat.MapKs != "" {
 			materialString += "map_Ks " + mat.MapKs + "\n"
+			e.copyFile(mat.MapKs)
 		}
 		if mat.MapNs != "" {
 			materialString += "map_Ns " + mat.MapNs + "\n"
+			e.copyFile(mat.MapNs)
 		}
 		if mat.MapD != "" {
 			materialString += "map_d " + mat.MapD + "\n"
+			e.copyFile(mat.MapD)
 		}
 		if mat.Bump != "" {
 			materialString += "bump " + mat.Bump + "\n"
 			materialString += "map_bump " + mat.Bump + "\n"
+			e.copyFile(mat.Bump)
 		}
 		if mat.Disp != "" {
 			materialString += "disp " + mat.Disp + "\n"
+			e.copyFile(mat.Disp)
 		}
 		if mat.Decal != "" {
 			materialString += "decal " + mat.Decal + "\n"
+			e.copyFile(mat.Decal)
 		}
 		materialString += "\n"
 	}
 	return materialString
+}
+func (e *Export) copyFile(src string) {
+	_, err := os.Stat(src)
+	if err != nil {
+		return
+	}
+	source, err := os.Open(src)
+	if err != nil {
+		return
+	}
+	path := strings.Split(src, "/")
+	defer source.Close()
+	fmt.Println(path)
+	fmt.Println(len(path))
+	fmt.Println(e.directory + "/" + path[len(path)-1])
+	destination, err := os.Create(e.directory + "/" + path[len(path)-1])
+	if err != nil {
+		return
+	}
+	defer destination.Close()
+	_, err = io.Copy(destination, source)
+	if err != nil {
+		return
+	}
 }
 
 // This function is responsible for the geometry processing.
