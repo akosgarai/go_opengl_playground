@@ -53,7 +53,6 @@ It is a mesh extension for colored opbjects. The colors are set in the verticies
 
 Its `Draw` function gets the Shader as input. It makes the uniform setup, buffer bindings, draws with triangles and then cleans up. The `NewColorMesh` returns a color mesh.
 
-
 ## Textured color mesh
 
 It is a mesh extension for textured object where the object color also counts. Its parameter list is extended with the followings:
@@ -64,3 +63,14 @@ It is a mesh extension for textured object where the object color also counts. I
 - **ebo** - The element buffer object identifier. the indicies are stored here.
 
 It's `Draw` function gets the Shader as input. It makes the uniform setup, buffer bindings, draws with triangles, and then cleans up. The `NewTexturedColoredMesh` function returns a textured colored mesh.
+
+## Textured material mesh
+
+It is a mesh extension for textured object where the object material also counts. Its parameter list is extended with the followings:
+
+- **Indicies** - In the Draw function the gl.DrawElements function is used, so that i have to maintain a buffer for the indicies. These are the values that i can pass to the buffer.
+- **Textures** - The textures that are used for covering the drew mesh.
+- **Material** - The material that is used for calculating the color of the mesh.
+- **ebo** - The element buffer object identifier. the indicies are stored here.
+
+Its `Draw` function gets the Shader as input. It makes the uniform setup, buffer bindings, draws with triangles, and then cleans up. The `NewTexturedMaterialMesh` function returns a textured material mesh.
