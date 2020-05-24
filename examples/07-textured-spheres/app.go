@@ -11,6 +11,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -38,14 +39,16 @@ const (
 	CameraMoveSpeed      = 0.005
 	cameraDistance       = 0.1
 
-	EarthRoundSpeed = 3000.0
-	SunRoundSpeed   = 0.01
+	EarthRoundSpeed       = 3000.0
+	OtherPlanetRoundSpeed = 7000.0
+	SunRoundSpeed         = 0.01
 )
 
 var (
 	app              *application.Application
 	Sun              *mesh.TexturedMesh
 	Earth            *mesh.TexturedMesh
+	MatPlanet        *mesh.TexturedMaterialMesh
 	lastUpdate       int64
 	PointLightSource *light.Light
 
@@ -59,6 +62,7 @@ var (
 	LightQuadraticTerm = float32(0.07)
 	spherePrimitive    = sphere.New(20)
 	TexModel           = model.New()
+	TexMatModel        = model.New()
 	CmModel            = model.New()
 
 	glWrapper wrapper.Wrapper
@@ -67,6 +71,13 @@ var (
 func TexturedSphere(t texture.Textures, position mgl32.Vec3, scale float32, shaderProgram *shader.Shader) *mesh.TexturedMesh {
 	v, i := spherePrimitive.TexturedMeshInput()
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
+	m.SetPosition(position)
+	m.SetScale(mgl32.Vec3{scale, scale, scale})
+	return m
+}
+func TexturedMaterialSphere(t texture.Textures, mat *material.Material, position mgl32.Vec3, scale float32, shaderProgram *shader.Shader) *mesh.TexturedMaterialMesh {
+	v, i := spherePrimitive.TexturedMeshInput()
+	m := mesh.NewTexturedMaterialMesh(v, i, t, mat, glWrapper)
 	m.SetPosition(position)
 	m.SetScale(mgl32.Vec3{scale, scale, scale})
 	return m
@@ -90,7 +101,7 @@ func updateSun(moveTime float64) {
 	rotationAngle = rotationAngle + float32(moveTime)*SunRoundSpeed
 	Sun.SetRotationAngle(mgl32.DegToRad(rotationAngle))
 }
-func updateEarth(moveTime float64) {
+func updatePlanets(moveTime float64) {
 	// Calculate the  rotation matrix. Get the current one, rotate it with a calculated angle around the Y axis. (HomogRotate3D(angle float32, axis Vec3) Mat4)
 	// angle calculation: (360 / LightSourceRoundSpeed) * delta) -> in radian: mat32.DegToRad()
 	// Then we can transform the current direction vector to the new one. (TransformNormal(v Vec3, m Mat4) Vec3)
@@ -99,13 +110,18 @@ func updateEarth(moveTime float64) {
 	rotationMatrix := mgl32.HomogRotate3D(rotationAngleRadian, mgl32.Vec3{0, -1, 0})
 	currentDirection := Earth.GetDirection()
 	Earth.SetDirection(mgl32.TransformNormal(currentDirection, rotationMatrix))
+
+	rotationAngleRadian = mgl32.DegToRad(float32((360 / OtherPlanetRoundSpeed) * moveTime))
+	rotationMatrix = mgl32.HomogRotate3D(rotationAngleRadian, mgl32.Vec3{0, -1, 0})
+	currentDirection = MatPlanet.GetDirection()
+	MatPlanet.SetDirection(mgl32.TransformNormal(currentDirection, rotationMatrix))
 }
 func Update() {
 	nowNano := time.Now().UnixNano()
 	moveTime := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
 
-	updateEarth(moveTime)
+	updatePlanets(moveTime)
 	updateSun(moveTime)
 
 	app.Update(moveTime)
@@ -220,6 +236,18 @@ func main() {
 	Earth.SetDirection((mgl32.Vec3{0, 0, 1}).Normalize())
 	TexModel.AddMesh(Earth)
 	app.AddModelToShader(TexModel, shaderProgramTexture)
+	// other planet texture
+	shaderProgramTextureMaterial := shader.NewShader("examples/07-textured-spheres/shaders/texturemat.vert", "examples/07-textured-spheres/shaders/texturemat.frag", glWrapper)
+	app.AddShader(shaderProgramTextureMaterial)
+	var materialTexture texture.Textures
+	materialTexture.AddTexture("examples/07-textured-spheres/assets/venus.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "tex.diffuse", glWrapper)
+	materialTexture.AddTexture("examples/07-textured-spheres/assets/venus.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "tex.specular", glWrapper)
+	MatPlanet = TexturedMaterialSphere(materialTexture, material.Gold, mgl32.Vec3{2.0, 0.0, 0.0}, 0.15, shaderProgramTextureMaterial)
+	distance = MatPlanet.GetPosition().Len()
+	MatPlanet.SetSpeed((float32(2) * float32(3.1415) * distance) / OtherPlanetRoundSpeed)
+	MatPlanet.SetDirection((mgl32.Vec3{0, 0, 1}).Normalize())
+	TexMatModel.AddMesh(MatPlanet)
+	app.AddModelToShader(TexMatModel, shaderProgramTextureMaterial)
 
 	shaderProgramCubeMap := shader.NewShader("examples/07-textured-spheres/shaders/cubeMap.vert", "examples/07-textured-spheres/shaders/cubeMap.frag", glWrapper)
 	app.AddShader(shaderProgramCubeMap)

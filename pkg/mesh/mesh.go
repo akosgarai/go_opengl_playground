@@ -453,3 +453,84 @@ func (m *TexturedColoredMesh) Draw(shader interfaces.Shader) {
 	m.wrapper.BindVertexArray(0)
 	m.wrapper.ActiveTexture(0)
 }
+
+type TexturedMaterialMesh struct {
+	Mesh
+	Indicies []uint32
+	Textures texture.Textures
+	Material *material.Material
+	ebo      uint32
+}
+
+// NewTexturedMaterialMesh gets the verticies, indicies, textures, material, glwrapper as inputs and makes the necessary setup for a
+// standing (not moving) textured material mesh before returning it. The vbo, vao, ebo is also set.
+func NewTexturedMaterialMesh(v []vertex.Vertex, i []uint32, t texture.Textures, material *material.Material, wrapper interfaces.GLWrapper) *TexturedMaterialMesh {
+	mesh := &TexturedMaterialMesh{
+		Mesh: Mesh{
+			Verticies: v,
+
+			position:  mgl32.Vec3{0, 0, 0},
+			direction: mgl32.Vec3{0, 0, 0},
+			velocity:  0,
+			angle:     0,
+			axis:      mgl32.Vec3{0, 0, 0},
+			scale:     mgl32.Vec3{1, 1, 1},
+			wrapper:   wrapper,
+		},
+		Indicies: i,
+		Textures: t,
+		Material: material,
+	}
+	mesh.setup()
+	return mesh
+}
+func (m *TexturedMaterialMesh) setup() {
+	m.vao = m.wrapper.GenVertexArrays()
+	m.vbo = m.wrapper.GenBuffers()
+	m.ebo = m.wrapper.GenBuffers()
+
+	m.wrapper.BindVertexArray(m.vao)
+
+	m.wrapper.BindBuffer(glwrapper.ARRAY_BUFFER, m.vbo)
+	m.wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_NORMAL_TEXCOORD))
+
+	m.wrapper.BindBuffer(glwrapper.ELEMENT_ARRAY_BUFFER, m.ebo)
+	m.wrapper.ElementBufferData(m.Indicies)
+
+	// setup coordinates
+	m.wrapper.VertexAttribPointer(0, 3, glwrapper.FLOAT, false, 4*8, m.wrapper.PtrOffset(0))
+	// setup normals
+	m.wrapper.VertexAttribPointer(1, 3, glwrapper.FLOAT, false, 4*8, m.wrapper.PtrOffset(4*3))
+	// setup texture position
+	m.wrapper.VertexAttribPointer(2, 2, glwrapper.FLOAT, false, 4*8, m.wrapper.PtrOffset(4*6))
+
+	// close
+	m.wrapper.BindVertexArray(0)
+}
+
+// Draw function is responsible for the actual drawing. Its input is a shader.
+// First it binds the textures with the help of the shader (i expect that the shader
+// is activated with the UseProgram gl function). Then it binds the material and sets up the model uniform.
+// Then it binds the vertex array and draws the mesh with triangles. Finally it cleans up.
+func (m *TexturedMaterialMesh) Draw(shader interfaces.Shader) {
+	for _, item := range m.Textures {
+		item.Bind()
+		shader.SetUniform1i(item.UniformName, int32(item.Id-glwrapper.TEXTURE0))
+	}
+	M := m.ModelTransformation()
+	shader.SetUniformMat4("model", M)
+	diffuse := m.Material.GetDiffuse()
+	ambient := m.Material.GetAmbient()
+	specular := m.Material.GetSpecular()
+	shininess := m.Material.GetShininess()
+	shader.SetUniform3f("material.diffuse", diffuse.X(), diffuse.Y(), diffuse.Z())
+	shader.SetUniform3f("material.ambient", ambient.X(), ambient.Y(), ambient.Z())
+	shader.SetUniform3f("material.specular", specular.X(), specular.Y(), specular.Z())
+	shader.SetUniform1f("material.shininess", shininess)
+	m.wrapper.BindVertexArray(m.vao)
+	m.wrapper.DrawTriangleElements(int32(len(m.Indicies)))
+
+	m.Textures.UnBind()
+	m.wrapper.BindVertexArray(0)
+	m.wrapper.ActiveTexture(0)
+}
