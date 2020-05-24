@@ -394,7 +394,7 @@ func TestProcessMaterialMesh(t *testing.T) {
 		t.Error("Invalid object length")
 	}
 	result := exporter.materialExport()
-	if result != "newmtl Material_0\nKa 0.1350000054 0.2224999964 0.1574999988\nKd 0.5400000215 0.8899999857 0.6299999952\nKs 0.3162280023 0.3162280023 0.3162280023\nNs 0.1000000015\n\n" {
+	if result != "newmtl Material_0\nKa 0.1350000054 0.2224999964 0.1574999988\nKd 0.5400000215 0.8899999857 0.6299999952\nKs 0.3162280023 0.3162280023 0.3162280023\nNs 12.8000001907\n\n" {
 		t.Error("Invalid material string")
 	}
 	result = exporter.objectExport()
