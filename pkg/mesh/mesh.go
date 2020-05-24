@@ -492,7 +492,7 @@ func (m *TexturedMaterialMesh) setup() {
 	m.wrapper.BindVertexArray(m.vao)
 
 	m.wrapper.BindBuffer(glwrapper.ARRAY_BUFFER, m.vbo)
-	m.wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_COLOR_TEXCOORD))
+	m.wrapper.ArrayBufferData(m.Verticies.Get(vertex.POSITION_NORMAL_TEXCOORD))
 
 	m.wrapper.BindBuffer(glwrapper.ELEMENT_ARRAY_BUFFER, m.ebo)
 	m.wrapper.ElementBufferData(m.Indicies)
