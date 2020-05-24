@@ -21,27 +21,34 @@ var (
 
 type Import struct {
 	objectFile string
+	basePath   string
 	meshes     []interfaces.Mesh
 	object     *gwob.Obj
 	material   gwob.MaterialLib
 }
 
-func New(path string) *Import {
+func New(basePath, objectFileName string) *Import {
 	return &Import{
-		objectFile: path,
+		objectFile: objectFileName,
+		basePath:   basePath,
 		meshes:     []interfaces.Mesh{},
 	}
+}
+func (i *Import) GetMeshes() []interfaces.Mesh {
+	return i.meshes
 }
 
 func (i *Import) loadObjectFile(options *gwob.ObjParserOptions) error {
 	var errObj error
-	i.object, errObj = gwob.NewObjFromFile(i.objectFile, options)
+	objectFile := i.basePath + "/" + i.objectFile
+	i.object, errObj = gwob.NewObjFromFile(objectFile, options)
 	return errObj
 }
 func (i *Import) loadMaterialFile(options *gwob.ObjParserOptions) error {
 	// load material lib
 	var errMtl error
-	i.material, errMtl = gwob.ReadMaterialLibFromFile(i.object.Mtllib, options)
+	objectFile := i.basePath + "/" + i.object.Mtllib
+	i.material, errMtl = gwob.ReadMaterialLibFromFile(objectFile, options)
 	return errMtl
 }
 func (i *Import) getVerticesAndIndices(g *gwob.Group) (vertex.Verticies, []uint32) {
