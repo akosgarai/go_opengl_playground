@@ -1,12 +1,14 @@
 package main
 
 import (
+	"os"
 	"runtime"
 	"time"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/model"
+	"github.com/akosgarai/opengl_playground/pkg/modelimport"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
@@ -29,19 +31,38 @@ const (
 	UP       = glfw.KeyQ
 	DOWN     = glfw.KeyE
 
-	CameraMoveSpeed      = 0.005
-	CameraDirectionSpeed = float32(0.00500)
+	CameraMoveSpeed       = 0.005
+	CameraDirectionSpeed  = float32(0.00500)
+	DefaultModelDirectory = "examples/09-model-loading/assets"
+	DefaultModelFilename  = "object.obj"
 )
 
 var (
-	app *application.Application
+	app      *application.Application
+	Importer *modelimport.Import
 
 	lastUpdate int64
 
 	cameraDistance = 0.1
 
 	glWrapper wrapper.Wrapper
+
+	Model = model.New()
 )
+
+// Importer init. If we have 2 or more command line arguments,
+// the first one is used as model directory, the second one
+// as the model filename.
+func Init() {
+	args := os.Args[1:]
+	if len(args) == 0 {
+		Importer = modelimport.New(DefaultModelDirectory, DefaultModelFilename)
+	} else if len(args) == 1 {
+		Importer = modelimport.New(args[0], DefaultModelFilename)
+	} else if len(args) > 1 {
+		Importer = modelimport.New(args[0], args[1])
+	}
+}
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
@@ -127,6 +148,7 @@ func Update() {
 }
 
 func main() {
+	Init()
 	runtime.LockOSThread()
 
 	app = application.New()
@@ -140,8 +162,12 @@ func main() {
 	app.AddShader(shaderProgram)
 	lightSource := light.NewPointLight([4]mgl32.Vec3{mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
 	app.AddPointLightSource(lightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
-	cubeModel := model.NewModelFromFile("examples/09-model-loading/assets/cube.obj")
-	app.AddModelToShader(cubeModel, shaderProgram)
+	Importer.Import()
+	meshes := Importer.GetMeshes()
+	for _, m := range meshes {
+		Model.AddMesh(m)
+	}
+	app.AddModelToShader(Model, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)
