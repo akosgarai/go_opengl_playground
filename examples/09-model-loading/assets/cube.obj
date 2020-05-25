@@ -1,4 +1,4 @@
-mtllib examples/09-model-loading/assets/cube.mtl
+mtllib cube.mtl
 o MaterialCube
 
 # Vertices

@@ -1,6 +1,7 @@
 package export
 
 import (
+	"io"
 	"os"
 	"testing"
 
@@ -21,6 +22,22 @@ import (
 var (
 	glWrapper testhelper.GLWrapperMock
 )
+
+func defaultImage(t *testing.T) {
+	source, err := os.Open("tests/test-image-orig.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	destination, err := os.Create("tests/test-image.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destination.Close()
+	_, err = io.Copy(destination, source)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
 
 func TestNew(t *testing.T) {
 	var meshes []interfaces.Mesh
@@ -67,8 +84,10 @@ func TestMaterialExport(t *testing.T) {
 	}
 }
 func TestMaterialTextureExport(t *testing.T) {
+	defaultImage(t)
 	exporter := &Export{
 		materials: []Mtl{},
+		directory: "tests",
 	}
 	result := exporter.materialExport()
 	if result != "" {
@@ -80,13 +99,13 @@ func TestMaterialTextureExport(t *testing.T) {
 		Ks:    [3]float32{1, 1, 1},
 		Ns:    float32(32),
 		Name:  "TestMaterial",
-		MapKa: "ambient.jpg",
-		MapKd: "diffuse.jpg",
-		MapKs: "specular.jpg",
+		MapKa: "tests/test-image.jpg",
+		MapKd: "tests/test-image.jpg",
+		MapKs: "tests/test-image.jpg",
 	}
 	exporter.materials = append(exporter.materials, mat)
 	result = exporter.materialExport()
-	if result != "newmtl TestMaterial\nKa 0.0000000000 1.0000000000 0.0000000000\nKd 0.0000000000 1.0000000000 0.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka ambient.jpg\nmap_Kd diffuse.jpg\nmap_Ks specular.jpg\n\n" {
+	if result != "newmtl TestMaterial\nKa 0.0000000000 1.0000000000 0.0000000000\nKd 0.0000000000 1.0000000000 0.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka test-image.jpg\nmap_Kd test-image.jpg\nmap_Ks test-image.jpg\n\n" {
 		t.Error("Invalid material string")
 	}
 	mat2 := Mtl{
@@ -95,13 +114,13 @@ func TestMaterialTextureExport(t *testing.T) {
 		Ks:    [3]float32{1, 1, 1},
 		Ns:    float32(32),
 		Name:  "TestMaterial 2",
-		MapKa: "ambient.jpg",
-		MapKd: "diffuse.jpg",
-		MapKs: "specular.jpg",
+		MapKa: "tests/test-image.jpg",
+		MapKd: "tests/test-image.jpg",
+		MapKs: "tests/test-image.jpg",
 	}
 	exporter.materials = append(exporter.materials, mat2)
 	result = exporter.materialExport()
-	if result != "newmtl TestMaterial\nKa 0.0000000000 1.0000000000 0.0000000000\nKd 0.0000000000 1.0000000000 0.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka ambient.jpg\nmap_Kd diffuse.jpg\nmap_Ks specular.jpg\n\nnewmtl TestMaterial 2\nKa 0.0000000000 1.0000000000 0.0000000000\nKd 0.0000000000 1.0000000000 0.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka ambient.jpg\nmap_Kd diffuse.jpg\nmap_Ks specular.jpg\n\n" {
+	if result != "newmtl TestMaterial\nKa 0.0000000000 1.0000000000 0.0000000000\nKd 0.0000000000 1.0000000000 0.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka test-image.jpg\nmap_Kd test-image.jpg\nmap_Ks test-image.jpg\n\nnewmtl TestMaterial 2\nKa 0.0000000000 1.0000000000 0.0000000000\nKd 0.0000000000 1.0000000000 0.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka test-image.jpg\nmap_Kd test-image.jpg\nmap_Ks test-image.jpg\n\n" {
 		t.Error("Invalid material string")
 	}
 }
@@ -166,6 +185,7 @@ func TestExportTexturedColoredMesh(t *testing.T) {
 	os.Remove("./tests/object.obj")
 }
 func TestProcessTexturedColoredMesh(t *testing.T) {
+	defaultImage(t)
 	var meshes []interfaces.Mesh
 	var tex texture.Textures
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
@@ -178,6 +198,7 @@ func TestProcessTexturedColoredMesh(t *testing.T) {
 	tcMesh := mesh.NewTexturedColoredMesh(v, i, tex, colors, glWrapper)
 	meshes = append(meshes, tcMesh)
 	exporter := New(meshes)
+	exporter.directory = "tests"
 	if len(exporter.materials) != 0 {
 		t.Error("Invalid material length")
 	}
@@ -192,7 +213,7 @@ func TestProcessTexturedColoredMesh(t *testing.T) {
 		t.Error("Invalid object length")
 	}
 	result := exporter.materialExport()
-	if result != "newmtl Textured_Color_Material_0\nKa 1.0000000000 0.0000000000 0.0000000000\nKd 1.0000000000 0.0000000000 0.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka ./tests/test-image.jpg\nmap_Kd ./tests/test-image.jpg\nmap_Ks ./tests/test-image.jpg\n\n" {
+	if result != "newmtl Textured_Color_Material_0\nKa 1.0000000000 0.0000000000 0.0000000000\nKd 1.0000000000 0.0000000000 0.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka test-image.jpg\nmap_Kd test-image.jpg\nmap_Ks test-image.jpg\n\n" {
 		t.Error("Invalid material string")
 	}
 	result = exporter.objectExport()
@@ -218,6 +239,7 @@ func TestExportTexturedMesh(t *testing.T) {
 	os.Remove("./tests/object.obj")
 }
 func TestProcessTexturedGoodNamesMesh(t *testing.T) {
+	defaultImage(t)
 	var meshes []interfaces.Mesh
 	var tex texture.Textures
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
@@ -227,6 +249,7 @@ func TestProcessTexturedGoodNamesMesh(t *testing.T) {
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
+	exporter.directory = "tests"
 	if len(exporter.materials) != 0 {
 		t.Error("Invalid material length")
 	}
@@ -241,7 +264,7 @@ func TestProcessTexturedGoodNamesMesh(t *testing.T) {
 		t.Error("Invalid object length")
 	}
 	result := exporter.materialExport()
-	if result != "newmtl Texture_Material_0\nKa 1.0000000000 1.0000000000 1.0000000000\nKd 1.0000000000 1.0000000000 1.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka ./tests/test-image.jpg\nmap_Kd ./tests/test-image.jpg\nmap_Ks ./tests/test-image.jpg\n\n" {
+	if result != "newmtl Texture_Material_0\nKa 1.0000000000 1.0000000000 1.0000000000\nKd 1.0000000000 1.0000000000 1.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka test-image.jpg\nmap_Kd test-image.jpg\nmap_Ks test-image.jpg\n\n" {
 		t.Error("Invalid material string")
 	}
 	result = exporter.objectExport()
@@ -251,6 +274,7 @@ func TestProcessTexturedGoodNamesMesh(t *testing.T) {
 
 }
 func TestProcessTexturedNoSpecularMesh(t *testing.T) {
+	defaultImage(t)
 	var meshes []interfaces.Mesh
 	var tex texture.Textures
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
@@ -259,6 +283,7 @@ func TestProcessTexturedNoSpecularMesh(t *testing.T) {
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
+	exporter.directory = "tests"
 	if len(exporter.materials) != 0 {
 		t.Error("Invalid material length")
 	}
@@ -273,7 +298,7 @@ func TestProcessTexturedNoSpecularMesh(t *testing.T) {
 		t.Error("Invalid object length")
 	}
 	result := exporter.materialExport()
-	if result != "newmtl Texture_Material_0\nKa 1.0000000000 1.0000000000 1.0000000000\nKd 1.0000000000 1.0000000000 1.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka ./tests/test-image.jpg\nmap_Kd ./tests/test-image.jpg\nmap_Ks ./tests/test-image.jpg\n\n" {
+	if result != "newmtl Texture_Material_0\nKa 1.0000000000 1.0000000000 1.0000000000\nKd 1.0000000000 1.0000000000 1.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka test-image.jpg\nmap_Kd test-image.jpg\nmap_Ks test-image.jpg\n\n" {
 		t.Error("Invalid material string")
 	}
 	result = exporter.objectExport()
@@ -283,6 +308,7 @@ func TestProcessTexturedNoSpecularMesh(t *testing.T) {
 
 }
 func TestProcessTexturedNoDiffuseMesh(t *testing.T) {
+	defaultImage(t)
 	var meshes []interfaces.Mesh
 	var tex texture.Textures
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
@@ -291,6 +317,7 @@ func TestProcessTexturedNoDiffuseMesh(t *testing.T) {
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
+	exporter.directory = "tests"
 	if len(exporter.materials) != 0 {
 		t.Error("Invalid material length")
 	}
@@ -305,7 +332,7 @@ func TestProcessTexturedNoDiffuseMesh(t *testing.T) {
 		t.Error("Invalid object length")
 	}
 	result := exporter.materialExport()
-	if result != "newmtl Texture_Material_0\nKa 1.0000000000 1.0000000000 1.0000000000\nKd 1.0000000000 1.0000000000 1.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka ./tests/test-image.jpg\nmap_Kd ./tests/test-image.jpg\nmap_Ks ./tests/test-image.jpg\n\n" {
+	if result != "newmtl Texture_Material_0\nKa 1.0000000000 1.0000000000 1.0000000000\nKd 1.0000000000 1.0000000000 1.0000000000\nKs 1.0000000000 1.0000000000 1.0000000000\nNs 32.0000000000\nmap_Ka test-image.jpg\nmap_Kd test-image.jpg\nmap_Ks test-image.jpg\n\n" {
 		t.Error("Invalid material string")
 	}
 	result = exporter.objectExport()
@@ -439,4 +466,5 @@ func TestProcessPointMesh(t *testing.T) {
 		t.Error("Invalid object string")
 
 	}
+	defaultImage(t)
 }

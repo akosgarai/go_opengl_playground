@@ -1,12 +1,19 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"os"
 	"runtime"
 	"time"
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/interfaces"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/model"
+	"github.com/akosgarai/opengl_playground/pkg/modelimport"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
@@ -29,19 +36,91 @@ const (
 	UP       = glfw.KeyQ
 	DOWN     = glfw.KeyE
 
-	CameraMoveSpeed      = 0.005
-	CameraDirectionSpeed = float32(0.00500)
+	CameraMoveSpeed       = 0.005
+	CameraDirectionSpeed  = float32(0.00500)
+	DefaultModelDirectory = "examples/09-model-loading/assets"
+	DefaultModelFilename  = "object.obj"
 )
 
 var (
-	app *application.Application
+	app      *application.Application
+	Importer *modelimport.Import
 
 	lastUpdate int64
 
 	cameraDistance = 0.1
 
 	glWrapper wrapper.Wrapper
+
+	Model                 = model.New()
+	PointModel            = model.New()
+	MaterialModel         = model.New()
+	TexturedMaterialModel = model.New()
+	TexturedColorModel    = model.New()
+
+	DirectionalLightDirection = (mgl32.Vec3{0.7, 0.7, 0.7}).Normalize()
+	DirectionalLightAmbient   = mgl32.Vec3{1.0, 1.0, 1.0}
+	DirectionalLightDiffuse   = mgl32.Vec3{1.0, 1.0, 1.0}
+	DirectionalLightSpecular  = mgl32.Vec3{1.0, 1.0, 1.0}
+
+	PointLightAmbient  = mgl32.Vec3{0.5, 0.5, 0.5}
+	PointLightDiffuse  = mgl32.Vec3{0.5, 0.5, 0.5}
+	PointLightSpecular = mgl32.Vec3{0.5, 0.5, 0.5}
+	PointLightPosition = mgl32.Vec3{8, -0.5, -1.0}
+
+	LightConstantTerm  = float32(1.0)
+	LightLinearTerm    = float32(0.14)
+	LightQuadraticTerm = float32(0.07)
+
+	SpotLightAmbient     = mgl32.Vec3{1, 1, 1}
+	SpotLightDiffuse     = mgl32.Vec3{1, 1, 1}
+	SpotLightSpecular    = mgl32.Vec3{1, 1, 1}
+	SpotLightDirection   = (mgl32.Vec3{0, 1, 0}).Normalize()
+	SpotLightPosition    = mgl32.Vec3{0.20, -6, -0.7}
+	SpotLightCutoff      = float32(4)
+	SpotLightOuterCutoff = float32(5)
+
+	DirectionalLightSource = light.NewDirectionalLight([4]mgl32.Vec3{
+		DirectionalLightDirection,
+		DirectionalLightAmbient,
+		DirectionalLightDiffuse,
+		DirectionalLightSpecular,
+	})
+	PointLightSource = light.NewPointLight([4]mgl32.Vec3{
+		PointLightPosition,
+		PointLightAmbient,
+		PointLightDiffuse,
+		PointLightSpecular},
+		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
+	SpotLightSource = light.NewSpotLight([5]mgl32.Vec3{
+		SpotLightPosition,
+		SpotLightDirection,
+		SpotLightAmbient,
+		SpotLightDiffuse,
+		SpotLightSpecular},
+		[5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, SpotLightCutoff, SpotLightOuterCutoff})
+
+	SingleDirectory    = true
+	MultiDirectoryName = ""
 )
+
+// Importer init. If we have 2 or more command line arguments,
+// the first one is used as model directory, the second one
+// as the model filename.
+func Init() {
+	args := os.Args[1:]
+	if len(args) == 0 {
+		// load default model
+		Importer = modelimport.New(DefaultModelDirectory, DefaultModelFilename)
+	} else if len(args) == 1 {
+		// multi model mode. read every subdir. (exported directory handling)
+		SingleDirectory = false
+		MultiDirectoryName = args[0]
+	} else if len(args) > 1 {
+		// load the directory with the given filename.
+		Importer = modelimport.New(args[0], args[1])
+	}
+}
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
@@ -125,8 +204,25 @@ func Update() {
 	}
 	app.GetCamera().UpdateDirection(dX, dY)
 }
-
+func AddMeshToRightModel(m interfaces.Mesh) {
+	switch m.(type) {
+	case *mesh.TexturedMaterialMesh:
+		TexturedMaterialModel.AddMesh(m)
+	case *mesh.TexturedColoredMesh:
+		TexturedColorModel.AddMesh(m)
+	case *mesh.MaterialMesh:
+		MaterialModel.AddMesh(m)
+	case *mesh.PointMesh:
+		pointMesh := m.(*mesh.PointMesh)
+		for index, _ := range pointMesh.Verticies {
+			pointMesh.Verticies[index].PointSize = float32(3 + rand.Intn(17))
+			pointMesh.Verticies[index].Color = mgl32.Vec3{rand.Float32(), rand.Float32(), rand.Float32()}
+		}
+		PointModel.AddMesh(pointMesh)
+	}
+}
 func main() {
+	Init()
 	runtime.LockOSThread()
 
 	app = application.New()
@@ -136,12 +232,42 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 
-	shaderProgram := shader.NewShader("examples/09-model-loading/shaders/vertexshader.vert", "examples/09-model-loading/shaders/fragmentshader.frag", glWrapper)
-	app.AddShader(shaderProgram)
-	lightSource := light.NewPointLight([4]mgl32.Vec3{mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
-	app.AddPointLightSource(lightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
-	cubeModel := model.NewModelFromFile("examples/09-model-loading/assets/cube.obj")
-	app.AddModelToShader(cubeModel, shaderProgram)
+	pointShader := shader.NewShader("examples/09-model-loading/shaders/point.vert", "examples/09-model-loading/shaders/point.frag", glWrapper)
+	app.AddShader(pointShader)
+	materialShader := shader.NewShader("examples/09-model-loading/shaders/material.vert", "examples/09-model-loading/shaders/material.frag", glWrapper)
+	app.AddShader(materialShader)
+	texColShader := shader.NewShader("examples/09-model-loading/shaders/texturecolor.vert", "examples/09-model-loading/shaders/texturecolor.frag", glWrapper)
+	app.AddShader(texColShader)
+	texMatShader := shader.NewShader("examples/09-model-loading/shaders/texturemat.vert", "examples/09-model-loading/shaders/texturemat.frag", glWrapper)
+	app.AddShader(texMatShader)
+	app.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
+	app.AddPointLightSource(PointLightSource, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
+	app.AddSpotLightSource(SpotLightSource, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
+
+	if SingleDirectory {
+		Importer.Import()
+		meshes := Importer.GetMeshes()
+		for _, m := range meshes {
+			AddMeshToRightModel(m)
+		}
+	} else {
+		files, err := ioutil.ReadDir(MultiDirectoryName)
+		if err != nil {
+			fmt.Println(err)
+		}
+		for _, f := range files {
+			Importer = modelimport.New(MultiDirectoryName+"/"+f.Name(), DefaultModelFilename)
+			Importer.Import()
+			meshes := Importer.GetMeshes()
+			for _, m := range meshes {
+				AddMeshToRightModel(m)
+			}
+		}
+	}
+	app.AddModelToShader(TexturedMaterialModel, texMatShader)
+	app.AddModelToShader(TexturedColorModel, texColShader)
+	app.AddModelToShader(MaterialModel, materialShader)
+	app.AddModelToShader(PointModel, pointShader)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)
