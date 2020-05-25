@@ -104,10 +104,14 @@ func (e *Export) Export(path string) error {
 		case *mesh.TexturedColoredMesh:
 			e.processTexturedColorMesh(m.(*mesh.TexturedColoredMesh))
 			break
+		case *mesh.TexturedMaterialMesh:
+			e.processTexturedMaterialMesh(m.(*mesh.TexturedMaterialMesh))
+			break
 		case *mesh.PointMesh:
 			e.processPointMesh(m.(*mesh.PointMesh))
 			break
 		default:
+			continue
 			break
 		}
 	}
@@ -318,6 +322,80 @@ func (e *Export) processTextureMesh(m *mesh.TexturedMesh) {
 	}
 	for i := 0; i < len(orderedNorm); i++ {
 		obj.Normal = append(obj.Normal, orderedNorm[i])
+	}
+	orderedTexCoord := make(map[int][2]float32)
+	for tc, val := range objIndexTexCoordMap {
+		orderedTexCoord[val] = [2]float32{tc.X(), tc.Y()}
+	}
+	for i := 0; i < len(orderedTexCoord); i++ {
+		obj.TexCoord = append(obj.TexCoord, orderedTexCoord[i])
+	}
+	e.objects = append(e.objects, obj)
+}
+func (e *Export) processTexturedMaterialMesh(m *mesh.TexturedMaterialMesh) {
+	var mtl Mtl
+	mtl.Name = fmt.Sprintf("Textured_Color_Material_%d", len(e.materials))
+	ka := m.Material.GetAmbient()
+	mtl.Ka = [3]float32{ka.X(), ka.Y(), ka.Z()}
+	kd := m.Material.GetDiffuse()
+	mtl.Kd = [3]float32{kd.X(), kd.Y(), kd.Z()}
+	ks := m.Material.GetSpecular()
+	mtl.Ks = [3]float32{ks.X(), ks.Y(), ks.Z()}
+	mtl.Ns = m.Material.GetShininess()
+	if len(m.Textures) > 0 {
+		for _, tex := range m.Textures {
+			if strings.Contains(tex.UniformName, "diffuse") {
+				mtl.MapKd = tex.FilePath
+				mtl.MapKa = tex.FilePath
+			} else if strings.Contains(tex.UniformName, "specular") {
+				mtl.MapKs = tex.FilePath
+			} else if strings.Contains(tex.UniformName, "ambient") {
+				mtl.MapKa = tex.FilePath
+			}
+		}
+		if mtl.MapKa == "" && mtl.MapKs == "" {
+			mtl.MapKd = m.Textures[0].FilePath
+			mtl.MapKa = m.Textures[0].FilePath
+			mtl.MapKs = m.Textures[0].FilePath
+		} else if mtl.MapKs == "" {
+			mtl.MapKs = mtl.MapKa
+		} else if mtl.MapKs == "" {
+			mtl.MapKd = mtl.MapKs
+			mtl.MapKa = mtl.MapKs
+		}
+	}
+	e.materials = append(e.materials, mtl)
+
+	objIndexPositionMap := make(map[mgl32.Vec3]int)
+	objIndexTexCoordMap := make(map[mgl32.Vec2]int)
+	for _, vert := range m.Verticies {
+		if _, ok := objIndexPositionMap[vert.Position]; !ok {
+			mapLen := len(objIndexPositionMap)
+			objIndexPositionMap[vert.Position] = mapLen
+		}
+		if _, ok := objIndexTexCoordMap[vert.TexCoords]; !ok {
+			mapLen := len(objIndexTexCoordMap)
+			objIndexTexCoordMap[vert.TexCoords] = mapLen
+		}
+	}
+	var obj Obj
+	obj.HasFaces = true
+	obj.Name = fmt.Sprintf("Texture_Color_Material_Object_%d", len(e.objects))
+	obj.MaterialName = mtl.Name
+	for _, indexValue := range m.Indicies {
+		index := fmt.Sprintf("%d/%d", e.positionMaxIndex+objIndexPositionMap[m.Verticies[indexValue].Position]+1, e.tcMaxIndex+objIndexTexCoordMap[m.Verticies[indexValue].TexCoords]+1)
+		obj.Indices = append(obj.Indices, index)
+	}
+	e.positionMaxIndex = e.positionMaxIndex + len(objIndexPositionMap)
+	e.tcMaxIndex = e.tcMaxIndex + len(objIndexTexCoordMap)
+	orderedPos := make(map[int][3]float32)
+	for origPos, val := range objIndexPositionMap {
+		trMatrix := m.ModelTransformation()
+		pos := mgl32.TransformCoordinate(origPos, trMatrix)
+		orderedPos[val] = [3]float32{pos.X(), pos.Y(), pos.Z()}
+	}
+	for i := 0; i < len(orderedPos); i++ {
+		obj.V = append(obj.V, orderedPos[i])
 	}
 	orderedTexCoord := make(map[int][2]float32)
 	for tc, val := range objIndexTexCoordMap {
