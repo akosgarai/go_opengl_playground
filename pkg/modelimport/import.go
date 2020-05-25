@@ -91,13 +91,13 @@ func (i *Import) getMaterial(mtl *gwob.Material) *material.Material {
 func (i *Import) getTextures(mtl *gwob.Material) texture.Textures {
 	var tex texture.Textures
 	if mtl.MapKa != "" {
-		tex.AddTexture(mtl.MapKa, glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.ambient", glWrapper)
+		tex.AddTexture(i.basePath+"/"+mtl.MapKa, glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.ambient", glWrapper)
 	}
 	if mtl.MapKd != "" {
-		tex.AddTexture(mtl.MapKd, glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.diffuse", glWrapper)
+		tex.AddTexture(i.basePath+"/"+mtl.MapKd, glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.diffuse", glWrapper)
 	}
 	if mtl.MapKs != "" {
-		tex.AddTexture(mtl.MapKs, glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.scalar", glWrapper)
+		tex.AddTexture(i.basePath+"/"+mtl.MapKs, glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.scalar", glWrapper)
 	}
 	return tex
 }
@@ -110,6 +110,10 @@ func (i *Import) makeMeshes() []error {
 	var result []error
 	for _, g := range i.object.Groups {
 		vertices, indices := i.getVerticesAndIndices(g)
+		if len(vertices) == 0 || len(indices) == 0 {
+			fmt.Printf("Skipping, due to missing vertices or indices. '%v'\n", g)
+			continue
+		}
 		mtl, found := i.material.Lib[g.Usemtl]
 		if found {
 			var mat *material.Material
@@ -149,6 +153,7 @@ func (i *Import) makeMeshes() []error {
 	return result
 }
 func (i *Import) Import() {
+	fmt.Println("Import process started.")
 	options := &gwob.ObjParserOptions{}
 
 	errObj := i.loadObjectFile(options)
@@ -172,4 +177,5 @@ func (i *Import) Import() {
 		}
 		return
 	}
+	fmt.Println("Import process finished.")
 }
