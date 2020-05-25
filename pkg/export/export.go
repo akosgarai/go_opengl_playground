@@ -553,10 +553,12 @@ func (e *Export) materialExport() string {
 func (e *Export) copyFile(src string) string {
 	_, err := os.Stat(src)
 	if err != nil {
+		fmt.Printf("Skipping file export due to the missing file. '%s'\n'%s'\n", src, err.Error())
 		return ""
 	}
 	source, err := os.Open(src)
 	if err != nil {
+		fmt.Printf("Skipping file export due to the file can not be opened. '%s'\n'%s'\n", src, err.Error())
 		return ""
 	}
 	path := strings.Split(src, "/")
@@ -566,11 +568,13 @@ func (e *Export) copyFile(src string) string {
 	fmt.Println(e.directory + "/" + path[len(path)-1])
 	destination, err := os.Create(e.directory + "/" + path[len(path)-1])
 	if err != nil {
+		fmt.Printf("Skipping file export due to the wrong destination '%s'. '%s'\n'%s'\n", e.directory+"/"+path[len(path)-1], src, err.Error())
 		return ""
 	}
 	defer destination.Close()
 	_, err = io.Copy(destination, source)
 	if err != nil {
+		fmt.Printf("Skipping file export due to the wrong copy '%s'. '%s'\n'%s'\n", e.directory+"/"+path[len(path)-1], src, err.Error())
 		return ""
 	}
 	return path[len(path)-1]
