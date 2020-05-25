@@ -47,6 +47,9 @@ func (i *Import) loadObjectFile(options *gwob.ObjParserOptions) error {
 func (i *Import) loadMaterialFile(options *gwob.ObjParserOptions) error {
 	// load material lib
 	var errMtl error
+	if i.object.Mtllib == "" {
+		return nil
+	}
 	objectFile := i.basePath + "/" + i.object.Mtllib
 	i.material, errMtl = gwob.ReadMaterialLibFromFile(objectFile, options)
 	return errMtl
@@ -110,8 +113,8 @@ func (i *Import) makeMeshes() []error {
 	var result []error
 	for _, g := range i.object.Groups {
 		vertices, indices := i.getVerticesAndIndices(g)
-		if len(vertices) == 0 || len(indices) == 0 {
-			fmt.Printf("Skipping, due to missing vertices or indices. '%v'\n", g)
+		if len(vertices) == 0 {
+			fmt.Printf("Skipping, due to missing vertices. '%v'\n", g)
 			continue
 		}
 		mtl, found := i.material.Lib[g.Usemtl]
