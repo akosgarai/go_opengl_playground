@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"runtime"
 	"time"
@@ -212,7 +213,12 @@ func AddMeshToRightModel(m interfaces.Mesh) {
 	case *mesh.MaterialMesh:
 		MaterialModel.AddMesh(m)
 	case *mesh.PointMesh:
-		PointModel.AddMesh(m)
+		pointMesh := m.(*mesh.PointMesh)
+		for index, _ := range pointMesh.Verticies {
+			pointMesh.Verticies[index].PointSize = float32(3 + rand.Intn(17))
+			pointMesh.Verticies[index].Color = mgl32.Vec3{rand.Float32(), rand.Float32(), rand.Float32()}
+		}
+		PointModel.AddMesh(pointMesh)
 	}
 }
 func main() {
