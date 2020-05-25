@@ -7,6 +7,8 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/application"
 	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/interfaces"
+	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/modelimport"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
@@ -47,7 +49,53 @@ var (
 
 	glWrapper wrapper.Wrapper
 
-	Model = model.New()
+	Model                 = model.New()
+	PointModel            = model.New()
+	MaterialModel         = model.New()
+	TexturedMaterialModel = model.New()
+	TexturedColorModel    = model.New()
+
+	DirectionalLightDirection = (mgl32.Vec3{0.7, 0.7, 0.7}).Normalize()
+	DirectionalLightAmbient   = mgl32.Vec3{1.0, 1.0, 1.0}
+	DirectionalLightDiffuse   = mgl32.Vec3{1.0, 1.0, 1.0}
+	DirectionalLightSpecular  = mgl32.Vec3{1.0, 1.0, 1.0}
+
+	PointLightAmbient  = mgl32.Vec3{0.5, 0.5, 0.5}
+	PointLightDiffuse  = mgl32.Vec3{0.5, 0.5, 0.5}
+	PointLightSpecular = mgl32.Vec3{0.5, 0.5, 0.5}
+	PointLightPosition = mgl32.Vec3{8, -0.5, -1.0}
+
+	LightConstantTerm  = float32(1.0)
+	LightLinearTerm    = float32(0.14)
+	LightQuadraticTerm = float32(0.07)
+
+	SpotLightAmbient     = mgl32.Vec3{1, 1, 1}
+	SpotLightDiffuse     = mgl32.Vec3{1, 1, 1}
+	SpotLightSpecular    = mgl32.Vec3{1, 1, 1}
+	SpotLightDirection   = (mgl32.Vec3{0, 1, 0}).Normalize()
+	SpotLightPosition    = mgl32.Vec3{0.20, -6, -0.7}
+	SpotLightCutoff      = float32(4)
+	SpotLightOuterCutoff = float32(5)
+
+	DirectionalLightSource = light.NewDirectionalLight([4]mgl32.Vec3{
+		DirectionalLightDirection,
+		DirectionalLightAmbient,
+		DirectionalLightDiffuse,
+		DirectionalLightSpecular,
+	})
+	PointLightSource = light.NewPointLight([4]mgl32.Vec3{
+		PointLightPosition,
+		PointLightAmbient,
+		PointLightDiffuse,
+		PointLightSpecular},
+		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
+	SpotLightSource = light.NewSpotLight([5]mgl32.Vec3{
+		SpotLightPosition,
+		SpotLightDirection,
+		SpotLightAmbient,
+		SpotLightDiffuse,
+		SpotLightSpecular},
+		[5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, SpotLightCutoff, SpotLightOuterCutoff})
 )
 
 // Importer init. If we have 2 or more command line arguments,
@@ -146,7 +194,18 @@ func Update() {
 	}
 	app.GetCamera().UpdateDirection(dX, dY)
 }
-
+func AddMeshToRightModel(m interfaces.Mesh) {
+	switch m.(type) {
+	case *mesh.TexturedMaterialMesh:
+		TexturedMaterialModel.AddMesh(m)
+	case *mesh.TexturedColoredMesh:
+		TexturedColorModel.AddMesh(m)
+	case *mesh.MaterialMesh:
+		MaterialModel.AddMesh(m)
+	case *mesh.PointMesh:
+		PointModel.AddMesh(m)
+	}
+}
 func main() {
 	Init()
 	runtime.LockOSThread()
@@ -158,16 +217,26 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 
-	shaderProgram := shader.NewShader("examples/09-model-loading/shaders/vertexshader.vert", "examples/09-model-loading/shaders/fragmentshader.frag", glWrapper)
-	app.AddShader(shaderProgram)
-	lightSource := light.NewPointLight([4]mgl32.Vec3{mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
-	app.AddPointLightSource(lightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
+	pointShader := shader.NewShader("examples/09-model-loading/shaders/point.vert", "examples/09-model-loading/shaders/point.frag", glWrapper)
+	app.AddShader(pointShader)
+	materialShader := shader.NewShader("examples/09-model-loading/shaders/material.vert", "examples/09-model-loading/shaders/material.frag", glWrapper)
+	app.AddShader(materialShader)
+	texColShader := shader.NewShader("examples/09-model-loading/shaders/texturecolor.vert", "examples/09-model-loading/shaders/texturecolor.frag", glWrapper)
+	app.AddShader(texColShader)
+	texMatShader := shader.NewShader("examples/09-model-loading/shaders/texturemat.vert", "examples/09-model-loading/shaders/texturemat.frag", glWrapper)
+	app.AddShader(texMatShader)
+	app.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
+	app.AddPointLightSource(PointLightSource, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
+	app.AddSpotLightSource(SpotLightSource, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
 	Importer.Import()
 	meshes := Importer.GetMeshes()
 	for _, m := range meshes {
-		Model.AddMesh(m)
+		AddMeshToRightModel(m)
 	}
-	app.AddModelToShader(Model, shaderProgram)
+	app.AddModelToShader(TexturedMaterialModel, texMatShader)
+	app.AddModelToShader(TexturedColorModel, texColShader)
+	app.AddModelToShader(MaterialModel, materialShader)
+	app.AddModelToShader(PointModel, pointShader)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)
