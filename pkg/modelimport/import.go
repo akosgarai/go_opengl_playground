@@ -11,8 +11,8 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 	"github.com/akosgarai/opengl_playground/pkg/texture"
 
-	"github.com/akosgarai/gwob"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/udhos/gwob"
 )
 
 var (
