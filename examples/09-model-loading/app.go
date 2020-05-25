@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
 	"runtime"
 	"time"
@@ -96,6 +98,9 @@ var (
 		SpotLightDiffuse,
 		SpotLightSpecular},
 		[5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, SpotLightCutoff, SpotLightOuterCutoff})
+
+	SingleDirectory    = true
+	MultiDirectoryName = ""
 )
 
 // Importer init. If we have 2 or more command line arguments,
@@ -104,10 +109,14 @@ var (
 func Init() {
 	args := os.Args[1:]
 	if len(args) == 0 {
+		// load default model
 		Importer = modelimport.New(DefaultModelDirectory, DefaultModelFilename)
 	} else if len(args) == 1 {
-		Importer = modelimport.New(args[0], DefaultModelFilename)
+		// multi model mode. read every subdir. (exported directory handling)
+		SingleDirectory = false
+		MultiDirectoryName = args[0]
 	} else if len(args) > 1 {
+		// load the directory with the given filename.
 		Importer = modelimport.New(args[0], args[1])
 	}
 }
@@ -228,10 +237,26 @@ func main() {
 	app.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
 	app.AddPointLightSource(PointLightSource, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
 	app.AddSpotLightSource(SpotLightSource, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
-	Importer.Import()
-	meshes := Importer.GetMeshes()
-	for _, m := range meshes {
-		AddMeshToRightModel(m)
+
+	if SingleDirectory {
+		Importer.Import()
+		meshes := Importer.GetMeshes()
+		for _, m := range meshes {
+			AddMeshToRightModel(m)
+		}
+	} else {
+		files, err := ioutil.ReadDir(MultiDirectoryName)
+		if err != nil {
+			fmt.Println(err)
+		}
+		for _, f := range files {
+			Importer = modelimport.New(MultiDirectoryName+"/"+f.Name(), DefaultModelFilename)
+			Importer.Import()
+			meshes := Importer.GetMeshes()
+			for _, m := range meshes {
+				AddMeshToRightModel(m)
+			}
+		}
 	}
 	app.AddModelToShader(TexturedMaterialModel, texMatShader)
 	app.AddModelToShader(TexturedColorModel, texColShader)
