@@ -92,6 +92,9 @@ type Mesh interface {
 	Update(float64)
 	SetSpeed(float32)
 	SetDirection(mgl32.Vec3)
+	GetRotationAngle() float32
+	SetRotationAngle(float32)
+	SetRotationAxis(mgl32.Vec3)
 }
 type Model interface {
 	Draw(Shader)

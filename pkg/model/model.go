@@ -63,3 +63,21 @@ func (m *Model) SetDirection(p mgl32.Vec3) {
 		m.meshes[i].SetDirection(p)
 	}
 }
+
+// RotateWithAngle function loops over each of the meshes and calls their
+// SetRotationAngle function. The input angle has to be in radian.
+// The meshed are in sync.
+func (m *Model) RotateWithAngle(a float32) {
+	for i, _ := range m.meshes {
+		currentAngle := m.meshes[i].GetRotationAngle()
+		m.meshes[i].SetRotationAngle(currentAngle + a)
+	}
+}
+
+// SetRotationAxis function loops over each of the meshes and calls their SetRotationAxis function.
+// The meshed are in sync.
+func (m *Model) SetRotationAxis(p mgl32.Vec3) {
+	for i, _ := range m.meshes {
+		m.meshes[i].SetRotationAxis(p)
+	}
+}

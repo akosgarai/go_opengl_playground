@@ -45,6 +45,12 @@ func (m *Mesh) SetRotationAngle(a float32) {
 	m.angle = a
 }
 
+// GetRotationAngle returns the rotation angle of the mesh. The output value
+// is radian.
+func (m *Mesh) GetRotationAngle() float32 {
+	return m.angle
+}
+
 // SetRotationAxis updates the rotation axis of the mesh.
 func (m *Mesh) SetRotationAxis(a mgl32.Vec3) {
 	m.axis = a
