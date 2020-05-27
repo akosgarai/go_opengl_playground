@@ -72,11 +72,3 @@ func (m *Model) RotateWithAngle(angleDeg float32, axisVector mgl32.Vec3) {
 			mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector))
 	}
 }
-
-// SetRotationAxis function loops over each of the meshes and calls their SetRotationAxis function.
-// The meshed are in sync.
-func (m *Model) SetRotationAxis(p mgl32.Vec3) {
-	for i, _ := range m.meshes {
-		m.meshes[i].SetRotationAxis(p)
-	}
-}
