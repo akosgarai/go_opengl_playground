@@ -90,6 +90,10 @@ type GLWrapper interface {
 type Mesh interface {
 	Draw(Shader)
 	Update(float64)
+	SetSpeed(float32)
+	SetDirection(mgl32.Vec3)
+	TransformOrigin(mgl32.Mat4)
+	GetPosition() mgl32.Vec3
 }
 type Model interface {
 	Draw(Shader)

@@ -1,3 +1,7 @@
 # Model
 
-The purpose of this package, to gather the mashes that are connected to the same object (eg a composite object - a lamp with pole, and bulb). It will support the loading of the object and material wavefront files.
+The purpose of this package, to gather the mashes that are connected to the same object (eg a composite object - a lamp with pole, and bulb). The meshes of a model are moving together, they are rotating, in the same time.
+
+## Bug model
+
+This predefined model represents a "composite object". This model contains 4 material squere, one for the bottom, one for the body and 2 for the eyes. It has getter functions for the center point of the body parts. It's initial position, and scale are set during it's construction with the NewBug function.

@@ -43,7 +43,7 @@ const (
 
 var (
 	app                       *application.Application
-	Bug1                      *mesh.MaterialMesh
+	Bug1                      *model.Bug
 	Bug2                      *mesh.TexturedMesh
 	BugOneLastRotate          int64
 	lastUpdate                int64
@@ -125,17 +125,6 @@ func Lamp(baseX, baseZ float32, lightPosition mgl32.Vec3) {
 	MatModel.AddMesh(bulb)
 }
 
-func MaterialBug() {
-	sph := sphere.New(15)
-	v, i := sph.MaterialMeshInput()
-	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 128.0)
-	Bug1 = mesh.NewMaterialMesh(v, i, mat, glWrapper)
-	Bug1.SetPosition(PointLightPosition_1)
-	Bug1.SetDirection(mgl32.Vec3{1, 0, 0})
-	Bug1.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
-	Bug1.SetSpeed(moveSpeed)
-	MatModel.AddMesh(Bug1)
-}
 func TexturedBug(t texture.Textures) {
 	sph := sphere.New(15)
 	v, i := sph.TexturedMeshInput()
@@ -157,11 +146,7 @@ func RotateBugOne(now int64) {
 	if moveTime > BugOneForwardMove {
 		BugOneLastRotate = now
 		// rotate 45 deg
-		rotationAngleRadian := mgl32.DegToRad(-45)
-		directionRotationMatrix := mgl32.HomogRotate3D(rotationAngleRadian, mgl32.Vec3{0, -1, 0})
-
-		currenDirection := Bug1.GetDirection()
-		Bug1.SetDirection(mgl32.TransformNormal(currenDirection, directionRotationMatrix))
+		Bug1.RotateWithAngle(-45, mgl32.Vec3{0, 1, 0}.Normalize())
 	}
 }
 func Update() {
@@ -169,7 +154,7 @@ func Update() {
 	moveTime := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
 	RotateBugOne(nowNano)
-	PointLightSource_1.SetPosition(Bug1.GetPosition())
+	PointLightSource_1.SetPosition(Bug1.GetBottomPosition())
 	PointLightSource_2.SetPosition(Bug2.GetPosition())
 	app.Update(moveTime)
 
@@ -312,9 +297,9 @@ func main() {
 
 	// we have 3 boxes in the following coordinates.
 	boxPositions := []mgl32.Vec3{
-		mgl32.Vec3{-5.0, -1.0, 0.0},
-		mgl32.Vec3{0.0, -1.0, 0.0},
-		mgl32.Vec3{5.0, -1.0, 0.0},
+		mgl32.Vec3{-5.0, -0.51, 0.0},
+		mgl32.Vec3{0.0, -0.51, 0.0},
+		mgl32.Vec3{5.0, -0.51, 0.0},
 	}
 	for _, pos := range boxPositions {
 		box := CreateCubeMesh(boxTexture, pos)
@@ -327,7 +312,11 @@ func main() {
 
 	Lamp(0.4, -2.6, SpotLightPosition_1)
 	Lamp(10.4, -2.6, SpotLightPosition_2)
-	MaterialBug()
+	Bug1 = model.NewBug(mgl32.Vec3{9, -0.5, -1.0}, mgl32.Vec3{0.2, 0.2, 0.2})
+	Bug1.SetDirection(mgl32.Vec3{1, 0, 0})
+	Bug1.SetSpeed(moveSpeed)
+	app.AddModelToShader(Bug1, shaderProgramMaterial)
+
 	// sun texture
 	var sunTexture texture.Textures
 	sunTexture.AddTexture("examples/08-multiple-light/assets/sun.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
