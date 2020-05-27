@@ -15,27 +15,32 @@ var (
 
 // position: body is a unit sphere, center is the given position. bottom half unit radius,
 // its center position is {-1,0,0} from the body center.
-func NewBug(position mgl32.Vec3) *Model {
+func NewBug(position, scale mgl32.Vec3) *Model {
 	sphereBase := sphere.New(20)
 	i, v := sphereBase.MaterialMeshInput()
 	// Bottom supposed to be greenish color / material like emerald
 	Bottom := mesh.NewMaterialMesh(i, v, material.Emerald, glWrapper)
-	Bottom.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
-	Bottom.InitPos(mgl32.Vec3{-1, 0, 0})
-	Bottom.SetPosition(position.Add(mgl32.Vec3{-1, 0, 0}))
+	Bottom.SetScale(mgl32.Vec3{scale.X() * 0.5, scale.Y() * 0.5, scale.Z() * 0.5})
+	Bottom.InitPos(mgl32.Vec3{scale.X() * -1, 0, 0})
+	Bottom.SetPosition(position.Add(mgl32.Vec3{scale.X() * -1, 0, 0}))
 	// Body supposed to be other green. Like green rubber
 	Body := mesh.NewMaterialMesh(i, v, material.Greenrubber, glWrapper)
+	Body.SetScale(scale)
 	Body.InitPos(mgl32.Vec3{0, 0, 0})
 	Body.SetPosition(position)
 	// Eyes are red. (red plastic)
 	Eye1 := mesh.NewMaterialMesh(i, v, material.Ruby, glWrapper)
-	Eye1.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
-	Eye1.InitPos((mgl32.Vec3{1, 1, 1}).Normalize())
-	Eye1.SetPosition(position.Add((mgl32.Vec3{1, 1, 1}).Normalize()))
+	Eye1.SetScale(mgl32.Vec3{scale.X() * 0.1, scale.Y() * 0.1, scale.Z() * 0.1})
+	initPosBase := (mgl32.Vec3{1, 1, 1}).Normalize()
+	initPosScaled := mgl32.Vec3{initPosBase.X() * scale.X(), initPosBase.Y() * scale.Y(), initPosBase.Z() * scale.Z()}
+	Eye1.InitPos(initPosScaled)
+	Eye1.SetPosition(position.Add(initPosScaled))
 	Eye2 := mesh.NewMaterialMesh(i, v, material.Ruby, glWrapper)
-	Eye2.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
-	Eye2.InitPos((mgl32.Vec3{1, 1, -1}).Normalize())
-	Eye2.SetPosition(position.Add((mgl32.Vec3{1, 1, -1}).Normalize()))
+	Eye2.SetScale(mgl32.Vec3{scale.X() * 0.1, scale.Y() * 0.1, scale.Z() * 0.1})
+	initPosBase = (mgl32.Vec3{1, 1, -1}).Normalize()
+	initPosScaled = mgl32.Vec3{initPosBase.X() * scale.X(), initPosBase.Y() * scale.Y(), initPosBase.Z() * scale.Z()}
+	Eye2.InitPos(initPosScaled)
+	Eye2.SetPosition(position.Add(initPosScaled))
 
 	m := New()
 	m.AddMesh(Bottom)
