@@ -54,15 +54,23 @@ func NewBug(position, scale mgl32.Vec3) *Bug {
 
 	return &Bug{Model: *m}
 }
+
+// GetBottomPosition returns the current position of the bottom mesh.
 func (b *Bug) GetBottomPosition() mgl32.Vec3 {
 	return b.meshes[0].GetPosition()
 }
+
+// GetBodyPosition returns the current position of the body mesh.
 func (b *Bug) GetBodyPosition() mgl32.Vec3 {
 	return b.meshes[1].GetPosition()
 }
+
+// GetEye1Position returns the current position of the eye1 mesh.
 func (b *Bug) GetEye1Position() mgl32.Vec3 {
 	return b.meshes[2].GetPosition()
 }
+
+// GetEye2Position returns the current position of the eye2 mesh.
 func (b *Bug) GetEye2Position() mgl32.Vec3 {
 	return b.meshes[3].GetPosition()
 }

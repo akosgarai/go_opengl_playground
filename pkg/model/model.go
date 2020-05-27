@@ -49,7 +49,6 @@ func (m *Model) Export(path string) {
 }
 
 // SetSpeed function loops over each of the meshes and calls their SetSpeed function.
-// The meshed are in sync.
 func (m *Model) SetSpeed(s float32) {
 	for i, _ := range m.meshes {
 		m.meshes[i].SetSpeed(s)
@@ -57,7 +56,6 @@ func (m *Model) SetSpeed(s float32) {
 }
 
 // SetDirection function loops over each of the meshes and calls their SetDirection function.
-// The meshed are in sync.
 func (m *Model) SetDirection(p mgl32.Vec3) {
 	for i, _ := range m.meshes {
 		m.meshes[i].SetDirection(p)
