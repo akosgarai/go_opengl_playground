@@ -21,16 +21,20 @@ func NewBug(position mgl32.Vec3) *Model {
 	// Bottom supposed to be greenish color / material like emerald
 	Bottom := mesh.NewMaterialMesh(i, v, material.Emerald, glWrapper)
 	Bottom.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
+	Bottom.InitPos(mgl32.Vec3{-1, 0, 0})
 	Bottom.SetPosition(position.Add(mgl32.Vec3{-1, 0, 0}))
 	// Body supposed to be other green. Like green rubber
 	Body := mesh.NewMaterialMesh(i, v, material.Greenrubber, glWrapper)
+	Body.InitPos(mgl32.Vec3{0, 0, 0})
 	Body.SetPosition(position)
 	// Eyes are red. (red plastic)
 	Eye1 := mesh.NewMaterialMesh(i, v, material.Ruby, glWrapper)
 	Eye1.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
+	Eye1.InitPos((mgl32.Vec3{1, 1, 1}).Normalize())
 	Eye1.SetPosition(position.Add((mgl32.Vec3{1, 1, 1}).Normalize()))
 	Eye2 := mesh.NewMaterialMesh(i, v, material.Ruby, glWrapper)
 	Eye2.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
+	Eye2.InitPos((mgl32.Vec3{1, 1, -1}).Normalize())
 	Eye2.SetPosition(position.Add((mgl32.Vec3{1, 1, -1}).Normalize()))
 
 	m := New()

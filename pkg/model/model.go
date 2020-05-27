@@ -64,13 +64,12 @@ func (m *Model) SetDirection(p mgl32.Vec3) {
 	}
 }
 
-// RotateWithAngle function loops over each of the meshes and calls their
-// SetRotationAngle function. The input angle has to be in radian.
-// The meshed are in sync.
-func (m *Model) RotateWithAngle(a float32) {
+// RotateWithAngle function rotates the model with the given angle (has to be degree).
+// It calls the TransformOrigin function of each mesh.
+func (m *Model) RotateWithAngle(angleDeg float32, axisVector mgl32.Vec3) {
 	for i, _ := range m.meshes {
-		currentAngle := m.meshes[i].GetRotationAngle()
-		m.meshes[i].SetRotationAngle(currentAngle + a)
+		m.meshes[i].TransformOrigin(
+			mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector))
 	}
 }
 

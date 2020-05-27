@@ -38,13 +38,22 @@ type Mesh struct {
 }
 
 // InitPos sets the origPos, and the position to this value
-// It also sets the origPosSet to true, to prevent the updat
+// It also sets the origPosSet to true, to prevent the update
 func (m *Mesh) InitPos(s mgl32.Vec3) {
 	if !m.origPosSet {
 		m.origPos = s
 		m.position = s
 		m.origPosSet = true
 	}
+}
+
+// GetOrigPos returns the original position if it was set.
+// If not, it returns 0,0,0 as original position.
+func (m *Mesh) getOrigPos() mgl32.Vec3 {
+	if m.origPosSet {
+		return m.origPos
+	}
+	return mgl32.Vec3{0.0, 0.0, 0.0}
 }
 
 // SetScale updates the scale of the mesh.
@@ -112,20 +121,37 @@ func (m *Mesh) Update(dt float64) {
 // The matrix is calculated from the position (translate), the rotation (rotate)
 // and from the scale (scale) patameters.
 func (m *Mesh) ModelTransformation() mgl32.Mat4 {
-	return mgl32.Translate3D(
-		m.position.X(),
-		m.position.Y(),
-		m.position.Z()).Mul4(mgl32.HomogRotate3D(m.angle, m.axis)).Mul4(mgl32.Scale3D(
-		m.scale.X(),
-		m.scale.Y(),
-		m.scale.Z(),
-	))
+	return m.TranslationTransformation().Mul4(
+		m.RotationTransformation()).Mul4(
+		m.ScaleTransformation())
+}
+
+// ScaleTransformation returns the scale part of the model transformation.
+func (m *Mesh) ScaleTransformation() mgl32.Mat4 {
+	return mgl32.Scale3D(m.scale.X(), m.scale.Y(), m.scale.Z())
+}
+
+// TranslateTransformation returns the translation part of the model transformation.
+func (m *Mesh) TranslationTransformation() mgl32.Mat4 {
+	return mgl32.Translate3D(m.position.X(), m.position.Y(), m.position.Z())
 }
 
 // RotationTransformation returns the rotation part of the model transformation.
 // It is used in the export module, where we have to handle the normal vectors also.
 func (m *Mesh) RotationTransformation() mgl32.Mat4 {
 	return mgl32.HomogRotate3D(m.angle, m.axis)
+}
+
+// TransformOrigin gets a transformation matrix input and transforms the
+// origin of the mesh, the direction of the mesh, and calculates the current
+// center point, based on the new origin.
+func (m *Mesh) TransformOrigin(trMat mgl32.Mat4) {
+	transformedOrigin := mgl32.TransformCoordinate(m.getOrigPos(), trMat)
+	movement := m.position.Sub(m.getOrigPos())
+	transformedDirection := mgl32.TransformNormal(m.direction, trMat)
+	m.origPos = transformedOrigin
+	m.direction = transformedDirection
+	m.position = transformedOrigin.Add(movement)
 }
 
 type TexturedMesh struct {
