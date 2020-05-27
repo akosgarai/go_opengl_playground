@@ -13,9 +13,13 @@ var (
 	glWrapper glwrapper.Wrapper
 )
 
+type Bug struct {
+	Model
+}
+
 // position: body is a unit sphere, center is the given position. bottom half unit radius,
 // its center position is {-1,0,0} from the body center.
-func NewBug(position, scale mgl32.Vec3) *Model {
+func NewBug(position, scale mgl32.Vec3) *Bug {
 	sphereBase := sphere.New(20)
 	i, v := sphereBase.MaterialMeshInput()
 	// Bottom supposed to be greenish color / material like emerald
@@ -48,5 +52,17 @@ func NewBug(position, scale mgl32.Vec3) *Model {
 	m.AddMesh(Eye1)
 	m.AddMesh(Eye2)
 
-	return m
+	return &Bug{Model: *m}
+}
+func (b *Bug) GetBottomPosition() mgl32.Vec3 {
+	return b.meshes[0].GetPosition()
+}
+func (b *Bug) GetBodyPosition() mgl32.Vec3 {
+	return b.meshes[1].GetPosition()
+}
+func (b *Bug) GetEye1Position() mgl32.Vec3 {
+	return b.meshes[2].GetPosition()
+}
+func (b *Bug) GetEye2Position() mgl32.Vec3 {
+	return b.meshes[3].GetPosition()
 }
