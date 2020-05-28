@@ -21,6 +21,16 @@ func TestSetRotationAngle(t *testing.T) {
 		t.Error("Angle mismatch")
 	}
 }
+func TestGetRotationAngle(t *testing.T) {
+	var m Mesh
+	if m.angle != 0 {
+		t.Error("Angle mismatch")
+	}
+	m.SetRotationAngle(1)
+	if m.GetRotationAngle() != 1 {
+		t.Error("Angle mismatch")
+	}
+}
 func TestSetRotationAxis(t *testing.T) {
 	var m Mesh
 	axis := mgl32.Vec3{0, 1, 0}
@@ -98,6 +108,38 @@ func TestModelTransformation(t *testing.T) {
 	M := m.ModelTransformation()
 	if M != mgl32.Ident4() {
 		t.Error("Invalid model matrix")
+	}
+}
+func TestInitPos(t *testing.T) {
+	var m Mesh
+	dir := mgl32.Vec3{0, 1, 0}
+	m.InitPos(dir)
+	if m.origPos != dir {
+		t.Error("origPos mismatch")
+	}
+	if !m.origPosSet {
+		t.Error("origPosSet mismatch")
+	}
+	if m.position != dir {
+		t.Error("position mismatch")
+	}
+}
+func TestGetOrigPos(t *testing.T) {
+	var m Mesh
+	dir := mgl32.Vec3{0, 1, 0}
+	nullVec := mgl32.Vec3{0, 0, 0}
+	if m.origPosSet != false {
+		t.Error("origPos mismatch")
+	}
+	if m.getOrigPos() != nullVec {
+		t.Error("origPos mismatch")
+	}
+	m.InitPos(dir)
+	if m.origPosSet != true {
+		t.Error("origPos mismatch")
+	}
+	if m.getOrigPos() != dir {
+		t.Error("origPos mismatch")
 	}
 }
 func TestAdd(t *testing.T) {
