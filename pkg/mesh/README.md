@@ -16,6 +16,8 @@ Those parameters that are always needed for managing an object.
 - **axis** - The mesh is rotated on this axis. If this vector is null, then the mesh is not rotated. The model transformation is calculated based on this.
 - **scale** - The mesh is scaled by this vector. The model transformation is calculated based on this.
 - **wrapper** - The glwrapper, that we can use for calling gl functions.
+- **parent** - The parent mesh of the current one.
+- **parentSet** - If the mesh has a parent, set with the relevant function, this flag is updated.
 
 It has setter functions for the parameters, and getters for the necessary ones, also one for the model transformation matrix calculation and one for updating the state of the mesh.
 
