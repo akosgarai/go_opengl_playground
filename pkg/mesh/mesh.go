@@ -15,7 +15,6 @@ type Mesh struct {
 	Indicies  []uint32
 
 	vbo uint32
-	ebo uint32
 	vao uint32
 
 	// the center position of the mesh. the model transformation is calculated based on this.
@@ -35,6 +34,9 @@ type Mesh struct {
 	scale mgl32.Vec3
 	// For calling gl functions.
 	wrapper interfaces.GLWrapper
+	// parent-child hierarchy
+	parent    *Mesh
+	parentSet bool
 }
 
 // InitPos sets the origPos, and the position to this value
@@ -102,6 +104,28 @@ func (m *Mesh) GetPosition() mgl32.Vec3 {
 func (m *Mesh) GetDirection() mgl32.Vec3 {
 	return m.direction
 }
+func (m *Mesh) SetParent(msh *Mesh) {
+	m.parentSet = true
+	m.parent = msh
+}
+func (m *Mesh) GetParentTranslationTransformation() mgl32.Mat4 {
+	if m.parentSet {
+		return m.parent.TranslationTransformation()
+	}
+	return mgl32.Ident4()
+}
+func (m *Mesh) GetParentRotationTransformation() mgl32.Mat4 {
+	if m.parentSet {
+		return m.parent.RotationTransformation()
+	}
+	return mgl32.Ident4()
+}
+func (m *Mesh) GetParentScaleTransformation() mgl32.Mat4 {
+	if m.parentSet {
+		return m.parent.ScaleTransformation()
+	}
+	return mgl32.Ident4()
+}
 
 // Update calulates the position change. It's input is the delta since the current draw circle.
 // The movement is calculated from the direction, velocity and delta.
@@ -128,18 +152,18 @@ func (m *Mesh) ModelTransformation() mgl32.Mat4 {
 
 // ScaleTransformation returns the scale part of the model transformation.
 func (m *Mesh) ScaleTransformation() mgl32.Mat4 {
-	return mgl32.Scale3D(m.scale.X(), m.scale.Y(), m.scale.Z())
+	return mgl32.Scale3D(m.scale.X(), m.scale.Y(), m.scale.Z()).Mul4(m.GetParentScaleTransformation())
 }
 
 // TranslateTransformation returns the translation part of the model transformation.
 func (m *Mesh) TranslationTransformation() mgl32.Mat4 {
-	return mgl32.Translate3D(m.position.X(), m.position.Y(), m.position.Z())
+	return mgl32.Translate3D(m.position.X(), m.position.Y(), m.position.Z()).Mul4(m.GetParentTranslationTransformation())
 }
 
 // RotationTransformation returns the rotation part of the model transformation.
 // It is used in the export module, where we have to handle the normal vectors also.
 func (m *Mesh) RotationTransformation() mgl32.Mat4 {
-	return mgl32.HomogRotate3D(m.angle, m.axis)
+	return mgl32.HomogRotate3D(m.angle, m.axis).Mul4(m.GetParentRotationTransformation())
 }
 
 // TransformOrigin gets a transformation matrix input and transforms the
@@ -221,6 +245,7 @@ func NewTexturedMesh(v []vertex.Vertex, i []uint32, t texture.Textures, wrapper 
 			axis:       mgl32.Vec3{0, 0, 0},
 			scale:      mgl32.Vec3{1, 1, 1},
 			wrapper:    wrapper,
+			parentSet:  false,
 		},
 		Indicies: i,
 		Textures: t,
@@ -252,6 +277,7 @@ func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat *material.Material, wrap
 			axis:       mgl32.Vec3{0, 0, 0},
 			scale:      mgl32.Vec3{1, 1, 1},
 			wrapper:    wrapper,
+			parentSet:  false,
 		},
 		Indicies: i,
 		Material: mat,
@@ -323,6 +349,7 @@ func NewPointMesh(wrapper interfaces.GLWrapper) *PointMesh {
 			axis:       mgl32.Vec3{0, 0, 0},
 			scale:      mgl32.Vec3{1, 1, 1},
 			wrapper:    wrapper,
+			parentSet:  false,
 		},
 	}
 	return mesh
@@ -391,6 +418,7 @@ func NewColorMesh(v []vertex.Vertex, i []uint32, color []mgl32.Vec3, wrapper int
 			axis:       mgl32.Vec3{0, 0, 0},
 			scale:      mgl32.Vec3{1, 1, 1},
 			wrapper:    wrapper,
+			parentSet:  false,
 		},
 		Indicies: i,
 		Color:    color,
@@ -458,6 +486,7 @@ func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures, c
 			axis:       mgl32.Vec3{0, 0, 0},
 			scale:      mgl32.Vec3{1, 1, 1},
 			wrapper:    wrapper,
+			parentSet:  false,
 		},
 		Indicies: i,
 		Textures: t,
@@ -533,6 +562,7 @@ func NewTexturedMaterialMesh(v []vertex.Vertex, i []uint32, t texture.Textures, 
 			axis:       mgl32.Vec3{0, 0, 0},
 			scale:      mgl32.Vec3{1, 1, 1},
 			wrapper:    wrapper,
+			parentSet:  false,
 		},
 		Indicies: i,
 		Textures: t,
