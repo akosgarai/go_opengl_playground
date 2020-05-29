@@ -70,3 +70,14 @@ func (m *Model) RotateWithAngle(angleDeg float32, axisVector mgl32.Vec3) {
 			mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector))
 	}
 }
+
+// RotateWithAngleV2 function rotates the model with the given angle (has to be degree).
+// It calls the TransformOrigin function of each mesh.
+func (m *Model) RotateWithAngleV2(angleDeg float32, axisVector mgl32.Vec3) {
+	for i, _ := range m.meshes {
+		if m.meshes[i].IsParentMesh() {
+			m.meshes[i].SetRotationAngle(mgl32.DegToRad(angleDeg))
+			m.meshes[i].SetRotationAxis(axisVector)
+		}
+	}
+}

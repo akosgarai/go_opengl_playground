@@ -97,6 +97,9 @@ type Mesh interface {
 	TranslationTransformation() mgl32.Mat4
 	RotationTransformation() mgl32.Mat4
 	ScaleTransformation() mgl32.Mat4
+	IsParentMesh() bool
+	SetRotationAxis(mgl32.Vec3)
+	SetRotationAngle(float32)
 }
 type Model interface {
 	Draw(Shader)

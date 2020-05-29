@@ -177,6 +177,9 @@ func (m *Mesh) TransformOrigin(trMat mgl32.Mat4) {
 	m.direction = transformedDirection
 	m.position = transformedOrigin.Add(movement)
 }
+func (m *Mesh) IsParentMesh() bool {
+	return !m.parentSet
+}
 
 type TexturedMesh struct {
 	Mesh

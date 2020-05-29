@@ -56,9 +56,9 @@ var (
 
 	BugOneForwardMove         = float64(1000)
 	DirectionalLightDirection = (mgl32.Vec3{0.7, 0.7, 0.7}).Normalize()
-	DirectionalLightAmbient   = mgl32.Vec3{0.1, 0.1, 0.1}
-	DirectionalLightDiffuse   = mgl32.Vec3{0.1, 0.1, 0.1}
-	DirectionalLightSpecular  = mgl32.Vec3{0.1, 0.1, 0.1}
+	DirectionalLightAmbient   = mgl32.Vec3{1, 1, 1}
+	DirectionalLightDiffuse   = mgl32.Vec3{1, 1, 1}
+	DirectionalLightSpecular  = mgl32.Vec3{1, 1, 1}
 	PointLightAmbient         = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightDiffuse         = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightSpecular        = mgl32.Vec3{0.5, 0.5, 0.5}
@@ -315,6 +315,10 @@ func main() {
 	Bug1 = model.NewBug(mgl32.Vec3{9, -0.5, -1.0}, mgl32.Vec3{0.2, 0.2, 0.2})
 	Bug1.SetDirection(mgl32.Vec3{1, 0, 0})
 	Bug1.SetSpeed(moveSpeed)
+
+	StreetLamp := model.NewStreetLamp(mgl32.Vec3{10, 0, 0})
+	//StreetLamp.RotateWithAngleV2(90, mgl32.Vec3{0, 1, 0})
+	app.AddModelToShader(StreetLamp, shaderProgramMaterial)
 	app.AddModelToShader(Bug1, shaderProgramMaterial)
 
 	// sun texture
