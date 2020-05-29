@@ -51,14 +51,18 @@ func (m *Model) Export(path string) {
 // SetSpeed function loops over each of the meshes and calls their SetSpeed function.
 func (m *Model) SetSpeed(s float32) {
 	for i, _ := range m.meshes {
-		m.meshes[i].SetSpeed(s)
+		if m.meshes[i].IsParentMesh() {
+			m.meshes[i].SetSpeed(s)
+		}
 	}
 }
 
 // SetDirection function loops over each of the meshes and calls their SetDirection function.
 func (m *Model) SetDirection(p mgl32.Vec3) {
 	for i, _ := range m.meshes {
-		m.meshes[i].SetDirection(p)
+		if m.meshes[i].IsParentMesh() {
+			m.meshes[i].SetDirection(p)
+		}
 	}
 }
 
