@@ -17,38 +17,40 @@ type StreetLamp struct {
 // The bulb could be used as a light source (spot light). The bulb poisition is in the
 // 0, height, 0 coordinate. The top position is width/2, height + width / 2, 0. The pole
 // is in the length/2, height/2, 0 position.
-func NewStreetLamp(position, scale mgl32.Vec3) *StreetLamp {
-	width := float32(0.0666)
-	height := float32(1)
-	length := float32(0.208)
-	bulbScale := mgl32.Vec3{0.016, 0.016, 0.016}
+func NewStreetLamp(position mgl32.Vec3) *StreetLamp {
+	width := float32(0.4)
+	height := float32(6)
+	length := float32(1.25)
+	bulbScale := mgl32.Vec3{0.1, 0.1, 0.1}
 	bulbMaterial := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 256.0)
-	cube := cuboid.NewCube()
-	cubeV, cubeI := cube.MeshInput()
 	sph := sphere.New(15)
 	sphereV, sphereI := sph.MaterialMeshInput()
+	poleCuboid := cuboid.New(width, width, height)
+	poleV, poleI := poleCuboid.MeshInput()
+	topCuboid := cuboid.New(length, width, width)
+	topV, topI := topCuboid.MeshInput()
 	// bulb
 	bulb := mesh.NewMaterialMesh(sphereV, sphereI, bulbMaterial, glWrapper)
-	bulb.InitPos(mgl32.Vec3{0, scale.Y() * height, 0})
-	bulb.SetPosition(mgl32.Vec3{position.X(), position.Y() + scale.Y()*height, position.Z()})
-	bulb.SetScale(mgl32.Vec3{bulbScale.X() * scale.X(), bulbScale.Y() * scale.Y(), bulbScale.Z() * scale.Z()})
-
-	// pole
-	pole := mesh.NewMaterialMesh(cubeV, cubeI, material.Chrome, glWrapper)
-	pole.InitPos(mgl32.Vec3{scale.X() * length / 2, scale.Y() * height / 2, 0})
-	pole.SetPosition(mgl32.Vec3{(position.X() + scale.X()*(length/2)), (position.Y() + scale.Y()*(height/2)), position.Z()})
-	pole.SetScale(mgl32.Vec3{scale.X() * width, scale.Y() * height, scale.Z() * width})
+	bulb.InitPos(mgl32.Vec3{0, 0, 0})
+	bulb.SetPosition(mgl32.Vec3{position.X(), position.Y() + height, position.Z()})
+	bulb.SetScale(bulbScale)
 
 	// top
-	top := mesh.NewMaterialMesh(cubeV, cubeI, material.Chrome, glWrapper)
-	top.InitPos(mgl32.Vec3{scale.X() * width / 2, scale.Y() * (height + (width / 2)), 0})
-	top.SetPosition(mgl32.Vec3{(position.X() + scale.X()*(width/2)), (position.Y() + scale.Y()*(height+(width/2))), position.Z()})
-	top.SetScale(mgl32.Vec3{scale.X() * length, scale.Y() * width, scale.Z() * width})
+	top := mesh.NewMaterialMesh(topV, topI, material.Chrome, glWrapper)
+	top.InitPos(mgl32.Vec3{width / 2, width / 2, 0})
+	top.SetScale(bulbScale.Mul(100))
+	top.SetParent(bulb)
+
+	// pole
+	pole := mesh.NewMaterialMesh(poleV, poleI, material.Chrome, glWrapper)
+	pole.InitPos(mgl32.Vec3{(length - width) / 2, (-height - width) / 2, 0})
+	//pole.SetScale(bulbScale.Mul(100))
+	pole.SetParent(top)
 
 	m := New()
 	m.AddMesh(bulb)
-	m.AddMesh(pole)
 	m.AddMesh(top)
+	m.AddMesh(pole)
 
 	return &StreetLamp{Model: *m}
 }
