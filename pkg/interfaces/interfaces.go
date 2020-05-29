@@ -94,6 +94,9 @@ type Mesh interface {
 	SetDirection(mgl32.Vec3)
 	TransformOrigin(mgl32.Mat4)
 	GetPosition() mgl32.Vec3
+	TranslationTransformation() mgl32.Mat4
+	RotationTransformation() mgl32.Mat4
+	ScaleTransformation() mgl32.Mat4
 }
 type Model interface {
 	Draw(Shader)
