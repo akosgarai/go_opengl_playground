@@ -35,7 +35,7 @@ type Mesh struct {
 	// For calling gl functions.
 	wrapper interfaces.GLWrapper
 	// parent-child hierarchy
-	parent    *Mesh
+	parent    interfaces.Mesh
 	parentSet bool
 }
 
@@ -104,7 +104,7 @@ func (m *Mesh) GetPosition() mgl32.Vec3 {
 func (m *Mesh) GetDirection() mgl32.Vec3 {
 	return m.direction
 }
-func (m *Mesh) SetParent(msh *Mesh) {
+func (m *Mesh) SetParent(msh interfaces.Mesh) {
 	m.parentSet = true
 	m.parent = msh
 }
