@@ -59,8 +59,9 @@ func NewBug(position, scale mgl32.Vec3) *Bug {
 }
 
 // GetBottomPosition returns the current position of the bottom mesh.
+// Transformations are applied, due to the relative position.
 func (b *Bug) GetBottomPosition() mgl32.Vec3 {
-	return b.meshes[0].GetPosition()
+	return mgl32.TransformCoordinate(b.meshes[0].GetPosition(), b.meshes[0].ModelTransformation())
 }
 
 // GetBodyPosition returns the current position of the body mesh.
@@ -69,11 +70,13 @@ func (b *Bug) GetBodyPosition() mgl32.Vec3 {
 }
 
 // GetEye1Position returns the current position of the eye1 mesh.
+// Transformations are applied, due to the relative position.
 func (b *Bug) GetEye1Position() mgl32.Vec3 {
-	return b.meshes[2].GetPosition()
+	return mgl32.TransformCoordinate(b.meshes[2].GetPosition(), b.meshes[2].ModelTransformation())
 }
 
 // GetEye2Position returns the current position of the eye2 mesh.
+// Transformations are applied, due to the relative position.
 func (b *Bug) GetEye2Position() mgl32.Vec3 {
-	return b.meshes[3].GetPosition()
+	return mgl32.TransformCoordinate(b.meshes[3].GetPosition(), b.meshes[3].ModelTransformation())
 }
