@@ -46,7 +46,7 @@ func New(rad float32, prec int, length float32) *Cylinder {
 			k = k + 3
 		}
 	}
-	// it will be used for the generating the indices. - the staring index for the base / top circels.
+	// it will be used for the generating the indices. - the staring index for the base / top circles.
 	baseCenterIndex := len(points)
 	topCenterIndex := baseCenterIndex + prec + 1
 	for i := 0; i < 2; i++ {
