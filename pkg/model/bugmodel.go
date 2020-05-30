@@ -17,8 +17,10 @@ type Bug struct {
 	Model
 }
 
-// position: body is a unit sphere, center is the given position. bottom half unit radius,
-// its center position is {-1,0,0} from the body center.
+// NewBug returns a bug instance. A Bug is a sphered mesh system. Its 'Body'
+// is the parent mesh. Its position is absolute in the world coordinate system.
+// The other 3 mesh, the 'Bottom', the 'Eye1' and 'Eye2' are child meshes, their
+// position is relative to the parent.
 func NewBug(position, scale mgl32.Vec3) *Bug {
 	sphereBase := sphere.New(20)
 	i, v := sphereBase.MaterialMeshInput()
