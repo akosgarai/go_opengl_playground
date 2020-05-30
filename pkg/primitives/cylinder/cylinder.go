@@ -47,7 +47,7 @@ func New(rad float32, prec int, length float32) *Cylinder {
 		}
 	}
 	// it will be used for the generating the indices. - the staring index for the base / top circels.
-	baseCenterIndex := len(points) / 3
+	baseCenterIndex := len(points)
 	topCenterIndex := baseCenterIndex + prec + 1
 	for i := 0; i < 2; i++ {
 		height := -length/2 + float32(i)*length
@@ -73,7 +73,7 @@ func New(rad float32, prec int, length float32) *Cylinder {
 	k1 := 0        // first vertex index of the bottom
 	k2 := prec + 1 // first vertex index of the top
 	// indices for the side surface
-	for i := 0; i <= prec; i++ {
+	for i := 0; i < prec; i++ {
 		indices = append(indices, uint32(k1))
 		indices = append(indices, uint32(k1+1))
 		indices = append(indices, uint32(k2))
