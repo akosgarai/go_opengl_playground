@@ -10,6 +10,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/cylinder"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
@@ -62,9 +63,16 @@ func CreateCamera() *camera.Camera {
 	return camera
 }
 
-func CreateMaterialMesh(mat *material.Material, pos mgl32.Vec3) *mesh.MaterialMesh {
+func CreateMaterialCube(mat *material.Material, pos mgl32.Vec3) *mesh.MaterialMesh {
 	cube := cuboid.NewCube()
 	v, i := cube.MeshInput()
+	m := mesh.NewMaterialMesh(v, i, mat, glWrapper)
+	m.SetPosition(pos)
+	return m
+}
+func CreateMaterialCylinder(mat *material.Material, pos mgl32.Vec3) *mesh.MaterialMesh {
+	c := cylinder.New(0.75, 30, 3)
+	v, i := c.MaterialMeshInput()
 	m := mesh.NewMaterialMesh(v, i, mat, glWrapper)
 	m.SetPosition(pos)
 	return m
@@ -171,24 +179,27 @@ func main() {
 	materialShader := shader.NewShader("examples/08-material-light/shaders/vertexshader.vert", "examples/08-material-light/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(materialShader)
 
-	JadeCube = CreateMaterialMesh(material.Jade, mgl32.Vec3{0.0, 0.0, 0.0})
+	JadeCube = CreateMaterialCube(material.Jade, mgl32.Vec3{0.0, 0.0, 0.0})
 	Model.AddMesh(JadeCube)
 
-	rpCube := CreateMaterialMesh(material.Redplastic, mgl32.Vec3{-6.5, -3.5, -4.5})
+	rpCube := CreateMaterialCube(material.Redplastic, mgl32.Vec3{-6.5, -3.5, -4.5})
 	rpCube.SetScale(mgl32.Vec3{2.0, 2.0, 2.0})
 	Model.AddMesh(rpCube)
 
-	obsidianCube := CreateMaterialMesh(material.Obsidian, mgl32.Vec3{-7.5, -4.5, -0.5})
+	obsidianCube := CreateMaterialCube(material.Obsidian, mgl32.Vec3{-7.5, -4.5, -0.5})
 	Model.AddMesh(obsidianCube)
 
-	copperCube := CreateMaterialMesh(material.Copper, mgl32.Vec3{2.0, -4.5, -0.5})
+	copperCube := CreateMaterialCube(material.Copper, mgl32.Vec3{2.0, -4.5, -0.5})
 	Model.AddMesh(copperCube)
 
-	silverCube := CreateMaterialMesh(material.Silver, mgl32.Vec3{2.0, -2.5, -1.5})
+	silverCube := CreateMaterialCube(material.Silver, mgl32.Vec3{2.0, -2.5, -1.5})
 	Model.AddMesh(silverCube)
 
+	turqCylinder := CreateMaterialCylinder(material.Turquoise, mgl32.Vec3{4, 3, -3})
+	Model.AddMesh(turqCylinder)
+
 	mat := material.New(mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, 144.0)
-	LightSourceCube = CreateMaterialMesh(mat, mgl32.Vec3{-3.0, -1.5, -3.0})
+	LightSourceCube = CreateMaterialCube(mat, mgl32.Vec3{-3.0, -1.5, -3.0})
 	LightSourceCube.SetDirection((mgl32.Vec3{9, 0, -3}).Normalize())
 
 	distance := (LightSourceCube.GetPosition().Sub(JadeCube.GetPosition())).Len()
