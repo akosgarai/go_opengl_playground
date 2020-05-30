@@ -1,7 +1,6 @@
 package mesh
 
 import (
-	"fmt"
 	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/interfaces"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
@@ -20,9 +19,6 @@ type Mesh struct {
 
 	// the center position of the mesh. the model transformation is calculated based on this.
 	position mgl32.Vec3
-	// The original position. It is used for rotating mesh from model
-	origPos    mgl32.Vec3
-	origPosSet bool
 	// movement paramteres
 	direction mgl32.Vec3
 	velocity  float32
@@ -38,25 +34,6 @@ type Mesh struct {
 	// parent-child hierarchy
 	parent    interfaces.Mesh
 	parentSet bool
-}
-
-// InitPos sets the origPos, and the position to this value
-// It also sets the origPosSet to true, to prevent the update
-func (m *Mesh) InitPos(s mgl32.Vec3) {
-	if !m.origPosSet {
-		m.origPos = s
-		m.position = s
-		m.origPosSet = true
-	}
-}
-
-// GetOrigPos returns the original position if it was set.
-// If not, it returns 0,0,0 as original position.
-func (m *Mesh) getOrigPos() mgl32.Vec3 {
-	if m.origPosSet {
-		return m.origPos
-	}
-	return mgl32.Vec3{0.0, 0.0, 0.0}
 }
 
 // SetScale updates the scale of the mesh.
@@ -168,35 +145,15 @@ func (m *Mesh) RotationTransformation() mgl32.Mat4 {
 	return mgl32.HomogRotate3D(m.angle, m.axis).Mul4(m.GetParentRotationTransformation())
 }
 
-// TransformOrigin gets a transformation matrix input and transforms the
-// origin of the mesh, the direction of the mesh, and calculates the current
-// center point, based on the new origin.
-func (m *Mesh) TransformOrigin(trMat mgl32.Mat4) {
-	transformedOrigin := mgl32.TransformCoordinate(m.getOrigPos(), trMat)
-	movement := m.position.Sub(m.getOrigPos())
-	transformedDirection := mgl32.TransformNormal(m.direction, trMat)
-	if movement.Len() > 0 {
-		fmt.Println(m.origPos, m.position,
-			mgl32.TransformCoordinate(m.getOrigPos(), trMat), mgl32.TransformCoordinate(m.position, trMat),
-			mgl32.TransformCoordinate(m.getOrigPos(), trMat).Sub(mgl32.TransformCoordinate(m.position, trMat)),
-			movement, movement.Normalize(), mgl32.TransformNormal(movement.Normalize(), trMat), trMat)
-	}
-	m.origPos = transformedOrigin
-	m.direction = transformedDirection
-	m.position = transformedOrigin.Add(movement)
-	if movement.Len() > 0 {
-		fmt.Println(m.position, transformedOrigin, mgl32.TransformNormal(movement.Normalize(), trMat).Mul(movement.Len()))
-	}
-}
-func (m *Mesh) RotateWithAngle(angleDeg float32, axisVector mgl32.Vec3) {
+func (m *Mesh) Rotate(angleDeg float32, axisVector mgl32.Vec3) {
 	trMat := mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector)
-	m.direction = mgl32.TransformNormal(m.direction, trMat)
-	m.SetRotationAngle(m.angle + mgl32.DegToRad(angleDeg))
-	m.SetRotationAxis(axisVector)
-}
-func (m *Mesh) RotatePositionWithAngle(angleDeg float32, axisVector mgl32.Vec3) {
-	trMat := mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector)
-	m.position = mgl32.TransformNormal(m.position, trMat)
+	if m.parentSet {
+		m.position = mgl32.TransformNormal(m.position, trMat)
+	} else {
+		m.direction = mgl32.TransformNormal(m.direction, trMat)
+		m.SetRotationAngle(m.angle + mgl32.DegToRad(angleDeg))
+		m.SetRotationAxis(axisVector)
+	}
 }
 func (m *Mesh) IsParentMesh() bool {
 	return !m.parentSet
@@ -260,16 +217,14 @@ func NewTexturedMesh(v []vertex.Vertex, i []uint32, t texture.Textures, wrapper 
 		Mesh: Mesh{
 			Verticies: v,
 
-			position:   mgl32.Vec3{0, 0, 0},
-			origPos:    mgl32.Vec3{0, 0, 0},
-			origPosSet: false,
-			direction:  mgl32.Vec3{0, 0, 0},
-			velocity:   0,
-			angle:      0,
-			axis:       mgl32.Vec3{0, 0, 0},
-			scale:      mgl32.Vec3{1, 1, 1},
-			wrapper:    wrapper,
-			parentSet:  false,
+			position:  mgl32.Vec3{0, 0, 0},
+			direction: mgl32.Vec3{0, 0, 0},
+			velocity:  0,
+			angle:     0,
+			axis:      mgl32.Vec3{0, 0, 0},
+			scale:     mgl32.Vec3{1, 1, 1},
+			wrapper:   wrapper,
+			parentSet: false,
 		},
 		Indicies: i,
 		Textures: t,
@@ -292,16 +247,14 @@ func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat *material.Material, wrap
 		Mesh: Mesh{
 			Verticies: v,
 
-			position:   mgl32.Vec3{0, 0, 0},
-			origPos:    mgl32.Vec3{0, 0, 0},
-			origPosSet: false,
-			direction:  mgl32.Vec3{0, 0, 0},
-			velocity:   0,
-			angle:      0,
-			axis:       mgl32.Vec3{0, 0, 0},
-			scale:      mgl32.Vec3{1, 1, 1},
-			wrapper:    wrapper,
-			parentSet:  false,
+			position:  mgl32.Vec3{0, 0, 0},
+			direction: mgl32.Vec3{0, 0, 0},
+			velocity:  0,
+			angle:     0,
+			axis:      mgl32.Vec3{0, 0, 0},
+			scale:     mgl32.Vec3{1, 1, 1},
+			wrapper:   wrapper,
+			parentSet: false,
 		},
 		Indicies: i,
 		Material: mat,
@@ -364,16 +317,14 @@ func NewPointMesh(wrapper interfaces.GLWrapper) *PointMesh {
 		Mesh{
 			Verticies: []vertex.Vertex{},
 
-			position:   mgl32.Vec3{0, 0, 0},
-			origPos:    mgl32.Vec3{0, 0, 0},
-			origPosSet: false,
-			direction:  mgl32.Vec3{0, 0, 0},
-			velocity:   0,
-			angle:      0,
-			axis:       mgl32.Vec3{0, 0, 0},
-			scale:      mgl32.Vec3{1, 1, 1},
-			wrapper:    wrapper,
-			parentSet:  false,
+			position:  mgl32.Vec3{0, 0, 0},
+			direction: mgl32.Vec3{0, 0, 0},
+			velocity:  0,
+			angle:     0,
+			axis:      mgl32.Vec3{0, 0, 0},
+			scale:     mgl32.Vec3{1, 1, 1},
+			wrapper:   wrapper,
+			parentSet: false,
 		},
 	}
 	return mesh
@@ -433,16 +384,14 @@ func NewColorMesh(v []vertex.Vertex, i []uint32, color []mgl32.Vec3, wrapper int
 		Mesh: Mesh{
 			Verticies: v,
 
-			position:   mgl32.Vec3{0, 0, 0},
-			origPos:    mgl32.Vec3{0, 0, 0},
-			origPosSet: false,
-			direction:  mgl32.Vec3{0, 0, 0},
-			velocity:   0,
-			angle:      0,
-			axis:       mgl32.Vec3{0, 0, 0},
-			scale:      mgl32.Vec3{1, 1, 1},
-			wrapper:    wrapper,
-			parentSet:  false,
+			position:  mgl32.Vec3{0, 0, 0},
+			direction: mgl32.Vec3{0, 0, 0},
+			velocity:  0,
+			angle:     0,
+			axis:      mgl32.Vec3{0, 0, 0},
+			scale:     mgl32.Vec3{1, 1, 1},
+			wrapper:   wrapper,
+			parentSet: false,
 		},
 		Indicies: i,
 		Color:    color,
@@ -501,16 +450,14 @@ func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures, c
 		Mesh: Mesh{
 			Verticies: v,
 
-			position:   mgl32.Vec3{0, 0, 0},
-			origPos:    mgl32.Vec3{0, 0, 0},
-			origPosSet: false,
-			direction:  mgl32.Vec3{0, 0, 0},
-			velocity:   0,
-			angle:      0,
-			axis:       mgl32.Vec3{0, 0, 0},
-			scale:      mgl32.Vec3{1, 1, 1},
-			wrapper:    wrapper,
-			parentSet:  false,
+			position:  mgl32.Vec3{0, 0, 0},
+			direction: mgl32.Vec3{0, 0, 0},
+			velocity:  0,
+			angle:     0,
+			axis:      mgl32.Vec3{0, 0, 0},
+			scale:     mgl32.Vec3{1, 1, 1},
+			wrapper:   wrapper,
+			parentSet: false,
 		},
 		Indicies: i,
 		Textures: t,
@@ -577,16 +524,14 @@ func NewTexturedMaterialMesh(v []vertex.Vertex, i []uint32, t texture.Textures, 
 		Mesh: Mesh{
 			Verticies: v,
 
-			position:   mgl32.Vec3{0, 0, 0},
-			origPos:    mgl32.Vec3{0, 0, 0},
-			origPosSet: false,
-			direction:  mgl32.Vec3{0, 0, 0},
-			velocity:   0,
-			angle:      0,
-			axis:       mgl32.Vec3{0, 0, 0},
-			scale:      mgl32.Vec3{1, 1, 1},
-			wrapper:    wrapper,
-			parentSet:  false,
+			position:  mgl32.Vec3{0, 0, 0},
+			direction: mgl32.Vec3{0, 0, 0},
+			velocity:  0,
+			angle:     0,
+			axis:      mgl32.Vec3{0, 0, 0},
+			scale:     mgl32.Vec3{1, 1, 1},
+			wrapper:   wrapper,
+			parentSet: false,
 		},
 		Indicies: i,
 		Textures: t,

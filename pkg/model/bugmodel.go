@@ -25,7 +25,6 @@ func NewBug(position, scale mgl32.Vec3) *Bug {
 	// Body supposed to be other green. Like green rubber
 	Body := mesh.NewMaterialMesh(i, v, material.Greenrubber, glWrapper)
 	Body.SetScale(scale)
-	Body.InitPos(mgl32.Vec3{0, 0, 0})
 	Body.SetPosition(position)
 
 	// Bottom supposed to be greenish color / material like emerald
@@ -38,14 +37,14 @@ func NewBug(position, scale mgl32.Vec3) *Bug {
 	Eye1.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
 	initPosBase := (mgl32.Vec3{1, 1, 1}).Normalize()
 	initPosScaled := mgl32.Vec3{initPosBase.X() * scale.X(), initPosBase.Y() * scale.Y(), initPosBase.Z() * scale.Z()}
-	Eye1.InitPos(initPosScaled)
+	Eye1.SetPosition(initPosScaled)
 	Eye1.SetParent(Body)
 
 	Eye2 := mesh.NewMaterialMesh(i, v, material.Ruby, glWrapper)
 	Eye2.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
 	initPosBase = (mgl32.Vec3{1, 1, -1}).Normalize()
 	initPosScaled = mgl32.Vec3{initPosBase.X() * scale.X(), initPosBase.Y() * scale.Y(), initPosBase.Z() * scale.Z()}
-	Eye2.InitPos(initPosScaled)
+	Eye2.SetPosition(initPosScaled)
 	Eye2.SetParent(Body)
 
 	m := New()

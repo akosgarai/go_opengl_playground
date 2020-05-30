@@ -146,7 +146,7 @@ func RotateBugOne(now int64) {
 	if moveTime > BugOneForwardMove {
 		BugOneLastRotate = now
 		// rotate 45 deg
-		Bug1.RotateWithAngleV2(-45, mgl32.Vec3{0, 1, 0}.Normalize())
+		Bug1.Rotate(-45, mgl32.Vec3{0, 1, 0}.Normalize())
 	}
 }
 func Update() {
@@ -317,7 +317,7 @@ func main() {
 	Bug1.SetSpeed(moveSpeed)
 
 	StreetLamp := model.NewStreetLamp(mgl32.Vec3{10, 0, 0})
-	StreetLamp.RotateWithAngleV2(90, mgl32.Vec3{0, 1, 0})
+	StreetLamp.Rotate(90, mgl32.Vec3{0, 1, 0})
 	app.AddModelToShader(StreetLamp, shaderProgramMaterial)
 	app.AddModelToShader(Bug1, shaderProgramMaterial)
 
