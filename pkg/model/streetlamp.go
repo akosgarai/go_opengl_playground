@@ -13,10 +13,10 @@ type StreetLamp struct {
 	Model
 }
 
-// NewStreetLamp returns a street lamp like model. It has a pole, a top and a bulb.
-// The bulb could be used as a light source (spot light). The bulb poisition is in the
-// 0, height, 0 coordinate. The top position is width/2, height + width / 2, 0. The pole
-// is in the length/2, height/2, 0 position.
+// NewStreetLamp returns a street lamp like model. The StreetLamp is a mesh system.
+// The position input describes the position of the lightsource 'Bulb'. The 'Top' is the
+// child of the 'Bulb', and the 'Pole' is the children of 'Top', so that their coordinates
+// are relative to their parents.
 func NewStreetLamp(position mgl32.Vec3) *StreetLamp {
 	width := float32(0.4)
 	height := float32(6)
@@ -59,11 +59,13 @@ func (s *StreetLamp) GetBulbPosition() mgl32.Vec3 {
 }
 
 // GetPolePosition returns the current position of the pole mesh.
+// Transformations are applied, due to the relative position.
 func (s *StreetLamp) GetPolePosition() mgl32.Vec3 {
-	return s.meshes[1].GetPosition()
+	return mgl32.TransformCoordinate(s.meshes[1].GetPosition(), s.meshes[1].ModelTransformation())
 }
 
 // GetTopPosition returns the current position of the top mesh.
+// Transformations are applied, due to the relative position.
 func (s *StreetLamp) GetTopPosition() mgl32.Vec3 {
-	return s.meshes[2].GetPosition()
+	return mgl32.TransformCoordinate(s.meshes[2].GetPosition(), s.meshes[2].ModelTransformation())
 }
