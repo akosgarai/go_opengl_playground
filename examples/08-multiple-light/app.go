@@ -98,7 +98,7 @@ func CreateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 	return m
 }
 
-// It generates the lamp. Now it usws the StreetLamp model for creating it.
+// It generates the lamp. Now it uses the StreetLamp model for creating it.
 func StreetLamp(position mgl32.Vec3) *model.StreetLamp {
 	StreetLamp := model.NewStreetLamp(position)
 	StreetLamp.Rotate(180, mgl32.Vec3{1, 0, 0})
