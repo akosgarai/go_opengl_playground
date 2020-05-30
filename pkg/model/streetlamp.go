@@ -31,16 +31,16 @@ func NewStreetLamp(position mgl32.Vec3) *StreetLamp {
 	topV, topI := topCuboid.MeshInput()
 	// bulb
 	bulb := mesh.NewMaterialMesh(sphereV, sphereI, bulbMaterial, glWrapper)
-	//bulb.InitPos(mgl32.Vec3{0, 0, 0})
-	//bulb.SetPosition(mgl32.Vec3{position.X(), position.Y() + height, position.Z()})
-	bulb.InitPos(mgl32.Vec3{position.X(), position.Y() + height, position.Z()})
+	bulb.InitPos(mgl32.Vec3{0, 0, 0})
+	bulb.SetPosition(mgl32.Vec3{position.X(), position.Y() + height, position.Z()})
+	//bulb.InitPos(mgl32.Vec3{position.X(), position.Y() + height, position.Z()})
 	bulb.SetScale(bulbScale)
 
 	// top
 	top := mesh.NewMaterialMesh(topV, topI, material.Chrome, glWrapper)
-	//top.InitPos(mgl32.Vec3{0, 0, 0})
-	//top.SetPosition(mgl32.Vec3{width / 2, width / 2, 0})
-	top.InitPos(mgl32.Vec3{width / 2, width / 2, 0})
+	top.InitPos(mgl32.Vec3{-width / 2, -height - width/2, 0})
+	//top.InitPos(mgl32.Vec3{width / 2, width / 2, 0})
+	top.SetPosition(mgl32.Vec3{width / 2, width / 2, 0})
 	top.SetScale(bulbScale.Mul(100))
 	top.SetParent(bulb)
 

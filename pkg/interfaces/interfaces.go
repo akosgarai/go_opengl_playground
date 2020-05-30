@@ -100,6 +100,8 @@ type Mesh interface {
 	IsParentMesh() bool
 	SetRotationAxis(mgl32.Vec3)
 	SetRotationAngle(float32)
+	RotateWithAngle(float32, mgl32.Vec3)
+	RotatePositionWithAngle(float32, mgl32.Vec3)
 }
 type Model interface {
 	Draw(Shader)

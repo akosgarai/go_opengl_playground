@@ -80,8 +80,9 @@ func (m *Model) RotateWithAngle(angleDeg float32, axisVector mgl32.Vec3) {
 func (m *Model) RotateWithAngleV2(angleDeg float32, axisVector mgl32.Vec3) {
 	for i, _ := range m.meshes {
 		if m.meshes[i].IsParentMesh() {
-			m.meshes[i].SetRotationAngle(mgl32.DegToRad(angleDeg))
-			m.meshes[i].SetRotationAxis(axisVector)
+			m.meshes[i].RotateWithAngle(angleDeg, axisVector)
+		} else {
+			m.meshes[i].RotatePositionWithAngle(angleDeg, axisVector)
 		}
 	}
 }

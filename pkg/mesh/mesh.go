@@ -1,6 +1,7 @@
 package mesh
 
 import (
+	"fmt"
 	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/interfaces"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
@@ -157,7 +158,8 @@ func (m *Mesh) ScaleTransformation() mgl32.Mat4 {
 
 // TranslateTransformation returns the translation part of the model transformation.
 func (m *Mesh) TranslationTransformation() mgl32.Mat4 {
-	return mgl32.Translate3D(m.position.X(), m.position.Y(), m.position.Z()).Mul4(m.GetParentTranslationTransformation())
+	translate := m.position
+	return mgl32.Translate3D(translate.X(), translate.Y(), translate.Z()).Mul4(m.GetParentTranslationTransformation())
 }
 
 // RotationTransformation returns the rotation part of the model transformation.
@@ -173,9 +175,28 @@ func (m *Mesh) TransformOrigin(trMat mgl32.Mat4) {
 	transformedOrigin := mgl32.TransformCoordinate(m.getOrigPos(), trMat)
 	movement := m.position.Sub(m.getOrigPos())
 	transformedDirection := mgl32.TransformNormal(m.direction, trMat)
+	if movement.Len() > 0 {
+		fmt.Println(m.origPos, m.position,
+			mgl32.TransformCoordinate(m.getOrigPos(), trMat), mgl32.TransformCoordinate(m.position, trMat),
+			mgl32.TransformCoordinate(m.getOrigPos(), trMat).Sub(mgl32.TransformCoordinate(m.position, trMat)),
+			movement, movement.Normalize(), mgl32.TransformNormal(movement.Normalize(), trMat), trMat)
+	}
 	m.origPos = transformedOrigin
 	m.direction = transformedDirection
 	m.position = transformedOrigin.Add(movement)
+	if movement.Len() > 0 {
+		fmt.Println(m.position, transformedOrigin, mgl32.TransformNormal(movement.Normalize(), trMat).Mul(movement.Len()))
+	}
+}
+func (m *Mesh) RotateWithAngle(angleDeg float32, axisVector mgl32.Vec3) {
+	trMat := mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector)
+	m.direction = mgl32.TransformNormal(m.direction, trMat)
+	m.SetRotationAngle(m.angle + mgl32.DegToRad(angleDeg))
+	m.SetRotationAxis(axisVector)
+}
+func (m *Mesh) RotatePositionWithAngle(angleDeg float32, axisVector mgl32.Vec3) {
+	trMat := mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector)
+	m.position = mgl32.TransformNormal(m.position, trMat)
 }
 func (m *Mesh) IsParentMesh() bool {
 	return !m.parentSet
