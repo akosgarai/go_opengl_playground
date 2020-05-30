@@ -10,6 +10,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/cylinder"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
@@ -86,6 +87,12 @@ func CreateWhiteSphere() {
 func CreateCubeMesh(t texture.Textures) *mesh.TexturedMesh {
 	cube := cuboid.NewCube()
 	v, i := cube.MeshInput()
+	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
+	return m
+}
+func CreateCylinderMesh(t texture.Textures) *mesh.TexturedMesh {
+	c := cylinder.New(0.75, 30, 3)
+	v, i := c.TexturedMeshInput()
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	return m
 }
@@ -197,6 +204,9 @@ func main() {
 	tex.AddTexture("examples/07-textured-lighting-map/assets/colored-image-for-texture-testing-specular.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
 	CubeMesh = CreateCubeMesh(tex)
 	TexModel.AddMesh(CubeMesh)
+	CylinderMesh := CreateCylinderMesh(tex)
+	CylinderMesh.SetPosition(mgl32.Vec3{2, 2, 2})
+	TexModel.AddMesh(CylinderMesh)
 	app.AddModelToShader(TexModel, shaderProgramTexture)
 
 	shaderProgramWhite := shader.NewShader("examples/07-textured-lighting-map/shaders/lightsource.vert", "examples/07-textured-lighting-map/shaders/lightsource.frag", glWrapper)
