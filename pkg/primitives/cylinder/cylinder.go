@@ -65,13 +65,13 @@ func New(rad float32, prec int, length float32) *Cylinder {
 			// normal vectors
 			normals = append(normals, mgl32.Vec3{0.0, 0.0, normal})
 			// texture coordinate
-			texCoords = append(texCoords, mgl32.Vec2{circleVertices[k]*0.5 + 0.5, circleVertices[k+1]*0.5 + 0.5})
+			texCoords = append(texCoords, mgl32.Vec2{-circleVertices[k]/rad*0.5 + 0.5, -circleVertices[k+1]/rad*0.5 + 0.5})
 			k = k + 3
 		}
 	}
 	// indices
 	k1 := 0        // first vertex index of the bottom
-	k2 := prec + 1 // first vertex index of the top
+	k2 := prec - 1 // first vertex index of the top
 	// indices for the side surface
 	for i := 0; i < prec; i++ {
 		indices = append(indices, uint32(k1))

@@ -14,7 +14,7 @@ func TestNew(t *testing.T) {
 		expectedLengthIndices   int
 		expectedLengthTexCoords int
 	}{
-		{mgl32.Vec3{1, 2, 1}, 10, 10, 30, 10},
+		{mgl32.Vec3{1, 2, 1}, 10, 10, 24, 10},
 	}
 	for _, tt := range testData {
 		cyl := New(tt.input.X(), int(tt.input.Y()), tt.input.Z())
@@ -38,7 +38,7 @@ func TestMaterialMeshInput(t *testing.T) {
 		expectedLengthVertices int
 		expectedLengthIndices  int
 	}{
-		{mgl32.Vec3{1, 2, 1}, 10, 30},
+		{mgl32.Vec3{1, 2, 1}, 10, 24},
 	}
 	for _, tt := range testData {
 		cyl := New(tt.input.X(), int(tt.input.Y()), tt.input.Z())
@@ -57,7 +57,7 @@ func TestColoredMeshInput(t *testing.T) {
 		expectedLengthVertices int
 		expectedLengthIndices  int
 	}{
-		{mgl32.Vec3{1, 2, 1}, 10, 30},
+		{mgl32.Vec3{1, 2, 1}, 10, 24},
 	}
 	for _, tt := range testData {
 		cyl := New(tt.input.X(), int(tt.input.Y()), tt.input.Z())
@@ -76,7 +76,7 @@ func TestTexturedMeshInput(t *testing.T) {
 		expectedLengthVertices int
 		expectedLengthIndices  int
 	}{
-		{mgl32.Vec3{1, 2, 1}, 10, 30},
+		{mgl32.Vec3{1, 2, 1}, 10, 24},
 	}
 	for _, tt := range testData {
 		cyl := New(tt.input.X(), int(tt.input.Y()), tt.input.Z())
