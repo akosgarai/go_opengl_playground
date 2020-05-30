@@ -55,9 +55,9 @@ var (
 
 	BugOneForwardMove         = float64(1000)
 	DirectionalLightDirection = (mgl32.Vec3{0.7, 0.7, 0.7}).Normalize()
-	DirectionalLightAmbient   = mgl32.Vec3{1, 1, 1}
-	DirectionalLightDiffuse   = mgl32.Vec3{1, 1, 1}
-	DirectionalLightSpecular  = mgl32.Vec3{1, 1, 1}
+	DirectionalLightAmbient   = mgl32.Vec3{0.1, 0.1, 0.1}
+	DirectionalLightDiffuse   = mgl32.Vec3{0.1, 0.1, 0.1}
+	DirectionalLightSpecular  = mgl32.Vec3{0.1, 0.1, 0.1}
 	PointLightAmbient         = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightDiffuse         = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightSpecular        = mgl32.Vec3{0.5, 0.5, 0.5}
@@ -71,8 +71,8 @@ var (
 	SpotLightSpecular         = mgl32.Vec3{1, 1, 1}
 	SpotLightDirection_1      = (mgl32.Vec3{0, 1, 0}).Normalize()
 	SpotLightDirection_2      = (mgl32.Vec3{0, 1, 0}).Normalize()
-	SpotLightPosition_1       = mgl32.Vec3{0.20, -6, -0.7}
-	SpotLightPosition_2       = mgl32.Vec3{10.20, -6, -0.7}
+	SpotLightPosition_1       = mgl32.Vec3{0.20, -6, -0.65}
+	SpotLightPosition_2       = mgl32.Vec3{10.20, -6, -0.65}
 	SpotLightCutoff_1         = float32(4)
 	SpotLightCutoff_2         = float32(4)
 	SpotLightOuterCutoff_1    = float32(5)
@@ -291,9 +291,9 @@ func main() {
 	shaderProgramMaterial := shader.NewShader("examples/08-multiple-light/shaders/lamp.vert", "examples/08-multiple-light/shaders/lamp.frag", glWrapper)
 	app.AddShader(shaderProgramMaterial)
 
-	lamp1 := StreetLamp(mgl32.Vec3{0.4, -10, -1.3})
+	lamp1 := StreetLamp(mgl32.Vec3{0.4, -12, -1.3})
 	app.AddModelToShader(lamp1, shaderProgramMaterial)
-	lamp2 := StreetLamp(mgl32.Vec3{10.4, -10, -1.3})
+	lamp2 := StreetLamp(mgl32.Vec3{10.4, -12, -1.3})
 	app.AddModelToShader(lamp2, shaderProgramMaterial)
 
 	Bug1 = model.NewBug(mgl32.Vec3{9, -0.5, -1.0}, mgl32.Vec3{0.2, 0.2, 0.2})
