@@ -10,6 +10,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/cylinder"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
@@ -159,6 +160,16 @@ func CreateSphereMesh() *mesh.ColorMesh {
 	return m
 }
 
+// It generates a cylinder
+func CreateCylinder() *mesh.ColorMesh {
+	c := cylinder.New(1.5, 30, 3)
+	cols := []mgl32.Vec3{colors[3]}
+	v, i := c.ColoredMeshInput(cols)
+	m := mesh.NewColorMesh(v, i, cols, glWrapper)
+	m.SetPosition(mgl32.Vec3{-3, -3, 5})
+	return m
+}
+
 func main() {
 	runtime.LockOSThread()
 
@@ -175,6 +186,8 @@ func main() {
 	Model.AddMesh(sphereMesh)
 	cubeMesh := CreateCubeMesh()
 	Model.AddMesh(cubeMesh)
+	cyl := CreateCylinder()
+	Model.AddMesh(cyl)
 	app.AddModelToShader(Model, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
