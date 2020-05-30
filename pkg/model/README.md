@@ -5,3 +5,7 @@ The purpose of this package, to gather the mashes that are connected to the same
 ## Bug model
 
 This predefined model represents a "composite object". This model contains 4 material squere, one for the bottom, one for the body and 2 for the eyes. It has getter functions for the center point of the body parts. It's initial position, and scale are set during it's construction with the NewBug function.
+
+## StreetLamp model
+
+This predefined model represents a "composite object". This model contains 2 cuboids, 'Pole' and 'Top' and a sphere 'Bulb'.

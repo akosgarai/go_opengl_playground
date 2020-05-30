@@ -11,7 +11,6 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
@@ -72,8 +71,8 @@ var (
 	SpotLightSpecular         = mgl32.Vec3{1, 1, 1}
 	SpotLightDirection_1      = (mgl32.Vec3{0, 1, 0}).Normalize()
 	SpotLightDirection_2      = (mgl32.Vec3{0, 1, 0}).Normalize()
-	SpotLightPosition_1       = mgl32.Vec3{0.20, -6, -0.7}
-	SpotLightPosition_2       = mgl32.Vec3{10.20, -6, -0.7}
+	SpotLightPosition_1       = mgl32.Vec3{0.20, -6, -0.65}
+	SpotLightPosition_2       = mgl32.Vec3{10.20, -6, -0.65}
 	SpotLightCutoff_1         = float32(4)
 	SpotLightCutoff_2         = float32(4)
 	SpotLightOuterCutoff_1    = float32(5)
@@ -99,30 +98,12 @@ func CreateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 	return m
 }
 
-// It generates the lamp
-func Lamp(baseX, baseZ float32, lightPosition mgl32.Vec3) {
-	width := float32(0.4)
-	height := float32(6)
-	length := float32(2.5)
-	cub := cuboid.NewCube()
-	v, i := cub.MeshInput()
-	pole := mesh.NewMaterialMesh(v, i, material.Chrome, glWrapper)
-	pole.SetPosition(mgl32.Vec3{baseX - width/2, -height / 2, baseZ - width/2})
-	pole.SetScale(mgl32.Vec3{width, height, width})
-	MatModel.AddMesh(pole)
-
-	top := mesh.NewMaterialMesh(v, i, material.Chrome, glWrapper)
-	top.SetPosition(mgl32.Vec3{baseX - width/2, -height - width/2, baseZ + length/2 - width})
-	top.SetScale(mgl32.Vec3{width, width, length})
-	MatModel.AddMesh(top)
-
-	sph := sphere.New(15)
-	v, i = sph.MaterialMeshInput()
-	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 256.0)
-	bulb := mesh.NewMaterialMesh(v, i, mat, glWrapper)
-	bulb.SetPosition(lightPosition)
-	bulb.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
-	MatModel.AddMesh(bulb)
+// It generates the lamp. Now it uses the StreetLamp model for creating it.
+func StreetLamp(position mgl32.Vec3) *model.StreetLamp {
+	StreetLamp := model.NewStreetLamp(position)
+	StreetLamp.Rotate(180, mgl32.Vec3{1, 0, 0})
+	StreetLamp.Rotate(90, mgl32.Vec3{0, 1, 0})
+	return StreetLamp
 }
 
 func TexturedBug(t texture.Textures) {
@@ -146,7 +127,7 @@ func RotateBugOne(now int64) {
 	if moveTime > BugOneForwardMove {
 		BugOneLastRotate = now
 		// rotate 45 deg
-		Bug1.RotateWithAngle(-45, mgl32.Vec3{0, 1, 0}.Normalize())
+		Bug1.Rotate(-45, mgl32.Vec3{0, 1, 0}.Normalize())
 	}
 }
 func Update() {
@@ -310,11 +291,15 @@ func main() {
 	shaderProgramMaterial := shader.NewShader("examples/08-multiple-light/shaders/lamp.vert", "examples/08-multiple-light/shaders/lamp.frag", glWrapper)
 	app.AddShader(shaderProgramMaterial)
 
-	Lamp(0.4, -2.6, SpotLightPosition_1)
-	Lamp(10.4, -2.6, SpotLightPosition_2)
+	lamp1 := StreetLamp(mgl32.Vec3{0.4, -12, -1.3})
+	app.AddModelToShader(lamp1, shaderProgramMaterial)
+	lamp2 := StreetLamp(mgl32.Vec3{10.4, -12, -1.3})
+	app.AddModelToShader(lamp2, shaderProgramMaterial)
+
 	Bug1 = model.NewBug(mgl32.Vec3{9, -0.5, -1.0}, mgl32.Vec3{0.2, 0.2, 0.2})
 	Bug1.SetDirection(mgl32.Vec3{1, 0, 0})
 	Bug1.SetSpeed(moveSpeed)
+
 	app.AddModelToShader(Bug1, shaderProgramMaterial)
 
 	// sun texture

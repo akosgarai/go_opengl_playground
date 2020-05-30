@@ -17,34 +17,37 @@ type Bug struct {
 	Model
 }
 
-// position: body is a unit sphere, center is the given position. bottom half unit radius,
-// its center position is {-1,0,0} from the body center.
+// NewBug returns a bug instance. A Bug is a sphered mesh system. Its 'Body'
+// is the parent mesh. Its position is absolute in the world coordinate system.
+// The other 3 mesh, the 'Bottom', the 'Eye1' and 'Eye2' are child meshes, their
+// position is relative to the parent.
 func NewBug(position, scale mgl32.Vec3) *Bug {
 	sphereBase := sphere.New(20)
 	i, v := sphereBase.MaterialMeshInput()
-	// Bottom supposed to be greenish color / material like emerald
-	Bottom := mesh.NewMaterialMesh(i, v, material.Emerald, glWrapper)
-	Bottom.SetScale(mgl32.Vec3{scale.X() * 0.5, scale.Y() * 0.5, scale.Z() * 0.5})
-	Bottom.InitPos(mgl32.Vec3{scale.X() * -1, 0, 0})
-	Bottom.SetPosition(position.Add(mgl32.Vec3{scale.X() * -1, 0, 0}))
 	// Body supposed to be other green. Like green rubber
 	Body := mesh.NewMaterialMesh(i, v, material.Greenrubber, glWrapper)
 	Body.SetScale(scale)
-	Body.InitPos(mgl32.Vec3{0, 0, 0})
 	Body.SetPosition(position)
+
+	// Bottom supposed to be greenish color / material like emerald
+	Bottom := mesh.NewMaterialMesh(i, v, material.Emerald, glWrapper)
+	Bottom.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
+	Bottom.SetPosition(mgl32.Vec3{scale.X() * -1, 0, 0})
+	Bottom.SetParent(Body)
 	// Eyes are red. (red plastic)
 	Eye1 := mesh.NewMaterialMesh(i, v, material.Ruby, glWrapper)
-	Eye1.SetScale(mgl32.Vec3{scale.X() * 0.1, scale.Y() * 0.1, scale.Z() * 0.1})
+	Eye1.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
 	initPosBase := (mgl32.Vec3{1, 1, 1}).Normalize()
 	initPosScaled := mgl32.Vec3{initPosBase.X() * scale.X(), initPosBase.Y() * scale.Y(), initPosBase.Z() * scale.Z()}
-	Eye1.InitPos(initPosScaled)
-	Eye1.SetPosition(position.Add(initPosScaled))
+	Eye1.SetPosition(initPosScaled)
+	Eye1.SetParent(Body)
+
 	Eye2 := mesh.NewMaterialMesh(i, v, material.Ruby, glWrapper)
-	Eye2.SetScale(mgl32.Vec3{scale.X() * 0.1, scale.Y() * 0.1, scale.Z() * 0.1})
+	Eye2.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
 	initPosBase = (mgl32.Vec3{1, 1, -1}).Normalize()
 	initPosScaled = mgl32.Vec3{initPosBase.X() * scale.X(), initPosBase.Y() * scale.Y(), initPosBase.Z() * scale.Z()}
-	Eye2.InitPos(initPosScaled)
-	Eye2.SetPosition(position.Add(initPosScaled))
+	Eye2.SetPosition(initPosScaled)
+	Eye2.SetParent(Body)
 
 	m := New()
 	m.AddMesh(Bottom)
@@ -56,8 +59,9 @@ func NewBug(position, scale mgl32.Vec3) *Bug {
 }
 
 // GetBottomPosition returns the current position of the bottom mesh.
+// Transformations are applied, due to the relative position.
 func (b *Bug) GetBottomPosition() mgl32.Vec3 {
-	return b.meshes[0].GetPosition()
+	return mgl32.TransformCoordinate(b.meshes[0].GetPosition(), b.meshes[0].ModelTransformation())
 }
 
 // GetBodyPosition returns the current position of the body mesh.
@@ -66,11 +70,13 @@ func (b *Bug) GetBodyPosition() mgl32.Vec3 {
 }
 
 // GetEye1Position returns the current position of the eye1 mesh.
+// Transformations are applied, due to the relative position.
 func (b *Bug) GetEye1Position() mgl32.Vec3 {
-	return b.meshes[2].GetPosition()
+	return mgl32.TransformCoordinate(b.meshes[2].GetPosition(), b.meshes[2].ModelTransformation())
 }
 
 // GetEye2Position returns the current position of the eye2 mesh.
+// Transformations are applied, due to the relative position.
 func (b *Bug) GetEye2Position() mgl32.Vec3 {
-	return b.meshes[3].GetPosition()
+	return mgl32.TransformCoordinate(b.meshes[3].GetPosition(), b.meshes[3].ModelTransformation())
 }

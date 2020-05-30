@@ -48,25 +48,28 @@ func (m *Model) Export(path string) {
 	}
 }
 
-// SetSpeed function loops over each of the meshes and calls their SetSpeed function.
+// SetSpeed function loops over each of the parent meshes and calls their SetSpeed function.
 func (m *Model) SetSpeed(s float32) {
 	for i, _ := range m.meshes {
-		m.meshes[i].SetSpeed(s)
+		if m.meshes[i].IsParentMesh() {
+			m.meshes[i].SetSpeed(s)
+		}
 	}
 }
 
-// SetDirection function loops over each of the meshes and calls their SetDirection function.
+// SetDirection function loops over each of the parent meshes and calls their SetDirection function.
 func (m *Model) SetDirection(p mgl32.Vec3) {
 	for i, _ := range m.meshes {
-		m.meshes[i].SetDirection(p)
+		if m.meshes[i].IsParentMesh() {
+			m.meshes[i].SetDirection(p)
+		}
 	}
 }
 
-// RotateWithAngle function rotates the model with the given angle (has to be degree).
-// It calls the TransformOrigin function of each mesh.
-func (m *Model) RotateWithAngle(angleDeg float32, axisVector mgl32.Vec3) {
+// Rotate function rotates the model with the given angle (has to be degree).
+// It calls the Rotate function of each mesh.
+func (m *Model) Rotate(angleDeg float32, axisVector mgl32.Vec3) {
 	for i, _ := range m.meshes {
-		m.meshes[i].TransformOrigin(
-			mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector))
+		m.meshes[i].Rotate(angleDeg, axisVector)
 	}
 }

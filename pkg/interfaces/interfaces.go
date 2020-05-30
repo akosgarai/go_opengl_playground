@@ -92,8 +92,15 @@ type Mesh interface {
 	Update(float64)
 	SetSpeed(float32)
 	SetDirection(mgl32.Vec3)
-	TransformOrigin(mgl32.Mat4)
 	GetPosition() mgl32.Vec3
+	ModelTransformation() mgl32.Mat4
+	TranslationTransformation() mgl32.Mat4
+	RotationTransformation() mgl32.Mat4
+	ScaleTransformation() mgl32.Mat4
+	IsParentMesh() bool
+	SetRotationAxis(mgl32.Vec3)
+	SetRotationAngle(float32)
+	Rotate(float32, mgl32.Vec3)
 }
 type Model interface {
 	Draw(Shader)

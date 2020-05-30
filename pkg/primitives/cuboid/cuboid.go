@@ -1,8 +1,6 @@
 package cuboid
 
 import (
-	"sort"
-
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -18,19 +16,7 @@ type Cuboid struct {
 // If the edges of the cuboid are parallel with the x,y,z axises, then  the width
 // means the length in the 'x' axis, the length is the length in the 'z' axis,
 // the height is the length in the 'y' axis.
-// The longest side os scaled to one, and the same scaling is done with the other
-// sides.
-func New(width, length, height float32) *Cuboid {
-	if width == height && width == length {
-		return NewCube()
-	}
-	// sort the side lengths for scaling.
-	sideLengths := []float32{width, length, height}
-	// Slice gets a less functions as input, so that the the last (3) item will be the greatest.
-	sort.Slice(sideLengths, func(i, j int) bool { return sideLengths[i] < sideLengths[j] })
-	sideWidth := width / sideLengths[2]
-	sideLength := length / sideLengths[2]
-	sideHeight := height / sideLengths[2]
+func New(sideWidth, sideLength, sideHeight float32) *Cuboid {
 	// bottom
 	a := mgl32.Vec3{-sideWidth / 2, -sideHeight / 2, -sideLength / 2}
 	b := mgl32.Vec3{sideWidth / 2, -sideHeight / 2, -sideLength / 2}
