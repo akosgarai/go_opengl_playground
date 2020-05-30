@@ -135,8 +135,7 @@ func (m *Mesh) ScaleTransformation() mgl32.Mat4 {
 
 // TranslateTransformation returns the translation part of the model transformation.
 func (m *Mesh) TranslationTransformation() mgl32.Mat4 {
-	translate := m.position
-	return mgl32.Translate3D(translate.X(), translate.Y(), translate.Z()).Mul4(m.GetParentTranslationTransformation())
+	return mgl32.Translate3D(m.position.X(), m.position.Y(), m.position.Z()).Mul4(m.GetParentTranslationTransformation())
 }
 
 // RotationTransformation returns the rotation part of the model transformation.
