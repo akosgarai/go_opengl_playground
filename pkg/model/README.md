@@ -8,4 +8,4 @@ This predefined model represents a "composite object". This model contains 4 mat
 
 ## StreetLamp model
 
-This predefined model represents a "composite object". This model contains 2 cuboids, 'Pole' and 'Top' and a sphere 'Bulb'.
+This predefined model represents a "composite object". This model contains 2 cuboids, 'Pole' and 'Top' and a sphere 'Bulb'. It has 2 implementation. One is from plane materials, and another one that is textured. In the material version, the pole is cuboid, in the textured one, it is cylinder.
