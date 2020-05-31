@@ -20,10 +20,10 @@ type StreetLamp struct {
 // The position input describes the position of the lightsource 'Bulb'. The 'Top' is the
 // child of the 'Bulb', and the 'Pole' is the children of 'Top', so that their coordinates
 // are relative to their parents.
-func NewMaterialStreetLamp(position mgl32.Vec3) *StreetLamp {
-	width := float32(0.4)
-	height := float32(6)
-	length := float32(1.25)
+func NewMaterialStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
+	width := float32(0.4) * scale
+	height := float32(6) * scale
+	length := float32(1.25) * scale
 	bulbScale := mgl32.Vec3{0.1, 0.1, 0.1}
 	bulbMaterial := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 256.0)
 	sph := sphere.New(15)
@@ -55,10 +55,10 @@ func NewMaterialStreetLamp(position mgl32.Vec3) *StreetLamp {
 
 	return &StreetLamp{Model: *m}
 }
-func NewTexturedStreetLamp(position mgl32.Vec3) *StreetLamp {
-	width := float32(0.4)
-	height := float32(6)
-	length := float32(1.25)
+func NewTexturedStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
+	width := float32(0.4) * scale
+	height := float32(6) * scale
+	length := float32(1.25) * scale
 	bulbScale := mgl32.Vec3{0.1, 0.1, 0.1}
 	var metalTexture texture.Textures
 	metalTexture.AddTexture("pkg/model/assets/metal.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
