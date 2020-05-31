@@ -1,10 +1,11 @@
 package model
 
 import (
-	_ "github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
+	"github.com/akosgarai/opengl_playground/pkg/texture"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -63,6 +64,71 @@ func NewMaterialRoom(position mgl32.Vec3) *Room {
 	door := mesh.NewMaterialMesh(V, I, material.Bronze, glWrapper)
 	door.SetPosition(mgl32.Vec3{-0.4975, 0.7, 0.6975})
 	door.Rotate(90, mgl32.Vec3{0, 1, 0})
+	door.SetParent(floor)
+
+	m := New()
+	m.AddMesh(floor)
+	m.AddMesh(ceiling)
+	m.AddMesh(backWall)
+	m.AddMesh(rightWall)
+	m.AddMesh(leftWall)
+	m.AddMesh(frontWallMain)
+	m.AddMesh(frontWallRest)
+	m.AddMesh(door)
+	return &Room{Model: *m}
+}
+func NewTextureRoom(position mgl32.Vec3) *Room {
+	var concreteTexture texture.Textures
+	concreteTexture.AddTexture("pkg/model/assets/concrete-wall.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	concreteTexture.AddTexture("pkg/model/assets/concrete-wall.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
+	var doorTexture texture.Textures
+	doorTexture.AddTexture("pkg/model/assets/door.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	doorTexture.AddTexture("pkg/model/assets/door.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
+
+	floorCuboid := cuboid.New(1.0, 1.0, 0.005)
+	floorV, floorI := floorCuboid.MeshInput()
+
+	floor := mesh.NewTexturedMaterialMesh(floorV, floorI, concreteTexture, material.Chrome, glWrapper)
+	floor.SetPosition(position)
+
+	ceiling := mesh.NewTexturedMaterialMesh(floorV, floorI, concreteTexture, material.Chrome, glWrapper)
+	ceiling.SetPosition(mgl32.Vec3{0.0, 1.0, 0.0})
+	ceiling.SetParent(floor)
+
+	backWall := mesh.NewTexturedMaterialMesh(floorV, floorI, concreteTexture, material.Chrome, glWrapper)
+	backWall.SetPosition(mgl32.Vec3{0.0, 0.5, -0.4975})
+	backWall.Rotate(90, mgl32.Vec3{1, 0, 0})
+	backWall.SetParent(floor)
+
+	rightWall := mesh.NewTexturedMesh(floorV, floorI, concreteTexture, glWrapper)
+	rightWall.SetPosition(mgl32.Vec3{-0.4975, 0.5, 0.0})
+	rightWall.Rotate(90, mgl32.Vec3{0, 0, 1})
+	rightWall.SetParent(floor)
+
+	leftWall := mesh.NewTexturedMesh(floorV, floorI, concreteTexture, glWrapper)
+	leftWall.SetPosition(mgl32.Vec3{0.4975, 0.5, 0.0})
+	leftWall.Rotate(90, mgl32.Vec3{0, 0, 1})
+	leftWall.SetParent(floor)
+
+	// front wall parts
+
+	frontCuboid := cuboid.New(0.6, 1.0, 0.005)
+	V, I := frontCuboid.MeshInput()
+	frontWallMain := mesh.NewTexturedMesh(V, I, concreteTexture, glWrapper)
+	frontWallMain.SetPosition(mgl32.Vec3{0.2, 0.5, 0.4975})
+	frontWallMain.Rotate(90, mgl32.Vec3{1, 0, 0})
+	frontWallMain.SetParent(floor)
+	frontTopCuboid := cuboid.New(0.4, 0.4, 0.005)
+	V, I = frontTopCuboid.MeshInput()
+	frontWallRest := mesh.NewTexturedMesh(V, I, concreteTexture, glWrapper)
+	frontWallRest.SetPosition(mgl32.Vec3{-0.3, 0.2, 0.4975})
+	frontWallRest.Rotate(90, mgl32.Vec3{1, 0, 0})
+	frontWallRest.SetParent(floor)
+	doorCuboid := cuboid.New(0.4, 0.005, 0.6)
+	V, I = doorCuboid.MeshInput()
+	door := mesh.NewTexturedMesh(V, I, doorTexture, glWrapper)
+	door.SetPosition(mgl32.Vec3{-0.4975, 0.7, 0.6975})
+	door.Rotate(-90, mgl32.Vec3{0, 1, 0})
 	door.SetParent(floor)
 
 	m := New()
