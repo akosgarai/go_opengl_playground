@@ -42,6 +42,7 @@ var (
 	app                       *application.Application
 	Room                      *model.Room
 	Room2                     *model.Room
+	Room3                     *model.Room
 	lastUpdate                int64
 	ShaderProgramsWithViewPos []*shader.Shader
 	DirectionalLightSource    *light.Light
@@ -52,9 +53,9 @@ var (
 
 	TexModel                  = model.New()
 	DirectionalLightDirection = (mgl32.Vec3{0.5, 0.5, -0.7}).Normalize()
-	DirectionalLightAmbient   = mgl32.Vec3{1.0, 1.0, 1.0}
-	DirectionalLightDiffuse   = mgl32.Vec3{1.0, 1.0, 1.0}
-	DirectionalLightSpecular  = mgl32.Vec3{1.0, 1.0, 1.0}
+	DirectionalLightAmbient   = mgl32.Vec3{0.5, 0.5, 0.5}
+	DirectionalLightDiffuse   = mgl32.Vec3{0.5, 0.5, 0.5}
+	DirectionalLightSpecular  = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightAmbient         = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightDiffuse         = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightSpecular        = mgl32.Vec3{0.5, 0.5, 0.5}
@@ -224,12 +225,16 @@ func main() {
 	// Shader application for the textured meshes.
 	shaderProgramTexture := shader.NewShader("examples/08-room-light/shaders/texture.vert", "examples/08-room-light/shaders/texture.frag", glWrapper)
 	app.AddShader(shaderProgramTexture)
+	shaderProgramTextureMat := shader.NewShader("examples/08-room-light/shaders/texturemat.vert", "examples/08-room-light/shaders/texturemat.frag", glWrapper)
+	app.AddShader(shaderProgramTextureMat)
 
 	Room = model.NewMaterialRoom(mgl32.Vec3{0.0, 0.0, 0.0})
 	app.AddModelToShader(Room, shaderProgramMaterial)
 
 	Room2 = model.NewMaterialRoom(mgl32.Vec3{2.0, 0.0, 2.0})
 	app.AddModelToShader(Room2, shaderProgramMaterial)
+	Room3 = model.NewTextureRoom(mgl32.Vec3{4.0, 0.0, 2.0})
+	app.AddModelToShader(Room3, shaderProgramTextureMat)
 	// grass textures
 	var grassTexture texture.Textures
 	grassTexture.AddTexture("examples/08-room-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
@@ -242,7 +247,7 @@ func main() {
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)
-	glWrapper.ClearColor(0.0, 0.0, 0.0, 1.0)
+	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	// register keyboard button callback
