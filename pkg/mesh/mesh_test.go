@@ -3,7 +3,14 @@ package mesh
 import (
 	"testing"
 
+	"github.com/akosgarai/opengl_playground/pkg/interfaces"
+	"github.com/akosgarai/opengl_playground/pkg/testhelper"
+
 	"github.com/go-gl/mathgl/mgl32"
+)
+
+var (
+	wrapperMock testhelper.GLWrapperMock
 )
 
 func TestSetScale(t *testing.T) {
@@ -80,6 +87,38 @@ func TestModelTransformation(t *testing.T) {
 	M := m.ModelTransformation()
 	if M != mgl32.Ident4() {
 		t.Error("Invalid model matrix")
+	}
+}
+func TestSetParent(t *testing.T) {
+	var m Mesh
+	var parent interfaces.Mesh
+	m.SetParent(parent)
+	if m.parentSet != true {
+		t.Error("After setting the parent, the flag supposed to be true")
+	}
+	if m.parent != parent {
+		t.Error("The parent supposed to be the same")
+	}
+}
+func TestIsParentMesh(t *testing.T) {
+	var m Mesh
+	var parent interfaces.Mesh
+	if m.IsParentMesh() != true {
+		t.Error("Before setting the parent, it should return true")
+	}
+	m.SetParent(parent)
+	if m.IsParentMesh() != false {
+		t.Error("After setting the parent, it should return false")
+	}
+}
+func TestTransformationGettersWithParent(t *testing.T) {
+	var m Mesh
+	parent := NewPointMesh(wrapperMock)
+	parent.position = mgl32.Vec3{1.0, 0.0, 0.0}
+	m.SetParent(parent)
+	modelTr := m.ModelTransformation()
+	if modelTr == mgl32.Ident4() {
+		t.Error("Model tr shouldn't be ident, if the parent transformation is set.")
 	}
 }
 func TestAdd(t *testing.T) {
