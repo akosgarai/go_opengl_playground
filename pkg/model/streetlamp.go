@@ -28,32 +28,30 @@ type StreetLamp struct {
 // child of the 'Bulb', and the 'Pole' is the children of 'Top', so that their coordinates
 // are relative to their parents.
 func NewMaterialStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
-	width := float32(0.4) * scale
-	height := float32(6) * scale
-	length := float32(1.25) * scale
-	bulbScale := mgl32.Vec3{0.1, 0.1, 0.1}
-	bulbMaterial := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 256.0)
-	sph := sphere.New(15)
-	sphereV, sphereI := sph.MaterialMeshInput()
-	poleCuboid := cuboid.New(width, width, height)
-	poleV, poleI := poleCuboid.MeshInput()
-	topCuboid := cuboid.New(length, width, width)
-	topV, topI := topCuboid.MeshInput()
-	// bulb
-	bulb := mesh.NewMaterialMesh(sphereV, sphereI, bulbMaterial, glWrapper)
-	bulb.SetPosition(mgl32.Vec3{position.X(), position.Y() + height, position.Z()})
-	bulb.SetScale(bulbScale)
-
-	// top
-	top := mesh.NewMaterialMesh(topV, topI, material.Chrome, glWrapper)
-	top.SetPosition(mgl32.Vec3{width / 2, width / 2, 0})
-	top.SetScale(bulbScale.Mul(100))
-	top.SetParent(bulb)
+	height := defaultPoleHeight * scale
+	width := height * widthHeightRatio
+	length := height * lengthHeightRatio
+	bulbRadius := height * bulbRadiusHeightRatio
 
 	// pole
+	poleCuboid := cuboid.New(width, height, width)
+	poleV, poleI := poleCuboid.MeshInput()
 	pole := mesh.NewMaterialMesh(poleV, poleI, material.Chrome, glWrapper)
-	pole.SetPosition(mgl32.Vec3{(length - width) / 2, (-height - width) / 2, 0})
-	pole.SetParent(top)
+	pole.SetPosition(mgl32.Vec3{position.X(), position.Y() + height/2, position.Z()})
+	// top
+	topCuboid := cuboid.New(length, width, width)
+	topV, topI := topCuboid.MeshInput()
+	top := mesh.NewMaterialMesh(topV, topI, material.Chrome, glWrapper)
+	top.SetPosition(mgl32.Vec3{(length - width) / 2, 0, (height + width) / 2})
+	top.SetParent(pole)
+	// bulb
+	bulbMaterial := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, 256.0)
+	sph := sphere.New(15)
+	sphereV, sphereI := sph.TexturedMeshInput()
+	bulb := mesh.NewMaterialMesh(sphereV, sphereI, bulbMaterial, glWrapper)
+	bulb.SetPosition(mgl32.Vec3{length/2 - 4*bulbRadius, 0, -width / 2})
+	bulb.SetScale(mgl32.Vec3{1.0, 1.0, 1.0}.Mul(bulbRadius))
+	bulb.SetParent(top)
 
 	m := New()
 	m.AddMesh(bulb)
@@ -87,13 +85,12 @@ func NewTexturedStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
 	poleV, poleI := poleCylinder.TexturedMeshInput()
 	pole := mesh.NewTexturedMesh(poleV, poleI, metalTexture, glWrapper)
 	pole.SetPosition(mgl32.Vec3{position.X(), position.Y() + height/2, position.Z()})
-	pole.Rotate(90, mgl32.Vec3{1.0, 0.0, 0.0})
 
 	// top
 	topCuboid := cuboid.New(length, width, width)
 	topV, topI := topCuboid.MeshInput()
 	top := mesh.NewTexturedMesh(topV, topI, metalTexture, glWrapper)
-	top.SetPosition(mgl32.Vec3{(length - width) / 2, -height / 2, 0})
+	top.SetPosition(mgl32.Vec3{(length - width) / 2, 0, (height + width) / 2})
 	top.SetParent(pole)
 
 	// bulb
@@ -101,7 +98,7 @@ func NewTexturedStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
 	sph := sphere.New(15)
 	sphereV, sphereI := sph.TexturedMeshInput()
 	bulb := mesh.NewTexturedMaterialMesh(sphereV, sphereI, bulbTexture, bulbMaterial, glWrapper)
-	bulb.SetPosition(mgl32.Vec3{length/2 - 2*bulbRadius, width / 2, 0.0})
+	bulb.SetPosition(mgl32.Vec3{length/2 - 4*bulbRadius, 0, -width / 2})
 	bulb.SetScale(mgl32.Vec3{1.0, 1.0, 1.0}.Mul(bulbRadius))
 	bulb.SetParent(top)
 

@@ -101,6 +101,10 @@ type Mesh interface {
 	SetRotationAxis(mgl32.Vec3)
 	SetRotationAngle(float32)
 	Rotate(float32, mgl32.Vec3)
+	RotateX(float32)
+	RotateY(float32)
+	RotateZ(float32)
+	RotatePosition(float32, mgl32.Vec3)
 }
 type Model interface {
 	Draw(Shader)

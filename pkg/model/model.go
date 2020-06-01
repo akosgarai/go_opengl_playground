@@ -70,6 +70,35 @@ func (m *Model) SetDirection(p mgl32.Vec3) {
 // It calls the Rotate function of each mesh.
 func (m *Model) Rotate(angleDeg float32, axisVector mgl32.Vec3) {
 	for i, _ := range m.meshes {
-		m.meshes[i].Rotate(angleDeg, axisVector)
+		if m.meshes[i].IsParentMesh() {
+			m.meshes[i].Rotate(angleDeg, axisVector)
+		}
+	}
+}
+func (m *Model) RotateX(angleDeg float32) {
+	for i, _ := range m.meshes {
+		if m.meshes[i].IsParentMesh() {
+			m.meshes[i].RotateX(angleDeg)
+		} else {
+			m.meshes[i].RotatePosition(angleDeg, mgl32.Vec3{1.0, 0.0, 0.0})
+		}
+	}
+}
+func (m *Model) RotateY(angleDeg float32) {
+	for i, _ := range m.meshes {
+		if m.meshes[i].IsParentMesh() {
+			m.meshes[i].RotateY(angleDeg)
+		} else {
+			m.meshes[i].RotatePosition(angleDeg, mgl32.Vec3{0.0, 1.0, 0.0})
+		}
+	}
+}
+func (m *Model) RotateZ(angleDeg float32) {
+	for i, _ := range m.meshes {
+		if m.meshes[i].IsParentMesh() {
+			m.meshes[i].RotateZ(angleDeg)
+		} else {
+			m.meshes[i].RotatePosition(angleDeg, mgl32.Vec3{0.0, 0.0, 1.0})
+		}
 	}
 }
