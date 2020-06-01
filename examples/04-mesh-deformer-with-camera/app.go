@@ -81,14 +81,13 @@ func GenerateTriangles() {
 			m2.SetPosition(mgl32.Vec3{topX, topY, topZ})
 			m2.SetScale(mgl32.Vec3{length, length, length})
 			m2.SetScale(mgl32.Vec3{length, length, length})
-			m2.SetRotationAngle(mgl32.DegToRad(45))
-			m2.SetRotationAxis(mgl32.Vec3{1, -1, 0})
 			m2.SetDirection(mgl32.Vec3{0, 0, 1})
 			m2.SetSpeed(float32(1.0) / float32(1000000000.0))
 
 			Model.AddMesh(m2)
 		}
 	}
+	Model.RotateX(45)
 }
 
 // Update the z coordinates of the vectors.

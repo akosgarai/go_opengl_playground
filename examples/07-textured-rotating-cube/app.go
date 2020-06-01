@@ -32,7 +32,7 @@ const (
 	DOWN     = glfw.KeyE
 
 	moveSpeed     = 0.005
-	rotationSpeed = float32(2.0)
+	rotationSpeed = float32(0.2)
 )
 
 var (
@@ -43,7 +43,6 @@ var (
 
 	cameraDistance       = 0.1
 	cameraDirectionSpeed = float32(0.00500)
-	rotationAngle        = float32(0.0)
 	Model                = model.New()
 
 	glWrapper wrapper.Wrapper
@@ -69,7 +68,6 @@ func GenerateRotatingCubeMesh(t texture.Textures) *mesh.TexturedColoredMesh {
 	cube := cuboid.NewCube()
 	v, i := cube.TexturedColoredMeshInput(colors)
 	m := mesh.NewTexturedColoredMesh(v, i, t, colors, glWrapper)
-	m.SetRotationAxis(mgl32.Vec3{0, 1, 0})
 	return m
 }
 
@@ -78,8 +76,8 @@ func Update() {
 	delta := float64(nowNano - lastUpdate)
 	moveTime := delta / float64(time.Millisecond)
 	lastUpdate = nowNano
-	rotationAngle = rotationAngle + float32(moveTime)*rotationSpeed
-	Cube.SetRotationAngle(mgl32.DegToRad(mgl32.DegToRad(rotationAngle)))
+	rotationAngle := float32(moveTime) * rotationSpeed
+	Cube.RotateY(rotationAngle)
 
 	forward := 0.0
 	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {

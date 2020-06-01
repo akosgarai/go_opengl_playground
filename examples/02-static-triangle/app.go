@@ -47,10 +47,9 @@ func main() {
 	app.AddShader(shaderProgram)
 
 	triang := GenerateColoredMesh(color)
-	triang.SetRotationAngle(mgl32.DegToRad(90))
-	triang.SetRotationAxis(mgl32.Vec3{1, 0, 0})
 	mod := model.New()
 	mod.AddMesh(triang)
+	mod.RotateX(90)
 	app.AddModelToShader(mod, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)

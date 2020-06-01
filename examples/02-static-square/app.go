@@ -47,10 +47,9 @@ func main() {
 	app.AddShader(shaderProgram)
 
 	square := GenerateColoredMesh(color)
-	square.SetRotationAngle(mgl32.DegToRad(90))
-	square.SetRotationAxis(mgl32.Vec3{1, 0, 0})
 	mod := model.New()
 	mod.AddMesh(square)
+	mod.RotateX(90)
 	app.AddModelToShader(mod, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)

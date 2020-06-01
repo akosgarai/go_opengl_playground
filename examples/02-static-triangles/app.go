@@ -45,13 +45,12 @@ func GenerateTriangles(rows int, shaderProgram *shader.Shader) {
 
 			m := mesh.NewColorMesh(v, indicies, color, glWrapper)
 			m.SetPosition(mgl32.Vec3{topX, topY, topZ})
-			m.SetRotationAngle(mgl32.DegToRad(90))
-			m.SetRotationAxis(mgl32.Vec3{1, 0, 0})
 			m.SetScale(mgl32.Vec3{length, length, length})
 			mod.AddMesh(m)
 
 		}
 	}
+	mod.RotateX(90)
 }
 
 func main() {
