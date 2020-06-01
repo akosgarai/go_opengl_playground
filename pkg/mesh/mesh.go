@@ -151,12 +151,15 @@ func (m *Mesh) RotationTransformation() mgl32.Mat4 {
 }
 func (m *Mesh) RotateY(angleDeg float32) {
 	m.yaw = m.yaw + angleDeg
+	m.rotateDirection(angleDeg, mgl32.Vec3{0.0, 1.0, 0.0})
 }
 func (m *Mesh) RotateX(angleDeg float32) {
 	m.pitch = m.pitch + angleDeg
+	m.rotateDirection(angleDeg, mgl32.Vec3{1.0, 0.0, 0.0})
 }
 func (m *Mesh) RotateZ(angleDeg float32) {
 	m.roll = m.roll + angleDeg
+	m.rotateDirection(angleDeg, mgl32.Vec3{0.0, 0.0, 1.0})
 }
 func (m *Mesh) RotatePosition(angleDeg float32, axisVector mgl32.Vec3) {
 	trMat := mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector)
@@ -171,6 +174,10 @@ func (m *Mesh) Rotate(angleDeg float32, axisVector mgl32.Vec3) {
 		m.SetRotationAngle(m.angle + mgl32.DegToRad(angleDeg))
 		m.SetRotationAxis(axisVector)
 	}
+}
+func (m *Mesh) rotateDirection(angleDeg float32, axisVector mgl32.Vec3) {
+	trMat := mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector)
+	m.direction = mgl32.TransformNormal(m.direction, trMat)
 }
 func (m *Mesh) IsParentMesh() bool {
 	return !m.parentSet
