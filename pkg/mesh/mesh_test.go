@@ -3,7 +3,14 @@ package mesh
 import (
 	"testing"
 
+	"github.com/akosgarai/opengl_playground/pkg/interfaces"
+	"github.com/akosgarai/opengl_playground/pkg/testhelper"
+
 	"github.com/go-gl/mathgl/mgl32"
+)
+
+var (
+	wrapperMock testhelper.GLWrapperMock
 )
 
 func TestSetScale(t *testing.T) {
@@ -82,6 +89,189 @@ func TestModelTransformation(t *testing.T) {
 		t.Error("Invalid model matrix")
 	}
 }
-func TestAdd(t *testing.T) {
-	t.Skip("Unimplemented")
+func TestSetParent(t *testing.T) {
+	var m Mesh
+	var parent interfaces.Mesh
+	m.SetParent(parent)
+	if m.parentSet != true {
+		t.Error("After setting the parent, the flag supposed to be true")
+	}
+	if m.parent != parent {
+		t.Error("The parent supposed to be the same")
+	}
+}
+func TestIsParentMesh(t *testing.T) {
+	var m Mesh
+	var parent interfaces.Mesh
+	if m.IsParentMesh() != true {
+		t.Error("Before setting the parent, it should return true")
+	}
+	m.SetParent(parent)
+	if m.IsParentMesh() != false {
+		t.Error("After setting the parent, it should return false")
+	}
+}
+func TestTransformationGettersWithParent(t *testing.T) {
+	var m Mesh
+	parent := NewPointMesh(wrapperMock)
+	parent.position = mgl32.Vec3{1.0, 0.0, 0.0}
+	m.SetParent(parent)
+	modelTr := m.ModelTransformation()
+	if modelTr == mgl32.Ident4() {
+		t.Error("Model tr shouldn't be ident, if the parent transformation is set.")
+	}
+}
+func TestRotateDirection(t *testing.T) {
+	m := NewPointMesh(wrapperMock)
+	rotationAngle := float32(90.0)
+	rotationAxis := mgl32.Vec3{0.0, 1.0, 0.0}
+	m.rotateDirection(rotationAngle, rotationAxis)
+	nullVec := mgl32.Vec3{0.0, 0.0, 0.0}
+	upDir := mgl32.Vec3{0.0, 1.0, 0.0}
+	leftDir := mgl32.Vec3{-1.0, 0.0, 0.0}
+	frontDir := mgl32.Vec3{0.0, 0.0, 1.0}
+	if m.direction != nullVec {
+		t.Error("Rotating 0 vec should lead to 0 vec.")
+	}
+	m.direction = upDir
+	m.rotateDirection(rotationAngle, rotationAxis)
+	if !m.direction.ApproxEqualThreshold(upDir, 0.0001) {
+		t.Log(m.direction)
+		t.Error("Rotating the same dir as axis shouldn't change the direction.")
+	}
+	m.direction = leftDir
+	m.rotateDirection(rotationAngle, rotationAxis)
+	if !m.direction.ApproxEqualThreshold(frontDir, 0.001) {
+		t.Log(m.direction)
+		t.Log(frontDir)
+		t.Error("Rotating different dir and axis should change the direction.")
+	}
+}
+func TestRotatePosition(t *testing.T) {
+	m := NewPointMesh(wrapperMock)
+	rotationAngle := float32(90.0)
+	rotationAxis := mgl32.Vec3{0.0, 1.0, 0.0}
+	m.RotatePosition(rotationAngle, rotationAxis)
+	nullVec := mgl32.Vec3{0.0, 0.0, 0.0}
+	upPos := mgl32.Vec3{0.0, 1.0, 0.0}
+	leftPos := mgl32.Vec3{-1.0, 0.0, 0.0}
+	frontPos := mgl32.Vec3{0.0, 0.0, 1.0}
+	if m.position != nullVec {
+		t.Error("Rotating 0 vec should lead to 0 vec.")
+	}
+	m.position = upPos
+	m.RotatePosition(rotationAngle, rotationAxis)
+	if !m.position.ApproxEqualThreshold(upPos, 0.0001) {
+		t.Log(m.position)
+		t.Error("Rotating the same pos as axis shouldn't change the position.")
+	}
+	m.position = leftPos
+	m.RotatePosition(rotationAngle, rotationAxis)
+	if !m.position.ApproxEqualThreshold(frontPos, 0.001) {
+		t.Log(m.position)
+		t.Log(frontPos)
+		t.Error("Rotating different pos and axis should change the position.")
+	}
+}
+func TestRotateY(t *testing.T) {
+	m := NewPointMesh(wrapperMock)
+	rotationAngle := float32(90.0)
+	m.RotateY(rotationAngle)
+	nullVec := mgl32.Vec3{0.0, 0.0, 0.0}
+	upDir := mgl32.Vec3{0.0, 1.0, 0.0}
+	leftDir := mgl32.Vec3{-1.0, 0.0, 0.0}
+	frontDir := mgl32.Vec3{0.0, 0.0, 1.0}
+	if m.yaw != rotationAngle {
+		t.Error("RotateY should update the yaw")
+	}
+	if m.direction != nullVec {
+		t.Error("Rotating 0 vec should lead to 0 vec.")
+	}
+	m.direction = upDir
+	m.RotateY(rotationAngle)
+	if !m.direction.ApproxEqualThreshold(upDir, 0.0001) {
+		t.Log(m.direction)
+		t.Error("Rotating the same dir as axis shouldn't change the direction.")
+	}
+	if m.yaw != rotationAngle*2 {
+		t.Error("RotateY should update the yaw")
+	}
+	m.direction = leftDir
+	m.RotateY(rotationAngle)
+	if !m.direction.ApproxEqualThreshold(frontDir, 0.001) {
+		t.Log(m.direction)
+		t.Log(frontDir)
+		t.Error("Rotating different dir and axis should change the direction.")
+	}
+	if m.yaw != rotationAngle*3 {
+		t.Error("RotateY should update the yaw")
+	}
+}
+func TestRotateX(t *testing.T) {
+	m := NewPointMesh(wrapperMock)
+	rotationAngle := float32(90.0)
+	m.RotateX(rotationAngle)
+	nullVec := mgl32.Vec3{0.0, 0.0, 0.0}
+	upDir := mgl32.Vec3{0.0, 1.0, 0.0}
+	leftDir := mgl32.Vec3{-1.0, 0.0, 0.0}
+	frontDir := mgl32.Vec3{0.0, 0.0, 1.0}
+	if m.pitch != rotationAngle {
+		t.Error("RotateX should update the pitch")
+	}
+	if m.direction != nullVec {
+		t.Error("Rotating 0 vec should lead to 0 vec.")
+	}
+	m.direction = upDir
+	m.RotateX(rotationAngle)
+	if !m.direction.ApproxEqualThreshold(frontDir, 0.001) {
+		t.Log(m.direction)
+		t.Error("Rotating different dir and axis should change the direction.")
+	}
+	if m.pitch != rotationAngle*2 {
+		t.Error("RotateX should update the pitch")
+	}
+	m.direction = leftDir
+	m.RotateX(rotationAngle)
+	if !m.direction.ApproxEqualThreshold(leftDir, 0.001) {
+		t.Log(m.direction)
+		t.Log(frontDir)
+		t.Error("Rotating the same dir as axis shouldn't change the direction.")
+	}
+	if m.pitch != rotationAngle*3 {
+		t.Error("RotateX should update the pitch")
+	}
+}
+func TestRotateZ(t *testing.T) {
+	m := NewPointMesh(wrapperMock)
+	rotationAngle := float32(90.0)
+	m.RotateZ(rotationAngle)
+	nullVec := mgl32.Vec3{0.0, 0.0, 0.0}
+	upDir := mgl32.Vec3{0.0, 1.0, 0.0}
+	leftDir := mgl32.Vec3{-1.0, 0.0, 0.0}
+	frontDir := mgl32.Vec3{0.0, 0.0, 1.0}
+	if m.roll != rotationAngle {
+		t.Error("RotateZ should update the roll")
+	}
+	if m.direction != nullVec {
+		t.Error("Rotating 0 vec should lead to 0 vec.")
+	}
+	m.direction = upDir
+	m.RotateZ(rotationAngle)
+	if !m.direction.ApproxEqualThreshold(leftDir, 0.001) {
+		t.Log(m.direction)
+		t.Error("Rotating different dir and axis should change the direction.")
+	}
+	if m.roll != rotationAngle*2 {
+		t.Error("RotateZ should update the roll")
+	}
+	m.direction = frontDir
+	m.RotateZ(rotationAngle)
+	if !m.direction.ApproxEqualThreshold(frontDir, 0.001) {
+		t.Log(m.direction)
+		t.Log(frontDir)
+		t.Error("Rotating the same dir as axis shouldn't change the direction.")
+	}
+	if m.roll != rotationAngle*3 {
+		t.Error("RotateZ should update the roll")
+	}
 }
