@@ -226,6 +226,7 @@ func (a *Application) setupDirectionalLightForShader(s interfaces.Shader) {
 			s.SetUniform3f(source.DiffuseUniformName, specular.X(), specular.Y(), specular.Z())
 		}
 	}
+	s.SetUniform1i("NumberOfDirectionalLightSources", int32(len(a.directionalLightSources)))
 
 }
 
@@ -259,6 +260,7 @@ func (a *Application) setupPointLightForShader(s interfaces.Shader) {
 			s.SetUniform1f(source.QuadraticTermUniformName, source.LightSource.GetQuadraticTerm())
 		}
 	}
+	s.SetUniform1i("NumberOfPointLightSources", int32(len(a.pointLightSources)))
 }
 
 // Setup spot light related uniforms. It iterates over the spot light sources and sets up
@@ -301,6 +303,7 @@ func (a *Application) setupSpotLightForShader(s interfaces.Shader) {
 			s.SetUniform1f(source.OuterCutoffUniformName, source.LightSource.GetOuterCutoff())
 		}
 	}
+	s.SetUniform1i("NumberOfSpotLightSources", int32(len(a.spotLightSources)))
 }
 
 // AddDirectionalLightSource sets up a directional light source.

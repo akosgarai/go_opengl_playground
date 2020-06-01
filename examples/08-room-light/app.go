@@ -179,12 +179,12 @@ func main() {
 	app.SetCamera(CreateCamera())
 
 	// Shader application for the material objects
-	shaderProgramMaterial := shader.NewShader("examples/08-room-light/shaders/material.vert", "examples/08-room-light/shaders/material.frag", glWrapper)
+	shaderProgramMaterial := shader.NewMaterialShader(glWrapper)
 	app.AddShader(shaderProgramMaterial)
 	// Shader application for the textured meshes.
-	shaderProgramTexture := shader.NewShader("examples/08-room-light/shaders/texture.vert", "examples/08-room-light/shaders/texture.frag", glWrapper)
+	shaderProgramTexture := shader.NewTextureShader(glWrapper)
 	app.AddShader(shaderProgramTexture)
-	shaderProgramTextureMat := shader.NewShader("examples/08-room-light/shaders/texturemat.vert", "examples/08-room-light/shaders/texturemat.frag", glWrapper)
+	shaderProgramTextureMat := shader.NewTextureMatShader(glWrapper)
 	app.AddShader(shaderProgramTextureMat)
 
 	Room = model.NewMaterialRoom(mgl32.Vec3{0.0, 0.0, 0.0})

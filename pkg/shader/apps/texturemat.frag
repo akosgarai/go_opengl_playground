@@ -51,15 +51,18 @@ in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
 
-#define MAX_DIRECTION_LIGHTS 1
-#define MAX_POINT_LIGHTS 1
-#define MAX_SPOT_LIGHTS 1
+#define MAX_DIRECTION_LIGHTS 16
+#define MAX_POINT_LIGHTS 16
+#define MAX_SPOT_LIGHTS 16
 
 uniform DirectionalLight dirLight[MAX_DIRECTION_LIGHTS];
 uniform PointLight pointLight[MAX_POINT_LIGHTS];
 uniform SpotLight spotLight[MAX_SPOT_LIGHTS];
 uniform Material material;
 uniform Tex tex;
+uniform int NumberOfDirectionalLightSources;
+uniform int NumberOfPointLightSources;
+uniform int NumberOfSpotLightSources;
 
 uniform vec3 viewPosition;
 
@@ -75,15 +78,18 @@ void main()
 
     vec3 result = vec3(0);
     // calculate Directional lighting
-    for (int i = 0; i < MAX_DIRECTION_LIGHTS; i++) {
+    int nrDirLight = min(NumberOfDirectionalLightSources, MAX_DIRECTION_LIGHTS);
+    for (int i = 0; i < nrDirLight; i++) {
         result += CalculateDirectionalLight(dirLight[i], norm, viewDirection);
     }
     // calculate Point lighting
-    for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
+    int nrPointLight = min(NumberOfPointLightSources, MAX_POINT_LIGHTS);
+    for (int i = 0; i < nrPointLight; i++) {
         result += CalculatePointLight(pointLight[i], norm, FragPos, viewDirection);
     }
     // calculate spot lighting
-    for (int i = 0; i < MAX_SPOT_LIGHTS; i++) {
+    int nrSpotLight = min(NumberOfSpotLightSources, MAX_SPOT_LIGHTS);
+    for (int i = 0; i < nrSpotLight; i++) {
         result += CalculateSpotLight(spotLight[i], norm, FragPos, viewDirection);
     }
     FragColor = vec4(result, 1.0);
