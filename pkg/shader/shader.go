@@ -7,6 +7,10 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+const (
+	defaultAppPath = "pkg/shader/apps/"
+)
+
 type Shader struct {
 	id      uint32
 	wrapper interfaces.GLWrapper
@@ -41,6 +45,24 @@ func NewShader(vertexShaderPath, fragmentShaderPath string, wrapper interfaces.G
 		id:      program,
 		wrapper: wrapper,
 	}
+}
+
+// NewTextureShader returns a Shader, that uses the default texture vertex & fragment shaders.
+// It works the same as NewShader, but the internal shader files are used.
+func NewTextureShader(wrapper interfaces.GLWrapper) *Shader {
+	return NewShader(defaultAppPath+"texture.vert", defaultAppPath+"texture.frag", wrapper)
+}
+
+// NewMaterialShader returns a Shader, that uses the default texture vertex & fragment shaders.
+// It works the same as NewShader, but the internal shader files are used.
+func NewMaterialShader(wrapper interfaces.GLWrapper) *Shader {
+	return NewShader(defaultAppPath+"material.vert", defaultAppPath+"material.frag", wrapper)
+}
+
+// NewTextureMatShader returns a Shader, that uses the default texture vertex & fragment shaders.
+// It works the same as NewShader, but the internal shader files are used.
+func NewTextureMatShader(wrapper interfaces.GLWrapper) *Shader {
+	return NewShader(defaultAppPath+"texturemat.vert", defaultAppPath+"texturemat.frag", wrapper)
 }
 
 // Use is a wrapper for gl.UseProgram
