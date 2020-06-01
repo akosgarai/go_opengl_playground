@@ -66,15 +66,8 @@ func (m *Model) SetDirection(p mgl32.Vec3) {
 	}
 }
 
-// Rotate function rotates the model with the given angle (has to be degree).
-// It calls the Rotate function of each mesh.
-func (m *Model) Rotate(angleDeg float32, axisVector mgl32.Vec3) {
-	for i, _ := range m.meshes {
-		if m.meshes[i].IsParentMesh() {
-			m.meshes[i].Rotate(angleDeg, axisVector)
-		}
-	}
-}
+// RotateX function rotates the model with the given angle (has to be degree).
+// It calls the RotateX function of each mesh.
 func (m *Model) RotateX(angleDeg float32) {
 	for i, _ := range m.meshes {
 		if m.meshes[i].IsParentMesh() {
@@ -84,6 +77,9 @@ func (m *Model) RotateX(angleDeg float32) {
 		}
 	}
 }
+
+// RotateY function rotates the model with the given angle (has to be degree).
+// It calls the RotateY function of each mesh.
 func (m *Model) RotateY(angleDeg float32) {
 	for i, _ := range m.meshes {
 		if m.meshes[i].IsParentMesh() {
@@ -93,6 +89,9 @@ func (m *Model) RotateY(angleDeg float32) {
 		}
 	}
 }
+
+// RotateZ function rotates the model with the given angle (has to be degree).
+// It calls the RotateZ function of each mesh.
 func (m *Model) RotateZ(angleDeg float32) {
 	for i, _ := range m.meshes {
 		if m.meshes[i].IsParentMesh() {

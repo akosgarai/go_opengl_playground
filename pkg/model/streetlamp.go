@@ -24,9 +24,9 @@ type StreetLamp struct {
 }
 
 // NewStreetLamp returns a street lamp like model. The StreetLamp is a mesh system.
-// The position input describes the position of the lightsource 'Bulb'. The 'Top' is the
-// child of the 'Bulb', and the 'Pole' is the children of 'Top', so that their coordinates
-// are relative to their parents.
+// The 'position' input is the bottom center point of the 'pole' of the lamp. The top of the pole
+// points to the -Y axis. The 'top' is the head of the lamp. Its position is relative to the pole.
+// The 'bulb' is positioned relative to the 'top'.
 func NewMaterialStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
 	height := defaultPoleHeight * scale
 	width := height * widthHeightRatio
