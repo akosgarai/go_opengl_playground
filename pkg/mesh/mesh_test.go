@@ -14,31 +14,6 @@ func TestSetScale(t *testing.T) {
 		t.Error("Scale mismatch")
 	}
 }
-func TestSetRotationAngle(t *testing.T) {
-	var m Mesh
-	m.SetRotationAngle(1)
-	if m.angle != 1 {
-		t.Error("Angle mismatch")
-	}
-}
-func TestGetRotationAngle(t *testing.T) {
-	var m Mesh
-	if m.angle != 0 {
-		t.Error("Angle mismatch")
-	}
-	m.SetRotationAngle(1)
-	if m.GetRotationAngle() != 1 {
-		t.Error("Angle mismatch")
-	}
-}
-func TestSetRotationAxis(t *testing.T) {
-	var m Mesh
-	axis := mgl32.Vec3{0, 1, 0}
-	m.SetRotationAxis(axis)
-	if m.axis != axis {
-		t.Error("Axis mismatch")
-	}
-}
 func TestSetPosition(t *testing.T) {
 	var m Mesh
 	pos := mgl32.Vec3{0, 1, 2}
@@ -100,9 +75,6 @@ func TestModelTransformation(t *testing.T) {
 	var m Mesh
 	pos := mgl32.Vec3{0, 0, 0}
 	m.SetPosition(pos)
-	axis := mgl32.Vec3{0, 0, 0}
-	m.SetRotationAxis(axis)
-	m.SetRotationAngle(0)
 	scale := mgl32.Vec3{1, 1, 1}
 	m.SetScale(scale)
 	M := m.ModelTransformation()

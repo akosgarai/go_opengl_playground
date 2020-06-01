@@ -98,8 +98,6 @@ type Mesh interface {
 	RotationTransformation() mgl32.Mat4
 	ScaleTransformation() mgl32.Mat4
 	IsParentMesh() bool
-	SetRotationAxis(mgl32.Vec3)
-	SetRotationAngle(float32)
 	RotateX(float32)
 	RotateY(float32)
 	RotateZ(float32)

@@ -22,11 +22,7 @@ type Mesh struct {
 	// movement paramteres
 	direction mgl32.Vec3
 	velocity  float32
-	// rotation parameters
-	// angle has to be in radian
-	angle float32
-	axis  mgl32.Vec3
-	// rotation v2 - YPR - these values are not in radian
+	// rotation parameters - YPR - these values are not in radian
 	yaw   float32 // rotation on Y axis
 	pitch float32 // rotation on X axis
 	roll  float32 // rotation on Z axis
@@ -43,23 +39,6 @@ type Mesh struct {
 // SetScale updates the scale of the mesh.
 func (m *Mesh) SetScale(s mgl32.Vec3) {
 	m.scale = s
-}
-
-// SetRotationAngle updates the rotation angle of the mesh. The input value
-// has to be radian.
-func (m *Mesh) SetRotationAngle(a float32) {
-	m.angle = a
-}
-
-// GetRotationAngle returns the rotation angle of the mesh. The output value
-// is radian.
-func (m *Mesh) GetRotationAngle() float32 {
-	return m.angle
-}
-
-// SetRotationAxis updates the rotation axis of the mesh.
-func (m *Mesh) SetRotationAxis(a mgl32.Vec3) {
-	m.axis = a
 }
 
 // SetPosition updates the position of the mesh.
@@ -165,16 +144,6 @@ func (m *Mesh) RotatePosition(angleDeg float32, axisVector mgl32.Vec3) {
 	trMat := mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector)
 	m.position = mgl32.TransformCoordinate(m.position, trMat)
 }
-func (m *Mesh) Rotate(angleDeg float32, axisVector mgl32.Vec3) {
-	trMat := mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector)
-	if m.parentSet {
-		m.position = mgl32.TransformNormal(m.position, trMat)
-	} else {
-		m.direction = mgl32.TransformNormal(m.direction, trMat)
-		m.SetRotationAngle(m.angle + mgl32.DegToRad(angleDeg))
-		m.SetRotationAxis(axisVector)
-	}
-}
 func (m *Mesh) rotateDirection(angleDeg float32, axisVector mgl32.Vec3) {
 	trMat := mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector)
 	m.direction = mgl32.TransformNormal(m.direction, trMat)
@@ -244,8 +213,6 @@ func NewTexturedMesh(v []vertex.Vertex, i []uint32, t texture.Textures, wrapper 
 			position:  mgl32.Vec3{0, 0, 0},
 			direction: mgl32.Vec3{0, 0, 0},
 			velocity:  0,
-			angle:     0,
-			axis:      mgl32.Vec3{0, 0, 0},
 			yaw:       0,
 			pitch:     0,
 			roll:      0,
@@ -277,8 +244,6 @@ func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat *material.Material, wrap
 			position:  mgl32.Vec3{0, 0, 0},
 			direction: mgl32.Vec3{0, 0, 0},
 			velocity:  0,
-			angle:     0,
-			axis:      mgl32.Vec3{0, 0, 0},
 			yaw:       0,
 			pitch:     0,
 			roll:      0,
@@ -350,8 +315,6 @@ func NewPointMesh(wrapper interfaces.GLWrapper) *PointMesh {
 			position:  mgl32.Vec3{0, 0, 0},
 			direction: mgl32.Vec3{0, 0, 0},
 			velocity:  0,
-			angle:     0,
-			axis:      mgl32.Vec3{0, 0, 0},
 			yaw:       0,
 			pitch:     0,
 			roll:      0,
@@ -420,8 +383,6 @@ func NewColorMesh(v []vertex.Vertex, i []uint32, color []mgl32.Vec3, wrapper int
 			position:  mgl32.Vec3{0, 0, 0},
 			direction: mgl32.Vec3{0, 0, 0},
 			velocity:  0,
-			angle:     0,
-			axis:      mgl32.Vec3{0, 0, 0},
 			yaw:       0,
 			pitch:     0,
 			roll:      0,
@@ -489,8 +450,6 @@ func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures, c
 			position:  mgl32.Vec3{0, 0, 0},
 			direction: mgl32.Vec3{0, 0, 0},
 			velocity:  0,
-			angle:     0,
-			axis:      mgl32.Vec3{0, 0, 0},
 			yaw:       0,
 			pitch:     0,
 			roll:      0,
@@ -566,8 +525,6 @@ func NewTexturedMaterialMesh(v []vertex.Vertex, i []uint32, t texture.Textures, 
 			position:  mgl32.Vec3{0, 0, 0},
 			direction: mgl32.Vec3{0, 0, 0},
 			velocity:  0,
-			angle:     0,
-			axis:      mgl32.Vec3{0, 0, 0},
 			yaw:       0,
 			pitch:     0,
 			roll:      0,
