@@ -190,18 +190,22 @@ func main() {
 	Room = model.NewMaterialRoom(mgl32.Vec3{0.0, 0.0, 0.0})
 	app.AddModelToShader(Room, shaderProgramMaterial)
 
-	Room2 = model.NewMaterialRoom(mgl32.Vec3{2.0, 0.0, 2.0})
+	Room2 = model.NewMaterialRoom(mgl32.Vec3{2.0, 0.0, 0.0})
 	app.AddModelToShader(Room2, shaderProgramMaterial)
-	Room3 = model.NewTextureRoom(mgl32.Vec3{4.0, 0.0, 2.0})
+	Room3 = model.NewTextureRoom(mgl32.Vec3{4.0, 0.0, 0.0})
 	app.AddModelToShader(Room3, shaderProgramTextureMat)
 	// grass textures
 	var grassTexture texture.Textures
 	grassTexture.AddTexture("examples/08-room-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
 	grassTexture.AddTexture("examples/08-room-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
 
-	//streetLamp := model.NewMaterialStreetLamp(mgl32.Vec3{0.0, 0.0, 3.0}, 1.3)
-	streetLampDark := model.NewTexturedStreetLamp(mgl32.Vec3{4.0, 0.0, 3.0}, 1.3)
-	streetLampDark.Rotate(90, mgl32.Vec3{1.0, 0.0, 0.0})
+	streetLamp := model.NewMaterialStreetLamp(mgl32.Vec3{1.0, 0.0, 0.5}, 1.3)
+	streetLamp.RotateX(90)
+	streetLamp.RotateY(-90)
+	app.AddModelToShader(streetLamp, shaderProgramMaterial)
+	streetLampDark := model.NewTexturedStreetLamp(mgl32.Vec3{3.0, 0.0, 0.5}, 1.3)
+	streetLampDark.RotateX(90)
+	streetLampDark.RotateY(-90)
 	app.AddModelToShader(streetLampDark, shaderProgramTextureMat)
 
 	grassMesh := CreateGrassMesh(grassTexture)
@@ -223,7 +227,7 @@ func main() {
 		PointLightSpecular},
 		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
 	SpotLightSource_1 = light.NewSpotLight([5]mgl32.Vec3{
-		streetLampDark.GetBulbPosition(),
+		streetLamp.GetBulbPosition(),
 		SpotLightDirection_1,
 		SpotLightAmbient,
 		SpotLightDiffuse,

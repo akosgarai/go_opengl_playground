@@ -100,15 +100,15 @@ func CreateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 
 // It generates the lamp. Now it uses the StreetLamp model for creating it.
 func StreetLamp(position mgl32.Vec3) *model.StreetLamp {
-	StreetLamp := model.NewMaterialStreetLamp(position, 1)
-	StreetLamp.Rotate(180, mgl32.Vec3{1, 0, 0})
-	StreetLamp.Rotate(90, mgl32.Vec3{0, 1, 0})
+	StreetLamp := model.NewMaterialStreetLamp(position, 6)
+	StreetLamp.RotateX(90)
+	StreetLamp.RotateY(-90)
 	return StreetLamp
 }
 func TexturedStreetLamp(position mgl32.Vec3) *model.StreetLamp {
-	StreetLamp := model.NewTexturedStreetLamp(position, 1)
-	StreetLamp.Rotate(180, mgl32.Vec3{1, 0, 0})
-	StreetLamp.Rotate(90, mgl32.Vec3{0, 1, 0})
+	StreetLamp := model.NewTexturedStreetLamp(position, 6)
+	StreetLamp.RotateX(90)
+	StreetLamp.RotateY(-90)
 	return StreetLamp
 }
 
@@ -133,7 +133,7 @@ func RotateBugOne(now int64) {
 	if moveTime > BugOneForwardMove {
 		BugOneLastRotate = now
 		// rotate 45 deg
-		Bug1.Rotate(-45, mgl32.Vec3{0, 1, 0}.Normalize())
+		Bug1.RotateY(-45)
 	}
 }
 func Update() {
@@ -299,9 +299,9 @@ func main() {
 	shaderProgramTextureMat := shader.NewShader("examples/08-multiple-light/shaders/texturemat.vert", "examples/08-multiple-light/shaders/texturemat.frag", glWrapper)
 	app.AddShader(shaderProgramTextureMat)
 
-	lamp1 := TexturedStreetLamp(mgl32.Vec3{0.4, -12, -1.3})
+	lamp1 := TexturedStreetLamp(mgl32.Vec3{0.4, -6.0, -1.3})
 	app.AddModelToShader(lamp1, shaderProgramTextureMat)
-	lamp2 := StreetLamp(mgl32.Vec3{10.4, -12, -1.3})
+	lamp2 := StreetLamp(mgl32.Vec3{10.4, -6.0, -1.3})
 	app.AddModelToShader(lamp2, shaderProgramMaterial)
 
 	Bug1 = model.NewBug(mgl32.Vec3{9, -0.5, -1.0}, mgl32.Vec3{0.2, 0.2, 0.2})
