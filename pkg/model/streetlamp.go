@@ -25,7 +25,7 @@ type StreetLamp struct {
 
 // NewStreetLamp returns a street lamp like model. The StreetLamp is a mesh system.
 // The 'position' input is the bottom center point of the 'pole' of the lamp. The top of the pole
-// points to the -Y axis. The 'top' is the head of the lamp. Its position is relative to the pole.
+// points to the +Z axis. The 'top' is the head of the lamp. Its position is relative to the pole.
 // The 'bulb' is positioned relative to the 'top'.
 func NewMaterialStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
 	height := defaultPoleHeight * scale
@@ -63,7 +63,7 @@ func NewMaterialStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
 
 // NewTexturedStreetLamp returns a StreetLamp model that uses textured and textured material meshes.
 // The 'position' input is the bottom center point of the 'pole' of the lamp. The top of the pole
-// points to the -Y axis. The 'top' is the head of the lamp. Its position is relative to the pole.
+// points to the +Z axis. The 'top' is the head of the lamp. Its position is relative to the pole.
 // The 'bulb' is positioned relative to the 'top'.
 func NewTexturedStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
 	// Setup the variables based on the given scale.
