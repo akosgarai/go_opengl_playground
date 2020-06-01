@@ -51,8 +51,7 @@ func main() {
 	var tex texture.Textures
 	tex.AddTexture("examples/07-textured-rectangle/assets/image-texture.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne", glWrapper)
 	squareMesh := GenerateSquareMesh(tex)
-	squareMesh.SetRotationAngle(mgl32.DegToRad(90))
-	squareMesh.SetRotationAxis(mgl32.Vec3{1, 0, 0})
+	squareMesh.RotateX(90)
 	Model.AddMesh(squareMesh)
 	app.AddModelToShader(Model, shaderProgram)
 

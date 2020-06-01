@@ -108,20 +108,17 @@ func main() {
 	app.AddShader(shaderProgram)
 
 	TriangMesh = GenerateTriangleMesh(triangleColors)
-	TriangMesh.SetRotationAngle(mgl32.DegToRad(90))
-	TriangMesh.SetRotationAxis(mgl32.Vec3{1, 0, 0})
 	TriangMesh.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
 	TriangMesh.SetPosition(mgl32.Vec3{-0.4, 0, 0.3})
 	TriangMesh.SetSpeed(speed)
 	mod.AddMesh(TriangMesh)
 
 	SquareMesh = GenerateSquareMesh(squareColors)
-	SquareMesh.SetRotationAngle(mgl32.DegToRad(90))
-	SquareMesh.SetRotationAxis(mgl32.Vec3{1, 0, 0})
 	SquareMesh.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
 	SquareMesh.SetPosition(mgl32.Vec3{0.4, 0, -0.3})
 	SquareMesh.SetSpeed(speed)
 	mod.AddMesh(SquareMesh)
+	mod.RotateX(90)
 	app.AddModelToShader(mod, shaderProgram)
 
 	// register keyboard button callback

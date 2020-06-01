@@ -22,10 +22,10 @@ type Mesh struct {
 	// movement paramteres
 	direction mgl32.Vec3
 	velocity  float32
-	// rotation parameters
-	// angle has to be in radian
-	angle float32
-	axis  mgl32.Vec3
+	// rotation parameters - YPR - these values are not in radian
+	yaw   float32 // rotation on Y axis
+	pitch float32 // rotation on X axis
+	roll  float32 // rotation on Z axis
 	// for scaling - if a want to make other rectangles than unit ones.
 	// This vector contains the scale factor for each axis.
 	scale mgl32.Vec3
@@ -39,23 +39,6 @@ type Mesh struct {
 // SetScale updates the scale of the mesh.
 func (m *Mesh) SetScale(s mgl32.Vec3) {
 	m.scale = s
-}
-
-// SetRotationAngle updates the rotation angle of the mesh. The input value
-// has to be radian.
-func (m *Mesh) SetRotationAngle(a float32) {
-	m.angle = a
-}
-
-// GetRotationAngle returns the rotation angle of the mesh. The output value
-// is radian.
-func (m *Mesh) GetRotationAngle() float32 {
-	return m.angle
-}
-
-// SetRotationAxis updates the rotation axis of the mesh.
-func (m *Mesh) SetRotationAxis(a mgl32.Vec3) {
-	m.axis = a
 }
 
 // SetPosition updates the position of the mesh.
@@ -82,22 +65,34 @@ func (m *Mesh) GetPosition() mgl32.Vec3 {
 func (m *Mesh) GetDirection() mgl32.Vec3 {
 	return m.direction
 }
+
+// SetParent sets the given mesh to the parent. It also sets the
+// parentSet variable true, to make this state trackable.
 func (m *Mesh) SetParent(msh interfaces.Mesh) {
 	m.parentSet = true
 	m.parent = msh
 }
+
+// GetParentTranslationTransformation returns the translation transformation
+// of the parent mesh. If parent is not set, then ident. matrix is returned.
 func (m *Mesh) GetParentTranslationTransformation() mgl32.Mat4 {
 	if m.parentSet {
 		return m.parent.TranslationTransformation()
 	}
 	return mgl32.Ident4()
 }
+
+// GetParentRotationTransformation returns the rotation transformation
+// of the parent mesh. If parent is not set, then ident. matrix is returned.
 func (m *Mesh) GetParentRotationTransformation() mgl32.Mat4 {
 	if m.parentSet {
 		return m.parent.RotationTransformation()
 	}
 	return mgl32.Ident4()
 }
+
+// GetParentScaleTransformation returns the scale transformation
+// of the parent mesh. If parent is not set, then ident. matrix is returned.
 func (m *Mesh) GetParentScaleTransformation() mgl32.Mat4 {
 	if m.parentSet {
 		return m.parent.ScaleTransformation()
@@ -141,19 +136,41 @@ func (m *Mesh) TranslationTransformation() mgl32.Mat4 {
 // RotationTransformation returns the rotation part of the model transformation.
 // It is used in the export module, where we have to handle the normal vectors also.
 func (m *Mesh) RotationTransformation() mgl32.Mat4 {
-	return mgl32.HomogRotate3D(m.angle, m.axis).Mul4(m.GetParentRotationTransformation())
+	return mgl32.HomogRotate3DY(mgl32.DegToRad(m.yaw)).Mul4(
+		mgl32.HomogRotate3DX(mgl32.DegToRad(m.pitch))).Mul4(
+		mgl32.HomogRotate3DZ(mgl32.DegToRad(m.roll))).Mul4(m.GetParentRotationTransformation())
 }
 
-func (m *Mesh) Rotate(angleDeg float32, axisVector mgl32.Vec3) {
-	trMat := mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector)
-	if m.parentSet {
-		m.position = mgl32.TransformNormal(m.position, trMat)
-	} else {
-		m.direction = mgl32.TransformNormal(m.direction, trMat)
-		m.SetRotationAngle(m.angle + mgl32.DegToRad(angleDeg))
-		m.SetRotationAxis(axisVector)
-	}
+// RotateY adds the given input angle to the yaw. It also updates the direction vector.
+func (m *Mesh) RotateY(angleDeg float32) {
+	m.yaw = m.yaw + angleDeg
+	m.rotateDirection(angleDeg, mgl32.Vec3{0.0, 1.0, 0.0})
 }
+
+// RotateX adds the given input angle to the pitch. It also updates the direction vector.
+func (m *Mesh) RotateX(angleDeg float32) {
+	m.pitch = m.pitch + angleDeg
+	m.rotateDirection(angleDeg, mgl32.Vec3{1.0, 0.0, 0.0})
+}
+
+// RotateZ adds the given input angle to the roll. It also updates the direction vector.
+func (m *Mesh) RotateZ(angleDeg float32) {
+	m.roll = m.roll + angleDeg
+	m.rotateDirection(angleDeg, mgl32.Vec3{0.0, 0.0, 1.0})
+}
+
+// RotatePosition rotates the position. The transformation matrix is constructed
+// as rotation matrix based on the input angle and axis.
+func (m *Mesh) RotatePosition(angleDeg float32, axisVector mgl32.Vec3) {
+	trMat := mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector)
+	m.position = mgl32.TransformCoordinate(m.position, trMat)
+}
+func (m *Mesh) rotateDirection(angleDeg float32, axisVector mgl32.Vec3) {
+	trMat := mgl32.HomogRotate3D(mgl32.DegToRad(angleDeg), axisVector)
+	m.direction = mgl32.TransformNormal(m.direction, trMat)
+}
+
+// IsParentMesh returns true if parent mesh is not set to this mesh.
 func (m *Mesh) IsParentMesh() bool {
 	return !m.parentSet
 }
@@ -219,8 +236,9 @@ func NewTexturedMesh(v []vertex.Vertex, i []uint32, t texture.Textures, wrapper 
 			position:  mgl32.Vec3{0, 0, 0},
 			direction: mgl32.Vec3{0, 0, 0},
 			velocity:  0,
-			angle:     0,
-			axis:      mgl32.Vec3{0, 0, 0},
+			yaw:       0,
+			pitch:     0,
+			roll:      0,
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
@@ -249,8 +267,9 @@ func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat *material.Material, wrap
 			position:  mgl32.Vec3{0, 0, 0},
 			direction: mgl32.Vec3{0, 0, 0},
 			velocity:  0,
-			angle:     0,
-			axis:      mgl32.Vec3{0, 0, 0},
+			yaw:       0,
+			pitch:     0,
+			roll:      0,
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
@@ -319,8 +338,9 @@ func NewPointMesh(wrapper interfaces.GLWrapper) *PointMesh {
 			position:  mgl32.Vec3{0, 0, 0},
 			direction: mgl32.Vec3{0, 0, 0},
 			velocity:  0,
-			angle:     0,
-			axis:      mgl32.Vec3{0, 0, 0},
+			yaw:       0,
+			pitch:     0,
+			roll:      0,
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
@@ -386,8 +406,9 @@ func NewColorMesh(v []vertex.Vertex, i []uint32, color []mgl32.Vec3, wrapper int
 			position:  mgl32.Vec3{0, 0, 0},
 			direction: mgl32.Vec3{0, 0, 0},
 			velocity:  0,
-			angle:     0,
-			axis:      mgl32.Vec3{0, 0, 0},
+			yaw:       0,
+			pitch:     0,
+			roll:      0,
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
@@ -452,8 +473,9 @@ func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures, c
 			position:  mgl32.Vec3{0, 0, 0},
 			direction: mgl32.Vec3{0, 0, 0},
 			velocity:  0,
-			angle:     0,
-			axis:      mgl32.Vec3{0, 0, 0},
+			yaw:       0,
+			pitch:     0,
+			roll:      0,
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
@@ -526,8 +548,9 @@ func NewTexturedMaterialMesh(v []vertex.Vertex, i []uint32, t texture.Textures, 
 			position:  mgl32.Vec3{0, 0, 0},
 			direction: mgl32.Vec3{0, 0, 0},
 			velocity:  0,
-			angle:     0,
-			axis:      mgl32.Vec3{0, 0, 0},
+			yaw:       0,
+			pitch:     0,
+			roll:      0,
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,

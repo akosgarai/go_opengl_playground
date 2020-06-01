@@ -98,8 +98,7 @@ func CreateCamera() *camera.Camera {
 	return camera
 }
 func updateSun(moveTime float64) {
-	rotationAngle = rotationAngle + float32(moveTime)*SunRoundSpeed
-	Sun.SetRotationAngle(mgl32.DegToRad(rotationAngle))
+	Sun.RotateY(float32(moveTime) * SunRoundSpeed)
 }
 func updatePlanets(moveTime float64) {
 	// Calculate the  rotation matrix. Get the current one, rotate it with a calculated angle around the Y axis. (HomogRotate3D(angle float32, axis Vec3) Mat4)
@@ -224,7 +223,6 @@ func main() {
 	sunTexture.AddTexture("examples/07-textured-spheres/assets/sun.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
 	sunTexture.AddTexture("examples/07-textured-spheres/assets/sun.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
 	Sun = TexturedSphere(sunTexture, mgl32.Vec3{0.0, 0.0, 0.0}, 1, shaderProgramTexture)
-	Sun.SetRotationAxis(mgl32.Vec3{0.0, -1.0, 0.0})
 	TexModel.AddMesh(Sun)
 	// sun texture
 	var earthTexture texture.Textures

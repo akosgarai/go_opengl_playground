@@ -66,8 +66,7 @@ func LeftFullWall() {
 	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{90, 25, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
-	m.SetRotationAngle(mgl32.DegToRad(90))
-	m.SetRotationAxis(mgl32.Vec3{0, 0, 1})
+	m.RotateZ(90)
 
 	Model.AddMesh(m)
 }
@@ -80,8 +79,7 @@ func FrontPathWall() {
 	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{75, 25, 80})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
-	m.SetRotationAngle(mgl32.DegToRad(90))
-	m.SetRotationAxis(mgl32.Vec3{1, 0, 0})
+	m.RotateX(90)
 	Model.AddMesh(m)
 }
 
@@ -128,8 +126,7 @@ func RoomFront() {
 	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{35, 25, 80})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
-	m.SetRotationAngle(mgl32.DegToRad(90))
-	m.SetRotationAxis(mgl32.Vec3{1, 0, 0})
+	m.RotateX(90)
 	Model.AddMesh(m)
 }
 
@@ -141,8 +138,7 @@ func RoomBack() {
 	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{35, 25, 30})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
-	m.SetRotationAngle(mgl32.DegToRad(90))
-	m.SetRotationAxis(mgl32.Vec3{1, 0, 0})
+	m.RotateX(90)
 	Model.AddMesh(m)
 }
 
@@ -154,8 +150,7 @@ func RoomLeft() {
 	m := mesh.NewColorMesh(v, i, col, glWrapper)
 	m.SetPosition(mgl32.Vec3{10, 25, 55})
 	m.SetScale(mgl32.Vec3{50, 50, 50})
-	m.SetRotationAngle(mgl32.DegToRad(90))
-	m.SetRotationAxis(mgl32.Vec3{0, 0, 1})
+	m.RotateZ(90)
 	Model.AddMesh(m)
 }
 

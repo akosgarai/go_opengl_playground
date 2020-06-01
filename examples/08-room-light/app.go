@@ -23,7 +23,7 @@ import (
 const (
 	WindowWidth  = 800
 	WindowHeight = 800
-	WindowTitle  = "Example - multiple light source"
+	WindowTitle  = "Example - rooms with light sources"
 
 	FORWARD  = glfw.KeyW
 	BACKWARD = glfw.KeyS
@@ -178,6 +178,41 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 
+	// Shader application for the material objects
+	shaderProgramMaterial := shader.NewShader("examples/08-room-light/shaders/material.vert", "examples/08-room-light/shaders/material.frag", glWrapper)
+	app.AddShader(shaderProgramMaterial)
+	// Shader application for the textured meshes.
+	shaderProgramTexture := shader.NewShader("examples/08-room-light/shaders/texture.vert", "examples/08-room-light/shaders/texture.frag", glWrapper)
+	app.AddShader(shaderProgramTexture)
+	shaderProgramTextureMat := shader.NewShader("examples/08-room-light/shaders/texturemat.vert", "examples/08-room-light/shaders/texturemat.frag", glWrapper)
+	app.AddShader(shaderProgramTextureMat)
+
+	Room = model.NewMaterialRoom(mgl32.Vec3{0.0, 0.0, 0.0})
+	app.AddModelToShader(Room, shaderProgramMaterial)
+
+	Room2 = model.NewMaterialRoom(mgl32.Vec3{2.0, 0.0, 0.0})
+	app.AddModelToShader(Room2, shaderProgramMaterial)
+	Room3 = model.NewTextureRoom(mgl32.Vec3{4.0, 0.0, 0.0})
+	app.AddModelToShader(Room3, shaderProgramTextureMat)
+	// grass textures
+	var grassTexture texture.Textures
+	grassTexture.AddTexture("examples/08-room-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
+	grassTexture.AddTexture("examples/08-room-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
+
+	streetLamp := model.NewMaterialStreetLamp(mgl32.Vec3{1.0, 0.0, 0.5}, 1.3)
+	streetLamp.RotateX(90)
+	streetLamp.RotateY(-90)
+	app.AddModelToShader(streetLamp, shaderProgramMaterial)
+	streetLampDark := model.NewTexturedStreetLamp(mgl32.Vec3{3.0, 0.0, 0.5}, 1.3)
+	streetLampDark.RotateX(90)
+	streetLampDark.RotateY(-90)
+	app.AddModelToShader(streetLampDark, shaderProgramTextureMat)
+
+	grassMesh := CreateGrassMesh(grassTexture)
+	grassMesh.SetPosition(mgl32.Vec3{0.0, 1.003, 0.0})
+	TexModel.AddMesh(grassMesh)
+	app.AddModelToShader(TexModel, shaderProgramTexture)
+
 	// directional light is coming from the up direction but not from too up.
 	DirectionalLightSource = light.NewDirectionalLight([4]mgl32.Vec3{
 		DirectionalLightDirection,
@@ -192,7 +227,7 @@ func main() {
 		PointLightSpecular},
 		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
 	SpotLightSource_1 = light.NewSpotLight([5]mgl32.Vec3{
-		SpotLightPosition_1,
+		streetLamp.GetBulbPosition(),
 		SpotLightDirection_1,
 		SpotLightAmbient,
 		SpotLightDiffuse,
@@ -218,32 +253,6 @@ func main() {
 	app.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
 	app.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
 	app.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
-
-	// Shader application for the material objects
-	shaderProgramMaterial := shader.NewShader("examples/08-room-light/shaders/material.vert", "examples/08-room-light/shaders/material.frag", glWrapper)
-	app.AddShader(shaderProgramMaterial)
-	// Shader application for the textured meshes.
-	shaderProgramTexture := shader.NewShader("examples/08-room-light/shaders/texture.vert", "examples/08-room-light/shaders/texture.frag", glWrapper)
-	app.AddShader(shaderProgramTexture)
-	shaderProgramTextureMat := shader.NewShader("examples/08-room-light/shaders/texturemat.vert", "examples/08-room-light/shaders/texturemat.frag", glWrapper)
-	app.AddShader(shaderProgramTextureMat)
-
-	Room = model.NewMaterialRoom(mgl32.Vec3{0.0, 0.0, 0.0})
-	app.AddModelToShader(Room, shaderProgramMaterial)
-
-	Room2 = model.NewMaterialRoom(mgl32.Vec3{2.0, 0.0, 2.0})
-	app.AddModelToShader(Room2, shaderProgramMaterial)
-	Room3 = model.NewTextureRoom(mgl32.Vec3{4.0, 0.0, 2.0})
-	app.AddModelToShader(Room3, shaderProgramTextureMat)
-	// grass textures
-	var grassTexture texture.Textures
-	grassTexture.AddTexture("examples/08-room-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
-	grassTexture.AddTexture("examples/08-room-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
-
-	grassMesh := CreateGrassMesh(grassTexture)
-	grassMesh.SetPosition(mgl32.Vec3{0.0, 1.003, 0.0})
-	TexModel.AddMesh(grassMesh)
-	app.AddModelToShader(TexModel, shaderProgramTexture)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(wrapper.LESS)

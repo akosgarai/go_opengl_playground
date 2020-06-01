@@ -1,6 +1,6 @@
 # Mesh
 
-It contains everything that we need for drawing a stuff. Now i have 3 kind of meshes above the base one.
+It contains everything that we need for drawing a stuff. Now i have 6 kind of meshes above the base one.
 
 ## Base mesh
 
@@ -12,8 +12,9 @@ Those parameters that are always needed for managing an object.
 - **position** - The center position of the mesh. The model transformation is calculated based on this.
 - **direction** - The mesh is moving to this direction. If this value is null vector, then the mes is not moving.
 - **velocity** - The mesh is moving to the direction with this speed. if this value is null, then the mash is not moving.
-- **angle** - The mesh is rotated with this angle. This value has to be radian. The model transformation is calculated based on this.
-- **axis** - The mesh is rotated on this axis. If this vector is null, then the mesh is not rotated. The model transformation is calculated based on this.
+- **yaw** - The rotation angle of the mesh on the 'Y' axis.
+- **pitch** - The rotation angle of the mesh on the 'X' axis.
+- **roll** - The rotation angle of the mesh on the 'Z' axis.
 - **scale** - The mesh is scaled by this vector. The model transformation is calculated based on this.
 - **wrapper** - The glwrapper, that we can use for calling gl functions.
 - **parent** - The parent mesh of the current one.

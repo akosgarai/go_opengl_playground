@@ -53,18 +53,15 @@ func main() {
 
 	mod := model.New()
 	triang := GenerateColoredTriangleMesh(color)
-	triang.SetRotationAngle(mgl32.DegToRad(90))
-	triang.SetRotationAxis(mgl32.Vec3{1, 1, 0})
 	triang.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
 	triang.SetPosition(mgl32.Vec3{-0.4, 0.2, 0})
 	mod.AddMesh(triang)
 
 	square := GenerateColoredRectangleMesh(color)
-	square.SetRotationAngle(mgl32.DegToRad(90))
-	square.SetRotationAxis(mgl32.Vec3{1, 0, 0})
 	square.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
 	square.SetPosition(mgl32.Vec3{0.4, -0.2, 0})
 	mod.AddMesh(square)
+	mod.RotateX(90)
 	app.AddModelToShader(mod, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
