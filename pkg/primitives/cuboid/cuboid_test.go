@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	Indicies = []uint32{
+	Indices = []uint32{
 		0, 1, 2, 0, 2, 3, // bottom
 		4, 5, 6, 4, 6, 7, // top
 		8, 9, 10, 8, 10, 11, // front
@@ -105,14 +105,14 @@ func TestNewCube(t *testing.T) {
 	if cube.Points != points {
 		t.Error("Invalid points")
 	}
-	if !reflect.DeepEqual(cube.Indicies, Indicies) {
+	if !reflect.DeepEqual(cube.Indices, Indices) {
 		t.Error("Invalid indicies")
 	}
 }
 func TestMeshInput(t *testing.T) {
 	cube := NewCube()
 	vert, ind := cube.MeshInput()
-	if !reflect.DeepEqual(ind, Indicies) {
+	if !reflect.DeepEqual(ind, Indices) {
 		t.Error("Invalid indicies")
 	}
 	if len(vert) != 24 {
@@ -122,7 +122,7 @@ func TestMeshInput(t *testing.T) {
 func TestColoredMeshInput(t *testing.T) {
 	cube := NewCube()
 	vert, ind := cube.ColoredMeshInput(Color)
-	if !reflect.DeepEqual(ind, Indicies) {
+	if !reflect.DeepEqual(ind, Indices) {
 		t.Error("Invalid indicies")
 	}
 	if len(vert) != 24 {
@@ -132,7 +132,7 @@ func TestColoredMeshInput(t *testing.T) {
 func TestTexturedColoredMeshInput(t *testing.T) {
 	cube := NewCube()
 	vert, ind := cube.TexturedColoredMeshInput(Color)
-	if !reflect.DeepEqual(ind, Indicies) {
+	if !reflect.DeepEqual(ind, Indices) {
 		t.Error("Invalid indicies")
 	}
 	if len(vert) != 24 {
