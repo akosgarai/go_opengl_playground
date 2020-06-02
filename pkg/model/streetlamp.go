@@ -102,7 +102,7 @@ func NewTexturedStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
 	sph := sphere.New(15)
 	sphereV, sphereI := sph.TexturedMeshInput()
 	bulb := mesh.NewTexturedMaterialMesh(sphereV, sphereI, bulbTexture, bulbMaterial, glWrapper)
-	bulb.SetPosition(mgl32.Vec3{length/2 - 4*bulbRadius, 0, -width / 2})
+	bulb.SetPosition(mgl32.Vec3{length/2 - 4*bulbRadius, 0, 0})
 	bulb.SetScale(mgl32.Vec3{1.0, 1.0, 1.0}.Mul(bulbRadius))
 	bulb.SetParent(top)
 
