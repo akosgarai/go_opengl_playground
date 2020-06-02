@@ -92,7 +92,7 @@ func CreateGrassMesh(t texture.Textures) *mesh.TexturedMesh {
 }
 func CreateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 	cube := cuboid.NewCube()
-	v, i := cube.MeshInput()
+	v, i := cube.TexturedMeshInput()
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	m.SetPosition(pos)
 	return m
