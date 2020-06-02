@@ -86,7 +86,7 @@ func NewTextureRoom(position mgl32.Vec3) *Room {
 	doorTexture.AddTexture("pkg/model/assets/door.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 
 	floorCuboid := cuboid.New(1.0, 1.0, 0.005)
-	floorV, floorI := floorCuboid.TexturedMeshInput()
+	floorV, floorI := floorCuboid.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 
 	floor := mesh.NewTexturedMaterialMesh(floorV, floorI, concreteTexture, material.Chrome, glWrapper)
 	floor.SetPosition(position)
@@ -113,19 +113,19 @@ func NewTextureRoom(position mgl32.Vec3) *Room {
 	// front wall parts
 
 	frontCuboid := cuboid.New(0.6, 1.0, 0.005)
-	V, I := frontCuboid.TexturedMeshInput()
+	V, I := frontCuboid.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	frontWallMain := mesh.NewTexturedMesh(V, I, concreteTexture, glWrapper)
 	frontWallMain.SetPosition(mgl32.Vec3{0.2, 0.5, 0.4975})
 	frontWallMain.RotateX(90)
 	frontWallMain.SetParent(floor)
 	frontTopCuboid := cuboid.New(0.4, 0.4, 0.005)
-	V, I = frontTopCuboid.TexturedMeshInput()
+	V, I = frontTopCuboid.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	frontWallRest := mesh.NewTexturedMesh(V, I, concreteTexture, glWrapper)
 	frontWallRest.SetPosition(mgl32.Vec3{-0.3, 0.2, 0.4975})
 	frontWallRest.RotateX(90)
 	frontWallRest.SetParent(floor)
 	doorCuboid := cuboid.New(0.4, 0.005, 0.6)
-	V, I = doorCuboid.TexturedMeshInput()
+	V, I = doorCuboid.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_SAME)
 	door := mesh.NewTexturedMesh(V, I, doorTexture, glWrapper)
 	door.SetPosition(mgl32.Vec3{-0.4975, 0.7, 0.6975})
 	door.RotateY(-90)
