@@ -86,7 +86,7 @@ func TexturedMaterialSphere(t texture.Textures, mat *material.Material, position
 // It generates a cube map.
 func CubeMap(t texture.Textures) *mesh.TexturedMesh {
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedMeshInput()
+	v, i := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	return m
 }
