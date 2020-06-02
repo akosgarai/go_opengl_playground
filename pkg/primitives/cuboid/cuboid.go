@@ -90,7 +90,7 @@ func NewCube() *Cuboid {
 	return cuboid
 }
 
-// MeshInput method returns the verticies, indicies inputs for the NewTexturedMesh function.
+// MeshInput method returns the vertices, indices inputs for the NewTexturedMesh function.
 func (c *Cuboid) MeshInput() (vertex.Verticies, []uint32) {
 	textureCoords := [4]mgl32.Vec2{
 		{0.0, 1.0},
@@ -112,7 +112,7 @@ func (c *Cuboid) MeshInput() (vertex.Verticies, []uint32) {
 	return vertices, c.Indices
 }
 
-// ColoredMeshInput method returns the verticies, indicies inputs for the New Mesh function.
+// ColoredMeshInput method returns the vertices, indices inputs for the New Mesh function.
 func (c *Cuboid) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
 	var vertices vertex.Verticies
 	for i := 0; i < 6; i++ {
@@ -127,7 +127,7 @@ func (c *Cuboid) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32)
 	return vertices, c.Indices
 }
 
-// TexturedColoredMeshInput method returns the verticies, indicies inputs for the NewTexturedColoredMesh function.
+// TexturedColoredMeshInput method returns the vertices, indices inputs for the NewTexturedColoredMesh function.
 func (c *Cuboid) TexturedColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
 	textureCoords := [4]mgl32.Vec2{
 		{0.0, 1.0},
