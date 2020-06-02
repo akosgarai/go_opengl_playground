@@ -6,6 +6,15 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+var (
+	textureCoords = [4]mgl32.Vec2{
+		{0.0, 1.0},
+		{1.0, 1.0},
+		{1.0, 0.0},
+		{0.0, 0.0},
+	}
+)
+
 type Cuboid struct {
 	Points  [24]mgl32.Vec3
 	Normals [6]mgl32.Vec3
@@ -92,12 +101,6 @@ func NewCube() *Cuboid {
 
 // MeshInput method returns the vertices, indices inputs for the NewTexturedMesh function.
 func (c *Cuboid) MeshInput() (vertex.Verticies, []uint32) {
-	textureCoords := [4]mgl32.Vec2{
-		{0.0, 1.0},
-		{1.0, 1.0},
-		{1.0, 0.0},
-		{0.0, 0.0},
-	}
 	var vertices vertex.Verticies
 	for i := 0; i < 6; i++ {
 		for j := 0; j < 4; j++ {
@@ -129,12 +132,6 @@ func (c *Cuboid) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32)
 
 // TexturedColoredMeshInput method returns the vertices, indices inputs for the NewTexturedColoredMesh function.
 func (c *Cuboid) TexturedColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
-	textureCoords := [4]mgl32.Vec2{
-		{0.0, 1.0},
-		{1.0, 1.0},
-		{1.0, 0.0},
-		{0.0, 0.0},
-	}
 	var vertices vertex.Verticies
 	for i := 0; i < 6; i++ {
 		for j := 0; j < 4; j++ {
