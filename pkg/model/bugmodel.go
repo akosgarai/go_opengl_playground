@@ -49,7 +49,7 @@ func NewBug(position, scale mgl32.Vec3) *Bug {
 	Eye2.SetPosition(initPosScaled)
 	Eye2.SetParent(Body)
 
-	m := New()
+	m := newModel()
 	m.AddMesh(Bottom)
 	m.AddMesh(Body)
 	m.AddMesh(Eye1)
@@ -79,4 +79,11 @@ func (b *Bug) GetEye1Position() mgl32.Vec3 {
 // Transformations are applied, due to the relative position.
 func (b *Bug) GetEye2Position() mgl32.Vec3 {
 	return mgl32.TransformCoordinate(b.meshes[3].GetPosition(), b.meshes[3].ModelTransformation())
+}
+
+// Update function loops over each of the meshes and calls their Update function.
+func (b *Bug) Update(dt float64) {
+	for i, _ := range b.meshes {
+		b.meshes[i].Update(dt)
+	}
 }

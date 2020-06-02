@@ -66,7 +66,7 @@ func NewMaterialRoom(position mgl32.Vec3) *Room {
 	door.RotateY(90)
 	door.SetParent(floor)
 
-	m := New()
+	m := newModel()
 	m.AddMesh(floor)
 	m.AddMesh(ceiling)
 	m.AddMesh(backWall)
@@ -131,7 +131,7 @@ func NewTextureRoom(position mgl32.Vec3) *Room {
 	door.RotateY(-90)
 	door.SetParent(floor)
 
-	m := New()
+	m := newModel()
 	m.AddMesh(floor)
 	m.AddMesh(ceiling)
 	m.AddMesh(backWall)
@@ -141,4 +141,11 @@ func NewTextureRoom(position mgl32.Vec3) *Room {
 	m.AddMesh(frontWallRest)
 	m.AddMesh(door)
 	return &Room{Model: *m}
+}
+
+// Update function loops over each of the meshes and calls their Update function.
+func (r *Room) Update(dt float64) {
+	for i, _ := range r.meshes {
+		r.meshes[i].Update(dt)
+	}
 }
