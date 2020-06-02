@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	Indicies = []uint32{
+	Indices = []uint32{
 		0, 1, 2, 0, 2, 3, // bottom
 		4, 5, 6, 4, 6, 7, // top
 		8, 9, 10, 8, 10, 11, // front
@@ -105,37 +105,47 @@ func TestNewCube(t *testing.T) {
 	if cube.Points != points {
 		t.Error("Invalid points")
 	}
-	if !reflect.DeepEqual(cube.Indicies, Indicies) {
-		t.Error("Invalid indicies")
+	if !reflect.DeepEqual(cube.Indices, Indices) {
+		t.Error("Invalid indices")
 	}
 }
-func TestMeshInput(t *testing.T) {
+func TestTexturedMeshInput(t *testing.T) {
 	cube := NewCube()
-	vert, ind := cube.MeshInput()
-	if !reflect.DeepEqual(ind, Indicies) {
-		t.Error("Invalid indicies")
+	vert, ind := cube.TexturedMeshInput(TEXTURE_ORIENTATION_DEFAULT)
+	if !reflect.DeepEqual(ind, Indices) {
+		t.Error("Invalid indices")
 	}
 	if len(vert) != 24 {
-		t.Error("Invalid verticies size")
+		t.Error("Invalid vertices size")
+	}
+}
+func TestMaterialMeshInput(t *testing.T) {
+	cube := NewCube()
+	vert, ind := cube.MaterialMeshInput()
+	if !reflect.DeepEqual(ind, Indices) {
+		t.Error("Invalid indices")
+	}
+	if len(vert) != 24 {
+		t.Error("Invalid vertices size")
 	}
 }
 func TestColoredMeshInput(t *testing.T) {
 	cube := NewCube()
 	vert, ind := cube.ColoredMeshInput(Color)
-	if !reflect.DeepEqual(ind, Indicies) {
-		t.Error("Invalid indicies")
+	if !reflect.DeepEqual(ind, Indices) {
+		t.Error("Invalid indices")
 	}
 	if len(vert) != 24 {
-		t.Error("Invalid verticies size")
+		t.Error("Invalid vertices size")
 	}
 }
 func TestTexturedColoredMeshInput(t *testing.T) {
 	cube := NewCube()
-	vert, ind := cube.TexturedColoredMeshInput(Color)
-	if !reflect.DeepEqual(ind, Indicies) {
-		t.Error("Invalid indicies")
+	vert, ind := cube.TexturedColoredMeshInput(Color, TEXTURE_ORIENTATION_DEFAULT)
+	if !reflect.DeepEqual(ind, Indices) {
+		t.Error("Invalid indices")
 	}
 	if len(vert) != 24 {
-		t.Error("Invalid verticies size")
+		t.Error("Invalid vertices size")
 	}
 }

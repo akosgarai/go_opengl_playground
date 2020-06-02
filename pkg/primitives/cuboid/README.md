@@ -4,20 +4,30 @@ This package represents a cuboid, that is described with the points of the recta
 
 ## New
 
-This function returns a cuboid. The inputs are the width (length in the `X` axis) the length (length in the `Z` axis) and the height (length in the `Y` axis) in this order. The sides are scaled, the longest side becomes 1. The center point is the origo, where center point is the intersection point of the diagonals.
+This function returns a cuboid. The inputs are the width (length in the `X` axis) the length (length in the `Z` axis) and the height (length in the `Y` axis) in this order. The center point is the origo, where center point is the intersection point of the diagonals.
 
 ## NewCube
 
 This function returns a unit cube with origo as center point, where center point is the intersection point of the diagonals.
 
-## MeshInput
+## TexturedMeshInput
 
-MeshInput method returns the verticies, indicies - inputs for the New Mesh function.
+TexturedMeshInput method returns the vertices, indices - inputs for the NewTexturedMesh function.
+
+## MaterialMeshInput
+
+MaterialMeshInput method returns the vertices, indices - inputs for the NewMaterialMesh function.
 
 ## ColoredMeshInput
 
-ColoredMeshInput method returns the verticies, indicies - inputs for the New Mesh function.
+ColoredMeshInput method returns the vertices, indices - inputs for the NewColorMesh function.
 
 ## TexturedColoredMeshInput
 
-This method returns the verticies, indicies - inputs for the NewTexturedColoredMesh function.
+This method returns the vertices, indices - inputs for the NewTexturedColoredMesh function.
+
+---
+
+## Texture orientations
+
+Currently it supports the `default` orientation, that means every texture is positioned in the same order, and the `same` order that means that the textures on the opposite sides are oriented opposite.

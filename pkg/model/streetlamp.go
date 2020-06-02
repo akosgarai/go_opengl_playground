@@ -39,12 +39,12 @@ func NewMaterialStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
 
 	// pole
 	poleCuboid := cuboid.New(width, height, width)
-	poleV, poleI := poleCuboid.MeshInput()
+	poleV, poleI := poleCuboid.MaterialMeshInput()
 	pole := mesh.NewMaterialMesh(poleV, poleI, material.Chrome, glWrapper)
 	pole.SetPosition(mgl32.Vec3{position.X(), position.Y() + height/2, position.Z()})
 	// top
 	topCuboid := cuboid.New(length, width, width)
-	topV, topI := topCuboid.MeshInput()
+	topV, topI := topCuboid.MaterialMeshInput()
 	top := mesh.NewMaterialMesh(topV, topI, material.Chrome, glWrapper)
 	top.SetPosition(mgl32.Vec3{(length - width) / 2, 0, (height + width) / 2})
 	top.SetParent(pole)

@@ -65,7 +65,7 @@ func CreateCamera() *camera.Camera {
 
 func CreateMaterialCube(mat *material.Material, pos mgl32.Vec3) *mesh.MaterialMesh {
 	cube := cuboid.NewCube()
-	v, i := cube.MeshInput()
+	v, i := cube.MaterialMeshInput()
 	m := mesh.NewMaterialMesh(v, i, mat, glWrapper)
 	m.SetPosition(pos)
 	return m
