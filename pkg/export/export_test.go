@@ -173,7 +173,7 @@ func TestExportTexturedColoredMesh(t *testing.T) {
 		mgl32.Vec3{1.0, 0.0, 1.0},
 	}
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedColoredMeshInput(colors)
+	v, i := cube.TexturedColoredMeshInput(colors, cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	tcMesh := mesh.NewTexturedColoredMesh(v, i, tex, colors, glWrapper)
 	meshes = append(meshes, tcMesh)
 	exporter := New(meshes)
@@ -194,7 +194,7 @@ func TestProcessTexturedColoredMesh(t *testing.T) {
 		mgl32.Vec3{1.0, 0.0, 0.0},
 	}
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedColoredMeshInput(colors)
+	v, i := cube.TexturedColoredMeshInput(colors, cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	tcMesh := mesh.NewTexturedColoredMesh(v, i, tex, colors, glWrapper)
 	meshes = append(meshes, tcMesh)
 	exporter := New(meshes)
@@ -245,7 +245,7 @@ func TestProcessTexturedGoodNamesMesh(t *testing.T) {
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedMeshInput()
+	v, i := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
@@ -279,7 +279,7 @@ func TestProcessTexturedNoSpecularMesh(t *testing.T) {
 	var tex texture.Textures
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedMeshInput()
+	v, i := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
@@ -313,7 +313,7 @@ func TestProcessTexturedNoDiffuseMesh(t *testing.T) {
 	var tex texture.Textures
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedMeshInput()
+	v, i := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
