@@ -30,4 +30,4 @@ This method returns the vertices, indices - inputs for the NewTexturedColoredMes
 
 ## Texture orientations
 
-Currently it supports the `default` orientation, that means every texture is positioned in the same order, and the `same` ordet that means that the textures on the opposite sides are oriented opposite.
+Currently it supports the `default` orientation, that means every texture is positioned in the same order, and the `same` order that means that the textures on the opposite sides are oriented opposite.
