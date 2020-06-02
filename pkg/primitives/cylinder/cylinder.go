@@ -172,7 +172,7 @@ func circleWithRadius(radius float32, precision int) []float32 {
 func halfCircleWithRadius(radius float32, precision int) []float32 {
 	var positionVectors []float32
 	// we are iterating from 0deg to 180deg.
-	sectorStep := float64(math.Pi) / float64(precision)
+	sectorStep := float64(2*math.Pi) / float64(precision)
 	for i := 0; i <= precision/2; i++ {
 		sectorAngle := float64(i) * sectorStep
 		positionVectors = append(positionVectors, float32(math.Cos(sectorAngle))*radius)
@@ -180,10 +180,10 @@ func halfCircleWithRadius(radius float32, precision int) []float32 {
 		positionVectors = append(positionVectors, 0)
 	}
 	// Draw a line from the end of the curve to the start. (v{-1,0,0} -> v{1,0,0})
-	lineStep := float32(2.0) / float32(precision)
+	lineStep := float32(2.0) / float32(precision/2)
 	for i := 0; i <= precision/2; i++ {
-		current := lineStep*float32(i) - 1.0
-		positionVectors = append(positionVectors, current)
+		current := -lineStep*float32(i) + 1.0
+		positionVectors = append(positionVectors, current*radius)
 		positionVectors = append(positionVectors, 0)
 		positionVectors = append(positionVectors, 0)
 	}

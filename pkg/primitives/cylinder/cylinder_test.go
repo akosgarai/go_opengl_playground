@@ -271,3 +271,51 @@ func TestResults(t *testing.T) {
 		t.Errorf("Invalid number of indices after top setup. Instead of '%d', we have '%d'.\n", 12*prec, len(c.Indices))
 	}
 }
+func TestResultsHalfCircle(t *testing.T) {
+	rad := float32(1.0)
+	prec := 4
+	length := float32(1)
+	expectedBaseCenter := mgl32.Vec3{0, 0, -0.5}
+	expectedtopCenter := mgl32.Vec3{0, 0, 0.5}
+	c := Cylinder{
+		Points:    []mgl32.Vec3{},
+		Normals:   []mgl32.Vec3{},
+		Indices:   []uint32{},
+		TexCoords: []mgl32.Vec2{},
+	}
+	halfCircleVertices := halfCircleWithRadius(rad, prec)
+	c.calculatePointsNormalsTexCoordsForTheSides(halfCircleVertices, prec, length)
+	// At this time we should have prec*2=2 point.
+	if len(c.Points) != prec*2+2 {
+		t.Errorf("Invalid number of points after the first calculation. Instead of '%d', we have '%d'.\n", prec*2+2, len(c.Points))
+	}
+	// store the expected center points.
+	baseCenterIndex := len(c.Points)
+	topCenterIndex := baseCenterIndex + prec + 1
+	c.calculatePointsNormalsTexCoordsForTheBases(halfCircleVertices, rad, prec, length)
+	if c.Points[baseCenterIndex] != expectedBaseCenter {
+		t.Error("Invalid center point for the base")
+		t.Log(c.Points[baseCenterIndex])
+	}
+	if c.Points[topCenterIndex] != expectedtopCenter {
+		t.Errorf("Invalid center point for the top. index:'%d'\n", topCenterIndex)
+		t.Log(c.Points[topCenterIndex])
+	}
+	// lengths should be fine.
+	if len(c.Points) != prec*4+4 {
+		t.Errorf("Invalid number of points after the second calculation. Instead of '%d', we have '%d'.\n", prec*2+2, len(c.Points))
+	}
+	// check indices.
+	c.calculateIndicesForTheSideSurface(prec)
+	if len(c.Indices) != 6*prec {
+		t.Errorf("Invalid number of indices after side setup. Instead of '%d', we have '%d'.\n", 6*prec, len(c.Indices))
+	}
+	c.calculateIndicesForTheBaseSurface(baseCenterIndex, prec)
+	if len(c.Indices) != 9*prec {
+		t.Errorf("Invalid number of indices after base setup. Instead of '%d', we have '%d'.\n", 9*prec, len(c.Indices))
+	}
+	c.calculateIndicesForTheTopSurface(topCenterIndex, prec)
+	if len(c.Indices) != 12*prec {
+		t.Errorf("Invalid number of indices after top setup. Instead of '%d', we have '%d'.\n", 12*prec, len(c.Indices))
+	}
+}
