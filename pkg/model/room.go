@@ -21,7 +21,7 @@ type Room struct {
 // The front wall holds a door that is different colored.
 func NewMaterialRoom(position mgl32.Vec3) *Room {
 	floorCuboid := cuboid.New(1.0, 1.0, 0.005)
-	floorV, floorI := floorCuboid.MeshInput()
+	floorV, floorI := floorCuboid.MaterialMeshInput()
 
 	floor := mesh.NewMaterialMesh(floorV, floorI, material.Chrome, glWrapper)
 	floor.SetPosition(position)
@@ -48,19 +48,19 @@ func NewMaterialRoom(position mgl32.Vec3) *Room {
 	// front wall parts
 
 	frontCuboid := cuboid.New(0.6, 1.0, 0.005)
-	V, I := frontCuboid.MeshInput()
+	V, I := frontCuboid.MaterialMeshInput()
 	frontWallMain := mesh.NewMaterialMesh(V, I, material.Chrome, glWrapper)
 	frontWallMain.SetPosition(mgl32.Vec3{0.2, 0.5, 0.4975})
 	frontWallMain.RotateX(90)
 	frontWallMain.SetParent(floor)
 	frontTopCuboid := cuboid.New(0.4, 0.4, 0.005)
-	V, I = frontTopCuboid.MeshInput()
+	V, I = frontTopCuboid.MaterialMeshInput()
 	frontWallRest := mesh.NewMaterialMesh(V, I, material.Chrome, glWrapper)
 	frontWallRest.SetPosition(mgl32.Vec3{-0.3, 0.2, 0.4975})
 	frontWallRest.RotateX(90)
 	frontWallRest.SetParent(floor)
 	doorCuboid := cuboid.New(0.4, 0.005, 0.6)
-	V, I = doorCuboid.MeshInput()
+	V, I = doorCuboid.MaterialMeshInput()
 	door := mesh.NewMaterialMesh(V, I, material.Bronze, glWrapper)
 	door.SetPosition(mgl32.Vec3{-0.4975, 0.7, 0.6975})
 	door.RotateY(90)
@@ -86,7 +86,7 @@ func NewTextureRoom(position mgl32.Vec3) *Room {
 	doorTexture.AddTexture("pkg/model/assets/door.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 
 	floorCuboid := cuboid.New(1.0, 1.0, 0.005)
-	floorV, floorI := floorCuboid.MeshInput()
+	floorV, floorI := floorCuboid.TexturedMeshInput()
 
 	floor := mesh.NewTexturedMaterialMesh(floorV, floorI, concreteTexture, material.Chrome, glWrapper)
 	floor.SetPosition(position)
@@ -113,19 +113,19 @@ func NewTextureRoom(position mgl32.Vec3) *Room {
 	// front wall parts
 
 	frontCuboid := cuboid.New(0.6, 1.0, 0.005)
-	V, I := frontCuboid.MeshInput()
+	V, I := frontCuboid.TexturedMeshInput()
 	frontWallMain := mesh.NewTexturedMesh(V, I, concreteTexture, glWrapper)
 	frontWallMain.SetPosition(mgl32.Vec3{0.2, 0.5, 0.4975})
 	frontWallMain.RotateX(90)
 	frontWallMain.SetParent(floor)
 	frontTopCuboid := cuboid.New(0.4, 0.4, 0.005)
-	V, I = frontTopCuboid.MeshInput()
+	V, I = frontTopCuboid.TexturedMeshInput()
 	frontWallRest := mesh.NewTexturedMesh(V, I, concreteTexture, glWrapper)
 	frontWallRest.SetPosition(mgl32.Vec3{-0.3, 0.2, 0.4975})
 	frontWallRest.RotateX(90)
 	frontWallRest.SetParent(floor)
 	doorCuboid := cuboid.New(0.4, 0.005, 0.6)
-	V, I = doorCuboid.MeshInput()
+	V, I = doorCuboid.TexturedMeshInput()
 	door := mesh.NewTexturedMesh(V, I, doorTexture, glWrapper)
 	door.SetPosition(mgl32.Vec3{-0.4975, 0.7, 0.6975})
 	door.RotateY(-90)
