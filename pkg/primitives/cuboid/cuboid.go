@@ -99,8 +99,8 @@ func NewCube() *Cuboid {
 	return cuboid
 }
 
-// MeshInput method returns the vertices, indices inputs for the NewTexturedMesh function.
-func (c *Cuboid) MeshInput() (vertex.Verticies, []uint32) {
+// TexturedMeshInput method returns the vertices, indices inputs for the NewTexturedMesh function.
+func (c *Cuboid) TexturedMeshInput() (vertex.Verticies, []uint32) {
 	var vertices vertex.Verticies
 	for i := 0; i < 6; i++ {
 		for j := 0; j < 4; j++ {
@@ -115,7 +115,22 @@ func (c *Cuboid) MeshInput() (vertex.Verticies, []uint32) {
 	return vertices, c.Indices
 }
 
-// ColoredMeshInput method returns the vertices, indices inputs for the New Mesh function.
+// MaterialMeshInput method returns the vertices, indices inputs for the NewMaterialMesh function.
+func (c *Cuboid) MaterialMeshInput() (vertex.Verticies, []uint32) {
+	var vertices vertex.Verticies
+	for i := 0; i < 6; i++ {
+		for j := 0; j < 4; j++ {
+			pointIndex := i*4 + j
+			vertices = append(vertices, vertex.Vertex{
+				Position: c.Points[pointIndex],
+				Normal:   c.Normals[i],
+			})
+		}
+	}
+	return vertices, c.Indices
+}
+
+// ColoredMeshInput method returns the vertices, indices inputs for the NewColorMesh function.
 func (c *Cuboid) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
 	var vertices vertex.Verticies
 	for i := 0; i < 6; i++ {

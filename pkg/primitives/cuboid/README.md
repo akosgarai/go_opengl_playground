@@ -10,14 +10,18 @@ This function returns a cuboid. The inputs are the width (length in the `X` axis
 
 This function returns a unit cube with origo as center point, where center point is the intersection point of the diagonals.
 
-## MeshInput
+## TexturedMeshInput
 
-MeshInput method returns the verticies, indicies - inputs for the New Mesh function.
+TexturedMeshInput method returns the vertices, indices - inputs for the NewTexturedMesh function.
+
+## MaterialMeshInput
+
+MaterialMeshInput method returns the vertices, indices - inputs for the NewMaterialMesh function.
 
 ## ColoredMeshInput
 
-ColoredMeshInput method returns the verticies, indicies - inputs for the New Mesh function.
+ColoredMeshInput method returns the vertices, indices - inputs for the NewColorMesh function.
 
 ## TexturedColoredMeshInput
 
-This method returns the verticies, indicies - inputs for the NewTexturedColoredMesh function.
+This method returns the vertices, indices - inputs for the NewTexturedColoredMesh function.

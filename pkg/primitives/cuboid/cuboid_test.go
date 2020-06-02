@@ -109,9 +109,19 @@ func TestNewCube(t *testing.T) {
 		t.Error("Invalid indices")
 	}
 }
-func TestMeshInput(t *testing.T) {
+func TestTexturedMeshInput(t *testing.T) {
 	cube := NewCube()
-	vert, ind := cube.MeshInput()
+	vert, ind := cube.TexturedMeshInput()
+	if !reflect.DeepEqual(ind, Indices) {
+		t.Error("Invalid indices")
+	}
+	if len(vert) != 24 {
+		t.Error("Invalid vertices size")
+	}
+}
+func TestMaterialMeshInput(t *testing.T) {
+	cube := NewCube()
+	vert, ind := cube.MaterialMeshInput()
 	if !reflect.DeepEqual(ind, Indices) {
 		t.Error("Invalid indices")
 	}
