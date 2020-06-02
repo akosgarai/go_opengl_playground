@@ -86,7 +86,7 @@ func CreateWhiteSphere() {
 // It generates a cube.
 func CreateCubeMesh(t texture.Textures) *mesh.TexturedMesh {
 	cube := cuboid.NewCube()
-	v, i := cube.MeshInput()
+	v, i := cube.TexturedMeshInput()
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	return m
 }
