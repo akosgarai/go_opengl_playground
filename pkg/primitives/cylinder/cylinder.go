@@ -21,22 +21,32 @@ type Cylinder struct {
 // 'rad' - the radius of the circle. 'prec' - the precision of the circle.
 // 'length' - the length of the body of the cylinder.
 func New(rad float32, prec int, length float32) *Cylinder {
+	circleVertices := circleWithRadius(rad, prec)
+	return newWithBaseShape(circleVertices, rad, prec, length)
+}
+func NewHalfCircleBased(rad float32, prec int, length float32) *Cylinder {
+	baseShapeVertices := halfCircleWithRadius(rad, prec)
+	return newWithBaseShape(baseShapeVertices, rad, prec, length)
+}
+
+// Based on the following example:
+// http://www.songho.ca/opengl/gl_cylinder.html
+// 'rad' - the radius of the base shape. 'prec' - the precision of the base shape.
+// 'length' - the length of the body of the cylinder.
+func newWithBaseShape(baseVertices []float32, rad float32, prec int, length float32) *Cylinder {
 	var points []mgl32.Vec3
 	var normals []mgl32.Vec3
 	var indices []uint32
 	var texCoords []mgl32.Vec2
-
-	circleVertices := circleWithRadius(rad, prec)
-
 	// sides
 	for i := 0; i < 2; i++ {
 		height := -length/2 + float32(i)*length
 		texCoord := float32(1.0 - i)
 		k := 0
 		for j := 0; j < prec; j++ {
-			uX := circleVertices[k]
-			uY := circleVertices[k+1]
-			uZ := circleVertices[k+2]
+			uX := baseVertices[k]
+			uY := baseVertices[k+1]
+			uZ := baseVertices[k+2]
 			// position vector
 			points = append(points, mgl32.Vec3{uX, uY, height})
 			// normal vectors
@@ -61,11 +71,11 @@ func New(rad float32, prec int, length float32) *Cylinder {
 		k := 0
 		for j := 0; j < prec; j++ {
 			// position vector
-			points = append(points, mgl32.Vec3{circleVertices[k], circleVertices[k+1], height})
+			points = append(points, mgl32.Vec3{baseVertices[k], baseVertices[k+1], height})
 			// normal vectors
 			normals = append(normals, mgl32.Vec3{0.0, 0.0, normal})
 			// texture coordinate
-			texCoords = append(texCoords, mgl32.Vec2{-circleVertices[k]/rad*0.5 + 0.5, -circleVertices[k+1]/rad*0.5 + 0.5})
+			texCoords = append(texCoords, mgl32.Vec2{-baseVertices[k]/rad*0.5 + 0.5, -baseVertices[k+1]/rad*0.5 + 0.5})
 			k = k + 3
 		}
 	}
@@ -132,6 +142,29 @@ func circleWithRadius(radian float32, precision int) []float32 {
 		sectorAngle := float64(i) * sectorStep
 		positionVectors = append(positionVectors, float32(math.Cos(sectorAngle))*radian)
 		positionVectors = append(positionVectors, float32(math.Sin(sectorAngle))*radian)
+		positionVectors = append(positionVectors, 0)
+	}
+	return positionVectors
+}
+
+// halfCircleWithRadius returns the position vectors of
+// a halfcircle on XY plane.
+func halfCircleWithRadius(radius float32, precision int) []float32 {
+	var positionVectors []float32
+	// we are iterating from 0deg to 180deg.
+	sectorStep := float64(math.Pi) / float64(precision)
+	for i := 0; i < precision; i++ {
+		sectorAngle := float64(i) * sectorStep
+		positionVectors = append(positionVectors, float32(math.Cos(sectorAngle))*radius)
+		positionVectors = append(positionVectors, float32(math.Sin(sectorAngle))*radius)
+		positionVectors = append(positionVectors, 0)
+	}
+	// Draw a line from the end of the curve to the start. (v{-1,0,0} -> v{1,0,0})
+	lineStep := float32(2.0) / float32(precision)
+	for i := 0; i < precision; i++ {
+		current := lineStep*float32(i) - 1.0
+		positionVectors = append(positionVectors, current)
+		positionVectors = append(positionVectors, 0)
 		positionVectors = append(positionVectors, 0)
 	}
 	return positionVectors
