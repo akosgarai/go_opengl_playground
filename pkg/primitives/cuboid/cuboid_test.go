@@ -111,7 +111,7 @@ func TestNewCube(t *testing.T) {
 }
 func TestTexturedMeshInput(t *testing.T) {
 	cube := NewCube()
-	vert, ind := cube.TexturedMeshInput()
+	vert, ind := cube.TexturedMeshInput(TEXTURE_ORIENTATION_DEFAULT)
 	if !reflect.DeepEqual(ind, Indices) {
 		t.Error("Invalid indices")
 	}
@@ -141,7 +141,7 @@ func TestColoredMeshInput(t *testing.T) {
 }
 func TestTexturedColoredMeshInput(t *testing.T) {
 	cube := NewCube()
-	vert, ind := cube.TexturedColoredMeshInput(Color)
+	vert, ind := cube.TexturedColoredMeshInput(Color, TEXTURE_ORIENTATION_DEFAULT)
 	if !reflect.DeepEqual(ind, Indices) {
 		t.Error("Invalid indices")
 	}

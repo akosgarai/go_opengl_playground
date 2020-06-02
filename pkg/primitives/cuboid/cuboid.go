@@ -6,6 +6,11 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+const (
+	TEXTURE_ORIENTATION_DEFAULT = 1
+	TEXTURE_ORIENTATION_SAME    = 2
+)
+
 var (
 	textureCoords = [4]mgl32.Vec2{
 		{0.0, 1.0},
@@ -100,15 +105,19 @@ func NewCube() *Cuboid {
 }
 
 // TexturedMeshInput method returns the vertices, indices inputs for the NewTexturedMesh function.
-func (c *Cuboid) TexturedMeshInput() (vertex.Verticies, []uint32) {
+func (c *Cuboid) TexturedMeshInput(orientation int) (vertex.Verticies, []uint32) {
 	var vertices vertex.Verticies
 	for i := 0; i < 6; i++ {
 		for j := 0; j < 4; j++ {
 			pointIndex := i*4 + j
+			texIndex := j
+			if orientation == TEXTURE_ORIENTATION_SAME && i%2 == 1 {
+				texIndex = 3 - j
+			}
 			vertices = append(vertices, vertex.Vertex{
 				Position:  c.Points[pointIndex],
 				Normal:    c.Normals[i],
-				TexCoords: textureCoords[j],
+				TexCoords: textureCoords[texIndex],
 			})
 		}
 	}
@@ -146,15 +155,19 @@ func (c *Cuboid) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32)
 }
 
 // TexturedColoredMeshInput method returns the vertices, indices inputs for the NewTexturedColoredMesh function.
-func (c *Cuboid) TexturedColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
+func (c *Cuboid) TexturedColoredMeshInput(col []mgl32.Vec3, orientation int) (vertex.Verticies, []uint32) {
 	var vertices vertex.Verticies
 	for i := 0; i < 6; i++ {
 		for j := 0; j < 4; j++ {
 			pointIndex := i*4 + j
+			texIndex := j
+			if orientation == TEXTURE_ORIENTATION_SAME && i%2 == 1 {
+				texIndex = 3 - j
+			}
 			vertices = append(vertices, vertex.Vertex{
 				Position:  c.Points[pointIndex],
 				Color:     col[i%len(col)],
-				TexCoords: textureCoords[j],
+				TexCoords: textureCoords[texIndex],
 			})
 		}
 	}
