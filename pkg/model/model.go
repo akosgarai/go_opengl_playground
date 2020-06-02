@@ -10,8 +10,7 @@ import (
 )
 
 type Model struct {
-	meshes    []interfaces.Mesh
-	directory string
+	meshes []interfaces.Mesh
 }
 
 func New() *Model {
