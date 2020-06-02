@@ -245,7 +245,7 @@ func TestProcessTexturedGoodNamesMesh(t *testing.T) {
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	cube := cuboid.NewCube()
-	v, i := cube.MeshInput()
+	v, i := cube.TexturedMeshInput()
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
@@ -279,7 +279,7 @@ func TestProcessTexturedNoSpecularMesh(t *testing.T) {
 	var tex texture.Textures
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
 	cube := cuboid.NewCube()
-	v, i := cube.MeshInput()
+	v, i := cube.TexturedMeshInput()
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
@@ -313,7 +313,7 @@ func TestProcessTexturedNoDiffuseMesh(t *testing.T) {
 	var tex texture.Textures
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	cube := cuboid.NewCube()
-	v, i := cube.MeshInput()
+	v, i := cube.TexturedMeshInput()
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
