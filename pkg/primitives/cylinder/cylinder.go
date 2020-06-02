@@ -21,117 +21,170 @@ type Cylinder struct {
 // 'rad' - the radius of the circle. 'prec' - the precision of the circle.
 // 'length' - the length of the body of the cylinder.
 func New(rad float32, prec int, length float32) *Cylinder {
-	var points []mgl32.Vec3
-	var normals []mgl32.Vec3
-	var indices []uint32
-	var texCoords []mgl32.Vec2
-
 	circleVertices := circleWithRadius(rad, prec)
+	c := Cylinder{
+		Points:    []mgl32.Vec3{},
+		Normals:   []mgl32.Vec3{},
+		Indices:   []uint32{},
+		TexCoords: []mgl32.Vec2{},
+	}
+	c.buildFromBaseShape(circleVertices, rad, prec, length)
+	return &c
+}
+func NewHalfCircleBased(rad float32, prec int, length float32) *Cylinder {
+	baseShapeVertices := halfCircleWithRadius(rad, prec)
+	c := Cylinder{
+		Points:    []mgl32.Vec3{},
+		Normals:   []mgl32.Vec3{},
+		Indices:   []uint32{},
+		TexCoords: []mgl32.Vec2{},
+	}
+	c.buildFromBaseShape(baseShapeVertices, rad, prec, length)
+	return &c
+}
 
-	// sides
+// Based on the following example:
+// http://www.songho.ca/opengl/gl_cylinder.html
+// 'rad' - the radius of the base shape. 'prec' - the precision of the base shape.
+// 'length' - the length of the body of the cylinder.
+// This function will replace the big newWithBaseShape. The steps will be separated to functions, so that i can write tests
+// to double check the issues.
+func (c *Cylinder) buildFromBaseShape(baseVertices []float32, rad float32, prec int, length float32) {
+	c.calculatePointsNormalsTexCoordsForTheSides(baseVertices, prec, length)
+
+	// Precalculate the center points of the top/bottom shapes.
+	baseCenterIndex := len(c.Points)
+	topCenterIndex := baseCenterIndex + prec + 1
+	c.calculatePointsNormalsTexCoordsForTheBases(baseVertices, rad, prec, length)
+
+	c.calculateIndicesForTheSideSurface(prec)
+	c.calculateIndicesForTheBaseSurface(baseCenterIndex, prec)
+	c.calculateIndicesForTheTopSurface(topCenterIndex, prec)
+}
+func (c *Cylinder) calculatePointsNormalsTexCoordsForTheSides(baseVertices []float32, prec int, length float32) {
+	precFloat := float32(prec)
 	for i := 0; i < 2; i++ {
 		height := -length/2 + float32(i)*length
 		texCoord := float32(1.0 - i)
 		k := 0
-		for j := 0; j < prec; j++ {
-			uX := circleVertices[k]
-			uY := circleVertices[k+1]
-			uZ := circleVertices[k+2]
+		for j := 0; j <= prec; j++ {
+			uX := baseVertices[k]
+			uY := baseVertices[k+1]
+			uZ := baseVertices[k+2]
 			// position vector
-			points = append(points, mgl32.Vec3{uX, uY, height})
+			c.Points = append(c.Points, mgl32.Vec3{uX, uY, height})
 			// normal vectors
-			normals = append(normals, mgl32.Vec3{uX, uY, uZ})
+			c.Normals = append(c.Normals, mgl32.Vec3{uX, uY, uZ})
 			// texture coordinate
-			texCoords = append(texCoords, mgl32.Vec2{float32(j) / float32(prec), texCoord})
+			c.TexCoords = append(c.TexCoords, mgl32.Vec2{float32(j) / precFloat, texCoord})
 			k = k + 3
 		}
 	}
-	// it will be used for the generating the indices. - the staring index for the base / top circles.
-	baseCenterIndex := len(points)
-	topCenterIndex := baseCenterIndex + prec + 1
+}
+func (c *Cylinder) calculatePointsNormalsTexCoordsForTheBases(baseVertices []float32, rad float32, prec int, length float32) {
 	for i := 0; i < 2; i++ {
 		height := -length/2 + float32(i)*length
 		normal := float32(-1 + i*2)
 
 		// center point
-		points = append(points, mgl32.Vec3{0.0, 0.0, height})
-		normals = append(normals, mgl32.Vec3{0.0, 0.0, normal})
-		texCoords = append(texCoords, mgl32.Vec2{0.5, 0.5})
+		c.Points = append(c.Points, mgl32.Vec3{0.0, 0.0, height})
+		c.Normals = append(c.Normals, mgl32.Vec3{0.0, 0.0, normal})
+		c.TexCoords = append(c.TexCoords, mgl32.Vec2{0.5, 0.5})
 
 		k := 0
 		for j := 0; j < prec; j++ {
 			// position vector
-			points = append(points, mgl32.Vec3{circleVertices[k], circleVertices[k+1], height})
+			c.Points = append(c.Points, mgl32.Vec3{baseVertices[k], baseVertices[k+1], height})
 			// normal vectors
-			normals = append(normals, mgl32.Vec3{0.0, 0.0, normal})
+			c.Normals = append(c.Normals, mgl32.Vec3{0.0, 0.0, normal})
 			// texture coordinate
-			texCoords = append(texCoords, mgl32.Vec2{-circleVertices[k]/rad*0.5 + 0.5, -circleVertices[k+1]/rad*0.5 + 0.5})
+			c.TexCoords = append(c.TexCoords, mgl32.Vec2{-baseVertices[k]/rad*0.5 + 0.5, -baseVertices[k+1]/rad*0.5 + 0.5})
 			k = k + 3
 		}
 	}
-	// indices
+}
+func (c *Cylinder) calculateIndicesForTheSideSurface(prec int) {
 	k1 := 0        // first vertex index of the bottom
-	k2 := prec - 1 // first vertex index of the top
-	// indices for the side surface
+	k2 := prec + 1 // first vertex index of the top
 	for i := 0; i < prec; i++ {
-		indices = append(indices, uint32(k1))
-		indices = append(indices, uint32(k1+1))
-		indices = append(indices, uint32(k2))
+		c.Indices = append(c.Indices, uint32(k1))
+		c.Indices = append(c.Indices, uint32(k1+1))
+		c.Indices = append(c.Indices, uint32(k2))
 
-		indices = append(indices, uint32(k2))
-		indices = append(indices, uint32(k1+1))
-		indices = append(indices, uint32(k2+1))
+		c.Indices = append(c.Indices, uint32(k2))
+		c.Indices = append(c.Indices, uint32(k1+1))
+		c.Indices = append(c.Indices, uint32(k2+1))
 
 		k1 = k1 + 1
 		k2 = k2 + 1
 	}
+}
+func (c *Cylinder) calculateIndicesForTheBaseSurface(baseCenterIndex, prec int) {
 	// indices for the base surface
 	k := baseCenterIndex + 1
 	for i := 0; i < prec; i++ {
 		if i < prec-1 {
-			indices = append(indices, uint32(baseCenterIndex))
-			indices = append(indices, uint32(k+1))
-			indices = append(indices, uint32(k))
+			c.Indices = append(c.Indices, uint32(baseCenterIndex))
+			c.Indices = append(c.Indices, uint32(k+1))
+			c.Indices = append(c.Indices, uint32(k))
 		} else {
 			// the last triangle
-			indices = append(indices, uint32(baseCenterIndex))
-			indices = append(indices, uint32(baseCenterIndex+1))
-			indices = append(indices, uint32(k))
+			c.Indices = append(c.Indices, uint32(baseCenterIndex))
+			c.Indices = append(c.Indices, uint32(baseCenterIndex+1))
+			c.Indices = append(c.Indices, uint32(k))
 		}
 		k = k + 1
 	}
-	// indices for the top surface
-	k = topCenterIndex + 1
+}
+func (c *Cylinder) calculateIndicesForTheTopSurface(topCenterIndex, prec int) {
+	// indices for the base surface
+	k := topCenterIndex + 1
 	for i := 0; i < prec; i++ {
 		if i < prec-1 {
-			indices = append(indices, uint32(topCenterIndex))
-			indices = append(indices, uint32(k))
-			indices = append(indices, uint32(k+1))
+			c.Indices = append(c.Indices, uint32(topCenterIndex))
+			c.Indices = append(c.Indices, uint32(k+1))
+			c.Indices = append(c.Indices, uint32(k))
 		} else {
-			indices = append(indices, uint32(topCenterIndex))
-			indices = append(indices, uint32(k))
-			indices = append(indices, uint32(topCenterIndex+1))
+			c.Indices = append(c.Indices, uint32(topCenterIndex))
+			c.Indices = append(c.Indices, uint32(topCenterIndex+1))
+			c.Indices = append(c.Indices, uint32(k))
 		}
 		k = k + 1
-	}
-
-	return &Cylinder{
-		Points:    points,
-		Normals:   normals,
-		Indices:   indices,
-		TexCoords: texCoords,
 	}
 }
 
 // circleWithRadius returns the position vectors of
 // a circle on XY plane,
-func circleWithRadius(radian float32, precision int) []float32 {
+func circleWithRadius(radius float32, precision int) []float32 {
 	var positionVectors []float32
 	sectorStep := float64(2*math.Pi) / float64(precision)
-	for i := 0; i < precision; i++ {
+	for i := 0; i <= precision; i++ {
 		sectorAngle := float64(i) * sectorStep
-		positionVectors = append(positionVectors, float32(math.Cos(sectorAngle))*radian)
-		positionVectors = append(positionVectors, float32(math.Sin(sectorAngle))*radian)
+		positionVectors = append(positionVectors, float32(math.Cos(sectorAngle))*radius)
+		positionVectors = append(positionVectors, float32(math.Sin(sectorAngle))*radius)
+		positionVectors = append(positionVectors, 0)
+	}
+	return positionVectors
+}
+
+// halfCircleWithRadius returns the position vectors of
+// a halfcircle on XY plane.
+func halfCircleWithRadius(radius float32, precision int) []float32 {
+	var positionVectors []float32
+	// we are iterating from 0deg to 180deg.
+	sectorStep := float64(2*math.Pi) / float64(precision)
+	for i := 0; i <= precision/2; i++ {
+		sectorAngle := float64(i) * sectorStep
+		positionVectors = append(positionVectors, float32(math.Cos(sectorAngle))*radius)
+		positionVectors = append(positionVectors, float32(math.Sin(sectorAngle))*radius)
+		positionVectors = append(positionVectors, 0)
+	}
+	// Draw a line from the end of the curve to the start. (v{-1,0,0} -> v{1,0,0})
+	lineStep := float32(2.0) / float32(precision/2)
+	for i := 0; i <= precision/2; i++ {
+		current := -lineStep*float32(i) + 1.0
+		positionVectors = append(positionVectors, current*radius)
+		positionVectors = append(positionVectors, 0)
 		positionVectors = append(positionVectors, 0)
 	}
 	return positionVectors
