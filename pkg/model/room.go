@@ -2,7 +2,6 @@ package model
 
 import (
 	"math"
-	"time"
 
 	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/interfaces"
@@ -163,25 +162,35 @@ func (r *Room) PushDoorState() {
 		r.currentAnimationTime = 0
 	}
 }
+func (r *Room) animateDoor(dt float64) {
+	// early return if possible
+	if r.doorState == _DOOR_OPENED || r.doorState == _DOOR_CLOSED {
+		return
+	}
+	maxDelta := math.Min(dt, doorAnimationTime-r.currentAnimationTime+dt)
+	r.currentAnimationTime += maxDelta
 
-// Update function loops over each of the meshes and calls their Update function.
-func (r *Room) Update(dt float64) {
-	maxDelta := math.Min(dt, doorAnimationTime-r.currentAnimationTime+(dt/float64(time.Millisecond)))
+	door := r.GetDoor()
+	currentPos := door.GetPosition()
+	var rotationDeg float32
 	if r.doorState == _DOOR_OPENING {
-		r.currentAnimationTime += maxDelta
-		door := r.GetDoor()
-		door.RotateY(float32(-90.0 / doorAnimationTime * maxDelta))
-		//door.RotatePosition(float32(-90.0/doorAnimationTime*maxDelta), mgl32.Vec3{0, 1, 0})
+		rotationDeg = float32(90.0 / doorAnimationTime * maxDelta)
 	}
 	if r.doorState == _DOOR_CLOSING {
-		r.currentAnimationTime += maxDelta
-		door := r.GetDoor()
-		//door.RotatePosition(float32(90.0/doorAnimationTime*maxDelta), mgl32.Vec3{0, 1, 0})
-		door.RotateY(float32(90.0 / doorAnimationTime * maxDelta))
+		rotationDeg = float32(-90.0 / doorAnimationTime * maxDelta)
 	}
+	sinDeg := float32(math.Sin(float64(mgl32.DegToRad(rotationDeg))))
+	cosDeg := float32(math.Cos(float64(mgl32.DegToRad(90 - rotationDeg))))
+	door.SetPosition(mgl32.Vec3{currentPos.X() - sinDeg*0.125, currentPos.Y(), currentPos.Z() + cosDeg*0.125})
+	door.RotateY(-rotationDeg)
 	if r.currentAnimationTime >= doorAnimationTime {
 		r.doorState = (r.doorState + 1) % 4
 	}
+}
+
+// Update function loops over each of the meshes and calls their Update function.
+func (r *Room) Update(dt float64) {
+	r.animateDoor(dt)
 	for i, _ := range r.meshes {
 		r.meshes[i].Update(dt)
 	}

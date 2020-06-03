@@ -93,6 +93,7 @@ type Mesh interface {
 	SetSpeed(float32)
 	SetDirection(mgl32.Vec3)
 	GetPosition() mgl32.Vec3
+	SetPosition(mgl32.Vec3)
 	ModelTransformation() mgl32.Mat4
 	TranslationTransformation() mgl32.Mat4
 	RotationTransformation() mgl32.Mat4
