@@ -10,26 +10,34 @@ import (
 )
 
 type Model struct {
-	meshes    []interfaces.Mesh
-	directory string
+	meshes []interfaces.Mesh
+}
+type BaseModel struct {
+	Model
 }
 
-func New() *Model {
+// Update function loops over each of the meshes and calls their Update function.
+func (m *BaseModel) Update(dt float64) {
+	for i, _ := range m.meshes {
+		m.meshes[i].Update(dt)
+	}
+}
+func newModel() *Model {
 	return &Model{
 		meshes: []interfaces.Mesh{},
+	}
+}
+
+func New() *BaseModel {
+	m := newModel()
+	return &BaseModel{
+		*m,
 	}
 }
 
 // AddMesh function adds a mesh to the meshes.
 func (m *Model) AddMesh(msh interfaces.Mesh) {
 	m.meshes = append(m.meshes, msh)
-}
-
-// Update function loops over each of the meshes and calls their Update function.
-func (m *Model) Update(dt float64) {
-	for i, _ := range m.meshes {
-		m.meshes[i].Update(dt)
-	}
 }
 
 // Draw function loops over each of the meshes and calls their Draw function.

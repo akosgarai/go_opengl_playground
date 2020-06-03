@@ -97,6 +97,9 @@ func Update() {
 	nowNano := time.Now().UnixNano()
 	moveTime := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
+	if app.GetKeyState(glfw.KeyM) {
+		Room3.PushDoorState()
+	}
 	app.Update(moveTime)
 
 	forward := 0.0

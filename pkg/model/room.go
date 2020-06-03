@@ -1,7 +1,10 @@
 package model
 
 import (
+	"math"
+
 	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
+	"github.com/akosgarai/opengl_playground/pkg/interfaces"
 	"github.com/akosgarai/opengl_playground/pkg/mesh"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
@@ -10,8 +13,18 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+const (
+	_DOOR_OPENED      = 0
+	_DOOR_CLOSING     = 1
+	_DOOR_CLOSED      = 2
+	_DOOR_OPENING     = 3
+	doorAnimationTime = float64(1000)
+)
+
 type Room struct {
 	Model
+	doorState            int
+	currentAnimationTime float64
 }
 
 // NewMaterialRoom returns a Room that is based on material meshes.
@@ -66,7 +79,7 @@ func NewMaterialRoom(position mgl32.Vec3) *Room {
 	door.RotateY(90)
 	door.SetParent(floor)
 
-	m := New()
+	m := newModel()
 	m.AddMesh(floor)
 	m.AddMesh(ceiling)
 	m.AddMesh(backWall)
@@ -75,7 +88,7 @@ func NewMaterialRoom(position mgl32.Vec3) *Room {
 	m.AddMesh(frontWallMain)
 	m.AddMesh(frontWallRest)
 	m.AddMesh(door)
-	return &Room{Model: *m}
+	return &Room{Model: *m, doorState: _DOOR_OPENED, currentAnimationTime: 0}
 }
 func NewTextureRoom(position mgl32.Vec3) *Room {
 	var concreteTexture texture.Textures
@@ -131,7 +144,7 @@ func NewTextureRoom(position mgl32.Vec3) *Room {
 	door.RotateY(-90)
 	door.SetParent(floor)
 
-	m := New()
+	m := newModel()
 	m.AddMesh(floor)
 	m.AddMesh(ceiling)
 	m.AddMesh(backWall)
@@ -140,5 +153,48 @@ func NewTextureRoom(position mgl32.Vec3) *Room {
 	m.AddMesh(frontWallMain)
 	m.AddMesh(frontWallRest)
 	m.AddMesh(door)
-	return &Room{Model: *m}
+	return &Room{Model: *m, doorState: _DOOR_OPENED, currentAnimationTime: 0}
+}
+
+func (r *Room) PushDoorState() {
+	if r.doorState == _DOOR_OPENED || r.doorState == _DOOR_CLOSED {
+		r.doorState += 1
+		r.currentAnimationTime = 0
+	}
+}
+func (r *Room) animateDoor(dt float64) {
+	// early return if possible
+	if r.doorState == _DOOR_OPENED || r.doorState == _DOOR_CLOSED {
+		return
+	}
+	maxDelta := math.Min(dt, doorAnimationTime-r.currentAnimationTime+dt)
+	r.currentAnimationTime += maxDelta
+
+	door := r.GetDoor()
+	currentPos := door.GetPosition()
+	var rotationDeg float32
+	if r.doorState == _DOOR_OPENING {
+		rotationDeg = float32(90.0 / doorAnimationTime * maxDelta)
+	}
+	if r.doorState == _DOOR_CLOSING {
+		rotationDeg = float32(-90.0 / doorAnimationTime * maxDelta)
+	}
+	sinDeg := float32(math.Sin(float64(mgl32.DegToRad(rotationDeg))))
+	cosDeg := float32(math.Cos(float64(mgl32.DegToRad(90 - rotationDeg))))
+	door.SetPosition(mgl32.Vec3{currentPos.X() - sinDeg*0.125, currentPos.Y(), currentPos.Z() + cosDeg*0.125})
+	door.RotateY(-rotationDeg)
+	if r.currentAnimationTime >= doorAnimationTime {
+		r.doorState = (r.doorState + 1) % 4
+	}
+}
+
+// Update function loops over each of the meshes and calls their Update function.
+func (r *Room) Update(dt float64) {
+	r.animateDoor(dt)
+	for i, _ := range r.meshes {
+		r.meshes[i].Update(dt)
+	}
+}
+func (r *Room) GetDoor() interfaces.Mesh {
+	return r.meshes[7]
 }

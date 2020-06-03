@@ -56,7 +56,7 @@ func NewMaterialStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
 	bulb.SetScale(mgl32.Vec3{1.0, 1.0, 1.0}.Mul(bulbRadius))
 	bulb.SetParent(top)
 
-	m := New()
+	m := newModel()
 	m.AddMesh(bulb)
 	m.AddMesh(top)
 	m.AddMesh(pole)
@@ -106,7 +106,7 @@ func NewTexturedStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
 	bulb.SetScale(mgl32.Vec3{1.0, 1.0, 1.0}.Mul(bulbRadius))
 	bulb.SetParent(top)
 
-	m := New()
+	m := newModel()
 	m.AddMesh(pole)
 	m.AddMesh(top)
 	m.AddMesh(bulb)
@@ -129,4 +129,11 @@ func (s *StreetLamp) GetTopPosition() mgl32.Vec3 {
 // Transformations are applied, due to the relative position.
 func (s *StreetLamp) GetBulbPosition() mgl32.Vec3 {
 	return mgl32.TransformCoordinate(s.meshes[2].GetPosition(), s.meshes[2].ModelTransformation())
+}
+
+// Update function loops over each of the meshes and calls their Update function.
+func (s *StreetLamp) Update(dt float64) {
+	for i, _ := range s.meshes {
+		s.meshes[i].Update(dt)
+	}
 }
