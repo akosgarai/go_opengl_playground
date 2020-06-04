@@ -129,9 +129,13 @@ func (c *Camera) UpdateDirection(amountX, amountY float32) {
 	c.yaw = float32(math.Mod(float64(c.yaw+amountX), 360))
 	c.updateVectors()
 }
+
+// GetPosition returns the current position of the camera.
 func (c *Camera) GetPosition() mgl32.Vec3 {
 	return c.cameraPosition
 }
+
+// GetBoundingObject returns the bounding object of the camera. It is defined as a sphere.
 func (c *Camera) GetBoundingObject() *coldet.Sphere {
 	return coldet.NewBoundingSphere([3]float32{c.cameraPosition.X(), c.cameraPosition.Y(), c.cameraPosition.Z()}, 0.1)
 }

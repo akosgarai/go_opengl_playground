@@ -32,4 +32,8 @@ It gets the matrix to transform from world coordinates to this camera's coordina
 
 ## UpdateDirection
 
-Itupdates the pitch and yaw values.
+It updates the pitch and yaw values.
+
+## GetBoundingObject
+
+It returns the bounding object of the camera. Now it is defined as a sphere. The position is the current position of the camera. The radius is hardcoded to 1.
