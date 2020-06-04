@@ -3,6 +3,7 @@ package camera
 import (
 	"math"
 
+	"github.com/akosgarai/coldet"
 	"github.com/go-gl/mathgl/mgl32"
 
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
@@ -130,4 +131,7 @@ func (c *Camera) UpdateDirection(amountX, amountY float32) {
 }
 func (c *Camera) GetPosition() mgl32.Vec3 {
 	return c.cameraPosition
+}
+func (c *Camera) GetBoundingObject() *coldet.Sphere {
+	return coldet.NewBoundingSphere([3]float32{c.cameraPosition.X(), c.cameraPosition.Y(), c.cameraPosition.Z()}, 0.1)
 }
