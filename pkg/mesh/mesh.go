@@ -7,6 +7,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 	"github.com/akosgarai/opengl_playground/pkg/texture"
 
+	"github.com/akosgarai/coldet"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
@@ -34,6 +35,8 @@ type Mesh struct {
 	// parent-child hierarchy
 	parent    interfaces.Mesh
 	parentSet bool
+
+	bo map[string]float32
 }
 
 // SetScale updates the scale of the mesh.
@@ -64,6 +67,16 @@ func (m *Mesh) GetPosition() mgl32.Vec3 {
 // GetDirection returns the current direction of the mesh.
 func (m *Mesh) GetDirection() mgl32.Vec3 {
 	return m.direction
+}
+
+// SetBoundingObjectParams sets the bounding object parameters of the mesh.
+func (m *Mesh) SetBoundingObjectParams(bo map[string]float32) {
+	m.bo = bo
+}
+
+// GetBoundingObject returns the bounding object of the camera. It is defined as a sphere.
+func (m *Mesh) GetBoundingObject() *coldet.AABB {
+	return coldet.NewBoundingBox([3]float32{m.position.X(), m.position.Y(), m.position.Z()}, m.bo["width"], m.bo["length"], m.bo["height"])
 }
 
 // SetParent sets the given mesh to the parent. It also sets the
