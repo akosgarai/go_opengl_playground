@@ -243,8 +243,7 @@ func (a *Application) cameraMouseRotation(delta float64) {
 }
 
 // Update loops on the shaderMap, and calls Update function on every Model.
-// It also handles the camera movement (the rotation is unhandled yet), if
-// the camera is set.
+// It also handles the camera movement and rotation, if the camera is set.
 func (a *Application) Update(dt float64) {
 	if a.cameraSet {
 		a.cameraKeyboardMovement("forward", "back", "Walk", dt)
