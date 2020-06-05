@@ -10,7 +10,6 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/model"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
-	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
@@ -23,9 +22,9 @@ const (
 	WindowHeight = 800
 	WindowTitle  = "Example - cube with camera"
 
-	MoveSpeed            = 0.005
-	cameraDistance       = 0.1
-	cameraDirectionSpeed = float32(0.00500)
+	CameraMoveSpeed      = 0.005
+	CameraDistance       = 0.1
+	CameraDirectionSpeed = float32(0.00500)
 )
 
 var (
@@ -54,7 +53,8 @@ func CameraMovementMap() map[string]glfw.Key {
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{0, 0, 10.0}, mgl32.Vec3{0, 1, 0}, -90.0, 0.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
-	camera.SetVelocity(MoveSpeed)
+	camera.SetVelocity(CameraMoveSpeed)
+	camera.SetRotationStep(CameraDirectionSpeed)
 	return camera
 }
 
@@ -79,48 +79,6 @@ func Update() {
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
 	app.Update(delta)
-
-	currX, currY := app.GetWindow().GetCursorPos()
-	x, y := trans.MouseCoordinates(currX, currY, WindowWidth, WindowHeight)
-	KeyDowns := make(map[string]bool)
-	// dUp
-	if y > 1.0-cameraDistance && y < 1.0 {
-		KeyDowns["dUp"] = true
-	} else {
-		KeyDowns["dUp"] = false
-	}
-	// dDown
-	if y < -1.0+cameraDistance && y > -1.0 {
-		KeyDowns["dDown"] = true
-	} else {
-		KeyDowns["dDown"] = false
-	}
-	// dLeft
-	if x < -1.0+cameraDistance && x > -1.0 {
-		KeyDowns["dLeft"] = true
-	} else {
-		KeyDowns["dLeft"] = false
-	}
-	// dRight
-	if x > 1.0-cameraDistance && x < 1.0 {
-		KeyDowns["dRight"] = true
-	} else {
-		KeyDowns["dRight"] = false
-	}
-
-	dX := float32(0.0)
-	dY := float32(0.0)
-	if KeyDowns["dUp"] && !KeyDowns["dDown"] {
-		dY = cameraDirectionSpeed
-	} else if KeyDowns["dDown"] && !KeyDowns["dUp"] {
-		dY = -cameraDirectionSpeed
-	}
-	if KeyDowns["dLeft"] && !KeyDowns["dRight"] {
-		dX = -cameraDirectionSpeed
-	} else if KeyDowns["dRight"] && !KeyDowns["dLeft"] {
-		dX = cameraDirectionSpeed
-	}
-	app.GetCamera().UpdateDirection(dX, dY)
 }
 func main() {
 	runtime.LockOSThread()
@@ -132,6 +90,7 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 	app.SetCameraMovementMap(CameraMovementMap())
+	app.SetRotateOnEdgeDistance(CameraDistance)
 
 	shaderProgram := shader.NewShader("examples/05-cube-with-camera/shaders/vertexshader.vert", "examples/05-cube-with-camera/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
