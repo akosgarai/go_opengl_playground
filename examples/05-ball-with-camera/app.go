@@ -15,6 +15,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
+	"github.com/akosgarai/coldet"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -38,6 +39,7 @@ const (
 var (
 	app           *application.Application
 	Ball          *mesh.ColorMesh
+	Ground        *mesh.ColorMesh
 	BallPrecision = 10
 
 	lastUpdate           int64
@@ -78,6 +80,11 @@ func CreateSquareMesh() *mesh.ColorMesh {
 	v, i := s.ColoredMeshInput(squareColor)
 	m := mesh.NewColorMesh(v, i, squareColor, glWrapper)
 	m.SetScale(mgl32.Vec3{40, 40, 40})
+	bo := make(map[string]float32)
+	bo["width"] = float32(40.0)
+	bo["height"] = float32(40.0)
+	bo["length"] = float32(0.05)
+	m.SetBoundingObjectParams(bo)
 	return m
 }
 
@@ -105,7 +112,12 @@ func Update() {
 		forward = -moveSpeed * moveTime
 	}
 	if forward != 0 {
-		app.GetCamera().Walk(float32(forward))
+		boCamera := app.GetCamera().BoundingObjectAfterWalk(float32(forward))
+		boGround := Ground.GetBoundingObject()
+		intersect := coldet.CheckSphereVsAabb(*boCamera, *boGround)
+		if !intersect {
+			app.GetCamera().Walk(float32(forward))
+		}
 	}
 	horisontal := 0.0
 	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
@@ -114,7 +126,12 @@ func Update() {
 		horisontal = moveSpeed * moveTime
 	}
 	if horisontal != 0 {
-		app.GetCamera().Strafe(float32(horisontal))
+		boCamera := app.GetCamera().BoundingObjectAfterStrafe(float32(horisontal))
+		boGround := Ground.GetBoundingObject()
+		intersect := coldet.CheckSphereVsAabb(*boCamera, *boGround)
+		if !intersect {
+			app.GetCamera().Strafe(float32(horisontal))
+		}
 	}
 	vertical := 0.0
 	if app.GetKeyState(UP) && !app.GetKeyState(DOWN) {
@@ -123,7 +140,12 @@ func Update() {
 		vertical = moveSpeed * moveTime
 	}
 	if vertical != 0 {
-		app.GetCamera().Lift(float32(vertical))
+		boCamera := app.GetCamera().BoundingObjectAfterLift(float32(vertical))
+		boGround := Ground.GetBoundingObject()
+		intersect := coldet.CheckSphereVsAabb(*boCamera, *boGround)
+		if !intersect {
+			app.GetCamera().Lift(float32(vertical))
+		}
 	}
 
 	currX, currY := app.GetWindow().GetCursorPos()
@@ -183,8 +205,8 @@ func main() {
 	app.AddShader(shaderProgram)
 	Ball = CreateSphereMesh()
 	Model.AddMesh(Ball)
-	squareMesh := CreateSquareMesh()
-	Model.AddMesh(squareMesh)
+	Ground = CreateSquareMesh()
+	Model.AddMesh(Ground)
 	app.AddModelToShader(Model, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)
