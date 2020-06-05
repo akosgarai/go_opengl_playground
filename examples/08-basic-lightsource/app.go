@@ -12,7 +12,6 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
-	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
 	"github.com/akosgarai/opengl_playground/pkg/shader"
 	"github.com/akosgarai/opengl_playground/pkg/window"
 
@@ -26,8 +25,8 @@ const (
 	WindowTitle  = "Example - cubes, basic lighting"
 
 	CameraMoveSpeed      = 0.005
-	cameraDistance       = 0.1
-	cameraDirectionSpeed = float32(0.00500)
+	CameraDistance       = 0.1
+	CameraDirectionSpeed = float32(0.00500)
 )
 
 var (
@@ -57,6 +56,7 @@ func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{0, 0, 10.0}, mgl32.Vec3{0, 1, 0}, -90.0, 0.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
 	camera.SetVelocity(CameraMoveSpeed)
+	camera.SetRotationStep(CameraDirectionSpeed)
 	return camera
 }
 
@@ -74,48 +74,6 @@ func Update() {
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
 	app.Update(delta)
-
-	currX, currY := app.GetWindow().GetCursorPos()
-	x, y := trans.MouseCoordinates(currX, currY, WindowWidth, WindowHeight)
-	KeyDowns := make(map[string]bool)
-	// dUp
-	if y > 1.0-cameraDistance && y < 1.0 {
-		KeyDowns["dUp"] = true
-	} else {
-		KeyDowns["dUp"] = false
-	}
-	// dDown
-	if y < -1.0+cameraDistance && y > -1.0 {
-		KeyDowns["dDown"] = true
-	} else {
-		KeyDowns["dDown"] = false
-	}
-	// dLeft
-	if x < -1.0+cameraDistance && x > -1.0 {
-		KeyDowns["dLeft"] = true
-	} else {
-		KeyDowns["dLeft"] = false
-	}
-	// dRight
-	if x > 1.0-cameraDistance && x < 1.0 {
-		KeyDowns["dRight"] = true
-	} else {
-		KeyDowns["dRight"] = false
-	}
-
-	dX := float32(0.0)
-	dY := float32(0.0)
-	if KeyDowns["dUp"] && !KeyDowns["dDown"] {
-		dY = cameraDirectionSpeed
-	} else if KeyDowns["dDown"] && !KeyDowns["dUp"] {
-		dY = -cameraDirectionSpeed
-	}
-	if KeyDowns["dLeft"] && !KeyDowns["dRight"] {
-		dX = -cameraDirectionSpeed
-	} else if KeyDowns["dRight"] && !KeyDowns["dLeft"] {
-		dX = cameraDirectionSpeed
-	}
-	app.GetCamera().UpdateDirection(dX, dY)
 }
 func main() {
 	runtime.LockOSThread()
@@ -127,6 +85,7 @@ func main() {
 
 	app.SetCamera(CreateCamera())
 	app.SetCameraMovementMap(CameraMovementMap())
+	app.SetRotateOnEdgeDistance(CameraDistance)
 
 	lightSource := light.NewPointLight([4]mgl32.Vec3{mgl32.Vec3{-3, 0, -3}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
 	app.AddPointLightSource(lightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
