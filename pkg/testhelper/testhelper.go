@@ -84,8 +84,9 @@ func (wm WindowMock) SetKeyCallback(cb glfw.KeyCallback) glfw.KeyCallback { retu
 func (wm WindowMock) SetMouseButtonCallback(cb glfw.MouseButtonCallback) glfw.MouseButtonCallback {
 	return cb
 }
-func (wm WindowMock) ShouldClose() bool { return false }
-func (wm WindowMock) SwapBuffers()      {}
+func (wm WindowMock) ShouldClose() bool   { return false }
+func (wm WindowMock) SwapBuffers()        {}
+func (wm WindowMock) GetSize() (int, int) { return 800, 800 }
 
 type CameraMock struct{}
 
@@ -97,6 +98,8 @@ func (cm CameraMock) Strafe(float32)                   {}
 func (cm CameraMock) Lift(float32)                     {}
 func (cm CameraMock) UpdateDirection(float32, float32) {}
 func (cm CameraMock) GetPosition() mgl32.Vec3          { return mgl32.Vec3{0, 0, 0} }
+func (cm CameraMock) GetVelocity() float32             { return float32(0.0) }
+func (cm CameraMock) GetRotationStep() float32         { return float32(0.0) }
 
 // This function returns true, if the given a, b is almost equal,
 // the difference between them is less than epsilon.

@@ -172,3 +172,31 @@ func TestUpdateDirection(t *testing.T) {
 		t.Error("Invalid right direction")
 	}
 }
+func TestSetVelocity(t *testing.T) {
+	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
+	cam.SetVelocity(3)
+	if cam.velocity != 3 {
+		t.Errorf("Invalid velocity. Instead of '3', we have '%f'.\n", cam.velocity)
+	}
+}
+func TestGetVelocity(t *testing.T) {
+	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
+	cam.SetVelocity(3)
+	if cam.GetVelocity() != 3 {
+		t.Errorf("Invalid velocity. Instead of '3', we have '%f'.\n", cam.GetVelocity())
+	}
+}
+func TestSetRotationStep(t *testing.T) {
+	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
+	cam.SetRotationStep(3)
+	if cam.rotationStep != 3 {
+		t.Errorf("Invalid rotationStep. Instead of '3', we have '%f'.\n", cam.velocity)
+	}
+}
+func TestGetRotationStep(t *testing.T) {
+	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
+	cam.SetRotationStep(3)
+	if cam.GetRotationStep() != 3 {
+		t.Errorf("Invalid rotationStep. Instead of '3', we have '%f'.\n", cam.GetRotationStep())
+	}
+}
