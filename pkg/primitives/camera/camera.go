@@ -29,6 +29,7 @@ type Camera struct {
 		far  float32
 		near float32
 	}
+	velocity float32
 }
 
 // Log returns the string representation of this object.
@@ -60,6 +61,7 @@ func NewCamera(position, worldUp mgl32.Vec3, yaw, pitch float32) *Camera {
 		cameraPosition:    position,
 		cameraUpDirection: mgl32.Vec3{0, 1, 0},
 		worldUp:           worldUp,
+		velocity:          0,
 	}
 
 	cam.updateVectors()
@@ -128,6 +130,18 @@ func (c *Camera) UpdateDirection(amountX, amountY float32) {
 	c.yaw = float32(math.Mod(float64(c.yaw+amountX), 360))
 	c.updateVectors()
 }
+
+// GetPosition returns the current position of the camera.
 func (c *Camera) GetPosition() mgl32.Vec3 {
 	return c.cameraPosition
+}
+
+// GetVelocity returns the current velocity of the camera.
+func (c *Camera) GetVelocity() float32 {
+	return c.velocity
+}
+
+// SetVelocity updates the current velocity of the camera.
+func (c *Camera) SetVelocity(v float32) {
+	c.velocity = v
 }
