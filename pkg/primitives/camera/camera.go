@@ -67,20 +67,20 @@ func NewCamera(position, worldUp mgl32.Vec3, yaw, pitch float32) *Camera {
 	return &cam
 }
 
-// BouncingObjectAfterWalk returns the bouncing object of the new position.
-func (c *Camera) BouncingObjectAfterWalk(amount float32) *coldet.Sphere {
+// BoundingObjectAfterWalk returns the bouncing object of the new position.
+func (c *Camera) BoundingObjectAfterWalk(amount float32) *coldet.Sphere {
 	np := c.cameraPosition.Add(c.cameraFrontDirection.Mul(amount))
 	return coldet.NewBoundingSphere([3]float32{np.X(), np.Y(), np.Z()}, 0.1)
 }
 
-// BouncingObjectAfterStrafe returns the bouncing object of the new position.
-func (c *Camera) BouncingObjectAfterStrafe(amount float32) *coldet.Sphere {
+// BoundingObjectAfterStrafe returns the bouncing object of the new position.
+func (c *Camera) BoundingObjectAfterStrafe(amount float32) *coldet.Sphere {
 	np := c.cameraPosition.Add(c.cameraRightDirection.Mul(amount))
 	return coldet.NewBoundingSphere([3]float32{np.X(), np.Y(), np.Z()}, 0.1)
 }
 
-// BouncingObjectAfterLift returns the bouncing object of the new position.
-func (c *Camera) BouncingObjectAfterLift(amount float32) *coldet.Sphere {
+// BoundingObjectAfterLift returns the bouncing object of the new position.
+func (c *Camera) BoundingObjectAfterLift(amount float32) *coldet.Sphere {
 	np := c.cameraPosition.Add(c.cameraUpDirection.Mul(amount))
 	return coldet.NewBoundingSphere([3]float32{np.X(), np.Y(), np.Z()}, 0.1)
 }

@@ -189,9 +189,9 @@ func TestGetBoundingObject(t *testing.T) {
 	}
 
 }
-func TestBouncingObjectAfterWalk(t *testing.T) {
+func TestBoundingObjectAfterWalk(t *testing.T) {
 	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
-	bo := cam.BouncingObjectAfterWalk(1)
+	bo := cam.BoundingObjectAfterWalk(1)
 	if bo.X() != DefaultCameraPosition.X()+1 {
 		t.Errorf("Invalid X coordinate for the bounding sphere. Instead of '%f', we have '%f'.\n", DefaultCameraPosition.X()+1, bo.X())
 	}
@@ -206,9 +206,9 @@ func TestBouncingObjectAfterWalk(t *testing.T) {
 	}
 
 }
-func TestBouncingObjectAfterStrafe(t *testing.T) {
+func TestBoundingObjectAfterStrafe(t *testing.T) {
 	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
-	bo := cam.BouncingObjectAfterStrafe(-1)
+	bo := cam.BoundingObjectAfterStrafe(-1)
 	if bo.X() != DefaultCameraPosition.X() {
 		t.Errorf("Invalid X coordinate for the bounding sphere. Instead of '%f', we have '%f'.\n", DefaultCameraPosition.X(), bo.X())
 	}
@@ -223,9 +223,9 @@ func TestBouncingObjectAfterStrafe(t *testing.T) {
 	}
 
 }
-func TestBouncingObjectAfterLift(t *testing.T) {
+func TestBoundingObjectAfterLift(t *testing.T) {
 	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
-	bo := cam.BouncingObjectAfterLift(-1)
+	bo := cam.BoundingObjectAfterLift(-1)
 	if bo.X() != DefaultCameraPosition.X() {
 		t.Errorf("Invalid X coordinate for the bounding sphere. Instead of '%f', we have '%f'.\n", DefaultCameraPosition.X(), bo.X())
 	}
