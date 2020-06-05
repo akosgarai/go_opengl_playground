@@ -27,14 +27,6 @@ const (
 	WindowHeight = 800
 	WindowTitle  = "Example - textured spheres"
 
-	FORWARD  = glfw.KeyW
-	BACKWARD = glfw.KeyS
-	LEFT     = glfw.KeyA
-	RIGHT    = glfw.KeyD
-	UP       = glfw.KeyQ
-	DOWN     = glfw.KeyE
-
-	moveSpeed            = 0.005
 	cameraDirectionSpeed = float32(0.010)
 	CameraMoveSpeed      = 0.005
 	cameraDistance       = 0.1
@@ -68,6 +60,18 @@ var (
 	glWrapper wrapper.Wrapper
 )
 
+// Setup keymap for the camera movement
+func CameraMovementMap() map[string]glfw.Key {
+	cm := make(map[string]glfw.Key)
+	cm["forward"] = glfw.KeyW
+	cm["back"] = glfw.KeyS
+	cm["up"] = glfw.KeyQ
+	cm["down"] = glfw.KeyE
+	cm["left"] = glfw.KeyA
+	cm["right"] = glfw.KeyD
+	return cm
+}
+
 func TexturedSphere(t texture.Textures, position mgl32.Vec3, scale float32, shaderProgram *shader.Shader) *mesh.TexturedMesh {
 	v, i := spherePrimitive.TexturedMeshInput()
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
@@ -95,6 +99,7 @@ func CubeMap(t texture.Textures) *mesh.TexturedMesh {
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{0.0, 0.0, -10.0}, mgl32.Vec3{0, 1, 0}, 90.0, 0.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.01, 200.0)
+	camera.SetVelocity(CameraMoveSpeed)
 	return camera
 }
 func updateSun(moveTime float64) {
@@ -117,41 +122,14 @@ func updatePlanets(moveTime float64) {
 }
 func Update() {
 	nowNano := time.Now().UnixNano()
-	moveTime := float64(nowNano-lastUpdate) / float64(time.Millisecond)
+	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
 
-	updatePlanets(moveTime)
-	updateSun(moveTime)
+	updatePlanets(delta)
+	updateSun(delta)
 
-	app.Update(moveTime)
+	app.Update(delta)
 
-	forward := 0.0
-	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
-		forward = moveSpeed * moveTime
-	} else if app.GetKeyState(BACKWARD) && !app.GetKeyState(FORWARD) {
-		forward = -moveSpeed * moveTime
-	}
-	if forward != 0 {
-		app.GetCamera().Walk(float32(forward))
-	}
-	horizontal := 0.0
-	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
-		horizontal = -moveSpeed * moveTime
-	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
-		horizontal = moveSpeed * moveTime
-	}
-	if horizontal != 0 {
-		app.GetCamera().Strafe(float32(horizontal))
-	}
-	vertical := 0.0
-	if app.GetKeyState(UP) && !app.GetKeyState(DOWN) {
-		vertical = -moveSpeed * moveTime
-	} else if app.GetKeyState(DOWN) && !app.GetKeyState(UP) {
-		vertical = moveSpeed * moveTime
-	}
-	if vertical != 0 {
-		app.GetCamera().Lift(float32(vertical))
-	}
 	currX, currY := app.GetWindow().GetCursorPos()
 	x, y := trans.MouseCoordinates(currX, currY, WindowWidth, WindowHeight)
 	KeyDowns := make(map[string]bool)
@@ -203,6 +181,7 @@ func main() {
 	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
+	app.SetCameraMovementMap(CameraMovementMap())
 
 	PointLightSource = light.NewPointLight([4]mgl32.Vec3{
 		PointLightPosition,
