@@ -3,8 +3,13 @@ package testhelper
 import (
 	"unsafe"
 
+	"github.com/akosgarai/coldet"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
+)
+
+var (
+	bbSphere = coldet.NewBoundingSphere([3]float32{0, 0, 0}, 1.0)
 )
 
 type GLWrapperMock struct{}
@@ -89,14 +94,17 @@ func (wm WindowMock) SwapBuffers()      {}
 
 type CameraMock struct{}
 
-func (cm CameraMock) Log() string                      { return "" }
-func (cm CameraMock) GetViewMatrix() mgl32.Mat4        { return mgl32.Ident4() }
-func (cm CameraMock) GetProjectionMatrix() mgl32.Mat4  { return mgl32.Ident4() }
-func (cm CameraMock) Walk(float32)                     {}
-func (cm CameraMock) Strafe(float32)                   {}
-func (cm CameraMock) Lift(float32)                     {}
-func (cm CameraMock) UpdateDirection(float32, float32) {}
-func (cm CameraMock) GetPosition() mgl32.Vec3          { return mgl32.Vec3{0, 0, 0} }
+func (cm CameraMock) Log() string                                      { return "" }
+func (cm CameraMock) GetViewMatrix() mgl32.Mat4                        { return mgl32.Ident4() }
+func (cm CameraMock) GetProjectionMatrix() mgl32.Mat4                  { return mgl32.Ident4() }
+func (cm CameraMock) Walk(float32)                                     {}
+func (cm CameraMock) Strafe(float32)                                   {}
+func (cm CameraMock) Lift(float32)                                     {}
+func (cm CameraMock) UpdateDirection(float32, float32)                 {}
+func (cm CameraMock) GetPosition() mgl32.Vec3                          { return mgl32.Vec3{0, 0, 0} }
+func (cm CameraMock) BoundingObjectAfterWalk(float32) *coldet.Sphere   { return bbSphere }
+func (cm CameraMock) BoundingObjectAfterStrafe(float32) *coldet.Sphere { return bbSphere }
+func (cm CameraMock) BoundingObjectAfterLift(float32) *coldet.Sphere   { return bbSphere }
 
 // This function returns true, if the given a, b is almost equal,
 // the difference between them is less than epsilon.
