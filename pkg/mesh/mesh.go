@@ -74,7 +74,7 @@ func (m *Mesh) SetBoundingObjectParams(bo map[string]float32) {
 	m.bo = bo
 }
 
-// GetBoundingObject returns the bounding object of the camera. It is defined as a sphere.
+// GetBoundingObject returns the bounding object of the camera. It is hardcoded as a cuboid.
 func (m *Mesh) GetBoundingObject() *coldet.AABB {
 	return coldet.NewBoundingBox([3]float32{m.position.X(), m.position.Y(), m.position.Z()}, m.bo["width"], m.bo["length"], m.bo["height"])
 }
