@@ -109,3 +109,6 @@ func TestGetKeyState(t *testing.T) {
 		t.Error("W should be released")
 	}
 }
+func TestSetCameraMovementMap(t *testing.T) {
+	t.Skip("Unimplemented")
+}

@@ -51,6 +51,9 @@ type Application struct {
 	spotLightSources        []SpotLightSource
 
 	keyDowns map[glfw.Key]bool
+
+	// it holds the keyMaps for the camera movement
+	cameraMovementMap map[string]glfw.Key
 }
 
 // New returns an application instance
@@ -63,6 +66,7 @@ func New() *Application {
 		pointLightSources:       []PointLightSource{},
 		spotLightSources:        []SpotLightSource{},
 		keyDowns:                make(map[glfw.Key]bool),
+		cameraMovementMap:       make(map[string]glfw.Key),
 	}
 }
 
@@ -73,6 +77,11 @@ func (a *Application) Log() string {
 		logString += " - camera : " + a.camera.Log() + "\n"
 	}
 	return logString
+}
+
+// SetCameraMovementMap sets the cameraMovementMap variable
+func (a *Application) SetCameraMovementMap(m map[string]glfw.Key) {
+	a.cameraMovementMap = m
 }
 
 // SetWindow updates the window with the new one.
