@@ -24,14 +24,9 @@ const (
 	WindowHeight = 800
 	WindowTitle  = "Example - textured cube"
 
-	FORWARD  = glfw.KeyW // Go forward
-	BACKWARD = glfw.KeyS // Go backward
-	LEFT     = glfw.KeyA // Go left
-	RIGHT    = glfw.KeyD // Go right
-	UP       = glfw.KeyQ
-	DOWN     = glfw.KeyE
-
-	moveSpeed = 0.005
+	CameraMoveSpeed      = 0.005
+	cameraDistance       = 0.1
+	cameraDirectionSpeed = float32(0.00500)
 )
 
 var (
@@ -39,17 +34,28 @@ var (
 
 	lastUpdate int64
 
-	cameraDistance       = 0.1
-	cameraDirectionSpeed = float32(0.00500)
-	Model                = model.New()
+	Model = model.New()
 
 	glWrapper wrapper.Wrapper
 )
+
+// Setup keymap for the camera movement
+func CameraMovementMap() map[string]glfw.Key {
+	cm := make(map[string]glfw.Key)
+	cm["forward"] = glfw.KeyW
+	cm["back"] = glfw.KeyS
+	cm["up"] = glfw.KeyQ
+	cm["down"] = glfw.KeyE
+	cm["left"] = glfw.KeyA
+	cm["right"] = glfw.KeyD
+	return cm
+}
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{0, 0, 10.0}, mgl32.Vec3{0, 1, 0}, -90.0, 0.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
+	camera.SetVelocity(CameraMoveSpeed)
 	return camera
 }
 
@@ -72,37 +78,10 @@ func GenerateCubeMesh(t texture.Textures) *mesh.TexturedColoredMesh {
 // Update the z coordinates of the vectors.
 func Update() {
 	nowNano := time.Now().UnixNano()
-	delta := float64(nowNano - lastUpdate)
-	moveTime := delta / float64(time.Millisecond)
+	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
+	app.Update(delta)
 
-	forward := 0.0
-	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
-		forward = moveSpeed * moveTime
-	} else if app.GetKeyState(BACKWARD) && !app.GetKeyState(FORWARD) {
-		forward = -moveSpeed * moveTime
-	}
-	if forward != 0 {
-		app.GetCamera().Walk(float32(forward))
-	}
-	horisontal := 0.0
-	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
-		horisontal = -moveSpeed * moveTime
-	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
-		horisontal = moveSpeed * moveTime
-	}
-	if horisontal != 0 {
-		app.GetCamera().Strafe(float32(horisontal))
-	}
-	vertical := 0.0
-	if app.GetKeyState(UP) && !app.GetKeyState(DOWN) {
-		vertical = -moveSpeed * moveTime
-	} else if app.GetKeyState(DOWN) && !app.GetKeyState(UP) {
-		vertical = moveSpeed * moveTime
-	}
-	if vertical != 0 {
-		app.GetCamera().Lift(float32(vertical))
-	}
 	currX, currY := app.GetWindow().GetCursorPos()
 	x, y := trans.MouseCoordinates(currX, currY, WindowWidth, WindowHeight)
 	KeyDowns := make(map[string]bool)
@@ -160,6 +139,7 @@ func main() {
 	tex.AddTexture("examples/07-textured-cube/assets/image-texture.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne", glWrapper)
 
 	app.SetCamera(CreateCamera())
+	app.SetCameraMovementMap(CameraMovementMap())
 	cube := GenerateCubeMesh(tex)
 	Model.AddMesh(cube)
 	app.AddModelToShader(Model, shaderProgram)
