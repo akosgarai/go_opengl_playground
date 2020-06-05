@@ -112,6 +112,9 @@ func TestGetKeyState(t *testing.T) {
 func TestSetCameraMovementMap(t *testing.T) {
 	t.Skip("Unimplemented")
 }
-func TestCameraMovement(t *testing.T) {
+func TestCameraKeyboardMovement(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestCameraKeyboardRotation(t *testing.T) {
 	t.Skip("Unimplemented")
 }
