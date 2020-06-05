@@ -8,6 +8,7 @@ import (
 
 	"github.com/akosgarai/opengl_playground/pkg/interfaces"
 
+	"github.com/akosgarai/coldet"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -26,6 +27,9 @@ type Camera interface {
 	Lift(float32)
 	UpdateDirection(float32, float32)
 	GetPosition() mgl32.Vec3
+	BoundingObjectAfterWalk(float32) *coldet.Sphere
+	BoundingObjectAfterStrafe(float32) *coldet.Sphere
+	BoundingObjectAfterLift(float32) *coldet.Sphere
 }
 
 type Window interface {
