@@ -55,20 +55,20 @@ type Application struct {
 	keyDowns map[glfw.Key]bool
 
 	// it holds the keyMaps for the camera movement
-	cameraMovementMap map[string]glfw.Key
+	cameraKeyboardMovementMap map[string]glfw.Key
 }
 
 // New returns an application instance
 func New() *Application {
 	return &Application{
-		cameraSet:               false,
-		shaderMap:               make(map[interfaces.Shader][]interfaces.Model),
-		mouseDowns:              make(map[glfw.MouseButton]bool),
-		directionalLightSources: []DirectionalLightSource{},
-		pointLightSources:       []PointLightSource{},
-		spotLightSources:        []SpotLightSource{},
-		keyDowns:                make(map[glfw.Key]bool),
-		cameraMovementMap:       make(map[string]glfw.Key),
+		cameraSet:                 false,
+		shaderMap:                 make(map[interfaces.Shader][]interfaces.Model),
+		mouseDowns:                make(map[glfw.MouseButton]bool),
+		directionalLightSources:   []DirectionalLightSource{},
+		pointLightSources:         []PointLightSource{},
+		spotLightSources:          []SpotLightSource{},
+		keyDowns:                  make(map[glfw.Key]bool),
+		cameraKeyboardMovementMap: make(map[string]glfw.Key),
 	}
 }
 
@@ -81,9 +81,11 @@ func (a *Application) Log() string {
 	return logString
 }
 
-// SetCameraMovementMap sets the cameraMovementMap variable
+// SetCameraMovementMap sets the cameraKeyboardMovementMap variable.
+// Currently the following values are supported: 'forward', 'back',
+// 'left', 'right', 'up', 'down'
 func (a *Application) SetCameraMovementMap(m map[string]glfw.Key) {
-	a.cameraMovementMap = m
+	a.cameraKeyboardMovementMap = m
 }
 
 // SetWindow updates the window with the new one.
@@ -117,18 +119,18 @@ func (a *Application) AddModelToShader(m interfaces.Model, s interfaces.Shader) 
 	a.shaderMap[s] = append(a.shaderMap[s], m)
 }
 
-// cameraMovement is responsible for handling a movement for a specific direction.
+// cameraKeyboardMovement is responsible for handling a movement for a specific direction.
 // The direction is described by the key strings. The handler function name is also added
 // as input to be able to call it. For the movement we also need to know the delta time,
 // that is also added as function input. In case of invalid function name,
 // it prints out some message to the console.
-func (a *Application) cameraMovement(directionKey, oppositeKey, handlerName string, delta float64) {
+func (a *Application) cameraKeyboardMovement(directionKey, oppositeKey, handlerName string, delta float64) {
 	keyStateDirection := false
 	keyStateOpposite := false
-	if val, ok := a.cameraMovementMap[directionKey]; ok {
+	if val, ok := a.cameraKeyboardMovementMap[directionKey]; ok {
 		keyStateDirection = a.GetKeyState(val)
 	}
-	if val, ok := a.cameraMovementMap[oppositeKey]; ok {
+	if val, ok := a.cameraKeyboardMovementMap[oppositeKey]; ok {
 		keyStateOpposite = a.GetKeyState(val)
 	}
 	step := float32(0.0)
@@ -154,9 +156,9 @@ func (a *Application) cameraMovement(directionKey, oppositeKey, handlerName stri
 // the camera is set.
 func (a *Application) Update(dt float64) {
 	if a.cameraSet {
-		a.cameraMovement("forward", "back", "Walk", dt)
-		a.cameraMovement("right", "left", "Strafe", dt)
-		a.cameraMovement("up", "down", "Lift", dt)
+		a.cameraKeyboardMovement("forward", "back", "Walk", dt)
+		a.cameraKeyboardMovement("right", "left", "Strafe", dt)
+		a.cameraKeyboardMovement("up", "down", "Lift", dt)
 	}
 	for s, _ := range a.shaderMap {
 		for index, _ := range a.shaderMap[s] {
