@@ -29,15 +29,9 @@ const (
 	WindowHeight = 800
 	WindowTitle  = "Model loading example"
 
-	FORWARD  = glfw.KeyW
-	BACKWARD = glfw.KeyS
-	LEFT     = glfw.KeyA
-	RIGHT    = glfw.KeyD
-	UP       = glfw.KeyQ
-	DOWN     = glfw.KeyE
-
 	CameraMoveSpeed       = 0.005
 	CameraDirectionSpeed  = float32(0.00500)
+	cameraDistance        = 0.1
 	DefaultModelDirectory = "examples/09-model-loading/assets"
 	DefaultModelFilename  = "object.obj"
 )
@@ -47,8 +41,6 @@ var (
 	Importer *modelimport.Import
 
 	lastUpdate int64
-
-	cameraDistance = 0.1
 
 	glWrapper wrapper.Wrapper
 
@@ -122,46 +114,32 @@ func Init() {
 	}
 }
 
+// Setup keymap for the camera movement
+func CameraMovementMap() map[string]glfw.Key {
+	cm := make(map[string]glfw.Key)
+	cm["forward"] = glfw.KeyW
+	cm["back"] = glfw.KeyS
+	cm["up"] = glfw.KeyQ
+	cm["down"] = glfw.KeyE
+	cm["left"] = glfw.KeyA
+	cm["right"] = glfw.KeyD
+	return cm
+}
+
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{0.0, 0.0, -5.0}, mgl32.Vec3{0, 1, 0}, 90.0, 0.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
+	camera.SetVelocity(CameraMoveSpeed)
 	return camera
 }
 func Update() {
 	nowNano := time.Now().UnixNano()
-	moveTime := float64(nowNano-lastUpdate) / float64(time.Millisecond)
+	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
 
-	app.Update(moveTime)
+	app.Update(delta)
 
-	forward := 0.0
-	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
-		forward = CameraMoveSpeed * moveTime
-	} else if app.GetKeyState(BACKWARD) && !app.GetKeyState(FORWARD) {
-		forward = -CameraMoveSpeed * moveTime
-	}
-	if forward != 0 {
-		app.GetCamera().Walk(float32(forward))
-	}
-	horizontal := 0.0
-	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
-		horizontal = -CameraMoveSpeed * moveTime
-	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
-		horizontal = CameraMoveSpeed * moveTime
-	}
-	if horizontal != 0 {
-		app.GetCamera().Strafe(float32(horizontal))
-	}
-	vertical := 0.0
-	if app.GetKeyState(UP) && !app.GetKeyState(DOWN) {
-		vertical = -CameraMoveSpeed * moveTime
-	} else if app.GetKeyState(DOWN) && !app.GetKeyState(UP) {
-		vertical = CameraMoveSpeed * moveTime
-	}
-	if vertical != 0 {
-		app.GetCamera().Lift(float32(vertical))
-	}
 	currX, currY := app.GetWindow().GetCursorPos()
 	x, y := trans.MouseCoordinates(currX, currY, WindowWidth, WindowHeight)
 	KeyDowns := make(map[string]bool)
@@ -231,6 +209,7 @@ func main() {
 	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
+	app.SetCameraMovementMap(CameraMovementMap())
 
 	pointShader := shader.NewShader("examples/09-model-loading/shaders/point.vert", "examples/09-model-loading/shaders/point.frag", glWrapper)
 	app.AddShader(pointShader)
