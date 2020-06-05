@@ -24,20 +24,14 @@ const (
 	WindowHeight = 800
 	WindowTitle  = "Example - draw points from mouse inputs and keyboard colors"
 
-	RED   = glfw.KeyR // red color component
-	GREEN = glfw.KeyG // green color component
-	BLUE  = glfw.KeyB // blue color component
-
 	// buttons
-	FORWARD  = glfw.KeyW // Go forward
-	BACKWARD = glfw.KeyS // Go backward
-	LEFT     = glfw.KeyA // Turn 90 deg. left
-	RIGHT    = glfw.KeyD // Turn 90 deg. right
-
 	LEFT_MOUSE_BUTTON = glfw.MouseButtonLeft
+	RED               = glfw.KeyR // red color component
+	GREEN             = glfw.KeyG // green color component
+	BLUE              = glfw.KeyB // blue color component
 
-	moveSpeed = 1.0 / 100.0
-	epsilon   = 100.0
+	CameraMoveSpeed = 1.0 / 100.0
+	Epsilon         = 100.0
 )
 
 var (
@@ -54,46 +48,33 @@ var (
 	glWrapper wrapper.Wrapper
 )
 
+// Setup keymap for the camera movement
+func CameraMovementMap() map[string]glfw.Key {
+	cm := make(map[string]glfw.Key)
+	cm["forward"] = glfw.KeyW
+	cm["back"] = glfw.KeyS
+	cm["rotateLeft"] = glfw.KeyA
+	cm["rotateRight"] = glfw.KeyD
+	return cm
+}
+
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{0.0, 0.0, -10.0}, mgl32.Vec3{0, 1, 0}, -270.0, 0.0)
+	camera := camera.NewCamera(mgl32.Vec3{0.0, 0.0, -10.0}, mgl32.Vec3{0, -1, 0}, -90.0, 0.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
+	camera.SetVelocity(CameraMoveSpeed)
+	camera.SetRotationStep(90)
 	return camera
 }
 func Update() {
 	updatePointState()
-	updateCameraState()
-}
-func updateCameraState() {
-	//calculate delta
 	nowUnix := time.Now().UnixNano()
-	delta := nowUnix - cameraLastUpdate
-	moveTime := float64(delta / int64(time.Millisecond))
-
-	if epsilon > moveTime {
+	delta := float64(nowUnix-cameraLastUpdate) / float64(time.Millisecond)
+	if Epsilon > delta {
 		return
 	}
 	cameraLastUpdate = nowUnix
-
-	forward := 0.0
-	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
-		forward = moveSpeed * moveTime
-	} else if app.GetKeyState(BACKWARD) && !app.GetKeyState(FORWARD) {
-		forward = -moveSpeed * moveTime
-	}
-	if forward != 0 {
-		app.GetCamera().Walk(float32(forward))
-	}
-	dX := float32(0.0)
-	dY := float32(0.0)
-	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
-		dX = -90
-	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
-		dX = 90
-	}
-	if dX != 0.0 {
-		app.GetCamera().UpdateDirection(dX, dY)
-	}
+	app.Update(delta)
 }
 func updatePointState() {
 	if !app.GetMouseButtonState(LEFT_MOUSE_BUTTON) && addPoint {
@@ -142,6 +123,7 @@ func main() {
 	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
+	app.SetCameraMovementMap(CameraMovementMap())
 
 	cameraLastUpdate = time.Now().UnixNano()
 
