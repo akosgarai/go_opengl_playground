@@ -24,29 +24,22 @@ const (
 	WindowHeight = 800
 	WindowTitle  = "Example - plane with ball"
 
-	moveSpeed = 1.0 / 100.0
-	ballSpeed = float32(1.0 / 10000000.0 / 5.0)
-
-	FORWARD  = glfw.KeyW
-	BACKWARD = glfw.KeyS
-	LEFT     = glfw.KeyA
-	RIGHT    = glfw.KeyD
-	UP       = glfw.KeyQ
-	DOWN     = glfw.KeyE
+	moveSpeed            = float32(1.0 / 100.0)
+	BallSpeed            = float32(1.0 / 10.0 / 5.0)
+	BallPrecision        = 10
+	BallTopPosition      = float32(-10)
+	BallBottomPosition   = float32(-2)
+	cameraDistance       = 0.1
+	cameraDirectionSpeed = float32(0.005)
 )
 
 var (
-	app           *application.Application
-	Ball          *mesh.ColorMesh
-	BallPrecision = 10
+	app  *application.Application
+	Ball *mesh.ColorMesh
 
-	lastUpdate           int64
-	cameraDistance       = 0.1
-	cameraDirectionSpeed = float32(0.005)
+	lastUpdate int64
 
 	BallInitialDirection = mgl32.Vec3{0, -1, 0}
-	BallTopPosition      = float32(-10)
-	BallBottomPosition   = float32(-2)
 	Model                = model.New()
 
 	glWrapper wrapper.Wrapper
@@ -56,6 +49,7 @@ var (
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{-10, -4, 22.0}, mgl32.Vec3{0, 1, 0}, 300.0, 16.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
+	camera.SetVelocity(moveSpeed)
 	return camera
 }
 
@@ -67,7 +61,7 @@ func CreateSphereMesh() *mesh.ColorMesh {
 	m.SetPosition(mgl32.Vec3{0, -5, 0})
 	m.SetScale(mgl32.Vec3{2, 2, 2})
 	m.SetDirection(BallInitialDirection)
-	m.SetSpeed(ballSpeed)
+	m.SetSpeed(BallSpeed)
 	return m
 }
 
@@ -81,11 +75,22 @@ func CreateSquareMesh() *mesh.ColorMesh {
 	return m
 }
 
+// Setup keymap for the camera movement
+func CameraMovementMap() map[string]glfw.Key {
+	cm := make(map[string]glfw.Key)
+	cm["forward"] = glfw.KeyW
+	cm["back"] = glfw.KeyS
+	cm["up"] = glfw.KeyQ
+	cm["down"] = glfw.KeyE
+	cm["left"] = glfw.KeyA
+	cm["right"] = glfw.KeyD
+	return cm
+}
+
 // Update the z coordinates of the vectors.
 func Update() {
 	nowNano := time.Now().UnixNano()
-	delta := float64(nowNano - lastUpdate)
-	moveTime := delta / float64(time.Millisecond)
+	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	// handle ball
 	if Ball.GetPosition().Y() <= BallTopPosition {
 		Ball.SetPosition(mgl32.Vec3{Ball.GetPosition().X(), BallTopPosition, Ball.GetPosition().Z()})
@@ -97,34 +102,6 @@ func Update() {
 	}
 	app.Update(delta)
 	lastUpdate = nowNano
-
-	forward := 0.0
-	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
-		forward = moveSpeed * moveTime
-	} else if app.GetKeyState(BACKWARD) && !app.GetKeyState(FORWARD) {
-		forward = -moveSpeed * moveTime
-	}
-	if forward != 0 {
-		app.GetCamera().Walk(float32(forward))
-	}
-	horisontal := 0.0
-	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
-		horisontal = -moveSpeed * moveTime
-	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
-		horisontal = moveSpeed * moveTime
-	}
-	if horisontal != 0 {
-		app.GetCamera().Strafe(float32(horisontal))
-	}
-	vertical := 0.0
-	if app.GetKeyState(UP) && !app.GetKeyState(DOWN) {
-		vertical = -moveSpeed * moveTime
-	} else if app.GetKeyState(DOWN) && !app.GetKeyState(UP) {
-		vertical = moveSpeed * moveTime
-	}
-	if vertical != 0 {
-		app.GetCamera().Lift(float32(vertical))
-	}
 
 	currX, currY := app.GetWindow().GetCursorPos()
 	x, y := trans.MouseCoordinates(currX, currY, WindowWidth, WindowHeight)
@@ -178,6 +155,7 @@ func main() {
 	glWrapper.InitOpenGL()
 
 	app.SetCamera(CreateCamera())
+	app.SetCameraMovementMap(CameraMovementMap())
 
 	shaderProgram := shader.NewShader("examples/05-ball-with-camera/shaders/vertexshader.vert", "examples/05-ball-with-camera/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
