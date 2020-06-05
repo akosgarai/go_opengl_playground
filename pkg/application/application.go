@@ -3,6 +3,7 @@ package application
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -26,6 +27,7 @@ type Camera interface {
 	Lift(float32)
 	UpdateDirection(float32, float32)
 	GetPosition() mgl32.Vec3
+	GetVelocity() float32
 }
 
 type Window interface {
@@ -115,8 +117,47 @@ func (a *Application) AddModelToShader(m interfaces.Model, s interfaces.Shader) 
 	a.shaderMap[s] = append(a.shaderMap[s], m)
 }
 
+// cameraMovement is responsible for handling a movement for a specific direction.
+// The direction is described by the key strings. The handler function name is also added
+// as input to be able to call it. For the movement we also need to know the delta time,
+// that is also added as function input. In case of invalid function name,
+// it prints out some message to the console.
+func (a *Application) cameraMovement(directionKey, oppositeKey, handlerName string, delta float64) {
+	keyStateDirection := false
+	keyStateOpposite := false
+	if val, ok := a.cameraMovementMap[directionKey]; ok {
+		keyStateDirection = a.GetKeyState(val)
+	}
+	if val, ok := a.cameraMovementMap[oppositeKey]; ok {
+		keyStateOpposite = a.GetKeyState(val)
+	}
+	step := float32(0.0)
+	if keyStateDirection && !keyStateOpposite {
+		step = float32(delta) * a.camera.GetVelocity()
+	} else if keyStateOpposite && !keyStateDirection {
+		step = -float32(delta) * a.camera.GetVelocity()
+	}
+	if step != 0 {
+		method := reflect.ValueOf(a.camera).MethodByName(handlerName)
+		if method.IsZero() {
+			fmt.Printf("Invalid method name '%s' was given for camera movement.\n", handlerName)
+			return
+		}
+		var inputParams []reflect.Value
+		inputParams = append(inputParams, reflect.ValueOf(step))
+		method.Call(inputParams)
+	}
+}
+
 // Update loops on the shaderMap, and calls Update function on every Model.
+// It also handles the camera movement (the rotation is unhandled yet), if
+// the camera is set.
 func (a *Application) Update(dt float64) {
+	if a.cameraSet {
+		a.cameraMovement("forward", "back", "Walk", dt)
+		a.cameraMovement("right", "left", "Strafe", dt)
+		a.cameraMovement("up", "down", "Lift", dt)
+	}
 	for s, _ := range a.shaderMap {
 		for index, _ := range a.shaderMap[s] {
 			a.shaderMap[s][index].Update(dt)
