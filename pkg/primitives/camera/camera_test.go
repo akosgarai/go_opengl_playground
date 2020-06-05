@@ -189,3 +189,54 @@ func TestGetBoundingObject(t *testing.T) {
 	}
 
 }
+func TestBouncingObjectAfterWalk(t *testing.T) {
+	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
+	bo := cam.BouncingObjectAfterWalk(1)
+	if bo.X() != DefaultCameraPosition.X()+1 {
+		t.Errorf("Invalid X coordinate for the bounding sphere. Instead of '%f', we have '%f'.\n", DefaultCameraPosition.X()+1, bo.X())
+	}
+	if bo.Y() != DefaultCameraPosition.Y() {
+		t.Errorf("Invalid Y coordinate for the bounding sphere. Instead of '%f', we have '%f'.\n", DefaultCameraPosition.Y(), bo.Y())
+	}
+	if bo.Z() != DefaultCameraPosition.Z() {
+		t.Errorf("Invalid Z coordinate for the bounding sphere. Instead of '%f', we have '%f'.\n", DefaultCameraPosition.Z(), bo.Z())
+	}
+	if bo.Radius() != 0.1 {
+		t.Errorf("Invalid radius for the bounding sphere. Instead of 0.1, we have '%f'.\n", bo.Radius())
+	}
+
+}
+func TestBouncingObjectAfterStrafe(t *testing.T) {
+	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
+	bo := cam.BouncingObjectAfterStrafe(-1)
+	if bo.X() != DefaultCameraPosition.X() {
+		t.Errorf("Invalid X coordinate for the bounding sphere. Instead of '%f', we have '%f'.\n", DefaultCameraPosition.X(), bo.X())
+	}
+	if bo.Y() != DefaultCameraPosition.Y() {
+		t.Errorf("Invalid Y coordinate for the bounding sphere. Instead of '%f', we have '%f'.\n", DefaultCameraPosition.Y(), bo.Y())
+	}
+	if bo.Z() != DefaultCameraPosition.Z()+1 {
+		t.Errorf("Invalid Z coordinate for the bounding sphere. Instead of '%f', we have '%f'.\n", DefaultCameraPosition.Z()+1, bo.Z())
+	}
+	if bo.Radius() != 0.1 {
+		t.Errorf("Invalid radius for the bounding sphere. Instead of 0.1, we have '%f'.\n", bo.Radius())
+	}
+
+}
+func TestBouncingObjectAfterLift(t *testing.T) {
+	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
+	bo := cam.BouncingObjectAfterLift(-1)
+	if bo.X() != DefaultCameraPosition.X() {
+		t.Errorf("Invalid X coordinate for the bounding sphere. Instead of '%f', we have '%f'.\n", DefaultCameraPosition.X(), bo.X())
+	}
+	if bo.Y() != DefaultCameraPosition.Y()+1 {
+		t.Errorf("Invalid Y coordinate for the bounding sphere. Instead of '%f', we have '%f'.\n", DefaultCameraPosition.Y()+1, bo.Y())
+	}
+	if bo.Z() != DefaultCameraPosition.Z() {
+		t.Errorf("Invalid Z coordinate for the bounding sphere. Instead of '%f', we have '%f'.\n", DefaultCameraPosition.Z(), bo.Z())
+	}
+	if bo.Radius() != 0.1 {
+		t.Errorf("Invalid radius for the bounding sphere. Instead of 0.1, we have '%f'.\n", bo.Radius())
+	}
+
+}
