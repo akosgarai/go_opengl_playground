@@ -84,8 +84,9 @@ func (wm WindowMock) SetKeyCallback(cb glfw.KeyCallback) glfw.KeyCallback { retu
 func (wm WindowMock) SetMouseButtonCallback(cb glfw.MouseButtonCallback) glfw.MouseButtonCallback {
 	return cb
 }
-func (wm WindowMock) ShouldClose() bool { return false }
-func (wm WindowMock) SwapBuffers()      {}
+func (wm WindowMock) ShouldClose() bool   { return false }
+func (wm WindowMock) SwapBuffers()        {}
+func (wm WindowMock) GetSize() (int, int) { return 800, 800 }
 
 type CameraMock struct{}
 
