@@ -186,3 +186,17 @@ func TestGetVelocity(t *testing.T) {
 		t.Errorf("Invalid velocity. Instead of '3', we have '%f'.\n", cam.GetVelocity())
 	}
 }
+func TestSetRotationStep(t *testing.T) {
+	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
+	cam.SetRotationStep(3)
+	if cam.rotationStep != 3 {
+		t.Errorf("Invalid rotationStep. Instead of '3', we have '%f'.\n", cam.velocity)
+	}
+}
+func TestGetRotationStep(t *testing.T) {
+	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
+	cam.SetRotationStep(3)
+	if cam.GetRotationStep() != 3 {
+		t.Errorf("Invalid rotationStep. Instead of '3', we have '%f'.\n", cam.GetRotationStep())
+	}
+}
