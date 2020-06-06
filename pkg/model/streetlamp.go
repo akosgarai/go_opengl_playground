@@ -39,18 +39,18 @@ func NewMaterialStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
 
 	// pole
 	poleCuboid := cuboid.New(width, height, width)
-	poleV, poleI := poleCuboid.MaterialMeshInput()
+	poleV, poleI, _ := poleCuboid.MaterialMeshInput()
 	pole := mesh.NewMaterialMesh(poleV, poleI, material.Chrome, glWrapper)
 	pole.SetPosition(mgl32.Vec3{position.X(), position.Y() + height/2, position.Z()})
 	// top
 	topCuboid := cuboid.New(length, width, width)
-	topV, topI := topCuboid.MaterialMeshInput()
+	topV, topI, _ := topCuboid.MaterialMeshInput()
 	top := mesh.NewMaterialMesh(topV, topI, material.Chrome, glWrapper)
 	top.SetPosition(mgl32.Vec3{(length - width) / 2, 0, (height + width) / 2})
 	top.SetParent(pole)
 	// bulb
 	sph := sphere.New(15)
-	sphereV, sphereI := sph.TexturedMeshInput()
+	sphereV, sphereI, _ := sph.TexturedMeshInput()
 	bulb := mesh.NewMaterialMesh(sphereV, sphereI, bulbMaterial, glWrapper)
 	bulb.SetPosition(mgl32.Vec3{length/2 - 4*bulbRadius, 0, -width / 2})
 	bulb.SetScale(mgl32.Vec3{1.0, 1.0, 1.0}.Mul(bulbRadius))
@@ -85,13 +85,13 @@ func NewTexturedStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
 
 	// pole
 	poleCylinder := cylinder.New(width/2, 20, height)
-	poleV, poleI := poleCylinder.TexturedMeshInput()
+	poleV, poleI, _ := poleCylinder.TexturedMeshInput()
 	pole := mesh.NewTexturedMesh(poleV, poleI, metalTexture, glWrapper)
 	pole.SetPosition(mgl32.Vec3{position.X(), position.Y() + height/2, position.Z()})
 
 	// top
 	topCylinder := cylinder.NewHalfCircleBased(width/2, 20, length)
-	topV, topI := topCylinder.TexturedMeshInput()
+	topV, topI, _ := topCylinder.TexturedMeshInput()
 	top := mesh.NewTexturedMesh(topV, topI, metalTexture, glWrapper)
 	top.SetPosition(mgl32.Vec3{(length - width) / 2, 0, (height) / 2})
 	top.SetParent(pole)
@@ -100,7 +100,7 @@ func NewTexturedStreetLamp(position mgl32.Vec3, scale float32) *StreetLamp {
 
 	// bulb
 	sph := sphere.New(15)
-	sphereV, sphereI := sph.TexturedMeshInput()
+	sphereV, sphereI, _ := sph.TexturedMeshInput()
 	bulb := mesh.NewTexturedMaterialMesh(sphereV, sphereI, bulbTexture, bulbMaterial, glWrapper)
 	bulb.SetPosition(mgl32.Vec3{length/2 - 4*bulbRadius, 0, 0})
 	bulb.SetScale(mgl32.Vec3{1.0, 1.0, 1.0}.Mul(bulbRadius))
