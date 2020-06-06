@@ -16,4 +16,4 @@ a : b : c = sin(alpha) : sin (beta) : sin (gamma)
 
 ## ColoredMeshInput
 
-ColoredMeshInput method returns the verticies, indicies - inputs for the New Mesh function.
+ColoredMeshInput method returns the vertices, indices, bounding object (AABB) - inputs for the New Mesh function.
