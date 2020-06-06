@@ -84,7 +84,7 @@ func CameraMovementMap() map[string]glfw.Key {
 
 func CreateGrassMesh(t texture.Textures) *mesh.TexturedMesh {
 	square := rectangle.NewSquare()
-	v, i := square.MeshInput()
+	v, i, _ := square.MeshInput()
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	m.SetScale(mgl32.Vec3{20, 1, 20})
 	return m

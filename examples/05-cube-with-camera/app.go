@@ -69,7 +69,7 @@ func GenerateCube() {
 		mgl32.Vec3{1.0, 0.0, 1.0},
 	}
 	cube := cuboid.NewCube()
-	v, i := cube.ColoredMeshInput(colors)
+	v, i, _ := cube.ColoredMeshInput(colors)
 	m := mesh.NewColorMesh(v, i, colors, glWrapper)
 	Model.AddMesh(m)
 }

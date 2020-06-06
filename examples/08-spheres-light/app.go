@@ -71,7 +71,7 @@ func CreateCamera() *camera.Camera {
 func CreateWhiteSphere() {
 	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 64.0)
 	sph := sphere.New(20)
-	v, i := sph.MaterialMeshInput()
+	v, i, _ := sph.MaterialMeshInput()
 	LightSourceSphere = mesh.NewMaterialMesh(v, i, mat, glWrapper)
 	LightSourceSphere.SetPosition(mgl32.Vec3{-3.0, -0.5, -3.0})
 	LightSourceSphere.SetDirection((mgl32.Vec3{9, 0, -3}).Normalize())
@@ -83,7 +83,7 @@ func CreateWhiteSphere() {
 // It generates the Jade sphere.
 func CreateJadeSphere() {
 	sph := sphere.New(20)
-	v, i := sph.MaterialMeshInput()
+	v, i, _ := sph.MaterialMeshInput()
 	JadeSphere = mesh.NewMaterialMesh(v, i, material.Jade, glWrapper)
 	JadeSphere.SetPosition(mgl32.Vec3{0.0, -0.5, 0.0})
 }
@@ -91,7 +91,7 @@ func CreateJadeSphere() {
 // It generates the red plastic sphere.
 func CreateRedPlasticSphere() *mesh.MaterialMesh {
 	sph := sphere.New(20)
-	v, i := sph.MaterialMeshInput()
+	v, i, _ := sph.MaterialMeshInput()
 	m := mesh.NewMaterialMesh(v, i, material.Redplastic, glWrapper)
 	m.SetPosition(mgl32.Vec3{-6.5, -3.5, -4.5})
 	return m

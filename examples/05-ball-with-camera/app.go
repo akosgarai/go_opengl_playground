@@ -56,7 +56,7 @@ func CreateCamera() *camera.Camera {
 func CreateSphereMesh() *mesh.ColorMesh {
 	s := sphere.New(BallPrecision)
 	cols := []mgl32.Vec3{mgl32.Vec3{1, 0, 0}}
-	v, i := s.ColoredMeshInput(cols)
+	v, i, _ := s.ColoredMeshInput(cols)
 	m := mesh.NewColorMesh(v, i, cols, glWrapper)
 	m.SetPosition(mgl32.Vec3{0, 5, 0})
 	m.SetScale(mgl32.Vec3{2, 2, 2})
@@ -69,7 +69,7 @@ func CreateSphereMesh() *mesh.ColorMesh {
 func CreateSquareMesh() *mesh.ColorMesh {
 	squareColor := []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
 	s := rectangle.NewSquare()
-	v, i := s.ColoredMeshInput(squareColor)
+	v, i, _ := s.ColoredMeshInput(squareColor)
 	m := mesh.NewColorMesh(v, i, squareColor, glWrapper)
 	m.SetScale(mgl32.Vec3{40, 40, 40})
 	bo := make(map[string]float32)

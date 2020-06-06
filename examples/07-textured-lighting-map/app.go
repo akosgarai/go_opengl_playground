@@ -77,7 +77,7 @@ func CreateCamera() *camera.Camera {
 func CreateWhiteSphere() {
 	mat := material.New(mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1.0, 1.0, 1.0}, mgl32.Vec3{1, 1, 1}, 64.0)
 	sph := sphere.New(15)
-	v, i := sph.MaterialMeshInput()
+	v, i, _ := sph.MaterialMeshInput()
 	LightSourceSphere = mesh.NewMaterialMesh(v, i, mat, glWrapper)
 	LightSourceSphere.SetPosition(mgl32.Vec3{-3.0, -0.5, -3.0})
 	LightSourceSphere.SetDirection((mgl32.Vec3{9, 0, -3}).Normalize())
@@ -89,13 +89,13 @@ func CreateWhiteSphere() {
 // It generates a cube.
 func CreateCubeMesh(t texture.Textures) *mesh.TexturedMesh {
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
+	v, i, _ := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	return m
 }
 func CreateCylinderMesh(t texture.Textures) *mesh.TexturedMesh {
 	c := cylinder.New(0.75, 30, 3)
-	v, i := c.TexturedMeshInput()
+	v, i, _ := c.TexturedMeshInput()
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	return m
 }

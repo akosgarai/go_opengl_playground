@@ -72,14 +72,14 @@ func CameraMovementMap() map[string]glfw.Key {
 }
 
 func TexturedSphere(t texture.Textures, position mgl32.Vec3, scale float32, shaderProgram *shader.Shader) *mesh.TexturedMesh {
-	v, i := spherePrimitive.TexturedMeshInput()
+	v, i, _ := spherePrimitive.TexturedMeshInput()
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	m.SetPosition(position)
 	m.SetScale(mgl32.Vec3{scale, scale, scale})
 	return m
 }
 func TexturedMaterialSphere(t texture.Textures, mat *material.Material, position mgl32.Vec3, scale float32, shaderProgram *shader.Shader) *mesh.TexturedMaterialMesh {
-	v, i := spherePrimitive.TexturedMeshInput()
+	v, i, _ := spherePrimitive.TexturedMeshInput()
 	m := mesh.NewTexturedMaterialMesh(v, i, t, mat, glWrapper)
 	m.SetPosition(position)
 	m.SetScale(mgl32.Vec3{scale, scale, scale})
@@ -89,7 +89,7 @@ func TexturedMaterialSphere(t texture.Textures, mat *material.Material, position
 // It generates a cube map.
 func CubeMap(t texture.Textures) *mesh.TexturedMesh {
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
+	v, i, _ := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	return m
 }

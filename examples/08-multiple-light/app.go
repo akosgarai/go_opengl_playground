@@ -89,14 +89,14 @@ func CameraMovementMap() map[string]glfw.Key {
 
 func CreateGrassMesh(t texture.Textures) *mesh.TexturedMesh {
 	square := rectangle.NewSquare()
-	v, i := square.MeshInput()
+	v, i, _ := square.MeshInput()
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	m.SetScale(mgl32.Vec3{1000, 1, 1000})
 	return m
 }
 func CreateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
+	v, i, _ := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	m.SetPosition(pos)
 	return m
@@ -118,7 +118,7 @@ func TexturedStreetLamp(position mgl32.Vec3) *model.StreetLamp {
 
 func TexturedBug(t texture.Textures) {
 	sph := sphere.New(15)
-	v, i := sph.TexturedMeshInput()
+	v, i, _ := sph.TexturedMeshInput()
 	Bug2 = mesh.NewTexturedMesh(v, i, t, glWrapper)
 	Bug2.SetPosition(PointLightPosition_2)
 	Bug2.SetDirection(mgl32.Vec3{0, 0, 1})

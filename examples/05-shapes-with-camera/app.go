@@ -78,7 +78,7 @@ func Update() {
 // It generates a cube.
 func CreateCubeMesh() *mesh.ColorMesh {
 	cube := cuboid.NewCube()
-	v, i := cube.ColoredMeshInput(colors)
+	v, i, _ := cube.ColoredMeshInput(colors)
 	m := mesh.NewColorMesh(v, i, colors, glWrapper)
 	m.SetPosition(mgl32.Vec3{-0.5, -0.5, 0.5})
 	return m
@@ -88,7 +88,7 @@ func CreateCubeMesh() *mesh.ColorMesh {
 func CreateSphereMesh() *mesh.ColorMesh {
 	s := sphere.New(20)
 	cols := []mgl32.Vec3{colors[4]}
-	v, i := s.ColoredMeshInput(cols)
+	v, i, _ := s.ColoredMeshInput(cols)
 	m := mesh.NewColorMesh(v, i, cols, glWrapper)
 	m.SetPosition(mgl32.Vec3{3, 3, 5})
 	m.SetScale(mgl32.Vec3{2, 2, 2})
@@ -99,7 +99,7 @@ func CreateSphereMesh() *mesh.ColorMesh {
 func CreateCylinder() *mesh.ColorMesh {
 	c := cylinder.New(1.5, 30, 3)
 	cols := []mgl32.Vec3{colors[3]}
-	v, i := c.ColoredMeshInput(cols)
+	v, i, _ := c.ColoredMeshInput(cols)
 	m := mesh.NewColorMesh(v, i, cols, glWrapper)
 	m.SetPosition(mgl32.Vec3{-3, -3, 5})
 	return m
