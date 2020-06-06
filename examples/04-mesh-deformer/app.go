@@ -49,15 +49,15 @@ func CreateCamera() *camera.Camera {
 // It generates a bunch of triangles and sets their color to static blue.
 func GenerateTriangles() {
 	triang := triangle.New(90, 45, 45)
-	v1, indicies1 := triang.ColoredMeshInput(triangleColorFront)
-	v2, indicies2 := triang.ColoredMeshInput(triangleColorBack)
+	v1, indices1, _ := triang.ColoredMeshInput(triangleColorFront)
+	v2, indices2, _ := triang.ColoredMeshInput(triangleColorBack)
 	for i := 0; i <= rows; i++ {
 		for j := 0; j <= cols; j++ {
 			topX := float32(j * length)
 			topY := float32(i * length)
 			topZ := float32(0.0)
 
-			m := mesh.NewColorMesh(v1, indicies1, triangleColorFront, glWrapper)
+			m := mesh.NewColorMesh(v1, indices1, triangleColorFront, glWrapper)
 			m.SetPosition(mgl32.Vec3{topX, topY, topZ})
 			m.SetScale(mgl32.Vec3{length, length, length})
 			m.SetDirection(mgl32.Vec3{0, 0, 1})
@@ -65,7 +65,7 @@ func GenerateTriangles() {
 
 			Model.AddMesh(m)
 
-			m2 := mesh.NewColorMesh(v2, indicies2, triangleColorBack, glWrapper)
+			m2 := mesh.NewColorMesh(v2, indices2, triangleColorBack, glWrapper)
 			m2.SetPosition(mgl32.Vec3{topX, topY, topZ})
 			m2.SetScale(mgl32.Vec3{length, length, length})
 			m2.SetScale(mgl32.Vec3{length, length, length})
