@@ -23,7 +23,7 @@ type Bug struct {
 // position is relative to the parent.
 func NewBug(position, scale mgl32.Vec3) *Bug {
 	sphereBase := sphere.New(20)
-	i, v := sphereBase.MaterialMeshInput()
+	i, v, _ := sphereBase.MaterialMeshInput()
 	// Body supposed to be other green. Like green rubber
 	Body := mesh.NewMaterialMesh(i, v, material.Greenrubber, glWrapper)
 	Body.SetScale(scale)
