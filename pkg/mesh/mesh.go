@@ -36,7 +36,8 @@ type Mesh struct {
 	parent    interfaces.Mesh
 	parentSet bool
 
-	bo map[string]float32
+	bo                      map[string]float32
+	boundingObjectParamsSet bool
 }
 
 // SetScale updates the scale of the mesh.
@@ -71,6 +72,7 @@ func (m *Mesh) GetDirection() mgl32.Vec3 {
 
 // SetBoundingObjectParams sets the bounding object parameters of the mesh.
 func (m *Mesh) SetBoundingObjectParams(bo map[string]float32) {
+	m.boundingObjectParamsSet = true
 	m.bo = bo
 }
 
@@ -188,6 +190,11 @@ func (m *Mesh) IsParentMesh() bool {
 	return !m.parentSet
 }
 
+// IsBoundingObjectParamsSet returns true, if the bounding object is set to this mesh.
+func (m *Mesh) IsBoundingObjectParamsSet() bool {
+	return m.boundingObjectParamsSet
+}
+
 type TexturedMesh struct {
 	Mesh
 	Indicies []uint32
@@ -255,6 +262,8 @@ func NewTexturedMesh(v []vertex.Vertex, i []uint32, t texture.Textures, wrapper 
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
+
+			boundingObjectParamsSet: false,
 		},
 		Indicies: i,
 		Textures: t,
@@ -286,6 +295,8 @@ func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat *material.Material, wrap
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
+
+			boundingObjectParamsSet: false,
 		},
 		Indicies: i,
 		Material: mat,
@@ -357,6 +368,8 @@ func NewPointMesh(wrapper interfaces.GLWrapper) *PointMesh {
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
+
+			boundingObjectParamsSet: false,
 		},
 	}
 	return mesh
@@ -425,6 +438,8 @@ func NewColorMesh(v []vertex.Vertex, i []uint32, color []mgl32.Vec3, wrapper int
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
+
+			boundingObjectParamsSet: false,
 		},
 		Indicies: i,
 		Color:    color,
@@ -492,6 +507,8 @@ func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures, c
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
+
+			boundingObjectParamsSet: false,
 		},
 		Indicies: i,
 		Textures: t,
@@ -567,6 +584,8 @@ func NewTexturedMaterialMesh(v []vertex.Vertex, i []uint32, t texture.Textures, 
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
+
+			boundingObjectParamsSet: false,
 		},
 		Indicies: i,
 		Textures: t,

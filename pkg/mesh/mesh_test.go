@@ -275,3 +275,14 @@ func TestRotateZ(t *testing.T) {
 		t.Error("RotateZ should update the roll")
 	}
 }
+func TestIsBoundingObjectParamsSet(t *testing.T) {
+	var m Mesh
+	boParams := make(map[string]float32)
+	if m.IsBoundingObjectParamsSet() != false {
+		t.Error("Before setting the bo params, it should return false")
+	}
+	m.SetBoundingObjectParams(boParams)
+	if m.IsBoundingObjectParamsSet() != true {
+		t.Error("After setting the  bo params, it should return true")
+	}
+}
