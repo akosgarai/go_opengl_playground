@@ -3,6 +3,7 @@ package cylinder
 import (
 	"math"
 
+	"github.com/akosgarai/opengl_playground/pkg/primitives/boundingobject"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -13,6 +14,7 @@ type Cylinder struct {
 	Normals   []mgl32.Vec3
 	Indices   []uint32
 	TexCoords []mgl32.Vec2
+	BB        *boundingobject.BoundingObject
 }
 
 // New function returns a cylinder.
@@ -22,22 +24,32 @@ type Cylinder struct {
 // 'length' - the length of the body of the cylinder.
 func New(rad float32, prec int, length float32) *Cylinder {
 	circleVertices := circleWithRadius(rad, prec)
+	params := make(map[string]float32)
+	params["width"] = rad
+	params["length"] = length
+	params["heigth"] = rad
 	c := Cylinder{
 		Points:    []mgl32.Vec3{},
 		Normals:   []mgl32.Vec3{},
 		Indices:   []uint32{},
 		TexCoords: []mgl32.Vec2{},
+		BB:        boundingobject.New("AABB", params),
 	}
 	c.buildFromBaseShape(circleVertices, rad, prec, length)
 	return &c
 }
 func NewHalfCircleBased(rad float32, prec int, length float32) *Cylinder {
 	baseShapeVertices := halfCircleWithRadius(rad, prec)
+	params := make(map[string]float32)
+	params["width"] = rad
+	params["length"] = length
+	params["heigth"] = rad / 2
 	c := Cylinder{
 		Points:    []mgl32.Vec3{},
 		Normals:   []mgl32.Vec3{},
 		Indices:   []uint32{},
 		TexCoords: []mgl32.Vec2{},
+		BB:        boundingobject.New("AABB", params),
 	}
 	c.buildFromBaseShape(baseShapeVertices, rad, prec, length)
 	return &c
@@ -47,8 +59,6 @@ func NewHalfCircleBased(rad float32, prec int, length float32) *Cylinder {
 // http://www.songho.ca/opengl/gl_cylinder.html
 // 'rad' - the radius of the base shape. 'prec' - the precision of the base shape.
 // 'length' - the length of the body of the cylinder.
-// This function will replace the big newWithBaseShape. The steps will be separated to functions, so that i can write tests
-// to double check the issues.
 func (c *Cylinder) buildFromBaseShape(baseVertices []float32, rad float32, prec int, length float32) {
 	c.calculatePointsNormalsTexCoordsForTheSides(baseVertices, prec, length)
 
@@ -190,8 +200,8 @@ func halfCircleWithRadius(radius float32, precision int) []float32 {
 	return positionVectors
 }
 
-// MaterialMeshInput method returns the verticies, indicies inputs for the NewMaterialMesh function.
-func (c *Cylinder) MaterialMeshInput() (vertex.Verticies, []uint32) {
+// MaterialMeshInput method returns the verticies, indicies, bounding object (AABB) inputs for the NewMaterialMesh function.
+func (c *Cylinder) MaterialMeshInput() (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
 	var vertices vertex.Verticies
 	for i := 0; i < len(c.Points); i++ {
 		vertices = append(vertices, vertex.Vertex{
@@ -199,11 +209,11 @@ func (c *Cylinder) MaterialMeshInput() (vertex.Verticies, []uint32) {
 			Normal:   c.Normals[i],
 		})
 	}
-	return vertices, c.Indices
+	return vertices, c.Indices, c.BB
 }
 
-// ColorMeshInput method returns the verticies, indicies inputs for the NewColorMesh function.
-func (c *Cylinder) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
+// ColorMeshInput method returns the verticies, indicies, bounding object (AABB) inputs for the NewColorMesh function.
+func (c *Cylinder) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
 	var vertices vertex.Verticies
 	for i := 0; i < len(c.Points); i++ {
 		vertices = append(vertices, vertex.Vertex{
@@ -211,11 +221,11 @@ func (c *Cylinder) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint3
 			Color:    col[i%len(col)],
 		})
 	}
-	return vertices, c.Indices
+	return vertices, c.Indices, c.BB
 }
 
-// TexturedMeshInput method returns the verticies, indicies inputs for the NewTexturedMesh function.
-func (c *Cylinder) TexturedMeshInput() (vertex.Verticies, []uint32) {
+// TexturedMeshInput method returns the verticies, indicies, bounding object (AABB) inputs for the NewTexturedMesh function.
+func (c *Cylinder) TexturedMeshInput() (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
 	var vertices vertex.Verticies
 	for i := 0; i < len(c.Points); i++ {
 		vertices = append(vertices, vertex.Vertex{
@@ -224,5 +234,5 @@ func (c *Cylinder) TexturedMeshInput() (vertex.Verticies, []uint32) {
 			TexCoords: c.TexCoords[i],
 		})
 	}
-	return vertices, c.Indices
+	return vertices, c.Indices, c.BB
 }
