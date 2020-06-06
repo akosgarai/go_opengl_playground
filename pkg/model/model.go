@@ -6,6 +6,7 @@ import (
 	"github.com/akosgarai/opengl_playground/pkg/export"
 	"github.com/akosgarai/opengl_playground/pkg/interfaces"
 
+	"github.com/akosgarai/coldet"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
@@ -108,4 +109,17 @@ func (m *Model) RotateZ(angleDeg float32) {
 			m.meshes[i].RotatePosition(angleDeg, mgl32.Vec3{0.0, 0.0, 1.0})
 		}
 	}
+}
+
+// CollideTestWithSphere is the collision detection function for items in this mesh vs sphere.
+func (m *Model) CollideTestWithSphere(boundingSphere *coldet.Sphere) bool {
+	for i, _ := range m.meshes {
+		if m.meshes[i].IsParentMesh() && m.meshes[i].IsBoundingObjectParamsSet() {
+			meshBo := m.meshes[i].GetBoundingObject()
+			if coldet.CheckSphereVsAabb(*boundingSphere, *meshBo) {
+				return true
+			}
+		}
+	}
+	return false
 }
