@@ -18,16 +18,11 @@ import (
 )
 
 const (
-	WindowWidth  = 800
-	WindowHeight = 800
-	WindowTitle  = "Example - the house"
-	moveSpeed    = 1.0 / 100.0
-	epsilon      = 100.0
-	// buttons
-	FORWARD  = glfw.KeyW // Go forward
-	BACKWARD = glfw.KeyS // Go backward
-	LEFT     = glfw.KeyA // Turn 90 deg. left
-	RIGHT    = glfw.KeyD // Turn 90 deg. right
+	WindowWidth     = 800
+	WindowHeight    = 800
+	WindowTitle     = "Example - the house"
+	CameraMoveSpeed = 1.0 / 100.0
+	Epsilon         = 100.0
 )
 
 var (
@@ -39,10 +34,22 @@ var (
 	Model = model.New()
 )
 
+// Setup keymap for the camera movement
+func CameraMovementMap() map[string]glfw.Key {
+	cm := make(map[string]glfw.Key)
+	cm["forward"] = glfw.KeyW
+	cm["back"] = glfw.KeyS
+	cm["rotateLeft"] = glfw.KeyA
+	cm["rotateRight"] = glfw.KeyD
+	return cm
+}
+
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{75, 30, 0.0}, mgl32.Vec3{0, -1, 0}, 90.0, 0.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 1000.0)
+	camera.SetVelocity(CameraMoveSpeed)
+	camera.SetRotationStep(90)
 	return camera
 }
 
@@ -157,33 +164,14 @@ func RoomLeft() {
 func Update() {
 	//calculate delta
 	nowUnix := time.Now().UnixNano()
-	delta := nowUnix - cameraLastUpdate
-	moveTime := float64(delta / int64(time.Millisecond))
+	delta := float64(nowUnix-cameraLastUpdate) / float64(time.Millisecond)
 
-	if epsilon > moveTime {
+	if Epsilon > delta {
 		return
 	}
 	cameraLastUpdate = nowUnix
 
-	forward := 0.0
-	if app.GetKeyState(FORWARD) && !app.GetKeyState(BACKWARD) {
-		forward = moveSpeed * moveTime
-	} else if app.GetKeyState(BACKWARD) && !app.GetKeyState(FORWARD) {
-		forward = -moveSpeed * moveTime
-	}
-	if forward != 0 {
-		app.GetCamera().Walk(float32(forward))
-	}
-	dX := float32(0.0)
-	dY := float32(0.0)
-	if app.GetKeyState(LEFT) && !app.GetKeyState(RIGHT) {
-		dX = -9
-	} else if app.GetKeyState(RIGHT) && !app.GetKeyState(LEFT) {
-		dX = 9
-	}
-	if dX != 0.0 {
-		app.GetCamera().UpdateDirection(dX, dY)
-	}
+	app.Update(delta)
 }
 func main() {
 	runtime.LockOSThread()
@@ -198,6 +186,7 @@ func main() {
 	app.AddShader(shaderProgram)
 
 	app.SetCamera(CreateCamera())
+	app.SetCameraMovementMap(CameraMovementMap())
 	cameraLastUpdate = time.Now().UnixNano()
 
 	Path()

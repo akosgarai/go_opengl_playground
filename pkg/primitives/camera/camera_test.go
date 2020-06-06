@@ -238,5 +238,33 @@ func TestBoundingObjectAfterLift(t *testing.T) {
 	if bo.Radius() != 0.1 {
 		t.Errorf("Invalid radius for the bounding sphere. Instead of 0.1, we have '%f'.\n", bo.Radius())
 	}
+}
 
+func TestSetVelocity(t *testing.T) {
+	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
+	cam.SetVelocity(3)
+	if cam.velocity != 3 {
+		t.Errorf("Invalid velocity. Instead of '3', we have '%f'.\n", cam.velocity)
+	}
+}
+func TestGetVelocity(t *testing.T) {
+	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
+	cam.SetVelocity(3)
+	if cam.GetVelocity() != 3 {
+		t.Errorf("Invalid velocity. Instead of '3', we have '%f'.\n", cam.GetVelocity())
+	}
+}
+func TestSetRotationStep(t *testing.T) {
+	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
+	cam.SetRotationStep(3)
+	if cam.rotationStep != 3 {
+		t.Errorf("Invalid rotationStep. Instead of '3', we have '%f'.\n", cam.velocity)
+	}
+}
+func TestGetRotationStep(t *testing.T) {
+	cam := NewCamera(DefaultCameraPosition, WorldUp, DefaultYaw, DefaultPitch)
+	cam.SetRotationStep(3)
+	if cam.GetRotationStep() != 3 {
+		t.Errorf("Invalid rotationStep. Instead of '3', we have '%f'.\n", cam.GetRotationStep())
+	}
 }

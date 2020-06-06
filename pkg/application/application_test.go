@@ -109,3 +109,21 @@ func TestGetKeyState(t *testing.T) {
 		t.Error("W should be released")
 	}
 }
+func TestSetCameraMovementMap(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestCameraKeyboardMovement(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestCameraKeyboardRotation(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestCameraMouseRotation(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestApplyMouseRotation(t *testing.T) {
+	t.Skip("Unimplemented")
+}
+func TestSetRotateOnEdgeDistance(t *testing.T) {
+	t.Skip("Unimplemented")
+}
