@@ -1,15 +1,16 @@
 package rectangle
 
 import (
+	"github.com/akosgarai/opengl_playground/pkg/primitives/boundingobject"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
 
 type Rectangle struct {
-	Points   [4]mgl32.Vec3
-	Normal   mgl32.Vec3
-	Indicies []mgl32.Vec3
+	Points [4]mgl32.Vec3
+	Normal mgl32.Vec3
+	BB     *boundingobject.BoundingObject
 }
 
 // NewSquare creates a rectangle with origo as middle point.
@@ -44,9 +45,14 @@ func New(width, height float32) *Rectangle {
 		mgl32.Vec3{x1, 0, y1},
 		mgl32.Vec3{x0, 0, y1},
 	}
+	params := make(map[string]float32)
+	params["width"] = x1 - x0
+	params["length"] = y1 - y0
+	params["heigth"] = float32(0.0)
 	return &Rectangle{
 		Points: points,
 		Normal: normal,
+		BB:     boundingobject.New("AABB", params),
 	}
 }
 
@@ -67,56 +73,55 @@ func NewSquare() *Rectangle {
 	}
 }
 
-// MeshInput method returns the verticies, indicies inputs for the New Mesh function.
-// TODO: find a better name.
-func (r *Rectangle) MeshInput() (vertex.Verticies, []uint32) {
+// MeshInput method returns the vertices, indices, bounding object (AABB) inputs for the New Mesh function.
+func (r *Rectangle) MeshInput() (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
 	textureCoords := [4]mgl32.Vec2{
 		{0.0, 1.0},
 		{1.0, 1.0},
 		{1.0, 0.0},
 		{0.0, 0.0},
 	}
-	indicies := []uint32{0, 1, 2, 0, 2, 3}
-	var verticies vertex.Verticies
+	indices := []uint32{0, 1, 2, 0, 2, 3}
+	var vertices vertex.Verticies
 	for i := 0; i < 4; i++ {
-		verticies = append(verticies, vertex.Vertex{
+		vertices = append(vertices, vertex.Vertex{
 			Position:  r.Points[i],
 			Normal:    r.Normal,
 			TexCoords: textureCoords[i],
 		})
 	}
-	return verticies, indicies
+	return vertices, indices, r.BB
 }
 
-// ColoredMeshInput method returns the verticies, indicies inputs for the New Mesh function.
-func (r *Rectangle) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
-	indicies := []uint32{0, 1, 2, 0, 2, 3}
-	var verticies vertex.Verticies
+// ColoredMeshInput method returns the vertices, indices, bounding object (AABB) inputs for the New Mesh function.
+func (r *Rectangle) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
+	indices := []uint32{0, 1, 2, 0, 2, 3}
+	var vertices vertex.Verticies
 	for i := 0; i < 4; i++ {
-		verticies = append(verticies, vertex.Vertex{
+		vertices = append(vertices, vertex.Vertex{
 			Position: r.Points[i],
 			Color:    col[i%len(col)],
 		})
 	}
-	return verticies, indicies
+	return vertices, indices, r.BB
 }
 
-// TexturedColoredMeshInput method returns the verticies, indicies inputs for the NewTexturedColoredMesh function.
-func (r *Rectangle) TexturedColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
+// TexturedColoredMeshInput method returns the vertices, indices, bounding object (AABB) inputs for the NewTexturedColoredMesh function.
+func (r *Rectangle) TexturedColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
 	textureCoords := [4]mgl32.Vec2{
 		{0.0, 1.0},
 		{1.0, 1.0},
 		{1.0, 0.0},
 		{0.0, 0.0},
 	}
-	indicies := []uint32{0, 1, 2, 0, 2, 3}
-	var verticies vertex.Verticies
+	indices := []uint32{0, 1, 2, 0, 2, 3}
+	var vertices vertex.Verticies
 	for i := 0; i < 4; i++ {
-		verticies = append(verticies, vertex.Vertex{
+		vertices = append(vertices, vertex.Vertex{
 			Position:  r.Points[i],
 			Color:     col[i%len(col)],
 			TexCoords: textureCoords[i],
 		})
 	}
-	return verticies, indicies
+	return vertices, indices, r.BB
 }

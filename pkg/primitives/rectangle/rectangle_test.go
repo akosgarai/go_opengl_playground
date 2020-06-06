@@ -84,7 +84,6 @@ func TestNewHighScale(t *testing.T) {
 	width := float32(1)
 	height := float32(2)
 	square := New(width, height)
-	t.Log(width / height)
 
 	ExpectedPoints := [4]mgl32.Vec3{
 		mgl32.Vec3{-0.25, 0, -0.5},
@@ -108,33 +107,33 @@ func TestNewHighScale(t *testing.T) {
 }
 func TestMeshInput(t *testing.T) {
 	square := NewSquare()
-	verticies, indicies := square.MeshInput()
-	expectedIndicies := []uint32{0, 1, 2, 0, 2, 3}
-	if !reflect.DeepEqual(expectedIndicies, indicies) {
-		t.Error("Invalid indicies")
-		t.Log(verticies)
-		t.Log(indicies)
+	vertices, indices, _ := square.MeshInput()
+	expectedIndices := []uint32{0, 1, 2, 0, 2, 3}
+	if !reflect.DeepEqual(expectedIndices, indices) {
+		t.Error("Invalid indices")
+		t.Log(vertices)
+		t.Log(indices)
 	}
 }
 func TestColoredMeshInput(t *testing.T) {
 	square := NewSquare()
 	color := []mgl32.Vec3{mgl32.Vec3{1, 1, 1}}
-	verticies, indicies := square.ColoredMeshInput(color)
-	expectedIndicies := []uint32{0, 1, 2, 0, 2, 3}
-	if !reflect.DeepEqual(expectedIndicies, indicies) {
-		t.Error("Invalid indicies")
-		t.Log(verticies)
-		t.Log(indicies)
+	vertices, indices, _ := square.ColoredMeshInput(color)
+	expectedIndices := []uint32{0, 1, 2, 0, 2, 3}
+	if !reflect.DeepEqual(expectedIndices, indices) {
+		t.Error("Invalid indices")
+		t.Log(vertices)
+		t.Log(indices)
 	}
 }
 func TestColoredTexturesMeshInput(t *testing.T) {
 	square := NewSquare()
 	color := []mgl32.Vec3{mgl32.Vec3{1, 1, 1}}
-	verticies, indicies := square.TexturedColoredMeshInput(color)
-	expectedIndicies := []uint32{0, 1, 2, 0, 2, 3}
-	if !reflect.DeepEqual(expectedIndicies, indicies) {
-		t.Error("Invalid indicies")
-		t.Log(verticies)
-		t.Log(indicies)
+	vertices, indices, _ := square.TexturedColoredMeshInput(color)
+	expectedIndices := []uint32{0, 1, 2, 0, 2, 3}
+	if !reflect.DeepEqual(expectedIndices, indices) {
+		t.Error("Invalid indices")
+		t.Log(vertices)
+		t.Log(indices)
 	}
 }

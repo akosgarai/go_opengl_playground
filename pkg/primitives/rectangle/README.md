@@ -24,12 +24,12 @@ NewSquare creates a rectangle with origo as middle point. Each side is 1 unit lo
 
 ## MeshInput
 
-MeshInput method returns the verticies, indicies - inputs for the New Mesh function.
+MeshInput method returns the vertices, indices, bounding object (AABB) - inputs for the New Mesh function.
 
 ## ColoredMeshInput
 
-ColoredMeshInput method returns the verticies, indicies - inputs for the New Mesh function.
+ColoredMeshInput method returns the vertices, indices, bounding object (AABB) - inputs for the New Mesh function.
 
 ## TexturedColoredMeshInput
 
-This method returns the verticies, indicies - inputs for the NewTexturedColoredMesh function.
+This method returns the vertices, indices, bounding object (AABB) - inputs for the NewTexturedColoredMesh function.
