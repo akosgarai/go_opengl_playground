@@ -197,6 +197,13 @@ func (a *Application) cameraKeyboardMovement(directionKey, oppositeKey, handlerN
 // Under the hood, it iterates over the shaders, and tests collision for every parent mest. It stops the test after the fist
 // detected collision and returns true. Without detected collision it returns false.
 func (a *Application) cameraCollisionTest(boundingSphere *coldet.Sphere) bool {
+	for s, _ := range a.shaderMap {
+		for index, _ := range a.shaderMap[s] {
+			if a.shaderMap[s][index].CollideTestWithSphere(boundingSphere) {
+				return true
+			}
+		}
+	}
 	return false
 }
 
