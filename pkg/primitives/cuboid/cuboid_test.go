@@ -111,7 +111,17 @@ func TestNewCube(t *testing.T) {
 }
 func TestTexturedMeshInput(t *testing.T) {
 	cube := NewCube()
-	vert, ind := cube.TexturedMeshInput(TEXTURE_ORIENTATION_DEFAULT)
+	vert, ind, _ := cube.TexturedMeshInput(TEXTURE_ORIENTATION_DEFAULT)
+	if !reflect.DeepEqual(ind, Indices) {
+		t.Error("Invalid indices")
+	}
+	if len(vert) != 24 {
+		t.Error("Invalid vertices size")
+	}
+}
+func TestTexturedMeshInputOrientationSame(t *testing.T) {
+	cube := NewCube()
+	vert, ind, _ := cube.TexturedMeshInput(TEXTURE_ORIENTATION_SAME)
 	if !reflect.DeepEqual(ind, Indices) {
 		t.Error("Invalid indices")
 	}
@@ -121,7 +131,7 @@ func TestTexturedMeshInput(t *testing.T) {
 }
 func TestMaterialMeshInput(t *testing.T) {
 	cube := NewCube()
-	vert, ind := cube.MaterialMeshInput()
+	vert, ind, _ := cube.MaterialMeshInput()
 	if !reflect.DeepEqual(ind, Indices) {
 		t.Error("Invalid indices")
 	}
@@ -131,7 +141,7 @@ func TestMaterialMeshInput(t *testing.T) {
 }
 func TestColoredMeshInput(t *testing.T) {
 	cube := NewCube()
-	vert, ind := cube.ColoredMeshInput(Color)
+	vert, ind, _ := cube.ColoredMeshInput(Color)
 	if !reflect.DeepEqual(ind, Indices) {
 		t.Error("Invalid indices")
 	}
@@ -141,7 +151,17 @@ func TestColoredMeshInput(t *testing.T) {
 }
 func TestTexturedColoredMeshInput(t *testing.T) {
 	cube := NewCube()
-	vert, ind := cube.TexturedColoredMeshInput(Color, TEXTURE_ORIENTATION_DEFAULT)
+	vert, ind, _ := cube.TexturedColoredMeshInput(Color, TEXTURE_ORIENTATION_DEFAULT)
+	if !reflect.DeepEqual(ind, Indices) {
+		t.Error("Invalid indices")
+	}
+	if len(vert) != 24 {
+		t.Error("Invalid vertices size")
+	}
+}
+func TestTexturedColoredMeshInputOrientationSame(t *testing.T) {
+	cube := NewCube()
+	vert, ind, _ := cube.TexturedColoredMeshInput(Color, TEXTURE_ORIENTATION_SAME)
 	if !reflect.DeepEqual(ind, Indices) {
 		t.Error("Invalid indices")
 	}
