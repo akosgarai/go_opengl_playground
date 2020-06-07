@@ -117,12 +117,15 @@ func (m *Model) CollideTestWithSphere(boundingSphere *coldet.Sphere) bool {
 		if m.meshes[i].IsBoundingObjectSet() {
 			meshBo := m.meshes[i].GetBoundingObject()
 			if meshBo.Type() == "AABB" {
-				meshPositionVector := m.meshes[i].GetPosition()
-				meshTransTransform := m.meshes[i].TranslationTransformation()
-				meshInWorld := mgl32.TransformCoordinate(meshPositionVector, meshTransTransform)
+				meshInWorld := m.meshes[i].GetPosition()
+				if !m.meshes[i].IsParentMesh() {
+					meshTransTransform := m.meshes[i].GetParentTranslationTransformation()
+					meshInWorld = mgl32.TransformCoordinate(meshInWorld, meshTransTransform)
+				}
 				pos := [3]float32{meshInWorld.X(), meshInWorld.Y(), meshInWorld.Z()}
 				params := meshBo.Params()
 				aabb := coldet.NewBoundingBox(pos, params["width"], params["height"], params["length"])
+
 				if coldet.CheckSphereVsAabb(*boundingSphere, *aabb) {
 					return true
 				}
