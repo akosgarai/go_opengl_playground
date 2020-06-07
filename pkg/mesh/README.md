@@ -20,6 +20,7 @@ Those parameters that are always needed for managing an object.
 - **parent** - The parent mesh of the current one.
 - **parentSet** - If the mesh has a parent, set with the relevant function, this flag is updated.
 - **bo** - The parameters for the bounding object.
+- **boundingObjectSet** - returns true, if the object is set.
 
 It has setter functions for the parameters, and getters for the necessary ones, also one for the model transformation matrix calculation and one for updating the state of the mesh.
 
