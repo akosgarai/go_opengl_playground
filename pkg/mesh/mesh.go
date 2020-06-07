@@ -99,12 +99,15 @@ func (m *Mesh) GetBoundingObject() *boundingobject.BoundingObject {
 		modYaw := float32(math.Mod(float64(m.yaw), 90.0))
 		modPitch := float32(math.Mod(float64(m.pitch), 90.0))
 		modRoll := float32(math.Mod(float64(m.roll), 90.0))
-		rotY := float32(math.Abs(math.Sin(float64(mgl32.DegToRad(modYaw)))))
-		rotX := float32(math.Abs(math.Sin(float64(mgl32.DegToRad(modPitch)))))
-		rotZ := float32(math.Abs(math.Sin(float64(mgl32.DegToRad(modRoll)))))
-		transformedParams["width"] = (rotY*scaledSideLengths.X() + rotY*scaledSideLengths.Z() + rotZ*scaledSideLengths.X() + rotZ*scaledSideLengths.Y()) / 2
-		transformedParams["length"] = (rotY*scaledSideLengths.X() + rotY*scaledSideLengths.Z() + rotX*scaledSideLengths.Z() + rotX*scaledSideLengths.Y()) / 2
-		transformedParams["height"] = (rotZ*scaledSideLengths.X() + rotZ*scaledSideLengths.Y() + rotX*scaledSideLengths.Z() + rotX*scaledSideLengths.Y()) / 2
+		sinY := float32(math.Abs(math.Sin(float64(mgl32.DegToRad(modYaw)))))
+		sinX := float32(math.Abs(math.Sin(float64(mgl32.DegToRad(modPitch)))))
+		sinZ := float32(math.Abs(math.Sin(float64(mgl32.DegToRad(modRoll)))))
+		cosY := float32(math.Abs(math.Cos(float64(mgl32.DegToRad(modYaw)))))
+		cosX := float32(math.Abs(math.Cos(float64(mgl32.DegToRad(modPitch)))))
+		cosZ := float32(math.Abs(math.Cos(float64(mgl32.DegToRad(modRoll)))))
+		transformedParams["width"] = (cosY*scaledSideLengths.X() + sinY*scaledSideLengths.Z() + cosZ*scaledSideLengths.X() + sinZ*scaledSideLengths.Y())
+		transformedParams["length"] = (sinY*scaledSideLengths.X() + cosY*scaledSideLengths.Z() + cosX*scaledSideLengths.Z() + sinX*scaledSideLengths.Y())
+		transformedParams["height"] = (sinZ*scaledSideLengths.X() + cosZ*scaledSideLengths.Y() + sinX*scaledSideLengths.Z() + cosX*scaledSideLengths.Y())
 	}
 	return boundingobject.New(boType, transformedParams)
 }
