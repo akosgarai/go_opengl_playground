@@ -67,9 +67,14 @@ func NewSquare() *Rectangle {
 		mgl32.Vec3{0.5, 0, 0.5},
 		mgl32.Vec3{-0.5, 0, 0.5},
 	}
+	params := make(map[string]float32)
+	params["width"] = 1.0
+	params["length"] = 1.0
+	params["heigth"] = float32(0.05)
 	return &Rectangle{
 		Points: points,
 		Normal: normal,
+		BB:     boundingobject.New("AABB", params),
 	}
 }
 
