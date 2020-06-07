@@ -105,9 +105,9 @@ func (m *Mesh) GetBoundingObject() *boundingobject.BoundingObject {
 		cosY := float32(math.Abs(math.Cos(float64(mgl32.DegToRad(modYaw)))))
 		cosX := float32(math.Abs(math.Cos(float64(mgl32.DegToRad(modPitch)))))
 		cosZ := float32(math.Abs(math.Cos(float64(mgl32.DegToRad(modRoll)))))
-		transformedParams["width"] = (cosY*scaledSideLengths.X() + sinY*scaledSideLengths.Z() + cosZ*scaledSideLengths.X() + sinZ*scaledSideLengths.Y())
-		transformedParams["length"] = (sinY*scaledSideLengths.X() + cosY*scaledSideLengths.Z() + cosX*scaledSideLengths.Z() + sinX*scaledSideLengths.Y())
-		transformedParams["height"] = (sinZ*scaledSideLengths.X() + cosZ*scaledSideLengths.Y() + sinX*scaledSideLengths.Z() + cosX*scaledSideLengths.Y())
+		transformedParams["width"] = (cosY*scaledSideLengths.X() + sinY*scaledSideLengths.Z() + cosZ*scaledSideLengths.X() + sinZ*scaledSideLengths.Y()) / 2
+		transformedParams["length"] = (sinY*scaledSideLengths.X() + cosY*scaledSideLengths.Z() + cosX*scaledSideLengths.Z() + sinX*scaledSideLengths.Y()) / 2
+		transformedParams["height"] = (sinZ*scaledSideLengths.X() + cosZ*scaledSideLengths.Y() + sinX*scaledSideLengths.Z() + cosX*scaledSideLengths.Y()) / 2
 	}
 	return boundingobject.New(boType, transformedParams)
 }
