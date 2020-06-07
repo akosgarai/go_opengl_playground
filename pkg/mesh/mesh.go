@@ -95,19 +95,22 @@ func (m *Mesh) GetBoundingObject() *boundingobject.BoundingObject {
 		// Here we need to handle the side lengths. The scale & the rotation
 		// counts here.
 		sideLengths := mgl32.Vec3{boParams["width"], boParams["height"], boParams["length"]}
-		scaledSideLengths := mgl32.TransformCoordinate(sideLengths, m.ScaleTransformation())
-		modYaw := float32(math.Mod(float64(m.yaw), 90.0))
-		modPitch := float32(math.Mod(float64(m.pitch), 90.0))
-		modRoll := float32(math.Mod(float64(m.roll), 90.0))
-		sinY := float32(math.Abs(math.Sin(float64(mgl32.DegToRad(modYaw)))))
-		sinX := float32(math.Abs(math.Sin(float64(mgl32.DegToRad(modPitch)))))
-		sinZ := float32(math.Abs(math.Sin(float64(mgl32.DegToRad(modRoll)))))
-		cosY := float32(math.Abs(math.Cos(float64(mgl32.DegToRad(modYaw)))))
-		cosX := float32(math.Abs(math.Cos(float64(mgl32.DegToRad(modPitch)))))
-		cosZ := float32(math.Abs(math.Cos(float64(mgl32.DegToRad(modRoll)))))
-		transformedParams["width"] = (cosY*scaledSideLengths.X() + sinY*scaledSideLengths.Z() + cosZ*scaledSideLengths.X() + sinZ*scaledSideLengths.Y()) / 2
-		transformedParams["length"] = (sinY*scaledSideLengths.X() + cosY*scaledSideLengths.Z() + cosX*scaledSideLengths.Z() + sinX*scaledSideLengths.Y()) / 2
-		transformedParams["height"] = (sinZ*scaledSideLengths.X() + cosZ*scaledSideLengths.Y() + sinX*scaledSideLengths.Z() + cosX*scaledSideLengths.Y()) / 2
+		sinY := math.Sin(float64(mgl32.DegToRad(m.yaw)))
+		sinX := math.Sin(float64(mgl32.DegToRad(m.pitch)))
+		sinZ := math.Sin(float64(mgl32.DegToRad(m.roll)))
+		cosY := math.Cos(float64(mgl32.DegToRad(m.yaw)))
+		cosX := math.Cos(float64(mgl32.DegToRad(m.pitch)))
+		cosZ := math.Cos(float64(mgl32.DegToRad(m.roll)))
+		xCube := float64(sideLengths.X() * sideLengths.X())
+		yCube := float64(sideLengths.Y() * sideLengths.Y())
+		zCube := float64(sideLengths.Z() * sideLengths.Z())
+		unscaledWidth := float32(math.Sqrt(cosY*cosY*xCube + sinY*sinY*zCube))
+		unscaledLength := float32(math.Sqrt(cosZ*cosZ*zCube + sinZ*sinZ*xCube))
+		unscaledHeight := float32(math.Sqrt(cosX*cosX*yCube + sinX*sinX*zCube))
+		scaledSideLengths := mgl32.TransformCoordinate(mgl32.Vec3{unscaledWidth, unscaledHeight, unscaledLength}, m.ScaleTransformation())
+		transformedParams["width"] = scaledSideLengths.X()
+		transformedParams["height"] = scaledSideLengths.Y()
+		transformedParams["length"] = scaledSideLengths.Z()
 	}
 	return boundingobject.New(boType, transformedParams)
 }
