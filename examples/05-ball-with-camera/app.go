@@ -69,14 +69,10 @@ func CreateSphereMesh() *mesh.ColorMesh {
 func CreateSquareMesh() *mesh.ColorMesh {
 	squareColor := []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
 	s := rectangle.NewSquare()
-	v, i, _ := s.ColoredMeshInput(squareColor)
+	v, i, bo := s.ColoredMeshInput(squareColor)
 	m := mesh.NewColorMesh(v, i, squareColor, glWrapper)
 	m.SetScale(mgl32.Vec3{40, 40, 40})
-	bo := make(map[string]float32)
-	bo["width"] = float32(40.0)
-	bo["height"] = float32(40.0)
-	bo["length"] = float32(0.05)
-	m.SetBoundingObjectParams(bo)
+	m.SetBoundingObject(bo)
 	return m
 }
 
