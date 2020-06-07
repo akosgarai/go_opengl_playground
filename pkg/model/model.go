@@ -114,12 +114,23 @@ func (m *Model) RotateZ(angleDeg float32) {
 // CollideTestWithSphere is the collision detection function for items in this mesh vs sphere.
 func (m *Model) CollideTestWithSphere(boundingSphere *coldet.Sphere) bool {
 	for i, _ := range m.meshes {
-		if m.meshes[i].IsParentMesh() && m.meshes[i].IsBoundingObjectParamsSet() {
+		if m.meshes[i].IsBoundingObjectSet() {
 			meshBo := m.meshes[i].GetBoundingObject()
-			if coldet.CheckSphereVsAabb(*boundingSphere, *meshBo) {
-				return true
+			if meshBo.Type() == "AABB" {
+				meshPositionVector := m.meshes[i].GetPosition()
+				meshTransTransform := m.meshes[i].TranslationTransformation()
+				meshInWorld := mgl32.TransformCoordinate(meshPositionVector, meshTransTransform)
+				pos := [3]float32{meshInWorld.X(), meshInWorld.Y(), meshInWorld.Z()}
+				params := meshBo.Params()
+				aabb := coldet.NewBoundingBox(pos, params["width"], params["height"], params["length"])
+				if coldet.CheckSphereVsAabb(*boundingSphere, *aabb) {
+					return true
+				}
 			}
 		}
 	}
 	return false
 }
+
+// GetParentMeshes function returns the parent meshes of the model. The collision detection will be
+// use this parents, due to the movement params are applied here.
