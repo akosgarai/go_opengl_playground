@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/akosgarai/opengl_playground/pkg/interfaces"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/boundingobject"
 	"github.com/akosgarai/opengl_playground/pkg/testhelper"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -278,11 +279,11 @@ func TestRotateZ(t *testing.T) {
 func TestIsBoundingObjectParamsSet(t *testing.T) {
 	var m Mesh
 	boParams := make(map[string]float32)
-	if m.IsBoundingObjectParamsSet() != false {
-		t.Error("Before setting the bo params, it should return false")
+	if m.IsBoundingObjectSet() != false {
+		t.Error("Before setting the bo, it should return false")
 	}
-	m.SetBoundingObjectParams(boParams)
-	if m.IsBoundingObjectParamsSet() != true {
-		t.Error("After setting the  bo params, it should return true")
+	m.SetBoundingObject(boundingobject.New("AABB", boParams))
+	if m.IsBoundingObjectSet() != true {
+		t.Error("After setting the bo, it should return true")
 	}
 }

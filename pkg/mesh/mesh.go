@@ -1,13 +1,15 @@
 package mesh
 
 import (
+	"math"
+
 	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/interfaces"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/boundingobject"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 	"github.com/akosgarai/opengl_playground/pkg/texture"
 
-	"github.com/akosgarai/coldet"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
@@ -36,8 +38,8 @@ type Mesh struct {
 	parent    interfaces.Mesh
 	parentSet bool
 
-	bo                      map[string]float32
-	boundingObjectParamsSet bool
+	bo                *boundingobject.BoundingObject
+	boundingObjectSet bool
 }
 
 // SetScale updates the scale of the mesh.
@@ -70,15 +72,41 @@ func (m *Mesh) GetDirection() mgl32.Vec3 {
 	return m.direction
 }
 
-// SetBoundingObjectParams sets the bounding object parameters of the mesh.
-func (m *Mesh) SetBoundingObjectParams(bo map[string]float32) {
-	m.boundingObjectParamsSet = true
+// SetBoundingObject sets the bounding object of the mesh.
+func (m *Mesh) SetBoundingObject(bo *boundingobject.BoundingObject) {
+	m.boundingObjectSet = true
 	m.bo = bo
 }
 
-// GetBoundingObject returns the bounding object of the camera. It is hardcoded as a cuboid.
-func (m *Mesh) GetBoundingObject() *coldet.AABB {
-	return coldet.NewBoundingBox([3]float32{m.position.X(), m.position.Y(), m.position.Z()}, m.bo["width"], m.bo["length"], m.bo["height"])
+// GetBoundingObject returns the bounding object of the mesh. It calculates the
+// transformed values of the params.
+func (m *Mesh) GetBoundingObject() *boundingobject.BoundingObject {
+	transformedParams := make(map[string]float32)
+	boType := m.bo.Type()
+	boParams := m.bo.Params()
+	if boType == "Sphere" {
+		// In this case, we only need to handle the radius, that only needs
+		// to be scaled. Because the paren't scale also counts, the scaling
+		// tr will applied to a vector that is based on the rad.
+		rad := mgl32.Vec3{boParams["radius"], 0, 0}
+		transformedRad := mgl32.TransformCoordinate(rad, m.ScaleTransformation())
+		transformedParams["radius"] = transformedRad.X()
+	} else if boType == "AABB" {
+		// Here we need to handle the side lengths. The scale & the rotation
+		// counts here.
+		sideLengths := mgl32.Vec3{boParams["width"], boParams["height"], boParams["length"]}
+		scaledSideLengths := mgl32.TransformCoordinate(sideLengths, m.ScaleTransformation())
+		modYaw := float32(math.Mod(float64(m.yaw), 90.0))
+		modPitch := float32(math.Mod(float64(m.pitch), 90.0))
+		modRoll := float32(math.Mod(float64(m.roll), 90.0))
+		rotY := float32(math.Abs(math.Sin(float64(mgl32.DegToRad(modYaw)))))
+		rotX := float32(math.Abs(math.Sin(float64(mgl32.DegToRad(modPitch)))))
+		rotZ := float32(math.Abs(math.Sin(float64(mgl32.DegToRad(modRoll)))))
+		transformedParams["width"] = (rotY*scaledSideLengths.X() + rotY*scaledSideLengths.Z() + rotZ*scaledSideLengths.X() + rotZ*scaledSideLengths.Y()) / 2
+		transformedParams["length"] = (rotY*scaledSideLengths.X() + rotY*scaledSideLengths.Z() + rotX*scaledSideLengths.Z() + rotX*scaledSideLengths.Y()) / 2
+		transformedParams["height"] = (rotZ*scaledSideLengths.X() + rotZ*scaledSideLengths.Y() + rotX*scaledSideLengths.Z() + rotX*scaledSideLengths.Y()) / 2
+	}
+	return boundingobject.New(boType, transformedParams)
 }
 
 // SetParent sets the given mesh to the parent. It also sets the
@@ -190,9 +218,9 @@ func (m *Mesh) IsParentMesh() bool {
 	return !m.parentSet
 }
 
-// IsBoundingObjectParamsSet returns true, if the bounding object is set to this mesh.
-func (m *Mesh) IsBoundingObjectParamsSet() bool {
-	return m.boundingObjectParamsSet
+// IsBoundingObjectSet returns true, if the bounding object is set to this mesh.
+func (m *Mesh) IsBoundingObjectSet() bool {
+	return m.boundingObjectSet
 }
 
 type TexturedMesh struct {
@@ -263,7 +291,7 @@ func NewTexturedMesh(v []vertex.Vertex, i []uint32, t texture.Textures, wrapper 
 			wrapper:   wrapper,
 			parentSet: false,
 
-			boundingObjectParamsSet: false,
+			boundingObjectSet: false,
 		},
 		Indicies: i,
 		Textures: t,
@@ -296,7 +324,7 @@ func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat *material.Material, wrap
 			wrapper:   wrapper,
 			parentSet: false,
 
-			boundingObjectParamsSet: false,
+			boundingObjectSet: false,
 		},
 		Indicies: i,
 		Material: mat,
@@ -369,7 +397,7 @@ func NewPointMesh(wrapper interfaces.GLWrapper) *PointMesh {
 			wrapper:   wrapper,
 			parentSet: false,
 
-			boundingObjectParamsSet: false,
+			boundingObjectSet: false,
 		},
 	}
 	return mesh
@@ -439,7 +467,7 @@ func NewColorMesh(v []vertex.Vertex, i []uint32, color []mgl32.Vec3, wrapper int
 			wrapper:   wrapper,
 			parentSet: false,
 
-			boundingObjectParamsSet: false,
+			boundingObjectSet: false,
 		},
 		Indicies: i,
 		Color:    color,
@@ -508,7 +536,7 @@ func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures, c
 			wrapper:   wrapper,
 			parentSet: false,
 
-			boundingObjectParamsSet: false,
+			boundingObjectSet: false,
 		},
 		Indicies: i,
 		Textures: t,
@@ -585,7 +613,7 @@ func NewTexturedMaterialMesh(v []vertex.Vertex, i []uint32, t texture.Textures, 
 			wrapper:   wrapper,
 			parentSet: false,
 
-			boundingObjectParamsSet: false,
+			boundingObjectSet: false,
 		},
 		Indicies: i,
 		Textures: t,
