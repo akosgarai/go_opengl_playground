@@ -291,6 +291,12 @@ func (a *Application) Update(dt float64) {
 	}
 	for s, _ := range a.shaderMap {
 		for index, _ := range a.shaderMap[s] {
+			// The collision detection between the moving meshes supposed to be implemented somewhere here.
+			// It could be the same as the collision detection between the camera and the other objects.
+			// If a mesh is a moving object (in this case, the moving means movement on the direction),
+			// then it needs to be tested against other objects. If collision is not found, the update
+			// could be applied, otherwise it needs to be skipped. In the future, the collusion effect
+			// also could be handled here.
 			a.shaderMap[s][index].Update(dt)
 		}
 	}
