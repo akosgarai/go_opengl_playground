@@ -25,7 +25,7 @@ const (
 	WindowTitle  = "Example - rooms with light sources"
 
 	CameraMoveSpeed      = 0.005
-	CameraDirectionSpeed = float32(0.010)
+	CameraDirectionSpeed = float32(0.050)
 	CameraDistance       = 0.1
 )
 
@@ -84,9 +84,10 @@ func CameraMovementMap() map[string]glfw.Key {
 
 func CreateGrassMesh(t texture.Textures) *mesh.TexturedMesh {
 	square := rectangle.NewSquare()
-	v, i, _ := square.MeshInput()
+	v, i, bo := square.MeshInput()
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	m.SetScale(mgl32.Vec3{20, 1, 20})
+	m.SetBoundingObject(bo)
 	return m
 }
 
