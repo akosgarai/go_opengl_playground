@@ -23,17 +23,19 @@ type Bug struct {
 // position is relative to the parent.
 func NewBug(position, scale mgl32.Vec3) *Bug {
 	sphereBase := sphere.New(20)
-	i, v, _ := sphereBase.MaterialMeshInput()
+	i, v, bo := sphereBase.MaterialMeshInput()
 	// Body supposed to be other green. Like green rubber
 	Body := mesh.NewMaterialMesh(i, v, material.Greenrubber, glWrapper)
 	Body.SetScale(scale)
 	Body.SetPosition(position)
+	Body.SetBoundingObject(bo)
 
 	// Bottom supposed to be greenish color / material like emerald
 	Bottom := mesh.NewMaterialMesh(i, v, material.Emerald, glWrapper)
 	Bottom.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
 	Bottom.SetPosition(mgl32.Vec3{scale.X() * -1, 0, 0})
 	Bottom.SetParent(Body)
+	Bottom.SetBoundingObject(bo)
 	// Eyes are red. (red plastic)
 	Eye1 := mesh.NewMaterialMesh(i, v, material.Ruby, glWrapper)
 	Eye1.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
@@ -41,6 +43,7 @@ func NewBug(position, scale mgl32.Vec3) *Bug {
 	initPosScaled := mgl32.Vec3{initPosBase.X() * scale.X(), initPosBase.Y() * scale.Y(), initPosBase.Z() * scale.Z()}
 	Eye1.SetPosition(initPosScaled)
 	Eye1.SetParent(Body)
+	Eye1.SetBoundingObject(bo)
 
 	Eye2 := mesh.NewMaterialMesh(i, v, material.Ruby, glWrapper)
 	Eye2.SetScale(mgl32.Vec3{0.1, 0.1, 0.1})
@@ -48,6 +51,7 @@ func NewBug(position, scale mgl32.Vec3) *Bug {
 	initPosScaled = mgl32.Vec3{initPosBase.X() * scale.X(), initPosBase.Y() * scale.Y(), initPosBase.Z() * scale.Z()}
 	Eye2.SetPosition(initPosScaled)
 	Eye2.SetParent(Body)
+	Eye2.SetBoundingObject(bo)
 
 	m := newModel()
 	m.AddMesh(Bottom)
