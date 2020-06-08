@@ -116,17 +116,26 @@ func (m *Model) CollideTestWithSphere(boundingSphere *coldet.Sphere) bool {
 	for i, _ := range m.meshes {
 		if m.meshes[i].IsBoundingObjectSet() {
 			meshBo := m.meshes[i].GetBoundingObject()
+			meshInWorld := m.meshes[i].GetPosition()
+			if !m.meshes[i].IsParentMesh() {
+				meshTransTransform := m.meshes[i].GetParentTranslationTransformation()
+				meshInWorld = mgl32.TransformCoordinate(meshInWorld, meshTransTransform)
+			}
+			pos := [3]float32{meshInWorld.X(), meshInWorld.Y(), meshInWorld.Z()}
+			params := meshBo.Params()
 			if meshBo.Type() == "AABB" {
-				meshInWorld := m.meshes[i].GetPosition()
-				if !m.meshes[i].IsParentMesh() {
-					meshTransTransform := m.meshes[i].GetParentTranslationTransformation()
-					meshInWorld = mgl32.TransformCoordinate(meshInWorld, meshTransTransform)
-				}
-				pos := [3]float32{meshInWorld.X(), meshInWorld.Y(), meshInWorld.Z()}
-				params := meshBo.Params()
 				aabb := coldet.NewBoundingBox(pos, params["width"], params["height"], params["length"])
 
 				if coldet.CheckSphereVsAabb(*boundingSphere, *aabb) {
+					//fmt.Printf("BoundingSphere: %v\naabb: %v\nparams: %v\n", boundingSphere, aabb, params)
+					return true
+				}
+			} else if meshBo.Type() == "Sphere" {
+				params := meshBo.Params()
+				bs := coldet.NewBoundingSphere(pos, params["radius"])
+
+				if coldet.CheckSphereVsSphere(*boundingSphere, *bs) {
+					//fmt.Printf("BoundingSphere: %v\nbs: %v\nparams: %v\n", boundingSphere, bs, params)
 					return true
 				}
 			}
@@ -134,6 +143,3 @@ func (m *Model) CollideTestWithSphere(boundingSphere *coldet.Sphere) bool {
 	}
 	return false
 }
-
-// GetParentMeshes function returns the parent meshes of the model. The collision detection will be
-// use this parents, due to the movement params are applied here.
