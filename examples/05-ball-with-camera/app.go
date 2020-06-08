@@ -32,8 +32,9 @@ const (
 )
 
 var (
-	app  *application.Application
-	Ball *mesh.ColorMesh
+	app    *application.Application
+	Ball   *mesh.ColorMesh
+	Ground *mesh.ColorMesh
 
 	lastUpdate int64
 
@@ -55,7 +56,7 @@ func CreateCamera() *camera.Camera {
 func CreateSphereMesh() *mesh.ColorMesh {
 	s := sphere.New(BallPrecision)
 	cols := []mgl32.Vec3{mgl32.Vec3{1, 0, 0}}
-	v, i := s.ColoredMeshInput(cols)
+	v, i, _ := s.ColoredMeshInput(cols)
 	m := mesh.NewColorMesh(v, i, cols, glWrapper)
 	m.SetPosition(mgl32.Vec3{0, 5, 0})
 	m.SetScale(mgl32.Vec3{2, 2, 2})
@@ -68,9 +69,10 @@ func CreateSphereMesh() *mesh.ColorMesh {
 func CreateSquareMesh() *mesh.ColorMesh {
 	squareColor := []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
 	s := rectangle.NewSquare()
-	v, i := s.ColoredMeshInput(squareColor)
+	v, i, bo := s.ColoredMeshInput(squareColor)
 	m := mesh.NewColorMesh(v, i, squareColor, glWrapper)
 	m.SetScale(mgl32.Vec3{40, 40, 40})
+	m.SetBoundingObject(bo)
 	return m
 }
 
@@ -119,8 +121,8 @@ func main() {
 	app.AddShader(shaderProgram)
 	Ball = CreateSphereMesh()
 	Model.AddMesh(Ball)
-	squareMesh := CreateSquareMesh()
-	Model.AddMesh(squareMesh)
+	Ground = CreateSquareMesh()
+	Model.AddMesh(Ground)
 	app.AddModelToShader(Model, shaderProgram)
 
 	glWrapper.Enable(wrapper.DEPTH_TEST)

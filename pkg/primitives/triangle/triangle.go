@@ -3,6 +3,7 @@ package triangle
 import (
 	"math"
 
+	"github.com/akosgarai/opengl_playground/pkg/primitives/boundingobject"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -11,6 +12,7 @@ import (
 type Triangle struct {
 	Points [3]mgl32.Vec3
 	Normal mgl32.Vec3
+	BB     *boundingobject.BoundingObject
 }
 
 // New return a Triangle. The inputs are the angles of the triangle.
@@ -25,6 +27,10 @@ func New(alpha, beta, gamma float32) *Triangle {
 	rotationMatrix := mgl32.HomogRotate3D(mgl32.DegToRad(sortedAngles[1]), mgl32.Vec3{0, -1, 0})
 	point := mgl32.TransformCoordinate(pointToRotate, rotationMatrix)
 
+	params := make(map[string]float32)
+	params["width"] = 1.0
+	params["length"] = point.Z()
+	params["height"] = point.Y()
 	return &Triangle{
 		[3]mgl32.Vec3{
 			mgl32.Vec3{-0.5, 0, 0},
@@ -32,6 +38,7 @@ func New(alpha, beta, gamma float32) *Triangle {
 			mgl32.Vec3{0.5, 0, 0},
 		},
 		mgl32.Vec3{0, -1, 0},
+		boundingobject.New("AABB", params),
 	}
 }
 
@@ -58,15 +65,15 @@ func sortAngles(a, b, c float32) [3]float32 {
 	return [3]float32{greatest, middle, smallest}
 }
 
-// ColoredMeshInput method returns the verticies, indicies inputs for the New Mesh function.
-func (t *Triangle) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
-	indicies := []uint32{0, 1, 2}
-	var verticies vertex.Verticies
+// ColoredMeshInput method returns the vertices, indices, bounding object (AABB) inputs for the New Mesh function.
+func (t *Triangle) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
+	indices := []uint32{0, 1, 2}
+	var vertices vertex.Verticies
 	for i := 0; i < 3; i++ {
-		verticies = append(verticies, vertex.Vertex{
+		vertices = append(vertices, vertex.Vertex{
 			Position: t.Points[i],
 			Color:    col[i%len(col)],
 		})
 	}
-	return verticies, indicies
+	return vertices, indices, t.BB
 }

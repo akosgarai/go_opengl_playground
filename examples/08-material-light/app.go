@@ -71,16 +71,18 @@ func CreateCamera() *camera.Camera {
 
 func CreateMaterialCube(mat *material.Material, pos mgl32.Vec3) *mesh.MaterialMesh {
 	cube := cuboid.NewCube()
-	v, i := cube.MaterialMeshInput()
+	v, i, bo := cube.MaterialMeshInput()
 	m := mesh.NewMaterialMesh(v, i, mat, glWrapper)
 	m.SetPosition(pos)
+	m.SetBoundingObject(bo)
 	return m
 }
 func CreateMaterialCylinder(mat *material.Material, pos mgl32.Vec3) *mesh.MaterialMesh {
 	c := cylinder.New(0.75, 30, 3)
-	v, i := c.MaterialMeshInput()
+	v, i, bo := c.MaterialMeshInput()
 	m := mesh.NewMaterialMesh(v, i, mat, glWrapper)
 	m.SetPosition(pos)
+	m.SetBoundingObject(bo)
 	return m
 }
 

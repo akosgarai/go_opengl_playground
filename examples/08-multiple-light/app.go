@@ -89,16 +89,18 @@ func CameraMovementMap() map[string]glfw.Key {
 
 func CreateGrassMesh(t texture.Textures) *mesh.TexturedMesh {
 	square := rectangle.NewSquare()
-	v, i := square.MeshInput()
+	v, i, bo := square.MeshInput()
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	m.SetScale(mgl32.Vec3{1000, 1, 1000})
+	m.SetBoundingObject(bo)
 	return m
 }
 func CreateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
+	v, i, bo := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
 	m.SetPosition(pos)
+	m.SetBoundingObject(bo)
 	return m
 }
 
@@ -118,18 +120,19 @@ func TexturedStreetLamp(position mgl32.Vec3) *model.StreetLamp {
 
 func TexturedBug(t texture.Textures) {
 	sph := sphere.New(15)
-	v, i := sph.TexturedMeshInput()
+	v, i, bo := sph.TexturedMeshInput()
 	Bug2 = mesh.NewTexturedMesh(v, i, t, glWrapper)
 	Bug2.SetPosition(PointLightPosition_2)
 	Bug2.SetDirection(mgl32.Vec3{0, 0, 1})
 	Bug2.SetSpeed(MoveSpeed)
+	Bug2.SetBoundingObject(bo)
 	TexModel.AddMesh(Bug2)
 }
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{-11.2, -5.0, 4.2}, mgl32.Vec3{0, 1, 0}, -37.0, -2.0)
-	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 1000.0)
+	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.01, 100.0)
 	camera.SetVelocity(CameraMoveSpeed)
 	camera.SetRotationStep(CameraDirectionSpeed)
 	return camera

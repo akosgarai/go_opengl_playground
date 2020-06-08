@@ -31,7 +31,7 @@ var (
 
 func GenerateColoredMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	triang := triangle.New(60, 60, 60)
-	v, i := triang.ColoredMeshInput(col)
+	v, i, _ := triang.ColoredMeshInput(col)
 	return mesh.NewColorMesh(v, i, col, glWrapper)
 }
 

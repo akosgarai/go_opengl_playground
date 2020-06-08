@@ -18,13 +18,13 @@ func TestNew(t *testing.T) {
 	if len(sphere.TexCoords) != 9 {
 		t.Error("Invalid number of tex coords")
 	}
-	if len(sphere.Indicies) != 12 {
+	if len(sphere.Indices) != 12 {
 		t.Error("Invalid number of indicies")
 	}
 }
 func TestMaterialMeshInput(t *testing.T) {
 	sphere := New(2)
-	vert, ind := sphere.MaterialMeshInput()
+	vert, ind, _ := sphere.MaterialMeshInput()
 	if len(vert) != 9 {
 		t.Error("Invalid number of verticies")
 	}
@@ -34,7 +34,7 @@ func TestMaterialMeshInput(t *testing.T) {
 }
 func TestColoredMeshInput(t *testing.T) {
 	sphere := New(2)
-	vert, ind := sphere.ColoredMeshInput(DefaultColor)
+	vert, ind, _ := sphere.ColoredMeshInput(DefaultColor)
 	if len(vert) != 9 {
 		t.Error("Invalid number of verticies")
 	}
@@ -44,7 +44,7 @@ func TestColoredMeshInput(t *testing.T) {
 }
 func TestTexturedMeshInput(t *testing.T) {
 	sphere := New(2)
-	vert, ind := sphere.TexturedMeshInput()
+	vert, ind, _ := sphere.TexturedMeshInput()
 	if len(vert) != 9 {
 		t.Error("Invalid number of verticies")
 	}

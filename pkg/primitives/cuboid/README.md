@@ -12,19 +12,19 @@ This function returns a unit cube with origo as center point, where center point
 
 ## TexturedMeshInput
 
-TexturedMeshInput method returns the vertices, indices - inputs for the NewTexturedMesh function.
+TexturedMeshInput method returns the vertices, indices, bounding object (AABB) - inputs for the NewTexturedMesh function.
 
 ## MaterialMeshInput
 
-MaterialMeshInput method returns the vertices, indices - inputs for the NewMaterialMesh function.
+MaterialMeshInput method returns the vertices, indices, bounding object (AABB) - inputs for the NewMaterialMesh function.
 
 ## ColoredMeshInput
 
-ColoredMeshInput method returns the vertices, indices - inputs for the NewColorMesh function.
+ColoredMeshInput method returns the vertices, indices, bounding object (AABB) - inputs for the NewColorMesh function.
 
 ## TexturedColoredMeshInput
 
-This method returns the vertices, indices - inputs for the NewTexturedColoredMesh function.
+This method returns the vertices, indices, bounding object (AABB) - inputs for the NewTexturedColoredMesh function.
 
 ---
 

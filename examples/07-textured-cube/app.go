@@ -70,7 +70,7 @@ func GenerateCubeMesh(t texture.Textures) *mesh.TexturedColoredMesh {
 		mgl32.Vec3{1.0, 0.0, 1.0},
 	}
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedColoredMeshInput(colors, cuboid.TEXTURE_ORIENTATION_DEFAULT)
+	v, i, _ := cube.TexturedColoredMeshInput(colors, cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	m := mesh.NewTexturedColoredMesh(v, i, t, colors, glWrapper)
 	return m
 }

@@ -3,12 +3,23 @@ package mesh
 import (
 	"github.com/akosgarai/opengl_playground/pkg/glwrapper"
 	"github.com/akosgarai/opengl_playground/pkg/interfaces"
+	"github.com/akosgarai/opengl_playground/pkg/primitives/boundingobject"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 	"github.com/akosgarai/opengl_playground/pkg/texture"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
+
+// This function returns the abs. value of a float32 number.
+// If the number is less than 0, it returns -1*number, otherwise
+// it returns the number itself.
+func Float32Abs(a float32) float32 {
+	if a < 0 {
+		return -a
+	}
+	return a
+}
 
 type Mesh struct {
 	Verticies vertex.Verticies
@@ -34,6 +45,9 @@ type Mesh struct {
 	// parent-child hierarchy
 	parent    interfaces.Mesh
 	parentSet bool
+
+	bo                *boundingobject.BoundingObject
+	boundingObjectSet bool
 }
 
 // SetScale updates the scale of the mesh.
@@ -64,6 +78,38 @@ func (m *Mesh) GetPosition() mgl32.Vec3 {
 // GetDirection returns the current direction of the mesh.
 func (m *Mesh) GetDirection() mgl32.Vec3 {
 	return m.direction
+}
+
+// SetBoundingObject sets the bounding object of the mesh.
+func (m *Mesh) SetBoundingObject(bo *boundingobject.BoundingObject) {
+	m.boundingObjectSet = true
+	m.bo = bo
+}
+
+// GetBoundingObject returns the bounding object of the mesh. It calculates the
+// transformed values of the params.
+func (m *Mesh) GetBoundingObject() *boundingobject.BoundingObject {
+	transformedParams := make(map[string]float32)
+	boType := m.bo.Type()
+	boParams := m.bo.Params()
+	if boType == "Sphere" {
+		// In this case, we only need to handle the radius, that only needs
+		// to be scaled. Because the paren't scale also counts, the scaling
+		// tr will applied to a vector that is based on the rad.
+		rad := mgl32.Vec3{boParams["radius"], 0, 0}
+		transformedRad := mgl32.TransformCoordinate(rad, m.ScaleTransformation())
+		transformedParams["radius"] = transformedRad.X()
+	} else if boType == "AABB" {
+		// Here we need to handle the side lengths. The scale & the rotation
+		// counts here.
+		sideLengths := mgl32.Vec3{boParams["width"], boParams["height"], boParams["length"]}
+		rotatedSideLengths := mgl32.TransformCoordinate(sideLengths, m.RotationTransformation())
+		scaledSideLengths := mgl32.TransformCoordinate(rotatedSideLengths, m.ScaleTransformation())
+		transformedParams["width"] = Float32Abs(scaledSideLengths.X())
+		transformedParams["height"] = Float32Abs(scaledSideLengths.Y())
+		transformedParams["length"] = Float32Abs(scaledSideLengths.Z())
+	}
+	return boundingobject.New(boType, transformedParams)
 }
 
 // SetParent sets the given mesh to the parent. It also sets the
@@ -175,6 +221,11 @@ func (m *Mesh) IsParentMesh() bool {
 	return !m.parentSet
 }
 
+// IsBoundingObjectSet returns true, if the bounding object is set to this mesh.
+func (m *Mesh) IsBoundingObjectSet() bool {
+	return m.boundingObjectSet
+}
+
 type TexturedMesh struct {
 	Mesh
 	Indicies []uint32
@@ -242,6 +293,8 @@ func NewTexturedMesh(v []vertex.Vertex, i []uint32, t texture.Textures, wrapper 
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
+
+			boundingObjectSet: false,
 		},
 		Indicies: i,
 		Textures: t,
@@ -273,6 +326,8 @@ func NewMaterialMesh(v []vertex.Vertex, i []uint32, mat *material.Material, wrap
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
+
+			boundingObjectSet: false,
 		},
 		Indicies: i,
 		Material: mat,
@@ -344,6 +399,8 @@ func NewPointMesh(wrapper interfaces.GLWrapper) *PointMesh {
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
+
+			boundingObjectSet: false,
 		},
 	}
 	return mesh
@@ -412,6 +469,8 @@ func NewColorMesh(v []vertex.Vertex, i []uint32, color []mgl32.Vec3, wrapper int
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
+
+			boundingObjectSet: false,
 		},
 		Indicies: i,
 		Color:    color,
@@ -479,6 +538,8 @@ func NewTexturedColoredMesh(v []vertex.Vertex, i []uint32, t texture.Textures, c
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
+
+			boundingObjectSet: false,
 		},
 		Indicies: i,
 		Textures: t,
@@ -554,6 +615,8 @@ func NewTexturedMaterialMesh(v []vertex.Vertex, i []uint32, t texture.Textures, 
 			scale:     mgl32.Vec3{1, 1, 1},
 			wrapper:   wrapper,
 			parentSet: false,
+
+			boundingObjectSet: false,
 		},
 		Indicies: i,
 		Textures: t,

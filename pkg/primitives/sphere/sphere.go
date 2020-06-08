@@ -3,6 +3,7 @@ package sphere
 import (
 	"math"
 
+	"github.com/akosgarai/opengl_playground/pkg/primitives/boundingobject"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -10,14 +11,15 @@ import (
 
 type Sphere struct {
 	Points    []mgl32.Vec3
-	Indicies  []uint32
+	Indices   []uint32
 	TexCoords []mgl32.Vec2
+	BO        *boundingobject.BoundingObject
 }
 
 // based on this: http://www.songho.ca/opengl/gl_sphere.html
 func New(precision int) *Sphere {
 	var points []mgl32.Vec3
-	var indicies []uint32
+	var indices []uint32
 	var texCoords []mgl32.Vec2
 	sectorStep := (2 * math.Pi) / float64(precision)
 	stackStep := (math.Pi) / float64(precision)
@@ -40,17 +42,17 @@ func New(precision int) *Sphere {
 			s := float32(j) / float32(precision)
 			t := float32(i) / float32(precision)
 			texCoords = append(texCoords, mgl32.Vec2{s, t})
-			// indicies
+			// indices
 			if !(i == precision || j == precision) {
 				if i != 0 {
-					indicies = append(indicies, uint32(k1))
-					indicies = append(indicies, uint32(k2))
-					indicies = append(indicies, uint32(k1+1))
+					indices = append(indices, uint32(k1))
+					indices = append(indices, uint32(k2))
+					indices = append(indices, uint32(k1+1))
 				}
 				if i != precision-1 {
-					indicies = append(indicies, uint32(k1+1))
-					indicies = append(indicies, uint32(k2))
-					indicies = append(indicies, uint32(k2+1))
+					indices = append(indices, uint32(k1+1))
+					indices = append(indices, uint32(k2))
+					indices = append(indices, uint32(k2+1))
 				}
 
 			}
@@ -59,46 +61,49 @@ func New(precision int) *Sphere {
 			k2 = k2 + 1
 		}
 	}
+	params := make(map[string]float32)
+	params["radius"] = 1.0
 	return &Sphere{
 		Points:    points,
-		Indicies:  indicies,
+		Indices:   indices,
 		TexCoords: texCoords,
+		BO:        boundingobject.New("Sphere", params),
 	}
 }
 
-// MaterialMeshInput method returns the verticies, indicies inputs for the NewMaterialMesh function.
-func (s *Sphere) MaterialMeshInput() (vertex.Verticies, []uint32) {
-	var verticies vertex.Verticies
+// MaterialMeshInput method returns the vertices, indices, bounding object (Sphere) inputs for the NewMaterialMesh function.
+func (s *Sphere) MaterialMeshInput() (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
+	var vertices vertex.Verticies
 	for i := 0; i < len(s.Points); i++ {
-		verticies = append(verticies, vertex.Vertex{
+		vertices = append(vertices, vertex.Vertex{
 			Position: s.Points[i],
 			Normal:   s.Points[i],
 		})
 	}
-	return verticies, s.Indicies
+	return vertices, s.Indices, s.BO
 }
 
-// ColorMeshInput method returns the verticies, indicies inputs for the NewColorMesh function.
-func (s *Sphere) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
-	var verticies vertex.Verticies
+// ColorMeshInput method returns the vertices, indices, bounding object (Sphere) inputs for the NewColorMesh function.
+func (s *Sphere) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
+	var vertices vertex.Verticies
 	for i := 0; i < len(s.Points); i++ {
-		verticies = append(verticies, vertex.Vertex{
+		vertices = append(vertices, vertex.Vertex{
 			Position: s.Points[i],
 			Color:    col[i%len(col)],
 		})
 	}
-	return verticies, s.Indicies
+	return vertices, s.Indices, s.BO
 }
 
-// TexturedMeshInput method returns the verticies, indicies inputs for the NewTexturedMesh function.
-func (s *Sphere) TexturedMeshInput() (vertex.Verticies, []uint32) {
-	var verticies vertex.Verticies
+// TexturedMeshInput method returns the vertices, indices, bounding object (Sphere) inputs for the NewTexturedMesh function.
+func (s *Sphere) TexturedMeshInput() (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
+	var vertices vertex.Verticies
 	for i := 0; i < len(s.Points); i++ {
-		verticies = append(verticies, vertex.Vertex{
+		vertices = append(vertices, vertex.Vertex{
 			Position:  s.Points[i],
 			Normal:    s.Points[i],
 			TexCoords: s.TexCoords[i],
 		})
 	}
-	return verticies, s.Indicies
+	return vertices, s.Indices, s.BO
 }

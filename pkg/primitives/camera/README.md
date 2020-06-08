@@ -32,4 +32,20 @@ It gets the matrix to transform from world coordinates to this camera's coordina
 
 ## UpdateDirection
 
-Itupdates the pitch and yaw values.
+It updates the pitch and yaw values.
+
+## GetBoundingObject
+
+It returns the bounding object of the camera. Now it is defined as a sphere. The position is the current position of the camera. The radius is hardcoded to 0.1.
+
+## BouncingObjectAfterWalk
+
+BouncingObjectAfterWalk returns the bouncing object of the new position. It is used for colision detection. The step is forbidden if it leads to collision.
+
+## BouncingObjectAfterStrafe
+
+BouncingObjectAfterStrafe returns the bouncing object of the new position. It is used for colision detection. The step is forbidden if it leads to collision.
+
+## BouncingObjectAfterLift
+
+BouncingObjectAfterLift returns the bouncing object of the new position. It is used for colision detection. The step is forbidden if it leads to collision.

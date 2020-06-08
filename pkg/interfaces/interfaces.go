@@ -3,6 +3,9 @@ package interfaces
 import (
 	"unsafe"
 
+	"github.com/akosgarai/opengl_playground/pkg/primitives/boundingobject"
+
+	"github.com/akosgarai/coldet"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
@@ -96,6 +99,7 @@ type Mesh interface {
 	SetPosition(mgl32.Vec3)
 	ModelTransformation() mgl32.Mat4
 	TranslationTransformation() mgl32.Mat4
+	GetParentTranslationTransformation() mgl32.Mat4
 	RotationTransformation() mgl32.Mat4
 	ScaleTransformation() mgl32.Mat4
 	IsParentMesh() bool
@@ -103,9 +107,12 @@ type Mesh interface {
 	RotateY(float32)
 	RotateZ(float32)
 	RotatePosition(float32, mgl32.Vec3)
+	IsBoundingObjectSet() bool
+	GetBoundingObject() *boundingobject.BoundingObject
 }
 type Model interface {
 	Draw(Shader)
 	Update(float64)
 	Export(string)
+	CollideTestWithSphere(*coldet.Sphere) bool
 }

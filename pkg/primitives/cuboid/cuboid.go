@@ -1,6 +1,7 @@
 package cuboid
 
 import (
+	"github.com/akosgarai/opengl_playground/pkg/primitives/boundingobject"
 	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -24,6 +25,7 @@ type Cuboid struct {
 	Points  [24]mgl32.Vec3
 	Normals [6]mgl32.Vec3
 	Indices []uint32
+	BB      *boundingobject.BoundingObject
 }
 
 func getEmptyCuboid() *Cuboid {
@@ -59,6 +61,11 @@ func (c *Cuboid) calculatePoints(sideWidth, sideLength, sideHeight float32) {
 		// right
 		bb, ff, gg, cc,
 	}
+	params := make(map[string]float32)
+	params["width"] = sideWidth
+	params["length"] = sideLength
+	params["height"] = sideHeight
+	c.BB = boundingobject.New("AABB", params)
 }
 func (c *Cuboid) calculateNormals() {
 	c.Normals = [6]mgl32.Vec3{
@@ -104,8 +111,8 @@ func NewCube() *Cuboid {
 	return cuboid
 }
 
-// TexturedMeshInput method returns the vertices, indices inputs for the NewTexturedMesh function.
-func (c *Cuboid) TexturedMeshInput(orientation int) (vertex.Verticies, []uint32) {
+// TexturedMeshInput method returns the vertices, indices, bounding object (AABB) inputs for the NewTexturedMesh function.
+func (c *Cuboid) TexturedMeshInput(orientation int) (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
 	var vertices vertex.Verticies
 	for i := 0; i < 6; i++ {
 		for j := 0; j < 4; j++ {
@@ -121,11 +128,11 @@ func (c *Cuboid) TexturedMeshInput(orientation int) (vertex.Verticies, []uint32)
 			})
 		}
 	}
-	return vertices, c.Indices
+	return vertices, c.Indices, c.BB
 }
 
-// MaterialMeshInput method returns the vertices, indices inputs for the NewMaterialMesh function.
-func (c *Cuboid) MaterialMeshInput() (vertex.Verticies, []uint32) {
+// MaterialMeshInput method returns the vertices, indices, bounding object (AABB) inputs for the NewMaterialMesh function.
+func (c *Cuboid) MaterialMeshInput() (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
 	var vertices vertex.Verticies
 	for i := 0; i < 6; i++ {
 		for j := 0; j < 4; j++ {
@@ -136,11 +143,11 @@ func (c *Cuboid) MaterialMeshInput() (vertex.Verticies, []uint32) {
 			})
 		}
 	}
-	return vertices, c.Indices
+	return vertices, c.Indices, c.BB
 }
 
-// ColoredMeshInput method returns the vertices, indices inputs for the NewColorMesh function.
-func (c *Cuboid) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32) {
+// ColoredMeshInput method returns the vertices, indices, bounding object (AABB) inputs for the NewColorMesh function.
+func (c *Cuboid) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
 	var vertices vertex.Verticies
 	for i := 0; i < 6; i++ {
 		for j := 0; j < 4; j++ {
@@ -151,11 +158,11 @@ func (c *Cuboid) ColoredMeshInput(col []mgl32.Vec3) (vertex.Verticies, []uint32)
 			})
 		}
 	}
-	return vertices, c.Indices
+	return vertices, c.Indices, c.BB
 }
 
-// TexturedColoredMeshInput method returns the vertices, indices inputs for the NewTexturedColoredMesh function.
-func (c *Cuboid) TexturedColoredMeshInput(col []mgl32.Vec3, orientation int) (vertex.Verticies, []uint32) {
+// TexturedColoredMeshInput method returns the vertices, indices, bounding object (AABB) inputs for the NewTexturedColoredMesh function.
+func (c *Cuboid) TexturedColoredMeshInput(col []mgl32.Vec3, orientation int) (vertex.Verticies, []uint32, *boundingobject.BoundingObject) {
 	var vertices vertex.Verticies
 	for i := 0; i < 6; i++ {
 		for j := 0; j < 4; j++ {
@@ -171,5 +178,5 @@ func (c *Cuboid) TexturedColoredMeshInput(col []mgl32.Vec3, orientation int) (ve
 			})
 		}
 	}
-	return vertices, c.Indices
+	return vertices, c.Indices, c.BB
 }

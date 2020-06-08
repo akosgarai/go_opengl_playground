@@ -42,7 +42,7 @@ func defaultImage(t *testing.T) {
 func TestNew(t *testing.T) {
 	var meshes []interfaces.Mesh
 	square := rectangle.NewSquare()
-	v, i := square.MeshInput()
+	v, i, _ := square.MeshInput()
 	materialMesh := mesh.NewMaterialMesh(v, i, material.Jade, glWrapper)
 	meshes = append(meshes, materialMesh)
 	exporter := New(meshes)
@@ -173,7 +173,7 @@ func TestExportTexturedColoredMesh(t *testing.T) {
 		mgl32.Vec3{1.0, 0.0, 1.0},
 	}
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedColoredMeshInput(colors, cuboid.TEXTURE_ORIENTATION_DEFAULT)
+	v, i, _ := cube.TexturedColoredMeshInput(colors, cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	tcMesh := mesh.NewTexturedColoredMesh(v, i, tex, colors, glWrapper)
 	meshes = append(meshes, tcMesh)
 	exporter := New(meshes)
@@ -194,7 +194,7 @@ func TestProcessTexturedColoredMesh(t *testing.T) {
 		mgl32.Vec3{1.0, 0.0, 0.0},
 	}
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedColoredMeshInput(colors, cuboid.TEXTURE_ORIENTATION_DEFAULT)
+	v, i, _ := cube.TexturedColoredMeshInput(colors, cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	tcMesh := mesh.NewTexturedColoredMesh(v, i, tex, colors, glWrapper)
 	meshes = append(meshes, tcMesh)
 	exporter := New(meshes)
@@ -227,7 +227,7 @@ func TestExportTexturedMesh(t *testing.T) {
 	var meshes []interfaces.Mesh
 	var tex texture.Textures
 	spherePrimitive := sphere.New(20)
-	v, i := spherePrimitive.TexturedMeshInput()
+	v, i, _ := spherePrimitive.TexturedMeshInput()
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
@@ -245,7 +245,7 @@ func TestProcessTexturedGoodNamesMesh(t *testing.T) {
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
+	v, i, _ := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
@@ -279,7 +279,7 @@ func TestProcessTexturedNoSpecularMesh(t *testing.T) {
 	var tex texture.Textures
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
+	v, i, _ := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
@@ -313,7 +313,7 @@ func TestProcessTexturedNoDiffuseMesh(t *testing.T) {
 	var tex texture.Textures
 	tex.AddTexture("./tests/test-image.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	cube := cuboid.NewCube()
-	v, i := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
+	v, i, _ := cube.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
 	texturedMesh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
 	meshes = append(meshes, texturedMesh)
 	exporter := New(meshes)
@@ -345,7 +345,7 @@ func TestExportColorMesh(t *testing.T) {
 	var meshes []interfaces.Mesh
 	square := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{1, 1, 1}}
-	v, i := square.ColoredMeshInput(col)
+	v, i, _ := square.ColoredMeshInput(col)
 	colorMesh := mesh.NewColorMesh(v, i, col, glWrapper)
 	meshes = append(meshes, colorMesh)
 	exporter := New(meshes)
@@ -360,7 +360,7 @@ func TestProcessColorMesh(t *testing.T) {
 	var meshes []interfaces.Mesh
 	square := rectangle.NewSquare()
 	col := []mgl32.Vec3{mgl32.Vec3{1, 1, 1}}
-	v, i := square.ColoredMeshInput(col)
+	v, i, _ := square.ColoredMeshInput(col)
 	colorMesh := mesh.NewColorMesh(v, i, col, glWrapper)
 	meshes = append(meshes, colorMesh)
 	exporter := New(meshes)
@@ -389,7 +389,7 @@ func TestProcessColorMesh(t *testing.T) {
 func TestExportMaterialMesh(t *testing.T) {
 	var meshes []interfaces.Mesh
 	square := rectangle.NewSquare()
-	v, i := square.MeshInput()
+	v, i, _ := square.MeshInput()
 	materialMesh := mesh.NewMaterialMesh(v, i, material.Jade, glWrapper)
 	meshes = append(meshes, materialMesh)
 	exporter := New(meshes)
@@ -403,7 +403,7 @@ func TestExportMaterialMesh(t *testing.T) {
 func TestProcessMaterialMesh(t *testing.T) {
 	var meshes []interfaces.Mesh
 	square := rectangle.NewSquare()
-	v, i := square.MeshInput()
+	v, i, _ := square.MeshInput()
 	materialMesh := mesh.NewMaterialMesh(v, i, material.Jade, glWrapper)
 	meshes = append(meshes, materialMesh)
 	exporter := New(meshes)

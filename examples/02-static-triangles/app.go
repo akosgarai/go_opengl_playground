@@ -34,7 +34,7 @@ var (
 // GenerateTriangles fills up the triangles.
 func GenerateTriangles(rows int, shaderProgram *shader.Shader) {
 	triang := triangle.New(60, 60, 60)
-	v, indicies := triang.ColoredMeshInput(color)
+	v, indicies, _ := triang.ColoredMeshInput(color)
 
 	length := 2.0 / float32(rows)
 	for i := 0; i <= rows; i++ {

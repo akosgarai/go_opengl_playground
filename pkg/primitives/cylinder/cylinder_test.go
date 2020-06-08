@@ -70,7 +70,7 @@ func TestMaterialMeshInput(t *testing.T) {
 	}
 	for _, tt := range testData {
 		cyl := New(tt.input.X(), int(tt.input.Y()), tt.input.Z())
-		v, i := cyl.MaterialMeshInput()
+		v, i, _ := cyl.MaterialMeshInput()
 		if len(i) != tt.expectedLengthIndices {
 			t.Errorf("Invalid indices length. instead of '%d', we have '%d'\n", tt.expectedLengthIndices, len(i))
 		}
@@ -89,7 +89,7 @@ func TestColoredMeshInput(t *testing.T) {
 	}
 	for _, tt := range testData {
 		cyl := New(tt.input.X(), int(tt.input.Y()), tt.input.Z())
-		v, i := cyl.ColoredMeshInput([]mgl32.Vec3{mgl32.Vec3{1, 1, 1}})
+		v, i, _ := cyl.ColoredMeshInput([]mgl32.Vec3{mgl32.Vec3{1, 1, 1}})
 		if len(i) != tt.expectedLengthIndices {
 			t.Errorf("Invalid indices length. instead of '%d', we have '%d'\n", tt.expectedLengthIndices, len(i))
 		}
@@ -108,7 +108,7 @@ func TestTexturedMeshInput(t *testing.T) {
 	}
 	for _, tt := range testData {
 		cyl := New(tt.input.X(), int(tt.input.Y()), tt.input.Z())
-		v, i := cyl.TexturedMeshInput()
+		v, i, _ := cyl.TexturedMeshInput()
 		if len(i) != tt.expectedLengthIndices {
 			t.Errorf("Invalid indices length. instead of '%d', we have '%d'\n", tt.expectedLengthIndices, len(i))
 		}

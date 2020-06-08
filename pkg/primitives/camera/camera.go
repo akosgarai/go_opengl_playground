@@ -3,6 +3,7 @@ package camera
 import (
 	"math"
 
+	"github.com/akosgarai/coldet"
 	"github.com/go-gl/mathgl/mgl32"
 
 	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
@@ -73,6 +74,24 @@ func NewCamera(position, worldUp mgl32.Vec3, yaw, pitch float32) *Camera {
 	return &cam
 }
 
+// BoundingObjectAfterWalk returns the bouncing object of the new position.
+func (c *Camera) BoundingObjectAfterWalk(amount float32) *coldet.Sphere {
+	np := c.cameraPosition.Add(c.cameraFrontDirection.Mul(amount))
+	return coldet.NewBoundingSphere([3]float32{np.X(), np.Y(), np.Z()}, 0.1)
+}
+
+// BoundingObjectAfterStrafe returns the bouncing object of the new position.
+func (c *Camera) BoundingObjectAfterStrafe(amount float32) *coldet.Sphere {
+	np := c.cameraPosition.Add(c.cameraRightDirection.Mul(amount))
+	return coldet.NewBoundingSphere([3]float32{np.X(), np.Y(), np.Z()}, 0.1)
+}
+
+// BoundingObjectAfterLift returns the bouncing object of the new position.
+func (c *Camera) BoundingObjectAfterLift(amount float32) *coldet.Sphere {
+	np := c.cameraPosition.Add(c.cameraUpDirection.Mul(amount))
+	return coldet.NewBoundingSphere([3]float32{np.X(), np.Y(), np.Z()}, 0.1)
+}
+
 // Walk updates the position (forward, back directions)
 func (c *Camera) Walk(amount float32) {
 	c.cameraPosition = c.cameraPosition.Add(c.cameraFrontDirection.Mul(amount))
@@ -139,6 +158,11 @@ func (c *Camera) UpdateDirection(amountX, amountY float32) {
 // GetPosition returns the current position of the camera.
 func (c *Camera) GetPosition() mgl32.Vec3 {
 	return c.cameraPosition
+}
+
+// GetBoundingObject returns the bounding object of the camera. It is defined as a sphere.
+func (c *Camera) GetBoundingObject() *coldet.Sphere {
+	return coldet.NewBoundingSphere([3]float32{c.cameraPosition.X(), c.cameraPosition.Y(), c.cameraPosition.Z()}, 0.1)
 }
 
 // GetVelocity returns the current velocity of the camera.

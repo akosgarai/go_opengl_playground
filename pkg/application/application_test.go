@@ -127,3 +127,6 @@ func TestApplyMouseRotation(t *testing.T) {
 func TestSetRotateOnEdgeDistance(t *testing.T) {
 	t.Skip("Unimplemented")
 }
+func TestCameraCollisionTest(t *testing.T) {
+	t.Skip("Unimplemented")
+}
