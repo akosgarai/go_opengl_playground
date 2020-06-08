@@ -95,22 +95,53 @@ func (m *Mesh) GetBoundingObject() *boundingobject.BoundingObject {
 		// Here we need to handle the side lengths. The scale & the rotation
 		// counts here.
 		sideLengths := mgl32.Vec3{boParams["width"], boParams["height"], boParams["length"]}
-		sinY := math.Sin(float64(mgl32.DegToRad(m.yaw)))
-		sinX := math.Sin(float64(mgl32.DegToRad(m.pitch)))
-		sinZ := math.Sin(float64(mgl32.DegToRad(m.roll)))
-		cosY := math.Cos(float64(mgl32.DegToRad(m.yaw)))
-		cosX := math.Cos(float64(mgl32.DegToRad(m.pitch)))
-		cosZ := math.Cos(float64(mgl32.DegToRad(m.roll)))
-		xCube := float64(sideLengths.X() * sideLengths.X())
-		yCube := float64(sideLengths.Y() * sideLengths.Y())
-		zCube := float64(sideLengths.Z() * sideLengths.Z())
-		unscaledWidth := float32(math.Sqrt(cosY*cosY*xCube + sinY*sinY*zCube))
-		unscaledLength := float32(math.Sqrt(cosZ*cosZ*zCube + sinZ*sinZ*xCube))
-		unscaledHeight := float32(math.Sqrt(cosX*cosX*yCube + sinX*sinX*zCube))
+		sinY := float32(math.Sin(float64(mgl32.DegToRad(m.yaw))))
+		sinX := float32(math.Sin(float64(mgl32.DegToRad(m.pitch))))
+		sinZ := float32(math.Sin(float64(mgl32.DegToRad(m.roll))))
+		cosY := float32(math.Cos(float64(mgl32.DegToRad(m.yaw))))
+		cosX := float32(math.Cos(float64(mgl32.DegToRad(m.pitch))))
+		cosZ := float32(math.Cos(float64(mgl32.DegToRad(m.roll))))
+		// New approach: for each axis, the rotation on that axis
+		// has impact on the 2 other sides. (eg rotY - changes the
+		// length of the x and the z sides). I decided to calculate
+		// with the following logic: get the rotated side length using
+		// tigonometric functions. Store the new lengths.
+		// Calculate each new lengths, and on the end: multiply them.
+		// Rotation on 'Y' axis:
+		sideXRotY := cosY*sideLengths.X() + sinY*sideLengths.Z()
+		sideZRotY := cosY*sideLengths.Z() + sinZ*sideLengths.X()
+		// Rotation on 'X' axis:
+		sideYRotX := cosX*sideLengths.Y() + sinX*sideLengths.Z()
+		sideZRotX := cosX*sideLengths.Z() + sinX*sideLengths.Y()
+		// Rotation on 'Z' axis:
+		sideXRotZ := cosZ*sideLengths.X() + sinZ*sideLengths.Y()
+		sideYRotZ := cosZ*sideLengths.Y() + sinZ*sideLengths.X()
+		var unscaledWidth, unscaledHeight, unscaledLength float32
+		if sideLengths.X() == 0.0 {
+			unscaledWidth = 0.0
+		} else {
+			unscaledWidth = sideXRotY * sideXRotZ / sideLengths.X()
+		}
+		if sideLengths.Y() == 0.0 {
+			unscaledHeight = 0.0
+		} else {
+			unscaledHeight = sideYRotX * sideYRotZ / sideLengths.Y()
+		}
+		if sideLengths.Z() == 0.0 {
+			unscaledLength = 0.0
+		} else {
+			unscaledLength = sideZRotY * sideZRotX / sideLengths.Z()
+		}
 		scaledSideLengths := mgl32.TransformCoordinate(mgl32.Vec3{unscaledWidth, unscaledHeight, unscaledLength}, m.ScaleTransformation())
 		transformedParams["width"] = scaledSideLengths.X()
 		transformedParams["height"] = scaledSideLengths.Y()
 		transformedParams["length"] = scaledSideLengths.Z()
+		transformedParams["yaw"] = m.yaw
+		transformedParams["pitch"] = m.pitch
+		transformedParams["roll"] = m.roll
+		transformedParams["origWidth"] = boParams["width"]
+		transformedParams["origHeight"] = boParams["height"]
+		transformedParams["origLength"] = boParams["length"]
 	}
 	return boundingobject.New(boType, transformedParams)
 }
