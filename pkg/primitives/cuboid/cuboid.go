@@ -64,7 +64,7 @@ func (c *Cuboid) calculatePoints(sideWidth, sideLength, sideHeight float32) {
 	params := make(map[string]float32)
 	params["width"] = sideWidth
 	params["length"] = sideLength
-	params["heigth"] = sideHeight
+	params["height"] = sideHeight
 	c.BB = boundingobject.New("AABB", params)
 }
 func (c *Cuboid) calculateNormals() {

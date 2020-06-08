@@ -30,7 +30,7 @@ func New(alpha, beta, gamma float32) *Triangle {
 	params := make(map[string]float32)
 	params["width"] = 1.0
 	params["length"] = point.Z()
-	params["heigth"] = point.Y()
+	params["height"] = point.Y()
 	return &Triangle{
 		[3]mgl32.Vec3{
 			mgl32.Vec3{-0.5, 0, 0},

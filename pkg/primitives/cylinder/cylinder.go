@@ -27,7 +27,7 @@ func New(rad float32, prec int, length float32) *Cylinder {
 	params := make(map[string]float32)
 	params["width"] = rad
 	params["length"] = length
-	params["heigth"] = rad
+	params["height"] = rad
 	c := Cylinder{
 		Points:    []mgl32.Vec3{},
 		Normals:   []mgl32.Vec3{},
@@ -43,7 +43,7 @@ func NewHalfCircleBased(rad float32, prec int, length float32) *Cylinder {
 	params := make(map[string]float32)
 	params["width"] = rad
 	params["length"] = length
-	params["heigth"] = rad / 2
+	params["height"] = rad / 2
 	c := Cylinder{
 		Points:    []mgl32.Vec3{},
 		Normals:   []mgl32.Vec3{},

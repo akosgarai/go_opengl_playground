@@ -48,7 +48,7 @@ func New(width, height float32) *Rectangle {
 	params := make(map[string]float32)
 	params["width"] = x1 - x0
 	params["length"] = y1 - y0
-	params["heigth"] = float32(0.0)
+	params["height"] = float32(0.0)
 	return &Rectangle{
 		Points: points,
 		Normal: normal,
@@ -70,7 +70,7 @@ func NewSquare() *Rectangle {
 	params := make(map[string]float32)
 	params["width"] = 1.0
 	params["length"] = 1.0
-	params["heigth"] = float32(0.05)
+	params["height"] = float32(0.0)
 	return &Rectangle{
 		Points: points,
 		Normal: normal,
