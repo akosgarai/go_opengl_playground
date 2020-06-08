@@ -103,10 +103,7 @@ func (m *Mesh) GetBoundingObject() *boundingobject.BoundingObject {
 		// Here we need to handle the side lengths. The scale & the rotation
 		// counts here.
 		sideLengths := mgl32.Vec3{boParams["width"], boParams["height"], boParams["length"]}
-		rotationMatrix := mgl32.HomogRotate3DY(mgl32.DegToRad(m.yaw)).Mul4(
-			mgl32.HomogRotate3DX(mgl32.DegToRad(m.pitch))).Mul4(
-			mgl32.HomogRotate3DZ(mgl32.DegToRad(m.roll)))
-		rotatedSideLengths := mgl32.TransformCoordinate(sideLengths, rotationMatrix)
+		rotatedSideLengths := mgl32.TransformCoordinate(sideLengths, m.RotationTransformation())
 		scaledSideLengths := mgl32.TransformCoordinate(rotatedSideLengths, m.ScaleTransformation())
 		transformedParams["width"] = Float32Abs(scaledSideLengths.X())
 		transformedParams["height"] = Float32Abs(scaledSideLengths.Y())
