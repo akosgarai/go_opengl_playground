@@ -83,17 +83,19 @@ func CreateWhiteSphere() {
 // It generates the Jade sphere.
 func CreateJadeSphere() {
 	sph := sphere.New(20)
-	v, i, _ := sph.MaterialMeshInput()
+	v, i, bo := sph.MaterialMeshInput()
 	JadeSphere = mesh.NewMaterialMesh(v, i, material.Jade, glWrapper)
 	JadeSphere.SetPosition(mgl32.Vec3{0.0, -0.5, 0.0})
+	JadeSphere.SetBoundingObject(bo)
 }
 
 // It generates the red plastic sphere.
 func CreateRedPlasticSphere() *mesh.MaterialMesh {
 	sph := sphere.New(20)
-	v, i, _ := sph.MaterialMeshInput()
+	v, i, bo := sph.MaterialMeshInput()
 	m := mesh.NewMaterialMesh(v, i, material.Redplastic, glWrapper)
 	m.SetPosition(mgl32.Vec3{-6.5, -3.5, -4.5})
+	m.SetBoundingObject(bo)
 	return m
 }
 
