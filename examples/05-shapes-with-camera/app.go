@@ -4,16 +4,16 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/pkg/application"
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
-	"github.com/akosgarai/opengl_playground/pkg/mesh"
-	"github.com/akosgarai/opengl_playground/pkg/model"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/cylinder"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
-	"github.com/akosgarai/opengl_playground/pkg/shader"
-	"github.com/akosgarai/opengl_playground/pkg/window"
+	"github.com/akosgarai/playground_engine/pkg/application"
+	"github.com/akosgarai/playground_engine/pkg/camera"
+	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/mesh"
+	"github.com/akosgarai/playground_engine/pkg/model"
+	"github.com/akosgarai/playground_engine/pkg/primitives/cuboid"
+	"github.com/akosgarai/playground_engine/pkg/primitives/cylinder"
+	"github.com/akosgarai/playground_engine/pkg/primitives/sphere"
+	"github.com/akosgarai/playground_engine/pkg/shader"
+	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -43,7 +43,7 @@ var (
 	}
 	Model = model.New()
 
-	glWrapper wrapper.Wrapper
+	glWrapper glwrapper.Wrapper
 )
 
 // Setup keymap for the camera movement
@@ -127,8 +127,8 @@ func main() {
 	Model.AddMesh(cyl)
 	app.AddModelToShader(Model, shaderProgram)
 
-	glWrapper.Enable(wrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
 	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
@@ -136,7 +136,7 @@ func main() {
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
 		app.Draw()
