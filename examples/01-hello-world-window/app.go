@@ -5,9 +5,9 @@ import (
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 
-	"github.com/akosgarai/opengl_playground/pkg/application"
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
-	"github.com/akosgarai/opengl_playground/pkg/window"
+	"github.com/akosgarai/playground_engine/pkg/application"
+	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/window"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 
 var (
 	ClearColor = [4]float32{0.3, 0.3, 0.3, 1.0}
-	glWrapper  wrapper.Wrapper
+	glWrapper  glwrapper.Wrapper
 )
 
 func main() {
@@ -41,7 +41,7 @@ func main() {
 	glWrapper.ClearColor(ClearColor[0], ClearColor[1], ClearColor[2], ClearColor[3])
 
 	for !app.GetWindow().ShouldClose() {
-		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT)
+		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT)
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}
