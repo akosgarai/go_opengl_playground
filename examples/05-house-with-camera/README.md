@@ -1,6 +1,5 @@
 # Building with camera
 
-
 This draws different rectangles formed something building like stuff to the screen. The camera is movable and rotatable.
 
 ## Controls
