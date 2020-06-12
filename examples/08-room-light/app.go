@@ -4,16 +4,16 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/pkg/application"
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
-	"github.com/akosgarai/opengl_playground/pkg/mesh"
-	"github.com/akosgarai/opengl_playground/pkg/model"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
-	"github.com/akosgarai/opengl_playground/pkg/shader"
-	"github.com/akosgarai/opengl_playground/pkg/texture"
-	"github.com/akosgarai/opengl_playground/pkg/window"
+	"github.com/akosgarai/playground_engine/pkg/application"
+	"github.com/akosgarai/playground_engine/pkg/camera"
+	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/light"
+	"github.com/akosgarai/playground_engine/pkg/mesh"
+	"github.com/akosgarai/playground_engine/pkg/model"
+	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
+	"github.com/akosgarai/playground_engine/pkg/shader"
+	"github.com/akosgarai/playground_engine/pkg/texture"
+	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -67,7 +67,7 @@ var (
 	SpotLightOuterCutoff_1    = float32(5)
 	SpotLightOuterCutoff_2    = float32(5)
 
-	glWrapper wrapper.Wrapper
+	glWrapper glwrapper.Wrapper
 )
 
 // Setup keymap for the camera movement
@@ -129,23 +129,23 @@ func main() {
 	shaderProgramTextureMat := shader.NewTextureMatShader(glWrapper)
 	app.AddShader(shaderProgramTextureMat)
 
-	Room = model.NewMaterialRoom(mgl32.Vec3{0.0, 0.0, 0.0})
+	Room = model.NewMaterialRoom(mgl32.Vec3{0.0, 0.0, 0.0}, glWrapper)
 	app.AddModelToShader(Room, shaderProgramMaterial)
 
-	Room2 = model.NewMaterialRoom(mgl32.Vec3{2.0, 0.0, 0.0})
+	Room2 = model.NewMaterialRoom(mgl32.Vec3{2.0, 0.0, 0.0}, glWrapper)
 	app.AddModelToShader(Room2, shaderProgramMaterial)
-	Room3 = model.NewTextureRoom(mgl32.Vec3{4.0, 0.0, 0.0})
+	Room3 = model.NewTextureRoom(mgl32.Vec3{4.0, 0.0, 0.0}, glWrapper)
 	app.AddModelToShader(Room3, shaderProgramTextureMat)
 	// grass textures
 	var grassTexture texture.Textures
-	grassTexture.AddTexture("examples/08-room-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
-	grassTexture.AddTexture("examples/08-room-light/assets/grass.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
+	grassTexture.AddTexture("examples/08-room-light/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	grassTexture.AddTexture("examples/08-room-light/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 
-	streetLamp := model.NewMaterialStreetLamp(mgl32.Vec3{1.0, 0.0, 0.5}, 1.3)
+	streetLamp := model.NewMaterialStreetLamp(mgl32.Vec3{1.0, 0.0, 0.5}, 1.3, glWrapper)
 	streetLamp.RotateX(90)
 	streetLamp.RotateY(-90)
 	app.AddModelToShader(streetLamp, shaderProgramMaterial)
-	streetLampDark := model.NewTexturedStreetLamp(mgl32.Vec3{3.0, 0.0, 0.5}, 1.3)
+	streetLampDark := model.NewTexturedStreetLamp(mgl32.Vec3{3.0, 0.0, 0.5}, 1.3, glWrapper)
 	streetLampDark.RotateX(90)
 	streetLampDark.RotateY(-90)
 	app.AddModelToShader(streetLampDark, shaderProgramTextureMat)
@@ -196,8 +196,8 @@ func main() {
 	app.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
 	app.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 
-	glWrapper.Enable(wrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
 	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
@@ -205,7 +205,7 @@ func main() {
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		Update()
 		app.Draw()
 		glfw.PollEvents()
