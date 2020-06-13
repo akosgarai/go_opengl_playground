@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path"
 	"runtime"
 
 	"github.com/akosgarai/playground_engine/pkg/application"
@@ -37,6 +38,10 @@ func GenerateSquareMesh(t texture.Textures) *mesh.TexturedColoredMesh {
 	v, i, _ := square.TexturedColoredMeshInput(SquareColor)
 	return mesh.NewTexturedColoredMesh(v, i, t, SquareColor, glWrapper)
 }
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
 
 func main() {
 	runtime.LockOSThread()
@@ -46,10 +51,10 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/07-textured-rectangle/shaders/vertexshader.vert", "examples/07-textured-rectangle/shaders/fragmentshader.frag", glWrapper)
+	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 	var tex texture.Textures
-	tex.AddTexture("examples/07-textured-rectangle/assets/image-texture.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "textureOne", glWrapper)
+	tex.AddTexture(baseDir()+"/assets/image-texture.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "textureOne", glWrapper)
 	squareMesh := GenerateSquareMesh(tex)
 	squareMesh.RotateX(90)
 	Model.AddMesh(squareMesh)
