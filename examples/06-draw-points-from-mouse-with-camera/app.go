@@ -2,18 +2,19 @@ package main
 
 import (
 	"math/rand"
+	"path"
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/pkg/application"
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
-	"github.com/akosgarai/opengl_playground/pkg/mesh"
-	"github.com/akosgarai/opengl_playground/pkg/model"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
-	trans "github.com/akosgarai/opengl_playground/pkg/primitives/transformations"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/vertex"
-	"github.com/akosgarai/opengl_playground/pkg/shader"
-	"github.com/akosgarai/opengl_playground/pkg/window"
+	"github.com/akosgarai/playground_engine/pkg/application"
+	"github.com/akosgarai/playground_engine/pkg/camera"
+	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/mesh"
+	"github.com/akosgarai/playground_engine/pkg/model"
+	"github.com/akosgarai/playground_engine/pkg/primitives/vertex"
+	"github.com/akosgarai/playground_engine/pkg/shader"
+	"github.com/akosgarai/playground_engine/pkg/transformations"
+	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -45,7 +46,7 @@ var (
 	addPoint = false
 	Model    = model.New()
 
-	glWrapper wrapper.Wrapper
+	glWrapper glwrapper.Wrapper
 )
 
 // Setup keymap for the camera movement
@@ -94,7 +95,7 @@ func updatePointState() {
 		} else {
 			b = 0
 		}
-		mX, mY := trans.MouseCoordinates(app.MousePosX, app.MousePosY, WindowWidth, WindowHeight)
+		mX, mY := transformations.MouseCoordinates(app.MousePosX, app.MousePosY, WindowWidth, WindowHeight)
 		// to calculate the coordinate of the point, we have to apply the inverse of the camera transformations.
 		V := app.GetCamera().GetViewMatrix()
 		P := app.GetCamera().GetProjectionMatrix()
@@ -113,6 +114,10 @@ func updatePointState() {
 		addPoint = true
 	}
 }
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
 
 func main() {
 	runtime.LockOSThread()
@@ -127,7 +132,7 @@ func main() {
 
 	cameraLastUpdate = time.Now().UnixNano()
 
-	Shader = shader.NewShader("examples/06-draw-points-from-mouse-with-camera/shaders/vertexshader.vert", "examples/06-draw-points-from-mouse-with-camera/shaders/fragmentshader.frag", glWrapper)
+	Shader := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(Shader)
 
 	PointMesh = mesh.NewPointMesh(glWrapper)
@@ -137,13 +142,13 @@ func main() {
 	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
-	glWrapper.Enable(wrapper.PROGRAM_POINT_SIZE)
-	glWrapper.Enable(wrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(glwrapper.PROGRAM_POINT_SIZE)
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
 	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	for !app.GetWindow().ShouldClose() {
-		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		Update()
 		app.Draw()
 		glfw.PollEvents()

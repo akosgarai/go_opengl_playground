@@ -1,17 +1,18 @@
 package main
 
 import (
+	"path"
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/pkg/application"
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
-	"github.com/akosgarai/opengl_playground/pkg/mesh"
-	"github.com/akosgarai/opengl_playground/pkg/model"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/triangle"
-	"github.com/akosgarai/opengl_playground/pkg/shader"
-	"github.com/akosgarai/opengl_playground/pkg/window"
+	"github.com/akosgarai/playground_engine/pkg/application"
+	"github.com/akosgarai/playground_engine/pkg/camera"
+	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/mesh"
+	"github.com/akosgarai/playground_engine/pkg/model"
+	"github.com/akosgarai/playground_engine/pkg/primitives/triangle"
+	"github.com/akosgarai/playground_engine/pkg/shader"
+	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -39,7 +40,7 @@ var (
 
 	Model = model.New()
 
-	glWrapper wrapper.Wrapper
+	glWrapper glwrapper.Wrapper
 )
 
 // Setup keymap for the camera movement
@@ -103,6 +104,11 @@ func Update() {
 	lastUpdate = nowNano
 }
 
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
+
 func main() {
 	runtime.LockOSThread()
 
@@ -115,7 +121,7 @@ func main() {
 	app.SetCameraMovementMap(CameraMovementMap())
 	app.SetRotateOnEdgeDistance(CameraDistance)
 
-	shaderProgram := shader.NewShader("examples/04-mesh-deformer-with-camera/vertexshader.vert", "examples/04-mesh-deformer-with-camera/fragmentshader.frag", glWrapper)
+	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
 	GenerateTriangles()
@@ -125,11 +131,11 @@ func main() {
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
-	glWrapper.Enable(wrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
 
 	for !app.GetWindow().ShouldClose() {
-		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
 		app.Draw()

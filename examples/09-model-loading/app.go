@@ -5,19 +5,20 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"path"
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/pkg/application"
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
-	"github.com/akosgarai/opengl_playground/pkg/interfaces"
-	"github.com/akosgarai/opengl_playground/pkg/mesh"
-	"github.com/akosgarai/opengl_playground/pkg/model"
-	"github.com/akosgarai/opengl_playground/pkg/modelimport"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
-	"github.com/akosgarai/opengl_playground/pkg/shader"
-	"github.com/akosgarai/opengl_playground/pkg/window"
+	"github.com/akosgarai/playground_engine/pkg/application"
+	"github.com/akosgarai/playground_engine/pkg/camera"
+	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/interfaces"
+	"github.com/akosgarai/playground_engine/pkg/light"
+	"github.com/akosgarai/playground_engine/pkg/mesh"
+	"github.com/akosgarai/playground_engine/pkg/model"
+	"github.com/akosgarai/playground_engine/pkg/modelimport"
+	"github.com/akosgarai/playground_engine/pkg/shader"
+	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -41,7 +42,7 @@ var (
 
 	lastUpdate int64
 
-	glWrapper wrapper.Wrapper
+	glWrapper glwrapper.Wrapper
 
 	Model                 = model.New()
 	PointModel            = model.New()
@@ -102,14 +103,14 @@ func Init() {
 	args := os.Args[1:]
 	if len(args) == 0 {
 		// load default model
-		Importer = modelimport.New(DefaultModelDirectory, DefaultModelFilename)
+		Importer = modelimport.New(DefaultModelDirectory, DefaultModelFilename, glWrapper)
 	} else if len(args) == 1 {
 		// multi model mode. read every subdir. (exported directory handling)
 		SingleDirectory = false
 		MultiDirectoryName = args[0]
 	} else if len(args) > 1 {
 		// load the directory with the given filename.
-		Importer = modelimport.New(args[0], args[1])
+		Importer = modelimport.New(args[0], args[1], glWrapper)
 	}
 }
 
@@ -150,13 +151,18 @@ func AddMeshToRightModel(m interfaces.Mesh) {
 		MaterialModel.AddMesh(m)
 	case *mesh.PointMesh:
 		pointMesh := m.(*mesh.PointMesh)
-		for index, _ := range pointMesh.Verticies {
-			pointMesh.Verticies[index].PointSize = float32(3 + rand.Intn(17))
-			pointMesh.Verticies[index].Color = mgl32.Vec3{rand.Float32(), rand.Float32(), rand.Float32()}
+		for index, _ := range pointMesh.Vertices {
+			pointMesh.Vertices[index].PointSize = float32(3 + rand.Intn(17))
+			pointMesh.Vertices[index].Color = mgl32.Vec3{rand.Float32(), rand.Float32(), rand.Float32()}
 		}
 		PointModel.AddMesh(pointMesh)
 	}
 }
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
+
 func main() {
 	Init()
 	runtime.LockOSThread()
@@ -170,13 +176,13 @@ func main() {
 	app.SetCameraMovementMap(CameraMovementMap())
 	app.SetRotateOnEdgeDistance(CameraDistance)
 
-	pointShader := shader.NewShader("examples/09-model-loading/shaders/point.vert", "examples/09-model-loading/shaders/point.frag", glWrapper)
+	pointShader := shader.NewShader(baseDir()+"/shaders/point.vert", baseDir()+"/shaders/point.frag", glWrapper)
 	app.AddShader(pointShader)
-	materialShader := shader.NewShader("examples/09-model-loading/shaders/material.vert", "examples/09-model-loading/shaders/material.frag", glWrapper)
+	materialShader := shader.NewShader(baseDir()+"/shaders/material.vert", baseDir()+"/shaders/material.frag", glWrapper)
 	app.AddShader(materialShader)
-	texColShader := shader.NewShader("examples/09-model-loading/shaders/texturecolor.vert", "examples/09-model-loading/shaders/texturecolor.frag", glWrapper)
+	texColShader := shader.NewShader(baseDir()+"/shaders/texturecolor.vert", baseDir()+"/shaders/texturecolor.frag", glWrapper)
 	app.AddShader(texColShader)
-	texMatShader := shader.NewShader("examples/09-model-loading/shaders/texturemat.vert", "examples/09-model-loading/shaders/texturemat.frag", glWrapper)
+	texMatShader := shader.NewShader(baseDir()+"/shaders/texturemat.vert", baseDir()+"/shaders/texturemat.frag", glWrapper)
 	app.AddShader(texMatShader)
 	app.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
 	app.AddPointLightSource(PointLightSource, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
@@ -194,7 +200,7 @@ func main() {
 			fmt.Println(err)
 		}
 		for _, f := range files {
-			Importer = modelimport.New(MultiDirectoryName+"/"+f.Name(), DefaultModelFilename)
+			Importer = modelimport.New(MultiDirectoryName+"/"+f.Name(), DefaultModelFilename, glWrapper)
 			Importer.Import()
 			meshes := Importer.GetMeshes()
 			for _, m := range meshes {
@@ -207,13 +213,13 @@ func main() {
 	app.AddModelToShader(MaterialModel, materialShader)
 	app.AddModelToShader(PointModel, pointShader)
 
-	glWrapper.Enable(wrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
 	lastUpdate = time.Now().UnixNano()
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		glfw.PollEvents()
 		Update()
 		app.Draw()

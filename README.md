@@ -1,25 +1,16 @@
-# opengl playground
+# Opengl Playground
 
-Just for fun. How to implement 3d applications in golang.
+Just for fun. How to implement 3d applications in golang. The 3D engine used to be in this repo, but it was difficult to manage everything inside one repository, so i decided to move the engine to a [separate repo](https://github.com/akosgarai/playground_engine).
+
+Now this repo contains only the example application that i have written with the engine.
 The gifs under the examples directory were made with [peek](https://github.com/phw/peek) application.
-
-## Useful links:
-
-- [Godoc glfw](https://godoc.org/github.com/go-gl/glfw/v3.3/glfw)
-- [Godoc mgl32](https://godoc.org/github.com/go-gl/mathgl/mgl32)
-- [Godoc gl](https://godoc.org/github.com/go-gl/gl/v4.1-core/gl)
-- [Learnopengl](https://learnopengl.com/) - good explanations and cpp examples.
-- [About glsl](https://www.khronos.org/opengl/wiki/OpenGL_Shading_Language)
-- A tutorial [first part](https://kylewbanks.com/blog/tutorial-opengl-with-golang-part-1-hello-opengl) and [second part](https://kylewbanks.com/blog/tutorial-opengl-with-golang-part-2-drawing-the-game-board)
-- [Other tutorial](https://medium.com/@drgomesp/opengl-and-golang-getting-started-abcd3d96f3db)
-- [About transformations](http://www.codinglabs.net/article_world_view_projection_matrix.aspx)
 
 ## About the applications
 
 - Dependencies are handled with gomod.
 - How to run the example apps?
 
-In the main directory run the following command, after you replaced the directory name to a valid one.
+In the main directory run the following command, after you replaced the directory name with a valid one.
 
 ```
 go run examples/directory-name/app.go
@@ -39,7 +30,3 @@ glxinfo | grep "OpenGL version"
 ```
 
 The output is something like: `OpenGL version string: 4.6.0 NVIDIA 440.82`.
-
-## I want to use different gl version.
-
-In this case, you have to modify the wrapper package. The gl lib is included there. If you updated it (eg to `v3.3-core`), you have to update the `GL_MAJOR_VERSION`, `GL_MINOR_VERSION` version constants also. Unfortunately updating the shaders is a manual step. The versions are hardcoded to the shader applications.

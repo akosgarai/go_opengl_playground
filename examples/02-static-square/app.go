@@ -1,15 +1,16 @@
 package main
 
 import (
+	"path"
 	"runtime"
 
-	"github.com/akosgarai/opengl_playground/pkg/application"
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
-	"github.com/akosgarai/opengl_playground/pkg/mesh"
-	"github.com/akosgarai/opengl_playground/pkg/model"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
-	"github.com/akosgarai/opengl_playground/pkg/shader"
-	"github.com/akosgarai/opengl_playground/pkg/window"
+	"github.com/akosgarai/playground_engine/pkg/application"
+	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/mesh"
+	"github.com/akosgarai/playground_engine/pkg/model"
+	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
+	"github.com/akosgarai/playground_engine/pkg/shader"
+	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -26,13 +27,17 @@ var (
 
 	app *application.Application
 
-	glWrapper wrapper.Wrapper
+	glWrapper glwrapper.Wrapper
 )
 
 func GenerateColoredMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	square := rectangle.NewSquare()
 	v, i, _ := square.ColoredMeshInput(col)
 	return mesh.NewColorMesh(v, i, col, glWrapper)
+}
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
 }
 
 func main() {
@@ -43,7 +48,7 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/02-static-square/shaders/vertexshader.vert", "examples/02-static-square/shaders/fragmentshader.frag", glWrapper)
+	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
 	square := GenerateColoredMesh(color)
@@ -52,12 +57,12 @@ func main() {
 	mod.RotateX(90)
 	app.AddModelToShader(mod, shaderProgram)
 
-	glWrapper.Enable(wrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
 	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	for !app.GetWindow().ShouldClose() {
-		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		app.Draw()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()

@@ -1,18 +1,19 @@
 package main
 
 import (
+	"path"
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/pkg/application"
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
-	"github.com/akosgarai/opengl_playground/pkg/mesh"
-	"github.com/akosgarai/opengl_playground/pkg/model"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
-	"github.com/akosgarai/opengl_playground/pkg/shader"
-	"github.com/akosgarai/opengl_playground/pkg/window"
+	"github.com/akosgarai/playground_engine/pkg/application"
+	"github.com/akosgarai/playground_engine/pkg/camera"
+	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/mesh"
+	"github.com/akosgarai/playground_engine/pkg/model"
+	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
+	"github.com/akosgarai/playground_engine/pkg/primitives/sphere"
+	"github.com/akosgarai/playground_engine/pkg/shader"
+	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -41,7 +42,7 @@ var (
 	BallInitialDirection = mgl32.Vec3{0, 1, 0}
 	Model                = model.New()
 
-	glWrapper wrapper.Wrapper
+	glWrapper glwrapper.Wrapper
 )
 
 // It creates a new camera with the necessary setup
@@ -105,6 +106,11 @@ func Update() {
 	app.Update(delta)
 }
 
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
+
 func main() {
 	runtime.LockOSThread()
 
@@ -117,7 +123,7 @@ func main() {
 	app.SetCameraMovementMap(CameraMovementMap())
 	app.SetRotateOnEdgeDistance(CameraDistance)
 
-	shaderProgram := shader.NewShader("examples/05-ball-with-camera/shaders/vertexshader.vert", "examples/05-ball-with-camera/shaders/fragmentshader.frag", glWrapper)
+	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 	Ball = CreateSphereMesh()
 	Model.AddMesh(Ball)
@@ -125,8 +131,8 @@ func main() {
 	Model.AddMesh(Ground)
 	app.AddModelToShader(Model, shaderProgram)
 
-	glWrapper.Enable(wrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
 	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
@@ -134,7 +140,7 @@ func main() {
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		Update()
 		app.Draw()
 		glfw.PollEvents()

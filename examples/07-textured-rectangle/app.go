@@ -1,16 +1,17 @@
 package main
 
 import (
+	"path"
 	"runtime"
 
-	"github.com/akosgarai/opengl_playground/pkg/application"
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
-	"github.com/akosgarai/opengl_playground/pkg/mesh"
-	"github.com/akosgarai/opengl_playground/pkg/model"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/rectangle"
-	"github.com/akosgarai/opengl_playground/pkg/shader"
-	"github.com/akosgarai/opengl_playground/pkg/texture"
-	"github.com/akosgarai/opengl_playground/pkg/window"
+	"github.com/akosgarai/playground_engine/pkg/application"
+	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/mesh"
+	"github.com/akosgarai/playground_engine/pkg/model"
+	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
+	"github.com/akosgarai/playground_engine/pkg/shader"
+	"github.com/akosgarai/playground_engine/pkg/texture"
+	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -28,7 +29,7 @@ var (
 	SquareColor = []mgl32.Vec3{mgl32.Vec3{0.58, 0.29, 0}}
 	Model       = model.New()
 
-	glWrapper wrapper.Wrapper
+	glWrapper glwrapper.Wrapper
 )
 
 // It generates a square.
@@ -36,6 +37,10 @@ func GenerateSquareMesh(t texture.Textures) *mesh.TexturedColoredMesh {
 	square := rectangle.NewSquare()
 	v, i, _ := square.TexturedColoredMeshInput(SquareColor)
 	return mesh.NewTexturedColoredMesh(v, i, t, SquareColor, glWrapper)
+}
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
 }
 
 func main() {
@@ -46,21 +51,21 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/07-textured-rectangle/shaders/vertexshader.vert", "examples/07-textured-rectangle/shaders/fragmentshader.frag", glWrapper)
+	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 	var tex texture.Textures
-	tex.AddTexture("examples/07-textured-rectangle/assets/image-texture.jpg", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "textureOne", glWrapper)
+	tex.AddTexture(baseDir()+"/assets/image-texture.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "textureOne", glWrapper)
 	squareMesh := GenerateSquareMesh(tex)
 	squareMesh.RotateX(90)
 	Model.AddMesh(squareMesh)
 	app.AddModelToShader(Model, shaderProgram)
 
-	glWrapper.Enable(wrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
 	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	for !app.GetWindow().ShouldClose() {
-		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		app.Draw()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()

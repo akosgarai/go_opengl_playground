@@ -1,22 +1,23 @@
 package main
 
 import (
+	"path"
 	"runtime"
 	"time"
 
-	"github.com/akosgarai/opengl_playground/pkg/application"
-	wrapper "github.com/akosgarai/opengl_playground/pkg/glwrapper"
-	"github.com/akosgarai/opengl_playground/pkg/mesh"
-	"github.com/akosgarai/opengl_playground/pkg/model"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/camera"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/cuboid"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/cylinder"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/light"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/material"
-	"github.com/akosgarai/opengl_playground/pkg/primitives/sphere"
-	"github.com/akosgarai/opengl_playground/pkg/shader"
-	"github.com/akosgarai/opengl_playground/pkg/texture"
-	"github.com/akosgarai/opengl_playground/pkg/window"
+	"github.com/akosgarai/playground_engine/pkg/application"
+	"github.com/akosgarai/playground_engine/pkg/camera"
+	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/light"
+	"github.com/akosgarai/playground_engine/pkg/material"
+	"github.com/akosgarai/playground_engine/pkg/mesh"
+	"github.com/akosgarai/playground_engine/pkg/model"
+	"github.com/akosgarai/playground_engine/pkg/primitives/cuboid"
+	"github.com/akosgarai/playground_engine/pkg/primitives/cylinder"
+	"github.com/akosgarai/playground_engine/pkg/primitives/sphere"
+	"github.com/akosgarai/playground_engine/pkg/shader"
+	"github.com/akosgarai/playground_engine/pkg/texture"
+	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -49,7 +50,7 @@ var (
 	TexModel = model.New()
 	MatModel = model.New()
 
-	glWrapper wrapper.Wrapper
+	glWrapper glwrapper.Wrapper
 )
 
 // Setup keymap for the camera movement
@@ -117,6 +118,11 @@ func Update() {
 	app.Update(delta)
 }
 
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
+
 func main() {
 	runtime.LockOSThread()
 
@@ -132,12 +138,12 @@ func main() {
 	LightSource = light.NewPointLight([4]mgl32.Vec3{InitialCenterPointLight, mgl32.Vec3{0.2, 0.2, 0.2}, mgl32.Vec3{0.5, 0.5, 0.5}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
 	app.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
 
-	shaderProgramTexture := shader.NewShader("examples/07-textured-lighting-map/shaders/texture.vert", "examples/07-textured-lighting-map/shaders/texture.frag", glWrapper)
+	shaderProgramTexture := shader.NewShader(baseDir()+"/shaders/texture.vert", baseDir()+"/shaders/texture.frag", glWrapper)
 	app.AddShader(shaderProgramTexture)
 
 	var tex texture.Textures
-	tex.AddTexture("examples/07-textured-lighting-map/assets/colored-image-for-texture-testing-diffuse.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.diffuse", glWrapper)
-	tex.AddTexture("examples/07-textured-lighting-map/assets/colored-image-for-texture-testing-specular.png", wrapper.CLAMP_TO_EDGE, wrapper.CLAMP_TO_EDGE, wrapper.LINEAR, wrapper.LINEAR, "material.specular", glWrapper)
+	tex.AddTexture(baseDir()+"/assets/colored-image-for-texture-testing-diffuse.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	tex.AddTexture(baseDir()+"/assets/colored-image-for-texture-testing-specular.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	CubeMesh = CreateCubeMesh(tex)
 	TexModel.AddMesh(CubeMesh)
 	CylinderMesh := CreateCylinderMesh(tex)
@@ -145,15 +151,15 @@ func main() {
 	TexModel.AddMesh(CylinderMesh)
 	app.AddModelToShader(TexModel, shaderProgramTexture)
 
-	shaderProgramWhite := shader.NewShader("examples/07-textured-lighting-map/shaders/lightsource.vert", "examples/07-textured-lighting-map/shaders/lightsource.frag", glWrapper)
+	shaderProgramWhite := shader.NewShader(baseDir()+"/shaders/lightsource.vert", baseDir()+"/shaders/lightsource.frag", glWrapper)
 	app.AddShader(shaderProgramWhite)
 
 	CreateWhiteSphere()
 	MatModel.AddMesh(LightSourceSphere)
 	app.AddModelToShader(MatModel, shaderProgramWhite)
 
-	glWrapper.Enable(wrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(wrapper.LESS)
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
 	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
@@ -161,7 +167,7 @@ func main() {
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
 	for !app.GetWindow().ShouldClose() {
-		glWrapper.Clear(wrapper.COLOR_BUFFER_BIT | wrapper.DEPTH_BUFFER_BIT)
+		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		Update()
 		app.Draw()
 		glfw.PollEvents()

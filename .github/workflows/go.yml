@@ -29,8 +29,5 @@ jobs:
       run: |
         go mod download
 
-    - name: Test
-      run: go test -cover -short ./pkg/...
-
     - name: Build example applications
       run: for i in examples/*; do go build "$i"/app.go; done;
