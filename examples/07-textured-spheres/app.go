@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path"
 	"runtime"
 	"time"
 
@@ -131,6 +132,11 @@ func Update() {
 	app.Update(delta)
 }
 
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
+
 func main() {
 	runtime.LockOSThread()
 	app = application.New()
@@ -153,19 +159,19 @@ func main() {
 	app.AddPointLightSource(PointLightSource, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
 
 	// Define the shader application for the textured meshes.
-	shaderProgramTexture := shader.NewShader("examples/07-textured-spheres/shaders/texture.vert", "examples/07-textured-spheres/shaders/texture.frag", glWrapper)
+	shaderProgramTexture := shader.NewShader(baseDir()+"/shaders/texture.vert", baseDir()+"/shaders/texture.frag", glWrapper)
 	app.AddShader(shaderProgramTexture)
 
 	// sun texture
 	var sunTexture texture.Textures
-	sunTexture.AddTexture("examples/07-textured-spheres/assets/sun.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
-	sunTexture.AddTexture("examples/07-textured-spheres/assets/sun.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
+	sunTexture.AddTexture(baseDir()+"/assets/sun.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	sunTexture.AddTexture(baseDir()+"/assets/sun.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	Sun = TexturedSphere(sunTexture, mgl32.Vec3{0.0, 0.0, 0.0}, 1, shaderProgramTexture)
 	TexModel.AddMesh(Sun)
 	// sun texture
 	var earthTexture texture.Textures
-	earthTexture.AddTexture("examples/07-textured-spheres/assets/earth.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
-	earthTexture.AddTexture("examples/07-textured-spheres/assets/earth.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
+	earthTexture.AddTexture(baseDir()+"/assets/earth.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	earthTexture.AddTexture(baseDir()+"/assets/earth.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	Earth = TexturedSphere(earthTexture, mgl32.Vec3{3.0, 0.0, 0.0}, 0.1, shaderProgramTexture)
 	distance := Earth.GetPosition().Len()
 	Earth.SetSpeed((float32(2) * float32(3.1415) * distance) / EarthRoundSpeed)
@@ -173,11 +179,11 @@ func main() {
 	TexModel.AddMesh(Earth)
 	app.AddModelToShader(TexModel, shaderProgramTexture)
 	// other planet texture
-	shaderProgramTextureMaterial := shader.NewShader("examples/07-textured-spheres/shaders/texturemat.vert", "examples/07-textured-spheres/shaders/texturemat.frag", glWrapper)
+	shaderProgramTextureMaterial := shader.NewShader(baseDir()+"/shaders/texturemat.vert", baseDir()+"/shaders/texturemat.frag", glWrapper)
 	app.AddShader(shaderProgramTextureMaterial)
 	var materialTexture texture.Textures
-	materialTexture.AddTexture("examples/07-textured-spheres/assets/venus.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.diffuse", glWrapper)
-	materialTexture.AddTexture("examples/07-textured-spheres/assets/venus.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.specular", glWrapper)
+	materialTexture.AddTexture(baseDir()+"/assets/venus.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.diffuse", glWrapper)
+	materialTexture.AddTexture(baseDir()+"/assets/venus.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.specular", glWrapper)
 	MatPlanet = TexturedMaterialSphere(materialTexture, material.Gold, mgl32.Vec3{2.0, 0.0, 0.0}, 0.15, shaderProgramTextureMaterial)
 	distance = MatPlanet.GetPosition().Len()
 	MatPlanet.SetSpeed((float32(2) * float32(3.1415) * distance) / OtherPlanetRoundSpeed)
@@ -185,10 +191,10 @@ func main() {
 	TexMatModel.AddMesh(MatPlanet)
 	app.AddModelToShader(TexMatModel, shaderProgramTextureMaterial)
 
-	shaderProgramCubeMap := shader.NewShader("examples/07-textured-spheres/shaders/cubeMap.vert", "examples/07-textured-spheres/shaders/cubeMap.frag", glWrapper)
+	shaderProgramCubeMap := shader.NewShader(baseDir()+"/shaders/cubeMap.vert", baseDir()+"/shaders/cubeMap.frag", glWrapper)
 	app.AddShader(shaderProgramCubeMap)
 	var cubeMapTexture texture.Textures
-	cubeMapTexture.AddCubeMapTexture("examples/07-textured-spheres/assets", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "skybox", glWrapper)
+	cubeMapTexture.AddCubeMapTexture(baseDir()+"/assets", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "skybox", glWrapper)
 	cubeMap := CubeMap(cubeMapTexture)
 	cubeMap.SetScale(mgl32.Vec3{100.0, 100.0, 100.0})
 	CmModel.AddMesh(cubeMap)
