@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path"
 	"runtime"
 
 	"github.com/akosgarai/playground_engine/pkg/application"
@@ -38,6 +39,10 @@ func GenerateColoredTriangleMesh(col []mgl32.Vec3) *mesh.ColorMesh {
 	v, i, _ := triang.ColoredMeshInput(col)
 	return mesh.NewColorMesh(v, i, col, glWrapper)
 }
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
 
 func main() {
 	runtime.LockOSThread()
@@ -47,7 +52,7 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/02-multiple-color-triangle/shaders/vertexshader.vert", "examples/02-multiple-color-triangle/shaders/fragmentshader.frag", glWrapper)
+	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
 	triang := GenerateColoredTriangleMesh(color)
