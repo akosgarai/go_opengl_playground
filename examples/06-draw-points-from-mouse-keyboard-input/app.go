@@ -2,6 +2,7 @@ package main
 
 import (
 	"math/rand"
+	"path"
 	"runtime"
 
 	"github.com/akosgarai/playground_engine/pkg/application"
@@ -72,6 +73,10 @@ func Update() {
 		addPoint = true
 	}
 }
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
 
 func main() {
 	runtime.LockOSThread()
@@ -80,7 +85,7 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/06-draw-points-from-mouse-keyboard-input/shaders/vertexshader.vert", "examples/06-draw-points-from-mouse-keyboard-input/shaders/fragmentshader.frag", glWrapper)
+	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
 	PointMesh = mesh.NewPointMesh(glWrapper)
