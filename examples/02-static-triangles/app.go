@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path"
 	"runtime"
 
 	"github.com/akosgarai/playground_engine/pkg/application"
@@ -52,6 +53,10 @@ func GenerateTriangles(rows int, shaderProgram *shader.Shader) {
 	}
 	mod.RotateX(90)
 }
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
 
 func main() {
 	runtime.LockOSThread()
@@ -60,7 +65,7 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/02-static-triangles/shaders/vertexshader.vert", "examples/02-static-triangles/shaders/fragmentshader.frag", glWrapper)
+	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
 	GenerateTriangles(50, shaderProgram)
