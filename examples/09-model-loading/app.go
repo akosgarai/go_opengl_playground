@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"path"
 	"runtime"
 	"time"
 
@@ -157,6 +158,11 @@ func AddMeshToRightModel(m interfaces.Mesh) {
 		PointModel.AddMesh(pointMesh)
 	}
 }
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
+
 func main() {
 	Init()
 	runtime.LockOSThread()
@@ -170,13 +176,13 @@ func main() {
 	app.SetCameraMovementMap(CameraMovementMap())
 	app.SetRotateOnEdgeDistance(CameraDistance)
 
-	pointShader := shader.NewShader("examples/09-model-loading/shaders/point.vert", "examples/09-model-loading/shaders/point.frag", glWrapper)
+	pointShader := shader.NewShader(baseDir()+"/shaders/point.vert", baseDir()+"/shaders/point.frag", glWrapper)
 	app.AddShader(pointShader)
-	materialShader := shader.NewShader("examples/09-model-loading/shaders/material.vert", "examples/09-model-loading/shaders/material.frag", glWrapper)
+	materialShader := shader.NewShader(baseDir()+"/shaders/material.vert", baseDir()+"/shaders/material.frag", glWrapper)
 	app.AddShader(materialShader)
-	texColShader := shader.NewShader("examples/09-model-loading/shaders/texturecolor.vert", "examples/09-model-loading/shaders/texturecolor.frag", glWrapper)
+	texColShader := shader.NewShader(baseDir()+"/shaders/texturecolor.vert", baseDir()+"/shaders/texturecolor.frag", glWrapper)
 	app.AddShader(texColShader)
-	texMatShader := shader.NewShader("examples/09-model-loading/shaders/texturemat.vert", "examples/09-model-loading/shaders/texturemat.frag", glWrapper)
+	texMatShader := shader.NewShader(baseDir()+"/shaders/texturemat.vert", baseDir()+"/shaders/texturemat.frag", glWrapper)
 	app.AddShader(texMatShader)
 	app.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
 	app.AddPointLightSource(PointLightSource, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
