@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path"
 	"runtime"
 	"time"
 
@@ -95,6 +96,10 @@ func Update() {
 	lastUpdate = nowUnixM
 	app.Update(float64(delta))
 }
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
 
 func main() {
 	runtime.LockOSThread()
@@ -104,7 +109,7 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	shaderProgram := shader.NewShader("examples/03-button-handler/shaders/vertexshader.vert", "examples/03-button-handler/shaders/fragmentshader.frag", glWrapper)
+	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
 	TriangMesh = GenerateTriangleMesh(triangleColors)
