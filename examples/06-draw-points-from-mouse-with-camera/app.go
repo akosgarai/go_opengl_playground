@@ -2,6 +2,7 @@ package main
 
 import (
 	"math/rand"
+	"path"
 	"runtime"
 	"time"
 
@@ -113,6 +114,10 @@ func updatePointState() {
 		addPoint = true
 	}
 }
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
 
 func main() {
 	runtime.LockOSThread()
@@ -127,7 +132,7 @@ func main() {
 
 	cameraLastUpdate = time.Now().UnixNano()
 
-	Shader = shader.NewShader("examples/06-draw-points-from-mouse-with-camera/shaders/vertexshader.vert", "examples/06-draw-points-from-mouse-with-camera/shaders/fragmentshader.frag", glWrapper)
+	Shader := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(Shader)
 
 	PointMesh = mesh.NewPointMesh(glWrapper)
