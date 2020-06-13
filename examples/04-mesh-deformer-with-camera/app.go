@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path"
 	"runtime"
 	"time"
 
@@ -103,6 +104,11 @@ func Update() {
 	lastUpdate = nowNano
 }
 
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
+
 func main() {
 	runtime.LockOSThread()
 
@@ -115,7 +121,7 @@ func main() {
 	app.SetCameraMovementMap(CameraMovementMap())
 	app.SetRotateOnEdgeDistance(CameraDistance)
 
-	shaderProgram := shader.NewShader("examples/04-mesh-deformer-with-camera/vertexshader.vert", "examples/04-mesh-deformer-with-camera/fragmentshader.frag", glWrapper)
+	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 
 	GenerateTriangles()
