@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path"
 	"runtime"
 	"time"
 
@@ -117,6 +118,11 @@ func Update() {
 	app.Update(delta)
 }
 
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
+
 func main() {
 	runtime.LockOSThread()
 
@@ -132,12 +138,12 @@ func main() {
 	LightSource = light.NewPointLight([4]mgl32.Vec3{InitialCenterPointLight, mgl32.Vec3{0.2, 0.2, 0.2}, mgl32.Vec3{0.5, 0.5, 0.5}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
 	app.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
 
-	shaderProgramTexture := shader.NewShader("examples/07-textured-lighting-map/shaders/texture.vert", "examples/07-textured-lighting-map/shaders/texture.frag", glWrapper)
+	shaderProgramTexture := shader.NewShader(baseDir()+"/shaders/texture.vert", baseDir()+"/shaders/texture.frag", glWrapper)
 	app.AddShader(shaderProgramTexture)
 
 	var tex texture.Textures
-	tex.AddTexture("examples/07-textured-lighting-map/assets/colored-image-for-texture-testing-diffuse.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
-	tex.AddTexture("examples/07-textured-lighting-map/assets/colored-image-for-texture-testing-specular.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
+	tex.AddTexture(baseDir()+"/assets/colored-image-for-texture-testing-diffuse.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	tex.AddTexture(baseDir()+"/assets/colored-image-for-texture-testing-specular.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	CubeMesh = CreateCubeMesh(tex)
 	TexModel.AddMesh(CubeMesh)
 	CylinderMesh := CreateCylinderMesh(tex)
@@ -145,7 +151,7 @@ func main() {
 	TexModel.AddMesh(CylinderMesh)
 	app.AddModelToShader(TexModel, shaderProgramTexture)
 
-	shaderProgramWhite := shader.NewShader("examples/07-textured-lighting-map/shaders/lightsource.vert", "examples/07-textured-lighting-map/shaders/lightsource.frag", glWrapper)
+	shaderProgramWhite := shader.NewShader(baseDir()+"/shaders/lightsource.vert", baseDir()+"/shaders/lightsource.frag", glWrapper)
 	app.AddShader(shaderProgramWhite)
 
 	CreateWhiteSphere()
