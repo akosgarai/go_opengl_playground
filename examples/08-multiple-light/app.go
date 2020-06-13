@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path"
 	"runtime"
 	"time"
 
@@ -155,6 +156,11 @@ func Update() {
 	app.Update(delta)
 }
 
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
+
 func main() {
 	runtime.LockOSThread()
 	app = application.New()
@@ -208,21 +214,21 @@ func main() {
 	app.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 
 	// Define the shader application for the textured meshes.
-	shaderProgramTexture := shader.NewShader("examples/08-multiple-light/shaders/texture.vert", "examples/08-multiple-light/shaders/texture.frag", glWrapper)
+	shaderProgramTexture := shader.NewShader(baseDir()+"/shaders/texture.vert", baseDir()+"/shaders/texture.frag", glWrapper)
 	app.AddShader(shaderProgramTexture)
 
 	// grass textures
 	var grassTexture texture.Textures
-	grassTexture.AddTexture("examples/08-multiple-light/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
-	grassTexture.AddTexture("examples/08-multiple-light/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
+	grassTexture.AddTexture(baseDir()+"/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	grassTexture.AddTexture(baseDir()+"/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 
 	grassMesh := CreateGrassMesh(grassTexture)
 	TexModel.AddMesh(grassMesh)
 
 	// box textures
 	var boxTexture texture.Textures
-	boxTexture.AddTexture("examples/08-multiple-light/assets/box-diffuse.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
-	boxTexture.AddTexture("examples/08-multiple-light/assets/box-specular.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
+	boxTexture.AddTexture(baseDir()+"/assets/box-diffuse.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	boxTexture.AddTexture(baseDir()+"/assets/box-specular.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 
 	// we have 3 boxes in the following coordinates.
 	boxPositions := []mgl32.Vec3{
@@ -236,9 +242,9 @@ func main() {
 	}
 
 	// Shader application for the lamp
-	shaderProgramMaterial := shader.NewShader("examples/08-multiple-light/shaders/lamp.vert", "examples/08-multiple-light/shaders/lamp.frag", glWrapper)
+	shaderProgramMaterial := shader.NewShader(baseDir()+"/shaders/lamp.vert", baseDir()+"/shaders/lamp.frag", glWrapper)
 	app.AddShader(shaderProgramMaterial)
-	shaderProgramTextureMat := shader.NewShader("examples/08-multiple-light/shaders/texturemat.vert", "examples/08-multiple-light/shaders/texturemat.frag", glWrapper)
+	shaderProgramTextureMat := shader.NewShader(baseDir()+"/shaders/texturemat.vert", baseDir()+"/shaders/texturemat.frag", glWrapper)
 	app.AddShader(shaderProgramTextureMat)
 
 	lamp1 := TexturedStreetLamp(mgl32.Vec3{0.4, -6.0, -1.3})
@@ -254,8 +260,8 @@ func main() {
 
 	// sun texture
 	var sunTexture texture.Textures
-	sunTexture.AddTexture("examples/08-multiple-light/assets/sun.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
-	sunTexture.AddTexture("examples/08-multiple-light/assets/sun.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
+	sunTexture.AddTexture(baseDir()+"/assets/sun.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	sunTexture.AddTexture(baseDir()+"/assets/sun.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	TexturedBug(sunTexture)
 	app.AddModelToShader(TexModel, shaderProgramTexture)
 	app.AddModelToShader(MatModel, shaderProgramMaterial)
