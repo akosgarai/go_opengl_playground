@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path"
 	"runtime"
 	"time"
 
@@ -115,6 +116,11 @@ func Update() {
 
 	app.Update(delta)
 }
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
+}
+
 func main() {
 	runtime.LockOSThread()
 
@@ -130,7 +136,7 @@ func main() {
 	LightSource = light.NewPointLight([4]mgl32.Vec3{InitialCenterPointLight, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
 	app.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
 
-	shaderProgram := shader.NewShader("examples/08-spheres-light/shaders/vertexshader.vert", "examples/08-spheres-light/shaders/fragmentshader.frag", glWrapper)
+	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	app.AddShader(shaderProgram)
 	CreateJadeSphere()
 	Model.AddMesh(JadeSphere)
