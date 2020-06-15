@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"path"
 	"runtime"
 	"time"
@@ -55,13 +56,45 @@ type Terrain struct {
 	Model     model.BaseModel
 }
 
+func generateHeightMap(width, length, iterations, peakProbability int, minH, maxH float32, seed int64) [][]float32 {
+	// init map with 0.0-s
+	var heightMap [][]float32
+	for w := 0; w <= width; w++ {
+		heightMap = append(heightMap, []float32{})
+		for l := 0; l <= length; l++ {
+			heightMap[w] = append(heightMap[w], 0.0)
+		}
+	}
+	terrainMaxDiff := maxH - minH
+	iterationStep := terrainMaxDiff / float32(iterations)
+
+	rand.Seed(seed)
+	fmt.Printf("Seed: %d\n", seed)
+	for i := 0; i < iterations; i++ {
+		for w := 0; w <= width; w++ {
+			for l := 0; l <= length; l++ {
+				if heightMap[w][l] != 0 {
+					continue
+				}
+
+				rndNum := rand.Intn(100)
+				fmt.Printf("Random: %d\n", rndNum)
+				if rndNum < peakProbability {
+					value := minH + float32(i)*iterationStep
+					fmt.Printf("Value: %f\n", value)
+					heightMap[w][l] = value
+				}
+			}
+		}
+	}
+	fmt.Printf("HeightMap: %v\n", heightMap)
+	return heightMap
+}
+
 // It should create a terrain surface. A flat surface is on the x-z plane.
 // In the x axis, it is from -x/2 to x/2. In the z axis it is from -length/2, lenth/2.
 // In the y axis, it is from minH to maxX.
 func NewTerrain(width, length, iterations int, minH, maxH float32, seed int64, t texture.Textures) *mesh.TexturedMesh {
-
-	//terrainMaxDiff := maxH - minH
-	//iteraxitionStep := terrainMaxDiff / float32(iterations)
 
 	textureCoords := [4]mgl32.Vec2{
 		{0.0, 1.0},
@@ -69,15 +102,17 @@ func NewTerrain(width, length, iterations int, minH, maxH float32, seed int64, t
 		{1.0, 0.0},
 		{0.0, 0.0},
 	}
-
 	var vertices vertex.Vertices
 	var indices []uint32
+	// generate heights.
+	peakProbability := 5
+	heightMap := generateHeightMap(width, length, iterations, peakProbability, minH, maxH, seed)
 
 	for w := 0; w <= width; w++ {
 		for l := 0; l <= length; l++ {
 			texIndex := (w % 2) + (l%2)*2
 			vertices = append(vertices, vertex.Vertex{
-				Position:  mgl32.Vec3{-float32(width)/2.0 + float32(w), 0, -float32(length)/2.0 + float32(l)},
+				Position:  mgl32.Vec3{-float32(width)/2.0 + float32(w), heightMap[w][l], -float32(length)/2.0 + float32(l)},
 				Normal:    mgl32.Vec3{0, 1, 0},
 				TexCoords: textureCoords[texIndex],
 			})
@@ -115,7 +150,7 @@ func CameraMovementMap() map[string]glfw.Key {
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{0.0, -0.5, 3.0}, mgl32.Vec3{0, 1, 0}, 0.0, 0.0)
+	camera := camera.NewCamera(mgl32.Vec3{0.0, -0.5, 3.0}, mgl32.Vec3{0, -1, 0}, 0.0, 0.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.001, 20.0)
 	camera.SetVelocity(CameraMoveSpeed)
 	camera.SetRotationStep(CameraDirectionSpeed)
@@ -160,7 +195,7 @@ func main() {
 	grassTexture.AddTexture(baseDir()+"/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
 	grassTexture.AddTexture(baseDir()+"/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 
-	grassMesh := NewTerrain(20, 20, 1, 0, 0, 0, grassTexture)
+	grassMesh := NewTerrain(20, 20, 5, 0, 5, 0, grassTexture)
 	grassMesh.SetPosition(mgl32.Vec3{0.0, 1.003, 0.0})
 	TexModel.AddMesh(grassMesh)
 	app.AddModelToShader(TexModel, shaderProgramTexture)
