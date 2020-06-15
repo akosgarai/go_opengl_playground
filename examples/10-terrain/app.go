@@ -46,16 +46,6 @@ const (
 	CameraDistance       = 0.1
 )
 
-type Terrain struct {
-	width     int
-	length    int
-	iteration int
-	maxHeight float32
-	minHeight float32
-	seed      int64
-	Model     model.BaseModel
-}
-
 func generateHeightMap(width, length, iterations, peakProbability int, minH, maxH float32, seed int64) [][]float32 {
 	// init map with 0.0-s
 	var heightMap [][]float32
@@ -71,6 +61,8 @@ func generateHeightMap(width, length, iterations, peakProbability int, minH, max
 	rand.Seed(seed)
 	fmt.Printf("Seed: %d\n", seed)
 	for i := 0; i < iterations; i++ {
+		value := minH + float32(i)*iterationStep
+		fmt.Printf("Value: %f\n", value)
 		for w := 0; w <= width; w++ {
 			for l := 0; l <= length; l++ {
 				if heightMap[w][l] != 0 {
@@ -79,9 +71,7 @@ func generateHeightMap(width, length, iterations, peakProbability int, minH, max
 
 				rndNum := rand.Intn(100)
 				fmt.Printf("Random: %d\n", rndNum)
-				if rndNum < peakProbability {
-					value := minH + float32(i)*iterationStep
-					fmt.Printf("Value: %f\n", value)
+				if adjacentElevation(w, l, value-iterationStep, peakProbability, width, length, heightMap) || rndNum < peakProbability {
 					heightMap[w][l] = value
 				}
 			}
@@ -89,6 +79,32 @@ func generateHeightMap(width, length, iterations, peakProbability int, minH, max
 	}
 	fmt.Printf("HeightMap: %v\n", heightMap)
 	return heightMap
+}
+
+func adjacentElevation(w, h int, elevation float32, cliffProbability, width, height int, elements [][]float32) bool {
+	for y := max(0, h-1); y <= min(height-1, h+1); y++ {
+		for x := max(0, w-1); x <= min(width-1, w+1); x++ {
+			if elements[y][x] == elevation {
+				// if this element is *not* randomly a cliff, return true
+				return rand.Intn(100) > cliffProbability
+			}
+		}
+	}
+
+	return false
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+func min(a, b int) int {
+	if b > a {
+		return a
+	}
+	return b
 }
 
 // It should create a terrain surface. A flat surface is on the x-z plane.
@@ -195,7 +211,7 @@ func main() {
 	grassTexture.AddTexture(baseDir()+"/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
 	grassTexture.AddTexture(baseDir()+"/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 
-	grassMesh := NewTerrain(20, 20, 5, 0, 5, 0, grassTexture)
+	grassMesh := NewTerrain(20, 20, 10, -1, 3, 0, grassTexture)
 	grassMesh.SetPosition(mgl32.Vec3{0.0, 1.003, 0.0})
 	TexModel.AddMesh(grassMesh)
 	app.AddModelToShader(TexModel, shaderProgramTexture)
