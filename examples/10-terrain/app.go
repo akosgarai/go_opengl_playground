@@ -211,8 +211,9 @@ func main() {
 	grassTexture.AddTexture(baseDir()+"/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
 	grassTexture.AddTexture(baseDir()+"/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 
-	grassMesh := NewTerrain(20, 20, 10, -1, 3, 0, grassTexture)
+	grassMesh := NewTerrain(4, 4, 10, -1, 3, 0, grassTexture)
 	grassMesh.SetPosition(mgl32.Vec3{0.0, 1.003, 0.0})
+	grassMesh.SetScale(mgl32.Vec3{5, 1, 5})
 	TexModel.AddMesh(grassMesh)
 	app.AddModelToShader(TexModel, shaderProgramTexture)
 
