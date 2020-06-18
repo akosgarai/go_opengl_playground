@@ -124,11 +124,11 @@ func NewTerrain(width, length, iterations int, minH, maxH float32, seed int64, t
 	peakProbability := 5
 	heightMap := generateHeightMap(width, length, iterations, peakProbability, minH, maxH, seed)
 
-	for w := 0; w <= width; w++ {
-		for l := 0; l <= length; l++ {
+	for l := 0; l <= length; l++ {
+		for w := 0; w <= width; w++ {
 			texIndex := (w % 2) + (l%2)*2
 			vertices = append(vertices, vertex.Vertex{
-				Position:  mgl32.Vec3{-float32(width)/2.0 + float32(w), heightMap[w][l], -float32(length)/2.0 + float32(l)},
+				Position:  mgl32.Vec3{-float32(width)/2.0 + float32(w), heightMap[l][w], -float32(length)/2.0 + float32(l)},
 				Normal:    mgl32.Vec3{0, 1, 0},
 				TexCoords: textureCoords[texIndex],
 			})
@@ -149,6 +149,7 @@ func NewTerrain(width, length, iterations int, minH, maxH float32, seed int64, t
 			indices = append(indices, i3)
 		}
 	}
+	fmt.Println(vertices)
 	return mesh.NewTexturedMesh(vertices, indices, t, glWrapper)
 }
 
