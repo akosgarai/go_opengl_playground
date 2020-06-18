@@ -32,6 +32,7 @@ const (
 
 var (
 	app                       *application.Application
+	Ground                    *model.Terrain
 	Room                      *model.Room
 	Room2                     *model.Room
 	Room3                     *model.Room
@@ -45,9 +46,9 @@ var (
 
 	TexModel                  = model.New()
 	DirectionalLightDirection = (mgl32.Vec3{0.5, 0.5, -0.7}).Normalize()
-	DirectionalLightAmbient   = mgl32.Vec3{0.5, 0.5, 0.5}
-	DirectionalLightDiffuse   = mgl32.Vec3{0.5, 0.5, 0.5}
-	DirectionalLightSpecular  = mgl32.Vec3{0.5, 0.5, 0.5}
+	DirectionalLightAmbient   = mgl32.Vec3{0.3, 0.3, 0.3}
+	DirectionalLightDiffuse   = mgl32.Vec3{0.3, 0.3, 0.3}
+	DirectionalLightSpecular  = mgl32.Vec3{0.3, 0.3, 0.3}
 	PointLightAmbient         = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightDiffuse         = mgl32.Vec3{0.5, 0.5, 0.5}
 	PointLightSpecular        = mgl32.Vec3{0.5, 0.5, 0.5}
@@ -83,6 +84,22 @@ func CameraMovementMap() map[string]glfw.Key {
 	return cm
 }
 
+func CreateGround() {
+	gb := model.NewTerrainBuilder()
+	gb.SetWidth(4)
+	gb.SetLength(4)
+	gb.SetIterations(10)
+	gb.SetScale(mgl32.Vec3{5, 1, 5})
+	gb.SetGlWrapper(glWrapper)
+	gb.GrassTexture()
+	gb.SetPeakProbability(5)
+	gb.SetCliffProbability(5)
+	gb.SetMinHeight(-1)
+	gb.SetMaxHeight(3)
+	gb.SetSeed(0)
+	gb.SetDebugMode(false)
+	Ground = gb.Build()
+}
 func CreateGrassMesh(t texture.Textures) *mesh.TexturedMesh {
 	square := rectangle.NewSquare()
 	v, i, bo := square.MeshInput()
@@ -114,6 +131,14 @@ func baseDir() string {
 	return path.Dir(filename)
 }
 
+func GroundPos(pos mgl32.Vec3) mgl32.Vec3 {
+	h, err := Ground.HeightAtPos(pos)
+	if err == nil {
+		return mgl32.Vec3{pos.X(), h - 0.001, pos.Z()}
+	}
+	return pos
+}
+
 func main() {
 	runtime.LockOSThread()
 	app = application.New()
@@ -134,31 +159,25 @@ func main() {
 	shaderProgramTextureMat := shader.NewTextureMatShader(glWrapper)
 	app.AddShader(shaderProgramTextureMat)
 
-	Room = model.NewMaterialRoom(mgl32.Vec3{0.0, 0.0, 0.0}, glWrapper)
+	CreateGround()
+	Ground.GetTerrain().SetPosition(mgl32.Vec3{0.0, 1.003, 0.0})
+	app.AddModelToShader(Ground, shaderProgramTexture)
+
+	Room = model.NewMaterialRoom(GroundPos(mgl32.Vec3{-5.0, 1.0, 0.0}), glWrapper)
 	app.AddModelToShader(Room, shaderProgramMaterial)
-
-	Room2 = model.NewMaterialRoom(mgl32.Vec3{2.0, 0.0, 0.0}, glWrapper)
+	Room2 = model.NewMaterialRoom(GroundPos(mgl32.Vec3{-6.0, 1.0, 6.0}), glWrapper)
 	app.AddModelToShader(Room2, shaderProgramMaterial)
-	Room3 = model.NewTextureRoom(mgl32.Vec3{4.0, 0.0, 0.0}, glWrapper)
+	Room3 = model.NewTextureRoom(GroundPos(mgl32.Vec3{-3.5, 1.0, 5.7}), glWrapper)
 	app.AddModelToShader(Room3, shaderProgramTextureMat)
-	// grass textures
-	var grassTexture texture.Textures
-	grassTexture.AddTexture(baseDir()+"/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
-	grassTexture.AddTexture(baseDir()+"/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 
-	streetLamp := model.NewMaterialStreetLamp(mgl32.Vec3{1.0, 0.0, 0.5}, 1.3, glWrapper)
+	streetLamp := model.NewMaterialStreetLamp(GroundPos(mgl32.Vec3{-6.6, -2.0, 1.3}), 1.3, glWrapper)
 	streetLamp.RotateX(90)
 	streetLamp.RotateY(-90)
 	app.AddModelToShader(streetLamp, shaderProgramMaterial)
-	streetLampDark := model.NewTexturedStreetLamp(mgl32.Vec3{3.0, 0.0, 0.5}, 1.3, glWrapper)
+	streetLampDark := model.NewTexturedStreetLamp(GroundPos(mgl32.Vec3{-4.8, -2.0, 6.9}), 1.3, glWrapper)
 	streetLampDark.RotateX(90)
 	streetLampDark.RotateY(-90)
 	app.AddModelToShader(streetLampDark, shaderProgramTextureMat)
-
-	grassMesh := CreateGrassMesh(grassTexture)
-	grassMesh.SetPosition(mgl32.Vec3{0.0, 1.003, 0.0})
-	TexModel.AddMesh(grassMesh)
-	app.AddModelToShader(TexModel, shaderProgramTexture)
 
 	// directional light is coming from the up direction but not from too up.
 	DirectionalLightSource = light.NewDirectionalLight([4]mgl32.Vec3{
@@ -181,7 +200,7 @@ func main() {
 		SpotLightSpecular},
 		[5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, SpotLightCutoff_1, SpotLightOuterCutoff_1})
 	SpotLightSource_2 = light.NewSpotLight([5]mgl32.Vec3{
-		SpotLightPosition_2,
+		streetLampDark.GetBulbPosition(),
 		SpotLightDirection_2,
 		SpotLightAmbient,
 		SpotLightDiffuse,
@@ -196,8 +215,8 @@ func main() {
 
 	// Add the lightources to the application
 	app.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
-	app.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
-	app.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
+	//app.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
+	//app.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
 	app.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
 	app.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 
