@@ -63,16 +63,16 @@ func generateHeightMap(width, length, iterations, peakProbability int, minH, max
 	for i := 0; i < iterations; i++ {
 		value := minH + float32(i)*iterationStep
 		fmt.Printf("Value: %f\n", value)
-		for w := 0; w <= width; w++ {
-			for l := 0; l <= length; l++ {
-				if heightMap[w][l] != 0 {
+		for l := 0; l <= length; l++ {
+			for w := 0; w <= width; w++ {
+				if heightMap[l][w] != 0 {
 					continue
 				}
 
 				rndNum := rand.Intn(100)
 				fmt.Printf("Random: %d\n", rndNum)
 				if adjacentElevation(w, l, value-iterationStep, peakProbability, width, length, heightMap) || rndNum < peakProbability {
-					heightMap[w][l] = value
+					heightMap[l][w] = value
 				}
 			}
 		}
