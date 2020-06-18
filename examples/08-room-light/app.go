@@ -156,7 +156,7 @@ func main() {
 	// Shader application for the textured meshes.
 	shaderProgramTexture := shader.NewTextureShader(glWrapper)
 	app.AddShader(shaderProgramTexture)
-	shaderProgramTextureMat := shader.NewTextureMatShader(glWrapper)
+	shaderProgramTextureMat := shader.NewShader(baseDir()+"/shaders/texturemat.vert", baseDir()+"/shaders/texturemat.frag", glWrapper)
 	app.AddShader(shaderProgramTextureMat)
 
 	CreateGround()
@@ -222,6 +222,8 @@ func main() {
 
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.Enable(glwrapper.BLEND)
+	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
 	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
