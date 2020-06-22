@@ -64,7 +64,7 @@ func CreateGround() {
 	gb.SetMinHeight(0)
 	gb.SetMaxHeight(2)
 	gb.RandomSeed()
-	gb.SetDebugMode(true)
+	gb.SetDebugMode(false)
 	Ground = gb.Build()
 }
 
