@@ -149,14 +149,17 @@ func main() {
 	app.SetCamera(CreateCamera())
 	app.SetCameraMovementMap(CameraMovementMap())
 	app.SetRotateOnEdgeDistance(CameraDistance)
+	app.SetUniformFloat("fog.minDistance", 1.0)
+	app.SetUniformFloat("fog.maxDistance", 8.0)
+	app.SetUniformVector("fog.color", mgl32.Vec3{0.4, 0.4, 0.4})
 
 	// Shader application for the material objects
-	shaderProgramMaterial := shader.NewMaterialShader(glWrapper)
+	shaderProgramMaterial := shader.NewMaterialShaderWithFog(glWrapper)
 	app.AddShader(shaderProgramMaterial)
 	// Shader application for the textured meshes.
-	shaderProgramTexture := shader.NewTextureShader(glWrapper)
+	shaderProgramTexture := shader.NewTextureShaderBlendingWithFog(glWrapper)
 	app.AddShader(shaderProgramTexture)
-	shaderProgramTextureMat := shader.NewShader(baseDir()+"/shaders/texturemat.vert", baseDir()+"/shaders/texturemat.frag", glWrapper)
+	shaderProgramTextureMat := shader.NewTextureMatShaderBlendingWithFog(glWrapper)
 	app.AddShader(shaderProgramTextureMat)
 
 	CreateGround()
