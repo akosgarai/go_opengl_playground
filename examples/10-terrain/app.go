@@ -26,6 +26,7 @@ import (
 var (
 	app                       *application.Application
 	TexModel                  = model.New()
+	WaterModel                = model.New()
 	lastUpdate                int64
 	DirectionalLightSource    *light.Light
 	DirectionalLightDirection = (mgl32.Vec3{0.5, 0.5, -0.7}).Normalize()
@@ -70,14 +71,14 @@ func generateHeightMap(width, length, iterations, peakProbability int, minH, max
 				}
 
 				rndNum := rand.Intn(100)
-				fmt.Printf("Random: %d\n", rndNum)
+				//fmt.Printf("Random: %d\n", rndNum)
 				if adjacentElevation(w, l, value-iterationStep, peakProbability, width, length, heightMap) || rndNum < peakProbability {
 					heightMap[l][w] = value
 				}
 			}
 		}
 	}
-	fmt.Printf("HeightMap: %v\n", heightMap)
+	//fmt.Printf("HeightMap: %v\n", heightMap)
 	return heightMap
 }
 
@@ -149,7 +150,7 @@ func NewTerrain(width, length, iterations int, minH, maxH float32, seed int64, t
 			indices = append(indices, i3)
 		}
 	}
-	fmt.Println(vertices)
+	//fmt.Println(vertices)
 	return mesh.NewTexturedMesh(vertices, indices, t, glWrapper)
 }
 
@@ -184,12 +185,16 @@ func baseDir() string {
 	_, filename, _, _ := runtime.Caller(1)
 	return path.Dir(filename)
 }
-func CreateGrassMesh(t texture.Textures) *mesh.TexturedMesh {
+func CreateWaterMesh() *mesh.TexturedMesh {
+	var waterTexture texture.Textures
+	waterTexture.AddTexture(baseDir()+"/assets/water.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	waterTexture.AddTexture(baseDir()+"/assets/water.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
+
 	square := rectangle.NewSquare()
-	v, i, bo := square.MeshInput()
-	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
+	v, i, _ := square.MeshInput()
+	m := mesh.NewTexturedMesh(v, i, waterTexture, glWrapper)
 	m.SetScale(mgl32.Vec3{20, 1, 20})
-	m.SetBoundingObject(bo)
+	m.SetPosition(mgl32.Vec3{0.0, 1.0, 0.0})
 	return m
 }
 
@@ -205,7 +210,7 @@ func main() {
 	app.SetRotateOnEdgeDistance(CameraDistance)
 
 	// Shader application for the textured meshes.
-	shaderProgramTexture := shader.NewTextureShader(glWrapper)
+	shaderProgramTexture := shader.NewTextureShaderBlending(glWrapper)
 	app.AddShader(shaderProgramTexture)
 
 	var grassTexture texture.Textures
@@ -218,6 +223,8 @@ func main() {
 	TexModel.AddMesh(grassMesh)
 	app.AddModelToShader(TexModel, shaderProgramTexture)
 
+	WaterModel.AddMesh(CreateWaterMesh())
+	app.AddModelToShader(WaterModel, shaderProgramTexture)
 	// directional light is coming from the up direction but not from too up.
 	DirectionalLightSource = light.NewDirectionalLight([4]mgl32.Vec3{
 		DirectionalLightDirection,
@@ -230,6 +237,8 @@ func main() {
 
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.Enable(glwrapper.BLEND)
+	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
 	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
