@@ -69,24 +69,30 @@ void main()
 {
     vec3 norm = normalize(Normal);
     vec3 viewDirection = normalize(viewPosition - FragPos);
+    vec3 reflectedDirection = reflect(viewDirection, norm);
 
-    vec4 result = vec4(0);
+    vec4 resultView = vec4(0);
+    vec4 resultRefl = vec4(0);
     // calculate Directional lighting
     int nrDirLight = min(NumberOfDirectionalLightSources, MAX_DIRECTION_LIGHTS);
     for (int i = 0; i < nrDirLight; i++) {
-        result += CalculateDirectionalLight(dirLight[i], norm, viewDirection);
+        resultView += CalculateDirectionalLight(dirLight[i], norm, viewDirection);
+        resultRefl += CalculateDirectionalLight(dirLight[i], norm, reflectedDirection);
     }
     // calculate Point lighting
     int nrPointLight = min(NumberOfPointLightSources, MAX_POINT_LIGHTS);
     for (int i = 0; i < nrPointLight; i++) {
-        result += CalculatePointLight(pointLight[i], norm, FragPos, viewDirection);
+        resultView += CalculatePointLight(pointLight[i], norm, FragPos, viewDirection);
+        resultRefl += CalculatePointLight(pointLight[i], norm, FragPos, reflectedDirection);
     }
     // calculate spot lighting
     int nrSpotLight = min(NumberOfSpotLightSources, MAX_SPOT_LIGHTS);
     for (int i = 0; i < nrSpotLight; i++) {
-        result += CalculateSpotLight(spotLight[i], norm, FragPos, viewDirection);
+        resultView += CalculateSpotLight(spotLight[i], norm, FragPos, viewDirection);
+        resultRefl += CalculateSpotLight(spotLight[i], norm, FragPos, reflectedDirection);
     }
-    FragColor = result;
+    float fresnel = dot(viewDirection, norm);
+    FragColor = mix(resultView, resultRefl + resultView, fresnel);
 }
 
 // calculates the color when using a directional light.
