@@ -129,9 +129,28 @@ func NewTerrain(width, length, iterations int, minH, maxH float32, seed int64, t
 	for l := 0; l <= length; l++ {
 		for w := 0; w <= width; w++ {
 			texIndex := (w % 2) + (l%2)*2
+			// The normal vector calculation is necessary to be implemented.
+			// How can I calculate the normal vector? it should be based on the height map.
+			// Get the heights in the neighbour points. Get the direction vectors and then
+			// it could be calculated.
+			var iL, iW int
+			if l == length {
+				iL = l - 1
+			} else {
+				iL = l + 1
+			}
+			if w == width {
+				iW = w - 1
+			} else {
+				iW = w + 1
+			}
+			currentPos := mgl32.Vec3{-float32(width)/2.0 + float32(w), heightMap[l][w], -float32(length)/2.0 + float32(l)}
+			nextPosX := mgl32.Vec3{-float32(width)/2.0 + float32(iW), heightMap[l][iW], -float32(length)/2.0 + float32(l)}
+			nextPosY := mgl32.Vec3{-float32(width)/2.0 + float32(w), heightMap[iL][w], -float32(length)/2.0 + float32(iL)}
+			normal := nextPosX.Sub(currentPos).Cross(nextPosY.Sub(currentPos)).Normalize()
 			vertices = append(vertices, vertex.Vertex{
-				Position:  mgl32.Vec3{-float32(width)/2.0 + float32(w), heightMap[l][w], -float32(length)/2.0 + float32(l)},
-				Normal:    mgl32.Vec3{0, 1, 0},
+				Position:  currentPos,
+				Normal:    normal,
 				TexCoords: textureCoords[texIndex],
 			})
 		}
