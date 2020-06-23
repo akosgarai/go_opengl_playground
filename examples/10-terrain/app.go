@@ -28,6 +28,7 @@ var (
 	TexModel                  = model.New()
 	WaterModel                = model.New()
 	lastUpdate                int64
+	startTime                 int64
 	DirectionalLightSource    *light.Light
 	DirectionalLightDirection = (mgl32.Vec3{0.5, 0.5, -0.7}).Normalize()
 	DirectionalLightAmbient   = mgl32.Vec3{0.5, 0.5, 0.5}
@@ -178,6 +179,7 @@ func Update() {
 	nowNano := time.Now().UnixNano()
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
+	app.SetUniformFloat("time", float32(float64(nowNano-startTime)/float64(time.Second)))
 	app.Update(delta)
 }
 
@@ -212,6 +214,8 @@ func main() {
 	// Shader application for the textured meshes.
 	shaderProgramTexture := shader.NewTextureShaderBlending(glWrapper)
 	app.AddShader(shaderProgramTexture)
+	shaderProgramWater := shader.NewShader(baseDir()+"/shaders/texture.vert", baseDir()+"/shaders/texture_blending.frag", glWrapper)
+	app.AddShader(shaderProgramWater)
 
 	var grassTexture texture.Textures
 	grassTexture.AddTexture(baseDir()+"/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
@@ -224,7 +228,7 @@ func main() {
 	app.AddModelToShader(TexModel, shaderProgramTexture)
 
 	WaterModel.AddMesh(CreateWaterMesh())
-	app.AddModelToShader(WaterModel, shaderProgramTexture)
+	app.AddModelToShader(WaterModel, shaderProgramWater)
 	// directional light is coming from the up direction but not from too up.
 	DirectionalLightSource = light.NewDirectionalLight([4]mgl32.Vec3{
 		DirectionalLightDirection,
@@ -242,6 +246,7 @@ func main() {
 	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
+	startTime = lastUpdate
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
