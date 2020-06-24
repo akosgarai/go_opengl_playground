@@ -188,7 +188,7 @@ func CameraMovementMap() map[string]glfw.Key {
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{0.0, -0.5, 3.0}, mgl32.Vec3{0, -1, 0}, 0.0, 0.0)
+	camera := camera.NewCamera(mgl32.Vec3{-13.0, 6.5, 2.5}, mgl32.Vec3{0, -1, 0}, -3.5, -16.5)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.001, 20.0)
 	camera.SetVelocity(CameraMoveSpeed)
 	camera.SetRotationStep(CameraDirectionSpeed)
@@ -247,6 +247,7 @@ func main() {
 	app.AddModelToShader(TexModel, shaderProgramTexture)
 
 	WaterModel.AddMesh(CreateWaterMesh())
+	WaterModel.SetTransparent(true)
 	app.AddModelToShader(WaterModel, shaderProgramWater)
 	// directional light is coming from the up direction but not from too up.
 	DirectionalLightSource = light.NewDirectionalLight([4]mgl32.Vec3{
