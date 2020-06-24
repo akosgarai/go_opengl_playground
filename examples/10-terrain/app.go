@@ -131,16 +131,16 @@ func NewTerrain(width, length, iterations int, minH, maxH float32, seed int64, t
 			texIndex := (w % 2) + (l%2)*2
 			// The normal vector calculation is necessary to be implemented.
 			// How can I calculate the normal vector? it should be based on the height map.
-			// Get the heights in the neighbour points. Get the direction vectors and then
+			// Get the heights in the neighbor points. Get the direction vectors and then
 			// it could be calculated.
 			var iL, iW int
 			if l == length {
-				iL = l - 1
+				iL = l
 			} else {
 				iL = l + 1
 			}
 			if w == width {
-				iW = w - 1
+				iW = w
 			} else {
 				iW = w + 1
 			}
