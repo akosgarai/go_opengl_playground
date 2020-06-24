@@ -26,7 +26,9 @@ import (
 var (
 	app                       *application.Application
 	TexModel                  = model.New()
+	WaterModel                = model.New()
 	lastUpdate                int64
+	startTime                 int64
 	DirectionalLightSource    *light.Light
 	DirectionalLightDirection = (mgl32.Vec3{0.5, 0.5, -0.7}).Normalize()
 	DirectionalLightAmbient   = mgl32.Vec3{0.5, 0.5, 0.5}
@@ -70,14 +72,14 @@ func generateHeightMap(width, length, iterations, peakProbability int, minH, max
 				}
 
 				rndNum := rand.Intn(100)
-				fmt.Printf("Random: %d\n", rndNum)
+				//fmt.Printf("Random: %d\n", rndNum)
 				if adjacentElevation(w, l, value-iterationStep, peakProbability, width, length, heightMap) || rndNum < peakProbability {
 					heightMap[l][w] = value
 				}
 			}
 		}
 	}
-	fmt.Printf("HeightMap: %v\n", heightMap)
+	//fmt.Printf("HeightMap: %v\n", heightMap)
 	return heightMap
 }
 
@@ -127,9 +129,28 @@ func NewTerrain(width, length, iterations int, minH, maxH float32, seed int64, t
 	for l := 0; l <= length; l++ {
 		for w := 0; w <= width; w++ {
 			texIndex := (w % 2) + (l%2)*2
+			// The normal vector calculation is necessary to be implemented.
+			// How can I calculate the normal vector? it should be based on the height map.
+			// Get the heights in the neighbor points. Get the direction vectors and then
+			// it could be calculated.
+			var iL, iW int
+			if l == length {
+				iL = l
+			} else {
+				iL = l + 1
+			}
+			if w == width {
+				iW = w
+			} else {
+				iW = w + 1
+			}
+			currentPos := mgl32.Vec3{-float32(width)/2.0 + float32(w), heightMap[l][w], -float32(length)/2.0 + float32(l)}
+			nextPosX := mgl32.Vec3{-float32(width)/2.0 + float32(iW), heightMap[l][iW], -float32(length)/2.0 + float32(l)}
+			nextPosY := mgl32.Vec3{-float32(width)/2.0 + float32(w), heightMap[iL][w], -float32(length)/2.0 + float32(iL)}
+			normal := nextPosX.Sub(currentPos).Cross(nextPosY.Sub(currentPos)).Normalize()
 			vertices = append(vertices, vertex.Vertex{
-				Position:  mgl32.Vec3{-float32(width)/2.0 + float32(w), heightMap[l][w], -float32(length)/2.0 + float32(l)},
-				Normal:    mgl32.Vec3{0, 1, 0},
+				Position:  currentPos,
+				Normal:    normal,
 				TexCoords: textureCoords[texIndex],
 			})
 		}
@@ -149,7 +170,7 @@ func NewTerrain(width, length, iterations int, minH, maxH float32, seed int64, t
 			indices = append(indices, i3)
 		}
 	}
-	fmt.Println(vertices)
+	//fmt.Println(vertices)
 	return mesh.NewTexturedMesh(vertices, indices, t, glWrapper)
 }
 
@@ -167,7 +188,7 @@ func CameraMovementMap() map[string]glfw.Key {
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{0.0, -0.5, 3.0}, mgl32.Vec3{0, -1, 0}, 0.0, 0.0)
+	camera := camera.NewCamera(mgl32.Vec3{-13.0, 6.5, 2.5}, mgl32.Vec3{0, -1, 0}, -3.5, -16.5)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.001, 20.0)
 	camera.SetVelocity(CameraMoveSpeed)
 	camera.SetRotationStep(CameraDirectionSpeed)
@@ -177,6 +198,7 @@ func Update() {
 	nowNano := time.Now().UnixNano()
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
+	app.SetUniformFloat("time", float32(float64(nowNano-startTime)/float64(time.Second)))
 	app.Update(delta)
 }
 
@@ -184,12 +206,16 @@ func baseDir() string {
 	_, filename, _, _ := runtime.Caller(1)
 	return path.Dir(filename)
 }
-func CreateGrassMesh(t texture.Textures) *mesh.TexturedMesh {
+func CreateWaterMesh() *mesh.TexturedMesh {
+	var waterTexture texture.Textures
+	waterTexture.AddTexture(baseDir()+"/assets/water.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
+	waterTexture.AddTexture(baseDir()+"/assets/water.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
+
 	square := rectangle.NewSquare()
-	v, i, bo := square.MeshInput()
-	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
+	v, i, _ := square.MeshInput()
+	m := mesh.NewTexturedMesh(v, i, waterTexture, glWrapper)
 	m.SetScale(mgl32.Vec3{20, 1, 20})
-	m.SetBoundingObject(bo)
+	m.SetPosition(mgl32.Vec3{0.0, 1.0, 0.0})
 	return m
 }
 
@@ -205,8 +231,10 @@ func main() {
 	app.SetRotateOnEdgeDistance(CameraDistance)
 
 	// Shader application for the textured meshes.
-	shaderProgramTexture := shader.NewTextureShader(glWrapper)
+	shaderProgramTexture := shader.NewTextureShaderBlending(glWrapper)
 	app.AddShader(shaderProgramTexture)
+	shaderProgramWater := shader.NewShader(baseDir()+"/shaders/water.vert", baseDir()+"/shaders/water.frag", glWrapper)
+	app.AddShader(shaderProgramWater)
 
 	var grassTexture texture.Textures
 	grassTexture.AddTexture(baseDir()+"/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
@@ -218,6 +246,9 @@ func main() {
 	TexModel.AddMesh(grassMesh)
 	app.AddModelToShader(TexModel, shaderProgramTexture)
 
+	WaterModel.AddMesh(CreateWaterMesh())
+	WaterModel.SetTransparent(true)
+	app.AddModelToShader(WaterModel, shaderProgramWater)
 	// directional light is coming from the up direction but not from too up.
 	DirectionalLightSource = light.NewDirectionalLight([4]mgl32.Vec3{
 		DirectionalLightDirection,
@@ -230,9 +261,12 @@ func main() {
 
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.Enable(glwrapper.BLEND)
+	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
 	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
+	startTime = lastUpdate
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
