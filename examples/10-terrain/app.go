@@ -233,7 +233,7 @@ func main() {
 	// Shader application for the textured meshes.
 	shaderProgramTexture := shader.NewTextureShaderBlending(glWrapper)
 	app.AddShader(shaderProgramTexture)
-	shaderProgramWater := shader.NewShader(baseDir()+"/shaders/texture.vert", baseDir()+"/shaders/texture_blending.frag", glWrapper)
+	shaderProgramWater := shader.NewShader(baseDir()+"/shaders/water.vert", baseDir()+"/shaders/water.frag", glWrapper)
 	app.AddShader(shaderProgramWater)
 
 	var grassTexture texture.Textures
