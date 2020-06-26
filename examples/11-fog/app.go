@@ -58,7 +58,7 @@ func CreateGround() {
 	gb.SetLength(20)
 	gb.SetIterations(10)
 	gb.SetGlWrapper(glWrapper)
-	gb.GrassTexture()
+	gb.SurfaceTextureGrass()
 	gb.SetPeakProbability(20)
 	gb.SetCliffProbability(20)
 	gb.SetMinHeight(0)

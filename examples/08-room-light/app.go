@@ -9,11 +9,8 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/camera"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
 	"github.com/akosgarai/playground_engine/pkg/light"
-	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
-	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
 	"github.com/akosgarai/playground_engine/pkg/shader"
-	"github.com/akosgarai/playground_engine/pkg/texture"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -31,18 +28,19 @@ const (
 )
 
 var (
-	app                       *application.Application
-	Ground                    *model.Terrain
-	Room                      *model.Room
-	Room2                     *model.Room
-	Room3                     *model.Room
-	lastUpdate                int64
-	ShaderProgramsWithViewPos []*shader.Shader
-	DirectionalLightSource    *light.Light
-	PointLightSource_1        *light.Light
-	PointLightSource_2        *light.Light
-	SpotLightSource_1         *light.Light
-	SpotLightSource_2         *light.Light
+	app                    *application.Application
+	Ground                 *model.Terrain
+	Water                  *model.Liquid
+	Room                   *model.Room
+	Room2                  *model.Room
+	Room3                  *model.Room
+	lastUpdate             int64
+	startTime              int64
+	DirectionalLightSource *light.Light
+	PointLightSource_1     *light.Light
+	PointLightSource_2     *light.Light
+	SpotLightSource_1      *light.Light
+	SpotLightSource_2      *light.Light
 
 	TexModel                  = model.New()
 	DirectionalLightDirection = (mgl32.Vec3{0.5, 0.5, -0.7}).Normalize()
@@ -91,22 +89,22 @@ func CreateGround() {
 	gb.SetIterations(10)
 	gb.SetScale(mgl32.Vec3{5, 1, 5})
 	gb.SetGlWrapper(glWrapper)
-	gb.GrassTexture()
+	gb.SurfaceTextureGrass()
+	gb.LiquidTextureWater()
 	gb.SetPeakProbability(5)
 	gb.SetCliffProbability(5)
 	gb.SetMinHeight(-1)
 	gb.SetMaxHeight(3)
+	gb.SetPosition(mgl32.Vec3{0.0, 1.003, 0.0})
 	gb.SetSeed(0)
+	gb.SetLiquidEta(0.75)
+	gb.SetLiquidAmplitude(0.125 / 2.0)
+	gb.SetLiquidFrequency(1.0)
+	gb.SetLiquidDetailMultiplier(10)
+	gb.SetLiquidWaterLevel(0.25)
 	gb.SetDebugMode(false)
-	Ground = gb.Build()
-}
-func CreateGrassMesh(t texture.Textures) *mesh.TexturedMesh {
-	square := rectangle.NewSquare()
-	v, i, bo := square.MeshInput()
-	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
-	m.SetScale(mgl32.Vec3{20, 1, 20})
-	m.SetBoundingObject(bo)
-	return m
+	Ground, Water = gb.BuildWithLiquid()
+	Water.SetTransparent(true)
 }
 
 // It creates a new camera with the necessary setup
@@ -124,6 +122,7 @@ func Update() {
 	if app.GetKeyState(glfw.KeyM) {
 		Room3.PushDoorState()
 	}
+	app.SetUniformFloat("time", float32(float64(nowNano-startTime)/float64(time.Second)))
 	app.Update(delta)
 }
 func baseDir() string {
@@ -159,12 +158,16 @@ func main() {
 	// Shader application for the textured meshes.
 	shaderProgramTexture := shader.NewTextureShaderBlendingWithFog(glWrapper)
 	app.AddShader(shaderProgramTexture)
+	// Shader application for the blending & fog
 	shaderProgramTextureMat := shader.NewTextureMatShaderBlendingWithFog(glWrapper)
 	app.AddShader(shaderProgramTextureMat)
+	// Shader application for the liquid surface
+	shaderProgramLiquid := shader.NewTextureShaderLiquidWithFog(glWrapper)
+	app.AddShader(shaderProgramLiquid)
 
 	CreateGround()
-	Ground.GetTerrain().SetPosition(mgl32.Vec3{0.0, 1.003, 0.0})
 	app.AddModelToShader(Ground, shaderProgramTexture)
+	app.AddModelToShader(Water, shaderProgramLiquid)
 
 	Room = model.NewMaterialRoom(GroundPos(mgl32.Vec3{-5.0, 1.0, 0.0}), glWrapper)
 	app.AddModelToShader(Room, shaderProgramMaterial)
@@ -230,6 +233,7 @@ func main() {
 	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
+	startTime = lastUpdate
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 
