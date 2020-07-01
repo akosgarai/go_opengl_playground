@@ -12,6 +12,7 @@ import (
 
 	"github.com/akosgarai/playground_engine/pkg/application"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/interfaces"
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
@@ -77,6 +78,7 @@ func (c *Charset) Print(text string, x, y, scale float32) {
 	}
 	// the low rune value from the LoadCharset function.
 	lc := rune(32)
+	var mshStore []interfaces.Mesh
 	for i := range indices {
 		runeIndex := indices[i]
 		//skip runes that are not in font chacter range
@@ -99,9 +101,13 @@ func (c *Charset) Print(text string, x, y, scale float32) {
 		msh := mesh.NewTexturedColoredMesh(v, i, ch.tex, cols, glWrapper)
 		msh.SetPosition(position)
 		msh.SetParent(PaperMesh)
-		c.Model.AddMesh(msh)
+		//c.Model.AddMesh(msh)
+		mshStore = append(mshStore, msh)
 		fmt.Printf("%c %d\n\tpos: %#v\n\tch: %#v\n\tw: %f, h: %f, xpos: %f, ypos: %f, adv: %f\n", runeIndex, runeIndex, position, ch, w, h, xpos, ypos, float32(ch.advance)*scale)
 		x += float32(ch.advance) * scale
+	}
+	for i := len(mshStore) - 1; i >= 0; i-- {
+		c.Model.AddMesh(mshStore[i])
 	}
 }
 
