@@ -66,7 +66,7 @@ func CameraMovementMap() map[string]glfw.Key {
 
 // It creates a new camera with the necessary setup
 func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{0, 0, -5.0}, mgl32.Vec3{0, -1, 0}, 0.0, 0.0)
+	camera := camera.NewCamera(mgl32.Vec3{-0.28, -0.23, 2.4}, mgl32.Vec3{0, -1, 0}, -90.0, 0.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
 	camera.SetVelocity(CameraMoveSpeed)
 	camera.SetRotationStep(CameraDirectionSpeed)
@@ -114,8 +114,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	Fonts.SetSurface(PaperMesh)
-	Fonts.Print("How are You?", -0.5, 0.2, -0.01, 3.0/float32(WindowWidth), glWrapper)
+	Fonts.PrintTo("How are You?", -0.5, 0.2, -0.01, 3.0/float32(WindowWidth), glWrapper, PaperMesh)
+	Fonts.PrintTo("Ken sent me!", -0.2, -0.75, -0.01, 3.0/float32(WindowWidth), glWrapper, PaperMesh)
 	Fonts.SetTransparent(true)
 	app.AddModelToShader(Fonts, fontShader)
 	lastUpdate = time.Now().UnixNano()
