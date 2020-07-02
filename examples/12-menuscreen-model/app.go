@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path"
 	"runtime"
 	"time"
@@ -8,6 +9,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/application"
 	"github.com/akosgarai/playground_engine/pkg/camera"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/material"
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
@@ -33,18 +35,22 @@ const (
 var (
 	app       *application.Application
 	glWrapper glwrapper.Wrapper
-	PaperMesh *mesh.TexturedMesh
+	PaperMesh *mesh.TexturedMaterialMesh
 
 	lastUpdate int64
+
+	DefaultMaterial   = material.Jade
+	HighlightMaterial = material.Ruby
 )
 
 func Paper(width, height float32) {
 	rect := rectangle.NewExact(width, height)
-	v, i, _ := rect.MeshInput()
+	v, i, bo := rect.MeshInput()
 	var tex texture.Textures
 	tex.AddTexture(baseDir()+"/assets/paper.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "paper", glWrapper)
 
-	PaperMesh = mesh.NewTexturedMesh(v, i, tex, glWrapper)
+	PaperMesh = mesh.NewTexturedMaterialMesh(v, i, tex, DefaultMaterial, glWrapper)
+	PaperMesh.SetBoundingObject(bo)
 }
 
 func baseDir() string {
@@ -77,6 +83,22 @@ func Update() {
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
 	app.Update(delta)
+	msh, distance := app.GetClosestMeshWithDistance()
+	switch msh.(type) {
+	case *mesh.TexturedMaterialMesh:
+		tmMesh := msh.(*mesh.TexturedMaterialMesh)
+		if distance < 1.8 {
+			tmMesh.Material = HighlightMaterial
+		} else {
+			tmMesh.Material = DefaultMaterial
+		}
+		fmt.Printf("Distance: %f\n", distance)
+		break
+	default:
+		fmt.Printf("Type: %#v, distance: %f\n", msh, distance)
+		break
+	}
+
 }
 
 func main() {
