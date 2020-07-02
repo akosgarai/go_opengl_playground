@@ -42,7 +42,6 @@ const (
 var (
 	app       *application.Application
 	glWrapper glwrapper.Wrapper
-	PaperMesh *mesh.TexturedMesh
 
 	lastUpdate int64
 )
@@ -62,15 +61,17 @@ type Charset struct {
 	maxWidth, maxHeight int
 }
 
-func Paper(width, height float32) {
+func Paper(width, height float32, position mgl32.Vec3) *mesh.TexturedMesh {
 	rect := rectangle.NewExact(width, height)
 	v, i, _ := rect.MeshInput()
 	var tex texture.Textures
 	tex.AddTexture(baseDir()+"/assets/paper.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "paper", glWrapper)
 
-	PaperMesh = mesh.NewTexturedMesh(v, i, tex, glWrapper)
+	msh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
+	msh.SetPosition(position)
+	return msh
 }
-func (c *Charset) Print(text string, x, y, scale float32) {
+func (c *Charset) PrintTo(text string, x, y, scale float32, surface interfaces.Mesh) {
 	indices := []rune(text)
 	fmt.Printf("The following text will be printed: '%s' as '%v'\n", text, indices)
 	if len(indices) == 0 {
@@ -97,11 +98,11 @@ func (c *Charset) Print(text string, x, y, scale float32) {
 			mgl32.Vec3{0.0, 1.0, 0.0},
 		}
 		v, i, _ := rect.TexturedColoredMeshInput(cols)
-		rotTr := PaperMesh.RotationTransformation()
+		rotTr := surface.RotationTransformation()
 		position := mgl32.Vec3{x + float32(ch.bearingWidth+ch.glyphWidth/2)*scale, 0.01, y - float32(ch.bearingHeight-ch.glyphHeight/2)*scale}
 		msh := mesh.NewTexturedColoredMesh(v, i, ch.tex, cols, glWrapper)
 		msh.SetPosition(mgl32.TransformCoordinate(position, rotTr))
-		msh.SetParent(PaperMesh)
+		msh.SetParent(surface)
 		mshStore = append(mshStore, msh)
 		fmt.Printf("%c %d\n\tpos: %#v\n\tch: %#v\n\tw: %f, h: %f, xpos: %f, ypos: %f, adv: %f\n", runeIndex, runeIndex, position, ch, w, h, xpos, ypos, float32(ch.advance)*scale)
 		x += float32(ch.advance) * scale
@@ -251,10 +252,12 @@ func main() {
 	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
 	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 	paperModel := model.New()
-	Paper(1, 0.2)
-	PaperMesh.RotateX(-90)
-	PaperMesh.SetPosition(mgl32.Vec3{-0.0, 0.3, -0.0})
-	paperModel.AddMesh(PaperMesh)
+	firstOptionBackground := Paper(1, 0.2, mgl32.Vec3{-0.0, 0.3, -0.0})
+	firstOptionBackground.RotateX(-90)
+	paperModel.AddMesh(firstOptionBackground)
+	secondOptionBackground := Paper(1, 0.2, mgl32.Vec3{-0.0, -0.3, -0.0})
+	secondOptionBackground.RotateX(-90)
+	paperModel.AddMesh(secondOptionBackground)
 
 	app.AddModelToShader(paperModel, paperShader)
 
@@ -262,7 +265,8 @@ func main() {
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 	Fonts := LoadCharset(FontFile, 32, 127, 40.0)
-	Fonts.Print("- First option", -0.5, -0.03, 3.0/float32(WindowWidth))
+	Fonts.PrintTo(" - 1. option - ", -0.5, -0.03, 3.0/float32(WindowWidth), firstOptionBackground)
+	Fonts.PrintTo(" - 2. option - ", -0.5, -0.03, 3.0/float32(WindowWidth), secondOptionBackground)
 	Fonts.SetTransparent(true)
 	app.AddModelToShader(Fonts, fontShader)
 
