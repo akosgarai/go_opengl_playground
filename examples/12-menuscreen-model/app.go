@@ -22,7 +22,7 @@ import (
 const (
 	WindowWidth  = 800
 	WindowHeight = 800
-	WindowTitle  = "Example - menu screen"
+	WindowTitle  = "Example - menu screen with model"
 	FontFile     = "/assets/fonts/Desyrel/desyrel.regular.ttf"
 
 	CameraMoveSpeed      = 0.005
