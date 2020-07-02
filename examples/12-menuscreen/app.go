@@ -97,11 +97,11 @@ func (c *Charset) Print(text string, x, y, scale float32) {
 			mgl32.Vec3{0.0, 1.0, 0.0},
 		}
 		v, i, _ := rect.TexturedColoredMeshInput(cols)
-		position := mgl32.Vec3{x + float32(ch.bearingWidth+ch.glyphWidth/2)*scale, y - float32(ch.bearingHeight-ch.glyphHeight/2)*scale, -0.1}
+		rotTr := PaperMesh.RotationTransformation()
+		position := mgl32.Vec3{x + float32(ch.bearingWidth+ch.glyphWidth/2)*scale, 0.01, y - float32(ch.bearingHeight-ch.glyphHeight/2)*scale}
 		msh := mesh.NewTexturedColoredMesh(v, i, ch.tex, cols, glWrapper)
-		msh.SetPosition(position)
+		msh.SetPosition(mgl32.TransformCoordinate(position, rotTr))
 		msh.SetParent(PaperMesh)
-		//c.Model.AddMesh(msh)
 		mshStore = append(mshStore, msh)
 		fmt.Printf("%c %d\n\tpos: %#v\n\tch: %#v\n\tw: %f, h: %f, xpos: %f, ypos: %f, adv: %f\n", runeIndex, runeIndex, position, ch, w, h, xpos, ypos, float32(ch.advance)*scale)
 		x += float32(ch.advance) * scale
