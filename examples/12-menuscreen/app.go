@@ -13,6 +13,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/application"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
 	"github.com/akosgarai/playground_engine/pkg/interfaces"
+	"github.com/akosgarai/playground_engine/pkg/material"
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
@@ -44,6 +45,9 @@ var (
 	glWrapper glwrapper.Wrapper
 
 	lastUpdate int64
+
+	DefaultMaterial   = material.Jade
+	HighlightMaterial = material.Ruby
 )
 
 type Glyph struct {
@@ -61,17 +65,18 @@ type Charset struct {
 	maxWidth, maxHeight int
 }
 
-func Paper(width, height float32, position mgl32.Vec3) *mesh.TexturedMesh {
+func Paper(width, height float32, position mgl32.Vec3) *mesh.TexturedMaterialMesh {
 	rect := rectangle.NewExact(width, height)
-	v, i, _ := rect.MeshInput()
+	v, i, bo := rect.MeshInput()
 	var tex texture.Textures
 	tex.AddTexture(baseDir()+"/assets/paper.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "paper", glWrapper)
 
-	msh := mesh.NewTexturedMesh(v, i, tex, glWrapper)
+	msh := mesh.NewTexturedMaterialMesh(v, i, tex, DefaultMaterial, glWrapper)
+	msh.SetBoundingObject(bo)
 	msh.SetPosition(position)
 	return msh
 }
-func (c *Charset) PrintTo(text string, x, y, scale float32, surface interfaces.Mesh) {
+func (c *Charset) PrintTo(text string, x, y, scale float32, surface interfaces.Mesh, cols []mgl32.Vec3) {
 	indices := []rune(text)
 	fmt.Printf("The following text will be printed: '%s' as '%v'\n", text, indices)
 	if len(indices) == 0 {
@@ -94,9 +99,6 @@ func (c *Charset) PrintTo(text string, x, y, scale float32, surface interfaces.M
 		w := float32(ch.glyphWidth) * scale
 		h := float32(ch.glyphHeight) * scale
 		rect := rectangle.NewExact(w, h)
-		cols := []mgl32.Vec3{
-			mgl32.Vec3{0.0, 1.0, 0.0},
-		}
 		v, i, _ := rect.TexturedColoredMeshInput(cols)
 		rotTr := surface.RotationTransformation()
 		position := mgl32.Vec3{x + float32(ch.bearingWidth+ch.glyphWidth/2)*scale, 0.01, y - float32(ch.bearingHeight-ch.glyphHeight/2)*scale}
@@ -233,6 +235,24 @@ func baseDir() string {
 	_, filename, _, _ := runtime.Caller(1)
 	return path.Dir(filename)
 }
+func Update() {
+	nowUnix := time.Now().UnixNano()
+	delta := float64(nowUnix-lastUpdate) / float64(time.Millisecond)
+	lastUpdate = nowUnix
+	app.Update(delta)
+	msh, distance := app.GetClosestMeshWithDistance()
+	switch msh.(type) {
+	case *mesh.TexturedMaterialMesh:
+		tmMesh := msh.(*mesh.TexturedMaterialMesh)
+		if distance < 0.01 {
+			tmMesh.Material = HighlightMaterial
+		} else {
+			tmMesh.Material = DefaultMaterial
+		}
+		break
+	}
+
+}
 
 func main() {
 	runtime.LockOSThread()
@@ -265,14 +285,21 @@ func main() {
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 	Fonts := LoadCharset(FontFile, 32, 127, 40.0)
-	Fonts.PrintTo(" - 1. option - ", -0.5, -0.03, 3.0/float32(WindowWidth), firstOptionBackground)
-	Fonts.PrintTo(" - 2. option - ", -0.5, -0.03, 3.0/float32(WindowWidth), secondOptionBackground)
+	cols1 := []mgl32.Vec3{
+		mgl32.Vec3{0.0, 1.0, 0.0},
+	}
+	cols2 := []mgl32.Vec3{
+		mgl32.Vec3{0.0, 0.0, 1.0},
+	}
+	Fonts.PrintTo(" - 1. option - ", -0.5, -0.03, 3.0/float32(WindowWidth), firstOptionBackground, cols1)
+	Fonts.PrintTo(" - 2. option - ", -0.5, -0.03, 3.0/float32(WindowWidth), secondOptionBackground, cols2)
 	Fonts.SetTransparent(true)
 	app.AddModelToShader(Fonts, fontShader)
 
 	for !app.GetWindow().ShouldClose() {
 		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		app.Draw()
+		Update()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}
