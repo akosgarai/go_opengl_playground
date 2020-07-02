@@ -251,9 +251,9 @@ func main() {
 	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
 	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 	paperModel := model.New()
-	Paper(1, 1)
+	Paper(1, 0.2)
 	PaperMesh.RotateX(-90)
-	PaperMesh.SetPosition(mgl32.Vec3{-0.4, -0.3, -0.0})
+	PaperMesh.SetPosition(mgl32.Vec3{-0.0, 0.3, -0.0})
 	paperModel.AddMesh(PaperMesh)
 
 	app.AddModelToShader(paperModel, paperShader)
@@ -262,7 +262,7 @@ func main() {
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 	Fonts := LoadCharset(FontFile, 32, 127, 40.0)
-	Fonts.Print("How are You?", -0.5, 0.2, 3.0/float32(WindowWidth))
+	Fonts.Print("- First option", -0.5, -0.03, 3.0/float32(WindowWidth))
 	Fonts.SetTransparent(true)
 	app.AddModelToShader(Fonts, fontShader)
 
