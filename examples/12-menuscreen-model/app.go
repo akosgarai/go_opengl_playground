@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/akosgarai/playground_engine/pkg/application"
+	"github.com/akosgarai/playground_engine/pkg/camera"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
@@ -51,12 +52,42 @@ func baseDir() string {
 	return path.Dir(filename)
 }
 
+// Setup keymap for the camera movement
+func CameraMovementMap() map[string]glfw.Key {
+	cm := make(map[string]glfw.Key)
+	cm["forward"] = glfw.KeyW
+	cm["back"] = glfw.KeyS
+	cm["up"] = glfw.KeyQ
+	cm["down"] = glfw.KeyE
+	cm["left"] = glfw.KeyA
+	cm["right"] = glfw.KeyD
+	return cm
+}
+
+// It creates a new camera with the necessary setup
+func CreateCamera() *camera.Camera {
+	camera := camera.NewCamera(mgl32.Vec3{0, 0, -5.0}, mgl32.Vec3{0, -1, 0}, 0.0, 0.0)
+	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
+	camera.SetVelocity(CameraMoveSpeed)
+	camera.SetRotationStep(CameraDirectionSpeed)
+	return camera
+}
+func Update() {
+	nowNano := time.Now().UnixNano()
+	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
+	lastUpdate = nowNano
+	app.Update(delta)
+}
+
 func main() {
 	runtime.LockOSThread()
 	app = application.New()
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
+	app.SetCamera(CreateCamera())
+	app.SetCameraMovementMap(CameraMovementMap())
+	app.SetRotateOnEdgeDistance(CameraDistance)
 
 	fontShader := shader.NewShader(baseDir()+"/shaders/font.vert", baseDir()+"/shaders/font.frag", glWrapper)
 	app.AddShader(fontShader)
@@ -69,7 +100,7 @@ func main() {
 	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
 	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 	paperModel := model.New()
-	Paper(1, 1)
+	Paper(2, 2)
 	PaperMesh.RotateX(-90)
 	PaperMesh.SetPosition(mgl32.Vec3{-0.4, -0.3, -0.0})
 	paperModel.AddMesh(PaperMesh)
@@ -84,12 +115,14 @@ func main() {
 		panic(err)
 	}
 	Fonts.SetSurface(PaperMesh)
-	Fonts.Print("How are You?", -0.5, 0.2, 3.0/float32(WindowWidth), glWrapper)
+	Fonts.Print("How are You?", -0.5, 0.2, -0.01, 3.0/float32(WindowWidth), glWrapper)
 	Fonts.SetTransparent(true)
 	app.AddModelToShader(Fonts, fontShader)
+	lastUpdate = time.Now().UnixNano()
 
 	for !app.GetWindow().ShouldClose() {
 		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
+		Update()
 		app.Draw()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
