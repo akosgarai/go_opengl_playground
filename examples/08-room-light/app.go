@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path"
 	"runtime"
 	"time"
@@ -9,8 +10,12 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/camera"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
 	"github.com/akosgarai/playground_engine/pkg/light"
+	"github.com/akosgarai/playground_engine/pkg/material"
+	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
+	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
 	"github.com/akosgarai/playground_engine/pkg/shader"
+	"github.com/akosgarai/playground_engine/pkg/texture"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -25,15 +30,23 @@ const (
 	CameraMoveSpeed      = 0.005
 	CameraDirectionSpeed = float32(0.050)
 	CameraDistance       = 0.1
+	FontFile             = "/assets/fonts/Desyrel/desyrel.ttf"
+	LEFT_MOUSE_BUTTON    = glfw.MouseButtonLeft
+	MENU_BUTTON          = glfw.KeyM
 )
 
 var (
-	app                    *application.Application
+	MenuApp                *application.Application
+	RoomApp                *application.Application
+	ActiveApp              *application.Application
 	Ground                 *model.Terrain
 	Water                  *model.Liquid
 	Room                   *model.Room
 	Room2                  *model.Room
 	Room3                  *model.Room
+	Menu                   *model.BaseModel
+	StartButton            *mesh.TexturedMaterialMesh
+	ExitButton             *mesh.TexturedMaterialMesh
 	lastUpdate             int64
 	startTime              int64
 	DirectionalLightSource *light.Light
@@ -66,6 +79,9 @@ var (
 	SpotLightCutoff_2         = float32(4)
 	SpotLightOuterCutoff_1    = float32(5)
 	SpotLightOuterCutoff_2    = float32(5)
+
+	DefaultMaterial   = material.Jade
+	HighlightMaterial = material.Ruby
 
 	glWrapper glwrapper.Wrapper
 )
@@ -115,15 +131,59 @@ func CreateCamera() *camera.Camera {
 	camera.SetRotationStep(CameraDirectionSpeed)
 	return camera
 }
+
+// Update has to be separated to model update and to game update.
+// - Let's handle the delta first.
+// - Then the MENU_BUTTON handler.
+// - GetClosestModel
+// - Switch on model first. If it is identical to menu, then compare the meshed with exit, start and do the action
+// - If it is not menu, then we have the game handler.
 func Update() {
+	// Delta
 	nowNano := time.Now().UnixNano()
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
-	if app.GetKeyState(glfw.KeyM) {
-		Room3.PushDoorState()
+	ActiveApp.SetUniformFloat("time", float32(float64(nowNano-startTime)/float64(time.Second)))
+	ActiveApp.Update(delta)
+	// MENU_BUTTON is pressed.
+	if ActiveApp.GetKeyState(MENU_BUTTON) {
+		ActiveApp = MenuApp
+		glWrapper.ClearColor(0.0, 1.0, 0.0, 1.0)
+		StartButton.Material = DefaultMaterial
 	}
-	app.SetUniformFloat("time", float32(float64(nowNano-startTime)/float64(time.Second)))
-	app.Update(delta)
+	// Get closest stuff
+	mdl, msh, distance := ActiveApp.GetClosestModelMeshDistance()
+	switch mdl.(type) {
+	case *model.BaseModel:
+		baseModel := mdl.(*model.BaseModel)
+		// Check only the menu options.
+		if baseModel == Menu {
+			tmMesh := msh.(*mesh.TexturedMaterialMesh)
+			if distance < 0.01 {
+				tmMesh.Material = HighlightMaterial
+				if ActiveApp.GetMouseButtonState(LEFT_MOUSE_BUTTON) {
+					if tmMesh == ExitButton {
+						fmt.Println("Exit button has been pressed.\n")
+						ActiveApp.GetWindow().SetShouldClose(true)
+					} else if tmMesh == StartButton {
+						fmt.Println("Start button has been pressed.\n")
+						ActiveApp = RoomApp
+						ActiveApp.GetWindow().SetKeyCallback(ActiveApp.KeyCallback)
+						glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
+					}
+				}
+			} else {
+				tmMesh.Material = DefaultMaterial
+			}
+		}
+		break
+	case *model.Room:
+		if ActiveApp.GetKeyState(glfw.KeyC) {
+			room := mdl.(*model.Room)
+			room.PushDoorState()
+		}
+		break
+	}
 }
 func baseDir() string {
 	_, filename, _, _ := runtime.Caller(1)
@@ -138,52 +198,67 @@ func GroundPos(pos mgl32.Vec3) mgl32.Vec3 {
 	return pos
 }
 
+func Paper(width, height float32, position mgl32.Vec3) *mesh.TexturedMaterialMesh {
+	rect := rectangle.NewExact(width, height)
+	v, i, bo := rect.MeshInput()
+	var tex texture.Textures
+	tex.AddTexture(baseDir()+"/assets/paper.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "paper", glWrapper)
+
+	msh := mesh.NewTexturedMaterialMesh(v, i, tex, DefaultMaterial, glWrapper)
+	msh.SetBoundingObject(bo)
+	msh.SetPosition(position)
+	return msh
+}
+
 func main() {
 	runtime.LockOSThread()
-	app = application.New()
-	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
+	MenuApp = application.New()
+	RoomApp = application.New()
+	Window := window.InitGlfw(WindowWidth, WindowHeight, WindowTitle)
+	MenuApp.SetWindow(Window)
+	RoomApp.SetWindow(Window)
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	app.SetCamera(CreateCamera())
-	app.SetCameraMovementMap(CameraMovementMap())
-	app.SetRotateOnEdgeDistance(CameraDistance)
-	app.SetUniformFloat("fog.minDistance", 1.0)
-	app.SetUniformFloat("fog.maxDistance", 8.0)
-	app.SetUniformVector("fog.color", mgl32.Vec3{0.4, 0.4, 0.4})
+	RoomApp.SetCamera(CreateCamera())
+	RoomApp.SetCameraMovementMap(CameraMovementMap())
+	RoomApp.SetRotateOnEdgeDistance(CameraDistance)
+	RoomApp.SetUniformFloat("fog.minDistance", 1.0)
+	RoomApp.SetUniformFloat("fog.maxDistance", 8.0)
+	RoomApp.SetUniformVector("fog.color", mgl32.Vec3{0.4, 0.4, 0.4})
 
 	// Shader application for the material objects
 	shaderProgramMaterial := shader.NewMaterialShaderWithFog(glWrapper)
-	app.AddShader(shaderProgramMaterial)
+	RoomApp.AddShader(shaderProgramMaterial)
 	// Shader application for the textured meshes.
 	shaderProgramTexture := shader.NewTextureShaderBlendingWithFog(glWrapper)
-	app.AddShader(shaderProgramTexture)
+	RoomApp.AddShader(shaderProgramTexture)
 	// Shader application for the blending & fog
 	shaderProgramTextureMat := shader.NewTextureMatShaderBlendingWithFog(glWrapper)
-	app.AddShader(shaderProgramTextureMat)
+	RoomApp.AddShader(shaderProgramTextureMat)
 	// Shader application for the liquid surface
 	shaderProgramLiquid := shader.NewTextureShaderLiquidWithFog(glWrapper)
-	app.AddShader(shaderProgramLiquid)
+	RoomApp.AddShader(shaderProgramLiquid)
 
 	CreateGround()
-	app.AddModelToShader(Ground, shaderProgramTexture)
-	app.AddModelToShader(Water, shaderProgramLiquid)
+	RoomApp.AddModelToShader(Ground, shaderProgramTexture)
+	RoomApp.AddModelToShader(Water, shaderProgramLiquid)
 
 	Room = model.NewMaterialRoom(GroundPos(mgl32.Vec3{-5.0, 1.0, 0.0}), glWrapper)
-	app.AddModelToShader(Room, shaderProgramMaterial)
+	RoomApp.AddModelToShader(Room, shaderProgramMaterial)
 	Room2 = model.NewMaterialRoom(GroundPos(mgl32.Vec3{-6.0, 1.0, 6.0}), glWrapper)
-	app.AddModelToShader(Room2, shaderProgramMaterial)
+	RoomApp.AddModelToShader(Room2, shaderProgramMaterial)
 	Room3 = model.NewTextureRoom(GroundPos(mgl32.Vec3{-3.5, 1.0, 5.7}), glWrapper)
-	app.AddModelToShader(Room3, shaderProgramTextureMat)
+	RoomApp.AddModelToShader(Room3, shaderProgramTextureMat)
 
 	streetLamp := model.NewMaterialStreetLamp(GroundPos(mgl32.Vec3{-6.6, -2.0, 1.3}), 1.3, glWrapper)
 	streetLamp.RotateX(90)
 	streetLamp.RotateY(-90)
-	app.AddModelToShader(streetLamp, shaderProgramMaterial)
+	RoomApp.AddModelToShader(streetLamp, shaderProgramMaterial)
 	streetLampDark := model.NewTexturedStreetLamp(GroundPos(mgl32.Vec3{-4.8, -2.0, 6.9}), 1.3, glWrapper)
 	streetLampDark.RotateX(90)
 	streetLampDark.RotateY(-90)
-	app.AddModelToShader(streetLampDark, shaderProgramTextureMat)
+	RoomApp.AddModelToShader(streetLampDark, shaderProgramTextureMat)
 
 	// directional light is coming from the up direction but not from too up.
 	DirectionalLightSource = light.NewDirectionalLight([4]mgl32.Vec3{
@@ -220,11 +295,11 @@ func main() {
 		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
 
 	// Add the lightources to the application
-	app.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
+	RoomApp.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
 	//app.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
 	//app.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
-	app.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
-	app.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
+	RoomApp.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
+	RoomApp.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)
@@ -235,13 +310,47 @@ func main() {
 	lastUpdate = time.Now().UnixNano()
 	startTime = lastUpdate
 	// register keyboard button callback
-	app.GetWindow().SetKeyCallback(app.KeyCallback)
+	RoomApp.GetWindow().SetKeyCallback(RoomApp.KeyCallback)
 
-	for !app.GetWindow().ShouldClose() {
+	// Setup menu application
+	fontShader := shader.NewShader(baseDir()+"/shaders/font.vert", baseDir()+"/shaders/font.frag", glWrapper)
+	MenuApp.AddShader(fontShader)
+	paperShader := shader.NewShader(baseDir()+"/shaders/paper.vert", baseDir()+"/shaders/paper.frag", glWrapper)
+	MenuApp.AddShader(paperShader)
+
+	Menu = model.New()
+	StartButton = Paper(1, 0.2, mgl32.Vec3{-0.0, 0.3, -0.0})
+	StartButton.RotateX(-90)
+	Menu.AddMesh(StartButton)
+	ExitButton = Paper(1, 0.2, mgl32.Vec3{-0.0, -0.3, -0.0})
+	ExitButton.RotateX(-90)
+	Menu.AddMesh(ExitButton)
+	MenuApp.AddModelToShader(Menu, paperShader)
+	cols1 := []mgl32.Vec3{
+		mgl32.Vec3{0.0, 1.0, 0.0},
+	}
+	cols2 := []mgl32.Vec3{
+		mgl32.Vec3{0.0, 0.0, 1.0},
+	}
+	MenuFonts, err := model.LoadCharset(baseDir()+FontFile, 32, 127, 40.0, 72, glWrapper)
+	if err != nil {
+		panic(err)
+	}
+	MenuFonts.PrintTo(" - Start - ", -0.4, -0.03, 0.01, 3.0/float32(WindowWidth), glWrapper, StartButton, cols1)
+	MenuFonts.PrintTo(" - Exit - ", -0.4, -0.03, 0.01, 3.0/float32(WindowWidth), glWrapper, ExitButton, cols2)
+	MenuFonts.SetTransparent(true)
+	MenuApp.AddModelToShader(MenuFonts, fontShader)
+	// register keyboard button callback
+	MenuApp.GetWindow().SetMouseButtonCallback(MenuApp.MouseButtonCallback)
+	MenuApp.GetWindow().SetKeyCallback(window.DummyKeyCallback)
+
+	ActiveApp = MenuApp
+
+	for !ActiveApp.GetWindow().ShouldClose() {
 		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		Update()
-		app.Draw()
+		ActiveApp.Draw()
 		glfw.PollEvents()
-		app.GetWindow().SwapBuffers()
+		ActiveApp.GetWindow().SwapBuffers()
 	}
 }
