@@ -9,6 +9,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
+	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/texture"
 	"github.com/akosgarai/playground_engine/pkg/window"
@@ -51,14 +52,17 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
+	scrn := screen.New()
 	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
-	app.AddShader(shaderProgram)
+	scrn.AddShader(shaderProgram)
 	var tex texture.Textures
 	tex.AddTexture(baseDir()+"/assets/image-texture.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "textureOne", glWrapper)
 	squareMesh := GenerateSquareMesh(tex)
 	squareMesh.RotateX(90)
 	Model.AddMesh(squareMesh)
-	app.AddModelToShader(Model, shaderProgram)
+	scrn.AddModelToShader(Model, shaderProgram)
+	app.AddScreen(scrn)
+	app.ActivateScreen(scrn)
 
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)

@@ -11,6 +11,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
+	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
@@ -188,11 +189,12 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
+	scrn := screen.New()
 	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
-	app.AddShader(shaderProgram)
+	scrn.AddShader(shaderProgram)
 
-	app.SetCamera(CreateCamera())
-	app.SetCameraMovementMap(CameraMovementMap())
+	scrn.SetCamera(CreateCamera())
+	scrn.SetCameraMovementMap(CameraMovementMap())
 	cameraLastUpdate = time.Now().UnixNano()
 
 	Path()
@@ -204,7 +206,9 @@ func main() {
 	RoomFront()
 	RoomBack()
 	RoomLeft()
-	app.AddModelToShader(Model, shaderProgram)
+	scrn.AddModelToShader(Model, shaderProgram)
+	app.AddScreen(scrn)
+	app.ActivateScreen(scrn)
 	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 	glWrapper.Viewport(0, 0, WindowWidth, WindowHeight)
 

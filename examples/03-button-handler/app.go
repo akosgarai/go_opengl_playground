@@ -11,6 +11,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
 	"github.com/akosgarai/playground_engine/pkg/primitives/triangle"
+	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
@@ -109,8 +110,9 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
+	scrn := screen.New()
 	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
-	app.AddShader(shaderProgram)
+	scrn.AddShader(shaderProgram)
 
 	TriangMesh = GenerateTriangleMesh(triangleColors)
 	TriangMesh.SetScale(mgl32.Vec3{0.5, 0.5, 0.5})
@@ -124,7 +126,9 @@ func main() {
 	SquareMesh.SetSpeed(speed)
 	mod.AddMesh(SquareMesh)
 	mod.RotateX(90)
-	app.AddModelToShader(mod, shaderProgram)
+	scrn.AddModelToShader(mod, shaderProgram)
+	app.AddScreen(scrn)
+	app.ActivateScreen(scrn)
 
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)

@@ -10,6 +10,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
 	"github.com/akosgarai/playground_engine/pkg/primitives/triangle"
+	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
@@ -53,8 +54,9 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
+	scrn := screen.New()
 	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
-	app.AddShader(shaderProgram)
+	scrn.AddShader(shaderProgram)
 
 	mod := model.New()
 	triang := GenerateColoredTriangleMesh(color)
@@ -67,7 +69,9 @@ func main() {
 	square.SetPosition(mgl32.Vec3{0.4, -0.2, 0})
 	mod.AddMesh(square)
 	mod.RotateX(90)
-	app.AddModelToShader(mod, shaderProgram)
+	scrn.AddModelToShader(mod, shaderProgram)
+	app.AddScreen(scrn)
+	app.ActivateScreen(scrn)
 
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)

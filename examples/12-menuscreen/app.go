@@ -17,6 +17,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
+	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/texture"
 	"github.com/akosgarai/playground_engine/pkg/window"
@@ -43,12 +44,12 @@ const (
 )
 
 var (
-	ActiveApp    *application.Application
-	MenuApp      *application.Application
-	StartableApp *application.Application
-	glWrapper    glwrapper.Wrapper
-	StartButton  *mesh.TexturedMaterialMesh
-	ExitButton   *mesh.TexturedMaterialMesh
+	app         *application.Application
+	glWrapper   glwrapper.Wrapper
+	MenuScreen  *screen.Screen
+	AppScreen   *screen.Screen
+	StartButton *mesh.TexturedMaterialMesh
+	ExitButton  *mesh.TexturedMaterialMesh
 
 	lastUpdate int64
 
@@ -245,24 +246,24 @@ func Update() {
 	nowUnix := time.Now().UnixNano()
 	delta := float64(nowUnix-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowUnix
-	ActiveApp.Update(delta)
-	if ActiveApp.GetKeyState(MENU_BUTTON) {
-		ActiveApp = MenuApp
+	app.Update(delta)
+	if app.GetKeyState(MENU_BUTTON) {
+		app.ActivateScreen(MenuScreen)
 		glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 	}
-	_, msh, distance := ActiveApp.GetClosestModelMeshDistance()
+	_, msh, distance := app.GetClosestModelMeshDistance()
 	switch msh.(type) {
 	case *mesh.TexturedMaterialMesh:
 		tmMesh := msh.(*mesh.TexturedMaterialMesh)
 		if distance < 0.01 {
 			tmMesh.Material = HighlightMaterial
-			if ActiveApp.GetMouseButtonState(LEFT_MOUSE_BUTTON) {
+			if app.GetMouseButtonState(LEFT_MOUSE_BUTTON) {
 				if tmMesh == ExitButton {
 					fmt.Println("Exit button has been pressed.\n")
-					ActiveApp.GetWindow().SetShouldClose(true)
+					app.GetWindow().SetShouldClose(true)
 				} else if tmMesh == StartButton {
 					fmt.Println("Start button has been pressed.\n")
-					ActiveApp = StartableApp
+					app.ActivateScreen(AppScreen)
 					glWrapper.ClearColor(1.0, 1.0, 0.0, 1.0)
 				}
 			}
@@ -277,17 +278,18 @@ func Update() {
 func main() {
 	runtime.LockOSThread()
 	Window := window.InitGlfw(WindowWidth, WindowHeight, WindowTitle)
-	StartableApp = application.New()
-	StartableApp.SetWindow(Window)
-	MenuApp = application.New()
-	MenuApp.SetWindow(Window)
+	app = application.New()
+	app.SetWindow(Window)
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
+	MenuScreen = screen.New()
+	AppScreen = screen.New()
+
 	fontShader := shader.NewShader(baseDir()+"/shaders/font.vert", baseDir()+"/shaders/font.frag", glWrapper)
-	MenuApp.AddShader(fontShader)
+	MenuScreen.AddShader(fontShader)
 	paperShader := shader.NewShader(baseDir()+"/shaders/paper.vert", baseDir()+"/shaders/paper.frag", glWrapper)
-	MenuApp.AddShader(paperShader)
+	MenuScreen.AddShader(paperShader)
 
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)
@@ -302,14 +304,9 @@ func main() {
 	ExitButton.RotateX(-90)
 	paperModel.AddMesh(ExitButton)
 
-	MenuApp.AddModelToShader(paperModel, paperShader)
+	MenuScreen.AddModelToShader(paperModel, paperShader)
 
 	lastUpdate = time.Now().UnixNano()
-	// register keyboard button callback
-	MenuApp.GetWindow().SetKeyCallback(MenuApp.KeyCallback)
-	StartableApp.GetWindow().SetKeyCallback(StartableApp.KeyCallback)
-	// register mouse button callback
-	MenuApp.GetWindow().SetMouseButtonCallback(MenuApp.MouseButtonCallback)
 	Fonts := LoadCharset(FontFile, 32, 127, 40.0)
 	cols1 := []mgl32.Vec3{
 		mgl32.Vec3{0.0, 1.0, 0.0},
@@ -320,14 +317,21 @@ func main() {
 	Fonts.PrintTo(" - 1. option - ", -0.5, -0.03, 3.0/float32(WindowWidth), StartButton, cols1)
 	Fonts.PrintTo(" - 2. option - ", -0.5, -0.03, 3.0/float32(WindowWidth), ExitButton, cols2)
 	Fonts.SetTransparent(true)
-	MenuApp.AddModelToShader(Fonts, fontShader)
-	ActiveApp = MenuApp
+	MenuScreen.AddModelToShader(Fonts, fontShader)
+	app.AddScreen(MenuScreen)
+	app.AddScreen(AppScreen)
+	app.ActivateScreen(MenuScreen)
 
-	for !ActiveApp.GetWindow().ShouldClose() {
+	// register keyboard button callback
+	app.GetWindow().SetKeyCallback(app.KeyCallback)
+	// register mouse button callback
+	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
+
+	for !app.GetWindow().ShouldClose() {
 		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
-		ActiveApp.Draw()
+		app.Draw()
 		Update()
 		glfw.PollEvents()
-		ActiveApp.GetWindow().SwapBuffers()
+		app.GetWindow().SwapBuffers()
 	}
 }

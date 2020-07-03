@@ -14,6 +14,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/primitives/cuboid"
 	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
 	"github.com/akosgarai/playground_engine/pkg/primitives/sphere"
+	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/texture"
 	"github.com/akosgarai/playground_engine/pkg/window"
@@ -168,9 +169,10 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	app.SetCamera(CreateCamera())
-	app.SetCameraMovementMap(CameraMovementMap())
-	app.SetRotateOnEdgeDistance(CameraDistance)
+	scrn := screen.New()
+	scrn.SetCamera(CreateCamera())
+	scrn.SetCameraMovementMap(CameraMovementMap())
+	scrn.SetRotateOnEdgeDistance(CameraDistance)
 
 	// directional light is coming from the up direction but not from too up.
 	DirectionalLightSource = light.NewDirectionalLight([4]mgl32.Vec3{
@@ -207,15 +209,15 @@ func main() {
 		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
 
 	// Add the lightources to the application
-	app.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
-	app.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
-	app.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
-	app.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
-	app.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
+	scrn.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
+	scrn.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
+	scrn.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
+	scrn.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
+	scrn.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 
 	// Define the shader application for the textured meshes.
 	shaderProgramTexture := shader.NewShader(baseDir()+"/shaders/texture.vert", baseDir()+"/shaders/texture.frag", glWrapper)
-	app.AddShader(shaderProgramTexture)
+	scrn.AddShader(shaderProgramTexture)
 
 	// grass textures
 	var grassTexture texture.Textures
@@ -243,28 +245,30 @@ func main() {
 
 	// Shader application for the lamp
 	shaderProgramMaterial := shader.NewShader(baseDir()+"/shaders/lamp.vert", baseDir()+"/shaders/lamp.frag", glWrapper)
-	app.AddShader(shaderProgramMaterial)
+	scrn.AddShader(shaderProgramMaterial)
 	shaderProgramTextureMat := shader.NewShader(baseDir()+"/shaders/texturemat.vert", baseDir()+"/shaders/texturemat.frag", glWrapper)
-	app.AddShader(shaderProgramTextureMat)
+	scrn.AddShader(shaderProgramTextureMat)
 
 	lamp1 := TexturedStreetLamp(mgl32.Vec3{0.4, -6.0, -1.3})
-	app.AddModelToShader(lamp1, shaderProgramTextureMat)
+	scrn.AddModelToShader(lamp1, shaderProgramTextureMat)
 	lamp2 := StreetLamp(mgl32.Vec3{10.4, -6.0, -1.3})
-	app.AddModelToShader(lamp2, shaderProgramMaterial)
+	scrn.AddModelToShader(lamp2, shaderProgramMaterial)
 
 	Bug1 = model.NewBug(mgl32.Vec3{9, -0.5, -1.0}, mgl32.Vec3{0.2, 0.2, 0.2}, glWrapper)
 	Bug1.SetDirection(mgl32.Vec3{1, 0, 0})
 	Bug1.SetSpeed(MoveSpeed)
 
-	app.AddModelToShader(Bug1, shaderProgramMaterial)
+	scrn.AddModelToShader(Bug1, shaderProgramMaterial)
 
 	// sun texture
 	var sunTexture texture.Textures
 	sunTexture.AddTexture(baseDir()+"/assets/sun.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
 	sunTexture.AddTexture(baseDir()+"/assets/sun.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
 	TexturedBug(sunTexture)
-	app.AddModelToShader(TexModel, shaderProgramTexture)
-	app.AddModelToShader(MatModel, shaderProgramMaterial)
+	scrn.AddModelToShader(TexModel, shaderProgramTexture)
+	scrn.AddModelToShader(MatModel, shaderProgramMaterial)
+	app.AddScreen(scrn)
+	app.ActivateScreen(scrn)
 
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)
