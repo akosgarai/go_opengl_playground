@@ -12,6 +12,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/vertex"
+	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/transformations"
 	"github.com/akosgarai/playground_engine/pkg/window"
@@ -127,17 +128,20 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	app.SetCamera(CreateCamera())
-	app.SetCameraMovementMap(CameraMovementMap())
+	scrn := screen.New()
+	scrn.SetCamera(CreateCamera())
+	scrn.SetCameraMovementMap(CameraMovementMap())
 
 	cameraLastUpdate = time.Now().UnixNano()
 
 	Shader := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
-	app.AddShader(Shader)
+	scrn.AddShader(Shader)
 
 	PointMesh = mesh.NewPointMesh(glWrapper)
 	Model.AddMesh(PointMesh)
-	app.AddModelToShader(Model, Shader)
+	scrn.AddModelToShader(Model, Shader)
+	app.AddScreen(scrn)
+	app.ActivateScreen(scrn)
 
 	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
