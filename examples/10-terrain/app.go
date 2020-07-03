@@ -15,6 +15,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
 	"github.com/akosgarai/playground_engine/pkg/primitives/vertex"
+	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/texture"
 	"github.com/akosgarai/playground_engine/pkg/window"
@@ -226,15 +227,16 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	app.SetCamera(CreateCamera())
-	app.SetCameraMovementMap(CameraMovementMap())
-	app.SetRotateOnEdgeDistance(CameraDistance)
+	scrn := screen.New()
+	scrn.SetCamera(CreateCamera())
+	scrn.SetCameraMovementMap(CameraMovementMap())
+	scrn.SetRotateOnEdgeDistance(CameraDistance)
 
 	// Shader application for the textured meshes.
 	shaderProgramTexture := shader.NewTextureShaderBlending(glWrapper)
-	app.AddShader(shaderProgramTexture)
+	scrn.AddShader(shaderProgramTexture)
 	shaderProgramWater := shader.NewShader(baseDir()+"/shaders/water.vert", baseDir()+"/shaders/water.frag", glWrapper)
-	app.AddShader(shaderProgramWater)
+	scrn.AddShader(shaderProgramWater)
 
 	var grassTexture texture.Textures
 	grassTexture.AddTexture(baseDir()+"/assets/grass.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
@@ -244,11 +246,11 @@ func main() {
 	grassMesh.SetPosition(mgl32.Vec3{0.0, 1.003, 0.0})
 	grassMesh.SetScale(mgl32.Vec3{5, 1, 5})
 	TexModel.AddMesh(grassMesh)
-	app.AddModelToShader(TexModel, shaderProgramTexture)
+	scrn.AddModelToShader(TexModel, shaderProgramTexture)
 
 	WaterModel.AddMesh(CreateWaterMesh())
 	WaterModel.SetTransparent(true)
-	app.AddModelToShader(WaterModel, shaderProgramWater)
+	scrn.AddModelToShader(WaterModel, shaderProgramWater)
 	// directional light is coming from the up direction but not from too up.
 	DirectionalLightSource = light.NewDirectionalLight([4]mgl32.Vec3{
 		DirectionalLightDirection,
@@ -257,7 +259,9 @@ func main() {
 		DirectionalLightSpecular,
 	})
 	// Add the lightources to the application
-	app.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
+	scrn.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
+	app.AddScreen(scrn)
+	app.ActivateScreen(scrn)
 
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)
