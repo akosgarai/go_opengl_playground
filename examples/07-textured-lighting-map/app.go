@@ -15,6 +15,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/primitives/cuboid"
 	"github.com/akosgarai/playground_engine/pkg/primitives/cylinder"
 	"github.com/akosgarai/playground_engine/pkg/primitives/sphere"
+	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/texture"
 	"github.com/akosgarai/playground_engine/pkg/window"
@@ -131,15 +132,16 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	app.SetCamera(CreateCamera())
-	app.SetCameraMovementMap(CameraMovementMap())
-	app.SetRotateOnEdgeDistance(CameraDistance)
+	scrn := screen.New()
+	scrn.SetCamera(CreateCamera())
+	scrn.SetCameraMovementMap(CameraMovementMap())
+	scrn.SetRotateOnEdgeDistance(CameraDistance)
 
 	LightSource = light.NewPointLight([4]mgl32.Vec3{InitialCenterPointLight, mgl32.Vec3{0.2, 0.2, 0.2}, mgl32.Vec3{0.5, 0.5, 0.5}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
-	app.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
+	scrn.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})
 
 	shaderProgramTexture := shader.NewShader(baseDir()+"/shaders/texture.vert", baseDir()+"/shaders/texture.frag", glWrapper)
-	app.AddShader(shaderProgramTexture)
+	scrn.AddShader(shaderProgramTexture)
 
 	var tex texture.Textures
 	tex.AddTexture(baseDir()+"/assets/colored-image-for-texture-testing-diffuse.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
@@ -149,14 +151,16 @@ func main() {
 	CylinderMesh := CreateCylinderMesh(tex)
 	CylinderMesh.SetPosition(mgl32.Vec3{2, 2, 2})
 	TexModel.AddMesh(CylinderMesh)
-	app.AddModelToShader(TexModel, shaderProgramTexture)
+	scrn.AddModelToShader(TexModel, shaderProgramTexture)
 
 	shaderProgramWhite := shader.NewShader(baseDir()+"/shaders/lightsource.vert", baseDir()+"/shaders/lightsource.frag", glWrapper)
-	app.AddShader(shaderProgramWhite)
+	scrn.AddShader(shaderProgramWhite)
 
 	CreateWhiteSphere()
 	MatModel.AddMesh(LightSourceSphere)
-	app.AddModelToShader(MatModel, shaderProgramWhite)
+	scrn.AddModelToShader(MatModel, shaderProgramWhite)
+	app.AddScreen(scrn)
+	app.ActivateScreen(scrn)
 
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)
