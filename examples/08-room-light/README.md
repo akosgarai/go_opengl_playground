@@ -1,6 +1,6 @@
 # Rooms application
 
-This application demonstrates the `Room` model. The terrain and the water are generated with the `TerrainBuilder`. The application has a camera, so that we can move with the `W`, `A`, `S`, `D`, `Q`, `E` buttons, and the mouse. The textured room contains a window. You can toggle the doors state of the room with the `C` button if the room is close enough. The app starts with a menu, where we can start the world or exit from the app. The menu scene could be restored with the `M` key.
+This application demonstrates the `Room` model. The terrain and the water are generated with the `TerrainBuilder`. The application has a camera, so that we can move with the `W`, `A`, `S`, `D`, `Q`, `E` buttons, and the mouse. The textured room contains a window. You can toggle the doors state of any room with the `C` button if the room is close enough. The app starts with a menu, where we can start the world or exit from the app. The menu scene could be restored with the `M` key.
 
 ## Samples
 
