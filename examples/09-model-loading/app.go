@@ -17,6 +17,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/modelimport"
+	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
@@ -172,21 +173,22 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	app.SetCamera(CreateCamera())
-	app.SetCameraMovementMap(CameraMovementMap())
-	app.SetRotateOnEdgeDistance(CameraDistance)
+	scrn := screen.New()
+	scrn.SetCamera(CreateCamera())
+	scrn.SetCameraMovementMap(CameraMovementMap())
+	scrn.SetRotateOnEdgeDistance(CameraDistance)
 
 	pointShader := shader.NewShader(baseDir()+"/shaders/point.vert", baseDir()+"/shaders/point.frag", glWrapper)
-	app.AddShader(pointShader)
+	scrn.AddShader(pointShader)
 	materialShader := shader.NewShader(baseDir()+"/shaders/material.vert", baseDir()+"/shaders/material.frag", glWrapper)
-	app.AddShader(materialShader)
+	scrn.AddShader(materialShader)
 	texColShader := shader.NewShader(baseDir()+"/shaders/texturecolor.vert", baseDir()+"/shaders/texturecolor.frag", glWrapper)
-	app.AddShader(texColShader)
+	scrn.AddShader(texColShader)
 	texMatShader := shader.NewShader(baseDir()+"/shaders/texturemat.vert", baseDir()+"/shaders/texturemat.frag", glWrapper)
-	app.AddShader(texMatShader)
-	app.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
-	app.AddPointLightSource(PointLightSource, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
-	app.AddSpotLightSource(SpotLightSource, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
+	scrn.AddShader(texMatShader)
+	scrn.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
+	scrn.AddPointLightSource(PointLightSource, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
+	scrn.AddSpotLightSource(SpotLightSource, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
 
 	if SingleDirectory {
 		Importer.Import()
@@ -208,10 +210,12 @@ func main() {
 			}
 		}
 	}
-	app.AddModelToShader(TexturedMaterialModel, texMatShader)
-	app.AddModelToShader(TexturedColorModel, texColShader)
-	app.AddModelToShader(MaterialModel, materialShader)
-	app.AddModelToShader(PointModel, pointShader)
+	scrn.AddModelToShader(TexturedMaterialModel, texMatShader)
+	scrn.AddModelToShader(TexturedColorModel, texColShader)
+	scrn.AddModelToShader(MaterialModel, materialShader)
+	scrn.AddModelToShader(PointModel, pointShader)
+	app.AddScreen(scrn)
+	app.ActivateScreen(scrn)
 
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)
