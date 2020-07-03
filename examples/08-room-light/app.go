@@ -33,6 +33,7 @@ const (
 	FontFile             = "/assets/fonts/Desyrel/desyrel.ttf"
 	LEFT_MOUSE_BUTTON    = glfw.MouseButtonLeft
 	MENU_BUTTON          = glfw.KeyM
+	TOGGLE_DOOR_BUTTON   = glfw.KeyC
 )
 
 var (
@@ -178,7 +179,7 @@ func Update() {
 		}
 		break
 	case *model.Room:
-		if ActiveApp.GetKeyState(glfw.KeyC) {
+		if ActiveApp.GetKeyState(TOGGLE_DOOR_BUTTON) {
 			room := mdl.(*model.Room)
 			room.PushDoorState()
 		}
