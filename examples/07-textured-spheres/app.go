@@ -14,6 +14,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/cuboid"
 	"github.com/akosgarai/playground_engine/pkg/primitives/sphere"
+	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/texture"
 	"github.com/akosgarai/playground_engine/pkg/window"
@@ -144,9 +145,10 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	app.SetCamera(CreateCamera())
-	app.SetCameraMovementMap(CameraMovementMap())
-	app.SetRotateOnEdgeDistance(CameraDistance)
+	scrn := screen.New()
+	scrn.SetCamera(CreateCamera())
+	scrn.SetCameraMovementMap(CameraMovementMap())
+	scrn.SetRotateOnEdgeDistance(CameraDistance)
 
 	PointLightSource = light.NewPointLight([4]mgl32.Vec3{
 		PointLightPosition,
@@ -156,11 +158,11 @@ func main() {
 		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
 
 	// Add the lightources to the application
-	app.AddPointLightSource(PointLightSource, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
+	scrn.AddPointLightSource(PointLightSource, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
 
 	// Define the shader application for the textured meshes.
 	shaderProgramTexture := shader.NewShader(baseDir()+"/shaders/texture.vert", baseDir()+"/shaders/texture.frag", glWrapper)
-	app.AddShader(shaderProgramTexture)
+	scrn.AddShader(shaderProgramTexture)
 
 	// sun texture
 	var sunTexture texture.Textures
@@ -177,10 +179,10 @@ func main() {
 	Earth.SetSpeed((float32(2) * float32(3.1415) * distance) / EarthRoundSpeed)
 	Earth.SetDirection((mgl32.Vec3{0, 0, 1}).Normalize())
 	TexModel.AddMesh(Earth)
-	app.AddModelToShader(TexModel, shaderProgramTexture)
+	scrn.AddModelToShader(TexModel, shaderProgramTexture)
 	// other planet texture
 	shaderProgramTextureMaterial := shader.NewShader(baseDir()+"/shaders/texturemat.vert", baseDir()+"/shaders/texturemat.frag", glWrapper)
-	app.AddShader(shaderProgramTextureMaterial)
+	scrn.AddShader(shaderProgramTextureMaterial)
 	var materialTexture texture.Textures
 	materialTexture.AddTexture(baseDir()+"/assets/venus.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.diffuse", glWrapper)
 	materialTexture.AddTexture(baseDir()+"/assets/venus.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.specular", glWrapper)
@@ -189,16 +191,18 @@ func main() {
 	MatPlanet.SetSpeed((float32(2) * float32(3.1415) * distance) / OtherPlanetRoundSpeed)
 	MatPlanet.SetDirection((mgl32.Vec3{0, 0, 1}).Normalize())
 	TexMatModel.AddMesh(MatPlanet)
-	app.AddModelToShader(TexMatModel, shaderProgramTextureMaterial)
+	scrn.AddModelToShader(TexMatModel, shaderProgramTextureMaterial)
 
 	shaderProgramCubeMap := shader.NewShader(baseDir()+"/shaders/cubeMap.vert", baseDir()+"/shaders/cubeMap.frag", glWrapper)
-	app.AddShader(shaderProgramCubeMap)
+	scrn.AddShader(shaderProgramCubeMap)
 	var cubeMapTexture texture.Textures
 	cubeMapTexture.AddCubeMapTexture(baseDir()+"/assets", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "skybox", glWrapper)
 	cubeMap := CubeMap(cubeMapTexture)
 	cubeMap.SetScale(mgl32.Vec3{100.0, 100.0, 100.0})
 	CmModel.AddMesh(cubeMap)
-	app.AddModelToShader(CmModel, shaderProgramCubeMap)
+	scrn.AddModelToShader(CmModel, shaderProgramCubeMap)
+	app.AddScreen(scrn)
+	app.ActivateScreen(scrn)
 
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)
