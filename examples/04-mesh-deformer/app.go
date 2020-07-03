@@ -11,6 +11,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/triangle"
+	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
@@ -100,13 +101,16 @@ func main() {
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	app.SetCamera(CreateCamera())
+	scrn := screen.New()
+	scrn.SetCamera(CreateCamera())
 
 	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
-	app.AddShader(shaderProgram)
+	scrn.AddShader(shaderProgram)
 
 	GenerateTriangles()
-	app.AddModelToShader(Model, shaderProgram)
+	scrn.AddModelToShader(Model, shaderProgram)
+	app.AddScreen(scrn)
+	app.ActivateScreen(scrn)
 
 	lastUpdate = time.Now().UnixNano()
 
