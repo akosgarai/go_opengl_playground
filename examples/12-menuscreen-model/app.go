@@ -32,7 +32,6 @@ const (
 	CameraDirectionSpeed = float32(0.050)
 	CameraDistance       = 0.1
 	LEFT_MOUSE_BUTTON    = glfw.MouseButtonLeft
-	MENU_BUTTON          = glfw.KeyM
 )
 
 var (
@@ -93,8 +92,7 @@ func Update() {
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
 	app.Update(delta)
-	if app.GetKeyState(MENU_BUTTON) {
-		app.ActivateScreen(MenuScreen)
+	if app.GetKeyState(application.ESCAPE) {
 		glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 		StartButton.Material = DefaultMaterial
 	}
@@ -185,7 +183,7 @@ func main() {
 		mgl32.Vec3{0.0, 0.0, 0.0},
 	}
 	StartableFonts.PrintTo("How are You?", -0.5, 0.2, -0.01, 3.0/float32(WindowWidth), glWrapper, Wall, cols2)
-	StartableFonts.PrintTo("Press m for Menu!", -0.7, -0.2, -0.01, 3.0/float32(WindowWidth), glWrapper, Wall, cols3)
+	StartableFonts.PrintTo("Press Esc for Menu!", -0.7, -0.2, -0.01, 3.0/float32(WindowWidth), glWrapper, Wall, cols3)
 	StartableFonts.PrintTo("Ken sent me!", -0.2, -0.75, -0.01, 3.0/float32(WindowWidth), glWrapper, Wall, cols1)
 	StartableFonts.SetTransparent(true)
 	AppScreen.AddModelToShader(StartableFonts, fontShader)
@@ -196,6 +194,7 @@ func main() {
 	lastUpdate = time.Now().UnixNano()
 	app.AddScreen(MenuScreen)
 	app.AddScreen(AppScreen)
+	app.MenuScreen(MenuScreen)
 	app.ActivateScreen(MenuScreen)
 
 	for !app.GetWindow().ShouldClose() {
