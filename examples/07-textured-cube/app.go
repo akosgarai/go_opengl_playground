@@ -8,6 +8,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/application"
 	"github.com/akosgarai/playground_engine/pkg/camera"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/interfaces"
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/cuboid"
@@ -89,6 +90,11 @@ func baseDir() string {
 	_, filename, _, _ := runtime.Caller(1)
 	return path.Dir(filename)
 }
+func setupApp(glWrapper interfaces.GLWrapper) {
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+}
 
 func main() {
 	runtime.LockOSThread()
@@ -111,12 +117,9 @@ func main() {
 	cube := GenerateCubeMesh(tex)
 	Model.AddMesh(cube)
 	scrn.AddModelToShader(Model, shaderProgram)
+	scrn.Setup(setupApp)
 	app.AddScreen(scrn)
 	app.ActivateScreen(scrn)
-
-	glWrapper.Enable(glwrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(glwrapper.LESS)
-	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	lastUpdate = time.Now().UnixNano()
 	// register keyboard button callback
@@ -125,7 +128,7 @@ func main() {
 	for !app.GetWindow().ShouldClose() {
 		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		Update()
-		app.Draw()
+		app.Draw(glWrapper)
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}

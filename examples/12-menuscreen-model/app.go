@@ -9,6 +9,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/application"
 	"github.com/akosgarai/playground_engine/pkg/camera"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/interfaces"
 	"github.com/akosgarai/playground_engine/pkg/material"
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
@@ -32,7 +33,6 @@ const (
 	CameraDirectionSpeed = float32(0.050)
 	CameraDistance       = 0.1
 	LEFT_MOUSE_BUTTON    = glfw.MouseButtonLeft
-	MENU_BUTTON          = glfw.KeyM
 )
 
 var (
@@ -93,11 +93,6 @@ func Update() {
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
 	app.Update(delta)
-	if app.GetKeyState(MENU_BUTTON) {
-		app.ActivateScreen(MenuScreen)
-		glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
-		StartButton.Material = DefaultMaterial
-	}
 	_, msh, distance := app.GetClosestModelMeshDistance()
 	switch msh.(type) {
 	case *mesh.TexturedMaterialMesh:
@@ -111,7 +106,6 @@ func Update() {
 				} else if tmMesh == StartButton {
 					fmt.Println("Start button has been pressed.\n")
 					app.ActivateScreen(AppScreen)
-					glWrapper.ClearColor(1.0, 1.0, 0.0, 1.0)
 				}
 			}
 		} else if distance < 1.8 && tmMesh == Wall {
@@ -122,6 +116,18 @@ func Update() {
 		break
 	}
 
+}
+func setupMenu(glWrapper interfaces.GLWrapper) {
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.Enable(glwrapper.BLEND)
+	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
+	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
+}
+func setupApp(glWrapper interfaces.GLWrapper) {
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.ClearColor(1.0, 1.0, 0.0, 1.0)
 }
 
 func main() {
@@ -155,11 +161,6 @@ func main() {
 	paperModel.AddMesh(ExitButton)
 	MenuScreen.AddModelToShader(paperModel, paperShader)
 
-	glWrapper.Enable(glwrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(glwrapper.LESS)
-	glWrapper.Enable(glwrapper.BLEND)
-	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
-	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 	StartableModel := model.New()
 	Wall = Paper(2, 2, mgl32.Vec3{-0.4, -0.3, -0.0})
 	Wall.RotateX(-90)
@@ -185,7 +186,7 @@ func main() {
 		mgl32.Vec3{0.0, 0.0, 0.0},
 	}
 	StartableFonts.PrintTo("How are You?", -0.5, 0.2, -0.01, 3.0/float32(WindowWidth), glWrapper, Wall, cols2)
-	StartableFonts.PrintTo("Press m for Menu!", -0.7, -0.2, -0.01, 3.0/float32(WindowWidth), glWrapper, Wall, cols3)
+	StartableFonts.PrintTo("Press Esc for Menu!", -0.7, -0.2, -0.01, 3.0/float32(WindowWidth), glWrapper, Wall, cols3)
 	StartableFonts.PrintTo("Ken sent me!", -0.2, -0.75, -0.01, 3.0/float32(WindowWidth), glWrapper, Wall, cols1)
 	StartableFonts.SetTransparent(true)
 	AppScreen.AddModelToShader(StartableFonts, fontShader)
@@ -194,14 +195,17 @@ func main() {
 	MenuFonts.SetTransparent(true)
 	MenuScreen.AddModelToShader(MenuFonts, fontShader)
 	lastUpdate = time.Now().UnixNano()
+	MenuScreen.Setup(setupMenu)
+	AppScreen.Setup(setupApp)
 	app.AddScreen(MenuScreen)
 	app.AddScreen(AppScreen)
+	app.MenuScreen(MenuScreen)
 	app.ActivateScreen(MenuScreen)
 
 	for !app.GetWindow().ShouldClose() {
 		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		Update()
-		app.Draw()
+		app.Draw(glWrapper)
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/application"
 	"github.com/akosgarai/playground_engine/pkg/camera"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/interfaces"
 	"github.com/akosgarai/playground_engine/pkg/light"
 	"github.com/akosgarai/playground_engine/pkg/material"
 	"github.com/akosgarai/playground_engine/pkg/mesh"
@@ -147,12 +148,8 @@ func Update() {
 	lastUpdate = nowNano
 	app.SetUniformFloat("time", float32(float64(nowNano-startTime)/float64(time.Second)))
 	app.Update(delta)
-	// MENU_BUTTON is pressed.
-	if app.GetKeyState(MENU_BUTTON) {
-		app.ActivateScreen(MenuScreen)
-		glWrapper.ClearColor(0.0, 1.0, 0.0, 1.0)
-		StartButton.Material = DefaultMaterial
-	}
+
+	StartButton.Material = DefaultMaterial
 	// Get closest stuff
 	mdl, msh, distance := app.GetClosestModelMeshDistance()
 	switch mdl.(type) {
@@ -170,7 +167,6 @@ func Update() {
 					} else if tmMesh == StartButton {
 						fmt.Println("Start button has been pressed.\n")
 						app.ActivateScreen(AppScreen)
-						glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 					}
 				}
 			} else {
@@ -209,6 +205,18 @@ func Paper(width, height float32, position mgl32.Vec3) *mesh.TexturedMaterialMes
 	msh.SetBoundingObject(bo)
 	msh.SetPosition(position)
 	return msh
+}
+func setupMenu(glWrapper interfaces.GLWrapper) {
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.Enable(glwrapper.BLEND)
+	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
+	glWrapper.ClearColor(0.0, 1.0, 0.0, 1.0)
+}
+func setupApp(glWrapper interfaces.GLWrapper) {
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 }
 
 func main() {
@@ -302,12 +310,7 @@ func main() {
 	//AppScreen.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
 	AppScreen.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
 	AppScreen.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
-
-	glWrapper.Enable(glwrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(glwrapper.LESS)
-	glWrapper.Enable(glwrapper.BLEND)
-	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
-	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
+	AppScreen.Setup(setupApp)
 
 	lastUpdate = time.Now().UnixNano()
 	startTime = lastUpdate
@@ -344,15 +347,17 @@ func main() {
 	MenuFonts.PrintTo(" - Exit - ", -0.4, -0.03, 0.01, 3.0/float32(WindowWidth), glWrapper, ExitButton, cols2)
 	MenuFonts.SetTransparent(true)
 	MenuScreen.AddModelToShader(MenuFonts, fontShader)
+	MenuScreen.Setup(setupMenu)
 
 	app.AddScreen(MenuScreen)
 	app.AddScreen(AppScreen)
+	app.MenuScreen(MenuScreen)
 	app.ActivateScreen(MenuScreen)
 
 	for !app.GetWindow().ShouldClose() {
 		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		Update()
-		app.Draw()
+		app.Draw(glWrapper)
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}

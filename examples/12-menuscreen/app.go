@@ -40,7 +40,6 @@ const (
 	CameraDirectionSpeed = float32(0.050)
 	CameraDistance       = 0.1
 	LEFT_MOUSE_BUTTON    = glfw.MouseButtonLeft
-	MENU_BUTTON          = glfw.KeyQ
 )
 
 var (
@@ -247,10 +246,6 @@ func Update() {
 	delta := float64(nowUnix-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowUnix
 	app.Update(delta)
-	if app.GetKeyState(MENU_BUTTON) {
-		app.ActivateScreen(MenuScreen)
-		glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
-	}
 	_, msh, distance := app.GetClosestModelMeshDistance()
 	switch msh.(type) {
 	case *mesh.TexturedMaterialMesh:
@@ -264,7 +259,6 @@ func Update() {
 				} else if tmMesh == StartButton {
 					fmt.Println("Start button has been pressed.\n")
 					app.ActivateScreen(AppScreen)
-					glWrapper.ClearColor(1.0, 1.0, 0.0, 1.0)
 				}
 			}
 		} else {
@@ -273,6 +267,18 @@ func Update() {
 		break
 	}
 
+}
+func setupMenu(glWrapper interfaces.GLWrapper) {
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.Enable(glwrapper.BLEND)
+	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
+	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
+}
+func setupApp(glWrapper interfaces.GLWrapper) {
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.ClearColor(1.0, 1.0, 0.0, 1.0)
 }
 
 func main() {
@@ -291,11 +297,6 @@ func main() {
 	paperShader := shader.NewShader(baseDir()+"/shaders/paper.vert", baseDir()+"/shaders/paper.frag", glWrapper)
 	MenuScreen.AddShader(paperShader)
 
-	glWrapper.Enable(glwrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(glwrapper.LESS)
-	glWrapper.Enable(glwrapper.BLEND)
-	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
-	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 	paperModel := model.New()
 	StartButton = Paper(1, 0.2, mgl32.Vec3{-0.0, 0.3, -0.0})
 	StartButton.RotateX(-90)
@@ -318,8 +319,11 @@ func main() {
 	Fonts.PrintTo(" - 2. option - ", -0.5, -0.03, 3.0/float32(WindowWidth), ExitButton, cols2)
 	Fonts.SetTransparent(true)
 	MenuScreen.AddModelToShader(Fonts, fontShader)
+	MenuScreen.Setup(setupMenu)
+	AppScreen.Setup(setupApp)
 	app.AddScreen(MenuScreen)
 	app.AddScreen(AppScreen)
+	app.MenuScreen(MenuScreen)
 	app.ActivateScreen(MenuScreen)
 
 	// register keyboard button callback
@@ -329,7 +333,7 @@ func main() {
 
 	for !app.GetWindow().ShouldClose() {
 		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
-		app.Draw()
+		app.Draw(glWrapper)
 		Update()
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
