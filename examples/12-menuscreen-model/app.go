@@ -196,7 +196,7 @@ func main() {
 	for !app.GetWindow().ShouldClose() {
 		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
 		Update()
-		app.Draw()
+		app.Draw(glWrapper)
 		glfw.PollEvents()
 		app.GetWindow().SwapBuffers()
 	}
