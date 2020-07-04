@@ -40,7 +40,6 @@ const (
 	CameraDirectionSpeed = float32(0.050)
 	CameraDistance       = 0.1
 	LEFT_MOUSE_BUTTON    = glfw.MouseButtonLeft
-	MENU_BUTTON          = glfw.KeyQ
 )
 
 var (
@@ -247,8 +246,7 @@ func Update() {
 	delta := float64(nowUnix-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowUnix
 	app.Update(delta)
-	if app.GetKeyState(MENU_BUTTON) {
-		app.ActivateScreen(MenuScreen)
+	if app.GetKeyState(application.ESCAPE) {
 		glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 	}
 	_, msh, distance := app.GetClosestModelMeshDistance()
@@ -320,6 +318,7 @@ func main() {
 	MenuScreen.AddModelToShader(Fonts, fontShader)
 	app.AddScreen(MenuScreen)
 	app.AddScreen(AppScreen)
+	app.MenuScreen(MenuScreen)
 	app.ActivateScreen(MenuScreen)
 
 	// register keyboard button callback

@@ -92,10 +92,6 @@ func Update() {
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
 	app.Update(delta)
-	if app.GetKeyState(application.ESCAPE) {
-		glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
-		StartButton.Material = DefaultMaterial
-	}
 	_, msh, distance := app.GetClosestModelMeshDistance()
 	switch msh.(type) {
 	case *mesh.TexturedMaterialMesh:
