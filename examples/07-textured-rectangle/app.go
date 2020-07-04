@@ -6,6 +6,7 @@ import (
 
 	"github.com/akosgarai/playground_engine/pkg/application"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/interfaces"
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
@@ -43,6 +44,11 @@ func baseDir() string {
 	_, filename, _, _ := runtime.Caller(1)
 	return path.Dir(filename)
 }
+func setupApp(glWrapper interfaces.GLWrapper) {
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
+}
 
 func main() {
 	runtime.LockOSThread()
@@ -61,12 +67,9 @@ func main() {
 	squareMesh.RotateX(90)
 	Model.AddMesh(squareMesh)
 	scrn.AddModelToShader(Model, shaderProgram)
+	scrn.Setup(setupApp)
 	app.AddScreen(scrn)
 	app.ActivateScreen(scrn)
-
-	glWrapper.Enable(glwrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(glwrapper.LESS)
-	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 
 	for !app.GetWindow().ShouldClose() {
 		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)

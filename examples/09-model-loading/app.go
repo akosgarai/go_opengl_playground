@@ -164,6 +164,12 @@ func baseDir() string {
 	return path.Dir(filename)
 }
 
+func setupApp(glWrapper interfaces.GLWrapper) {
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
+}
+
 func main() {
 	Init()
 	runtime.LockOSThread()
@@ -214,11 +220,10 @@ func main() {
 	scrn.AddModelToShader(TexturedColorModel, texColShader)
 	scrn.AddModelToShader(MaterialModel, materialShader)
 	scrn.AddModelToShader(PointModel, pointShader)
+	scrn.Setup(setupApp)
 	app.AddScreen(scrn)
 	app.ActivateScreen(scrn)
 
-	glWrapper.Enable(glwrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(glwrapper.LESS)
 	lastUpdate = time.Now().UnixNano()
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 

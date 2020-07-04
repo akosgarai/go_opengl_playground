@@ -9,6 +9,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/application"
 	"github.com/akosgarai/playground_engine/pkg/camera"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/interfaces"
 	"github.com/akosgarai/playground_engine/pkg/material"
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
@@ -105,7 +106,6 @@ func Update() {
 				} else if tmMesh == StartButton {
 					fmt.Println("Start button has been pressed.\n")
 					app.ActivateScreen(AppScreen)
-					glWrapper.ClearColor(1.0, 1.0, 0.0, 1.0)
 				}
 			}
 		} else if distance < 1.8 && tmMesh == Wall {
@@ -116,6 +116,18 @@ func Update() {
 		break
 	}
 
+}
+func setupMenu(glWrapper interfaces.GLWrapper) {
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.Enable(glwrapper.BLEND)
+	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
+	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
+}
+func setupApp(glWrapper interfaces.GLWrapper) {
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
+	glWrapper.ClearColor(1.0, 1.0, 0.0, 1.0)
 }
 
 func main() {
@@ -149,11 +161,6 @@ func main() {
 	paperModel.AddMesh(ExitButton)
 	MenuScreen.AddModelToShader(paperModel, paperShader)
 
-	glWrapper.Enable(glwrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(glwrapper.LESS)
-	glWrapper.Enable(glwrapper.BLEND)
-	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
-	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 	StartableModel := model.New()
 	Wall = Paper(2, 2, mgl32.Vec3{-0.4, -0.3, -0.0})
 	Wall.RotateX(-90)
@@ -188,6 +195,8 @@ func main() {
 	MenuFonts.SetTransparent(true)
 	MenuScreen.AddModelToShader(MenuFonts, fontShader)
 	lastUpdate = time.Now().UnixNano()
+	MenuScreen.Setup(setupMenu)
+	AppScreen.Setup(setupApp)
 	app.AddScreen(MenuScreen)
 	app.AddScreen(AppScreen)
 	app.MenuScreen(MenuScreen)

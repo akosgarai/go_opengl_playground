@@ -8,6 +8,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/application"
 	"github.com/akosgarai/playground_engine/pkg/camera"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
+	"github.com/akosgarai/playground_engine/pkg/interfaces"
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/triangle"
@@ -93,6 +94,11 @@ func baseDir() string {
 	return path.Dir(filename)
 }
 
+func setup(glWrapper interfaces.GLWrapper) {
+	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.DepthFunc(glwrapper.LESS)
+}
+
 func main() {
 	runtime.LockOSThread()
 
@@ -109,13 +115,11 @@ func main() {
 
 	GenerateTriangles()
 	scrn.AddModelToShader(Model, shaderProgram)
+	scrn.Setup(setup)
 	app.AddScreen(scrn)
 	app.ActivateScreen(scrn)
 
 	lastUpdate = time.Now().UnixNano()
-
-	glWrapper.Enable(glwrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(glwrapper.LESS)
 
 	for !app.GetWindow().ShouldClose() {
 		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
