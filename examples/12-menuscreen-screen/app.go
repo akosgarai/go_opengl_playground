@@ -131,7 +131,7 @@ func GameScreen() *screen.Screen {
 
 func main() {
 	runtime.LockOSThread()
-	app = application.New()
+	app = application.New(glWrapper)
 	Window := window.InitGlfw(WindowWidth, WindowHeight, WindowTitle)
 	app.SetWindow(Window)
 	defer glfw.Terminate()
