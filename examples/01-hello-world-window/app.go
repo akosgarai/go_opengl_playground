@@ -24,7 +24,7 @@ var (
 func main() {
 	runtime.LockOSThread()
 
-	app := application.New()
+	app := application.New(glWrapper)
 
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()

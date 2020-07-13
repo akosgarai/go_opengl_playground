@@ -284,7 +284,7 @@ func setupApp(glWrapper interfaces.GLWrapper) {
 func main() {
 	runtime.LockOSThread()
 	Window := window.InitGlfw(WindowWidth, WindowHeight, WindowTitle)
-	app = application.New()
+	app = application.New(glWrapper)
 	app.SetWindow(Window)
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()

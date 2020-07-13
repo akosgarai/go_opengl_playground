@@ -131,7 +131,7 @@ func GameScreen() *screen.Screen {
 
 func main() {
 	runtime.LockOSThread()
-	app = application.New()
+	app = application.New(glWrapper)
 	Window := window.InitGlfw(WindowWidth, WindowHeight, WindowTitle)
 	app.SetWindow(Window)
 	defer glfw.Terminate()
@@ -145,6 +145,23 @@ func main() {
 	var tex texture.Textures
 	tex.AddTexture(baseDir()+"/assets/paper.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "paper", glWrapper)
 	menu := screen.NewMenuScreen(tex, DefaultMaterial, HighlightMaterial, StartableFonts, mgl32.Vec3{1, 0, 0}, mgl32.Vec3{1, 0, 0}, glWrapper)
+	form := screen.NewFormScreen(material.Ruby, "Settings", glWrapper, float32(WindowWidth), float32(WindowHeight))
+	form.AddFormItemBool("Bool 01.", glWrapper)
+	form.AddFormItemBool("Bool 02.", glWrapper)
+	form.AddFormItemBool("Bool 03.", glWrapper)
+	form.AddFormItemInt("Int 04.", glWrapper)
+	form.AddFormItemInt("Int 05.", glWrapper)
+	form.AddFormItemInt("Int 06.", glWrapper)
+	form.AddFormItemBool("Bool 07.", glWrapper)
+	form.AddFormItemFloat("Float 08.", glWrapper)
+	form.AddFormItemFloat("Float 09.", glWrapper)
+	form.AddFormItemFloat("Float 10.", glWrapper)
+	form.AddFormItemText("Text 11.", glWrapper)
+	form.AddFormItemText("Text 12.", glWrapper)
+	form.AddFormItemText("Text 13.", glWrapper)
+	form.AddFormItemInt64("Int64 14.", glWrapper)
+	form.AddFormItemInt64("Int64 15.", glWrapper)
+	form.AddFormItemInt64("Int64 16.", glWrapper)
 	AppScreen = GameScreen()
 	contS := func(m map[string]bool) bool {
 		return m["world-started"]
@@ -164,6 +181,9 @@ func main() {
 		menu.SetState("world-started", true)
 		menu.BuildScreen(glWrapper, 3/float32(WindowWidth))
 	}
+	settingsEvent := func() {
+		app.ActivateScreen(form)
+	}
 	continueEvent := func() {
 		app.ActivateScreen(AppScreen)
 	}
@@ -176,14 +196,19 @@ func main() {
 	menu.AddOption(*start) // start
 	restart := screen.NewMenuScreenOption("restart", contS, restartEvent)
 	menu.AddOption(*restart) // restart
+	settings := screen.NewMenuScreenOption("settings", contAll, settingsEvent)
+	menu.AddOption(*settings) // settings
 	exit := screen.NewMenuScreenOption("exit", contAll, exitEvent)
 	menu.AddOption(*exit) // exit
 	menu.BuildScreen(glWrapper, 3/float32(WindowWidth))
 
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
+	app.SetWrapper(glWrapper)
+	app.GetWindow().SetCharCallback(app.CharCallback)
 	app.AddScreen(AppScreen)
 	app.AddScreen(menu)
+	app.AddScreen(form)
 	app.MenuScreen(menu)
 	app.ActivateScreen(menu)
 
