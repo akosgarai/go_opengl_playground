@@ -1,7 +1,7 @@
 github.com/akosgarai/coldet v0.0.0-20200702143610-ca4e38941f5b h1:SMV7bL/PVBsa/xZArFW4YhjAK5I6h29WIUJoO+B5TZs=
 github.com/akosgarai/coldet v0.0.0-20200702143610-ca4e38941f5b/go.mod h1:FqGHwfl9mPTGl9gjS9ZkgppWOnPMVoi/aS1gT7YlCco=
-github.com/akosgarai/playground_engine v0.0.0-20200713103829-b128d7ed6f4c h1:cy5/OzzzvLYFaHZtGA8eQJNhmPDJvJX6lQUwubb2S+8=
-github.com/akosgarai/playground_engine v0.0.0-20200713103829-b128d7ed6f4c/go.mod h1:K//CNu8J4dbsOrLAKxxqw4Y7QliaacgBhuQYbgnXcFc=
+github.com/akosgarai/playground_engine v0.0.0-20200714125733-647c440db42d h1:Sc/9VUID3bhHO09XKsD2jD6CJRBNPk/NaMZF18cv84Y=
+github.com/akosgarai/playground_engine v0.0.0-20200714125733-647c440db42d/go.mod h1:K//CNu8J4dbsOrLAKxxqw4Y7QliaacgBhuQYbgnXcFc=
 github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7 h1:SCYMcCJ89LjRGwEa0tRluNRiMjZHalQZrVrvTbPh+qw=
 github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7/go.mod h1:482civXOzJJCPzJ4ZOX/pwvXBWSnzD4OKMdH4ClKGbk=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200420212212-258d9bec320e h1:8ywu4ELC/6owgOZlZx75CyYS5AYwUT2L+hzPModKvag=
