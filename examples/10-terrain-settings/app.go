@@ -3,6 +3,7 @@ package main
 import (
 	"path"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/akosgarai/playground_engine/pkg/application"
@@ -82,7 +83,7 @@ func InitSettings() {
 	Settings.AddConfig("LiquidEta", &model.FormItemFloat{}, "0.75", "Leta (f)")
 	Settings.AddConfig("LiquidAmplitude", &model.FormItemFloat{}, "0.0625", "Lampl (f)")
 	Settings.AddConfig("LiquidFrequency", &model.FormItemFloat{}, "1.0", "LFreq (f)")
-	Settings.AddConfig("LiquidDetail", &model.FormItemInt{}, "10", "Detail (i)")
+	Settings.AddConfig("LiquidDetail", &model.FormItemInt{}, "10", "Ldetail (i)")
 	Settings.AddConfig("WaterLevel", &model.FormItemFloat{}, "0.25", "W Lev (f)")
 	Settings.AddConfig("LiquidTexture", &model.FormItemText{}, "Water", "Liq tex")
 	Settings.AddConfig("Debug", &model.FormItemBool{}, false, "Debug mode")
@@ -249,7 +250,9 @@ func createGame(preSets Conf, form *screen.FormScreen) *screen.Screen {
 	posY := form.GetFormItem(Settings["TerrainPosY"].Index).(*model.FormItemFloat).GetValue()
 	gb.SetPosition(mgl32.Vec3{0.0, posY, 0.0})
 	if form.GetFormItem(Settings["RandomSeed"].Index).(*model.FormItemBool).GetValue() {
-		gb.RandomSeed()
+		seed := gb.RandomSeed()
+		form.SetFormItemValue(Settings["Seed"].Index, strconv.FormatInt(seed, 10), glWrapper)
+		form.SetFormItemValue(Settings["RandomSeed"].Index, false, glWrapper)
 	} else {
 		gb.SetSeed(form.GetFormItem(Settings["Seed"].Index).(*model.FormItemInt64).GetValue())
 	}
