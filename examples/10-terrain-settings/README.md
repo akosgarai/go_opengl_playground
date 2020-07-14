@@ -1,6 +1,6 @@
 # Terrain generator
 
-This application generates a terrain. The TerrainBuilder is managable from the settings menu.
+This application generates a terrain. The TerrainBuilder is manageable from the settings menu.
 
 ## Settings menu
 
@@ -27,3 +27,5 @@ This application generates a terrain. The TerrainBuilder is managable from the s
 - **Bg R (f)** - It is the red component of the background color [0-1]
 - **Bg G (f)** - It is the green component of the background color [0-1]
 - **Bg B (f)** - It is the blue component of the background color [0-1]
+
+![Sample gif](./sample/sample.gif)
