@@ -87,9 +87,7 @@ func InitSettings() {
 	Settings.AddConfig("WaterLevel", &model.FormItemFloat{}, "0.25", "W Lev (f)")
 	Settings.AddConfig("LiquidTexture", &model.FormItemText{}, "Water", "Liq tex")
 	Settings.AddConfig("Debug", &model.FormItemBool{}, false, "Debug mode")
-	Settings.AddConfig("ClearR", &model.FormItemFloat{}, "1.0", "BG R (f)")
-	Settings.AddConfig("ClearG", &model.FormItemFloat{}, "0.0", "BG G (f)")
-	Settings.AddConfig("ClearB", &model.FormItemFloat{}, "0.0", "BG B (f)")
+	Settings.AddConfig("ClearCol", &model.FormItemVector{}, [3]string{"0.2", "0.3", "0.8"}, "BG color")
 }
 
 // Setup keymap for the camera movement
@@ -209,17 +207,9 @@ func createSettings(defaults Conf) *screen.FormScreen {
 		index := form.AddFormItemBool(defaults["Debug"].Label, glWrapper, defaults["Debug"].Default.(bool))
 		defaults["Debug"].Index = index
 	}
-	if _, ok := defaults["ClearR"]; ok {
-		index := form.AddFormItemFloat(defaults["ClearR"].Label, glWrapper, defaults["ClearR"].Default.(string), nil)
-		defaults["ClearR"].Index = index
-	}
-	if _, ok := defaults["ClearG"]; ok {
-		index := form.AddFormItemFloat(defaults["ClearG"].Label, glWrapper, defaults["ClearG"].Default.(string), nil)
-		defaults["ClearG"].Index = index
-	}
-	if _, ok := defaults["ClearB"]; ok {
-		index := form.AddFormItemFloat(defaults["ClearB"].Label, glWrapper, defaults["ClearB"].Default.(string), nil)
-		defaults["ClearB"].Index = index
+	if _, ok := defaults["ClearCol"]; ok {
+		index := form.AddFormItemVector(defaults["ClearCol"].Label, glWrapper, defaults["ClearCol"].Default.([3]string), func(f float32) bool { return f >= 0.0 && f <= 1.0 })
+		defaults["ClearCol"].Index = index
 	}
 	return form
 }
@@ -309,10 +299,8 @@ func setupApp(glWrapper interfaces.GLWrapper) {
 	glWrapper.DepthFunc(glwrapper.LESS)
 	glWrapper.Enable(glwrapper.BLEND)
 	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
-	r := SettingsScreen.GetFormItem(Settings["ClearR"].Index).(*model.FormItemFloat).GetValue()
-	g := SettingsScreen.GetFormItem(Settings["ClearG"].Index).(*model.FormItemFloat).GetValue()
-	b := SettingsScreen.GetFormItem(Settings["ClearB"].Index).(*model.FormItemFloat).GetValue()
-	glWrapper.ClearColor(r, g, b, 1.0)
+	col := SettingsScreen.GetFormItem(Settings["ClearCol"].Index).(*model.FormItemVector).GetValue()
+	glWrapper.ClearColor(col.X(), col.Y(), col.Z(), 1.0)
 }
 func Update() {
 	nowNano := time.Now().UnixNano()
