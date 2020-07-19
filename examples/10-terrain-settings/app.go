@@ -87,9 +87,7 @@ func InitSettings() {
 	Settings.AddConfig("WaterLevel", &model.FormItemFloat{}, "0.25", "W Lev (f)")
 	Settings.AddConfig("LiquidTexture", &model.FormItemText{}, "Water", "Liq tex")
 	Settings.AddConfig("Debug", &model.FormItemBool{}, false, "Debug mode")
-	Settings.AddConfig("ClearR", &model.FormItemFloat{}, "1.0", "BG R (f)")
-	Settings.AddConfig("ClearG", &model.FormItemFloat{}, "0.0", "BG G (f)")
-	Settings.AddConfig("ClearB", &model.FormItemFloat{}, "0.0", "BG B (f)")
+	Settings.AddConfig("ClearCol", &model.FormItemVector{}, [3]string{"0.2", "0.3", "0.8"}, "BG color")
 }
 
 // Setup keymap for the camera movement
@@ -130,43 +128,43 @@ func createMenu() *screen.MenuScreen {
 func createSettings(defaults Conf) *screen.FormScreen {
 	form := screen.NewFormScreen(material.Ruby, "Settings", glWrapper, float32(WindowWidth), float32(WindowHeight))
 	if _, ok := defaults["Width"]; ok {
-		index := form.AddFormItemInt(defaults["Width"].Label, glWrapper, defaults["Width"].Default.(string))
+		index := form.AddFormItemInt(defaults["Width"].Label, glWrapper, defaults["Width"].Default.(string), nil)
 		defaults["Width"].Index = index
 	}
 	if _, ok := defaults["Length"]; ok {
-		index := form.AddFormItemInt(defaults["Length"].Label, glWrapper, defaults["Length"].Default.(string))
+		index := form.AddFormItemInt(defaults["Length"].Label, glWrapper, defaults["Length"].Default.(string), nil)
 		defaults["Length"].Index = index
 	}
 	if _, ok := defaults["Iterations"]; ok {
-		index := form.AddFormItemInt(defaults["Iterations"].Label, glWrapper, defaults["Iterations"].Default.(string))
+		index := form.AddFormItemInt(defaults["Iterations"].Label, glWrapper, defaults["Iterations"].Default.(string), nil)
 		defaults["Iterations"].Index = index
 	}
 	if _, ok := defaults["Scale"]; ok {
-		index := form.AddFormItemFloat(defaults["Scale"].Label, glWrapper, defaults["Scale"].Default.(string))
+		index := form.AddFormItemFloat(defaults["Scale"].Label, glWrapper, defaults["Scale"].Default.(string), nil)
 		defaults["Scale"].Index = index
 	}
 	if _, ok := defaults["PeakProb"]; ok {
-		index := form.AddFormItemInt(defaults["PeakProb"].Label, glWrapper, defaults["PeakProb"].Default.(string))
+		index := form.AddFormItemInt(defaults["PeakProb"].Label, glWrapper, defaults["PeakProb"].Default.(string), nil)
 		defaults["PeakProb"].Index = index
 	}
 	if _, ok := defaults["CliffProb"]; ok {
-		index := form.AddFormItemInt(defaults["CliffProb"].Label, glWrapper, defaults["CliffProb"].Default.(string))
+		index := form.AddFormItemInt(defaults["CliffProb"].Label, glWrapper, defaults["CliffProb"].Default.(string), nil)
 		defaults["CliffProb"].Index = index
 	}
 	if _, ok := defaults["TerrainMinHeight"]; ok {
-		index := form.AddFormItemFloat(defaults["TerrainMinHeight"].Label, glWrapper, defaults["TerrainMinHeight"].Default.(string))
+		index := form.AddFormItemFloat(defaults["TerrainMinHeight"].Label, glWrapper, defaults["TerrainMinHeight"].Default.(string), nil)
 		defaults["TerrainMinHeight"].Index = index
 	}
 	if _, ok := defaults["TerrainMaxHeight"]; ok {
-		index := form.AddFormItemFloat(defaults["TerrainMaxHeight"].Label, glWrapper, defaults["TerrainMaxHeight"].Default.(string))
+		index := form.AddFormItemFloat(defaults["TerrainMaxHeight"].Label, glWrapper, defaults["TerrainMaxHeight"].Default.(string), nil)
 		defaults["TerrainMaxHeight"].Index = index
 	}
 	if _, ok := defaults["TerrainPosY"]; ok {
-		index := form.AddFormItemFloat(defaults["TerrainPosY"].Label, glWrapper, defaults["TerrainPosY"].Default.(string))
+		index := form.AddFormItemFloat(defaults["TerrainPosY"].Label, glWrapper, defaults["TerrainPosY"].Default.(string), nil)
 		defaults["TerrainPosY"].Index = index
 	}
 	if _, ok := defaults["Seed"]; ok {
-		index := form.AddFormItemInt64(defaults["Seed"].Label, glWrapper, defaults["Seed"].Default.(string))
+		index := form.AddFormItemInt64(defaults["Seed"].Label, glWrapper, defaults["Seed"].Default.(string), nil)
 		defaults["Seed"].Index = index
 	}
 	if _, ok := defaults["RandomSeed"]; ok {
@@ -174,7 +172,7 @@ func createSettings(defaults Conf) *screen.FormScreen {
 		defaults["RandomSeed"].Index = index
 	}
 	if _, ok := defaults["TerrainTexture"]; ok {
-		index := form.AddFormItemText(defaults["TerrainTexture"].Label, glWrapper, defaults["TerrainTexture"].Default.(string))
+		index := form.AddFormItemText(defaults["TerrainTexture"].Label, glWrapper, defaults["TerrainTexture"].Default.(string), nil)
 		defaults["TerrainTexture"].Index = index
 	}
 	if _, ok := defaults["NeedLiquid"]; ok {
@@ -182,44 +180,36 @@ func createSettings(defaults Conf) *screen.FormScreen {
 		defaults["NeedLiquid"].Index = index
 	}
 	if _, ok := defaults["LiquidEta"]; ok {
-		index := form.AddFormItemFloat(defaults["LiquidEta"].Label, glWrapper, defaults["LiquidEta"].Default.(string))
+		index := form.AddFormItemFloat(defaults["LiquidEta"].Label, glWrapper, defaults["LiquidEta"].Default.(string), nil)
 		defaults["LiquidEta"].Index = index
 	}
 	if _, ok := defaults["LiquidAmplitude"]; ok {
-		index := form.AddFormItemFloat(defaults["LiquidAmplitude"].Label, glWrapper, defaults["LiquidAmplitude"].Default.(string))
+		index := form.AddFormItemFloat(defaults["LiquidAmplitude"].Label, glWrapper, defaults["LiquidAmplitude"].Default.(string), nil)
 		defaults["LiquidAmplitude"].Index = index
 	}
 	if _, ok := defaults["LiquidFrequency"]; ok {
-		index := form.AddFormItemFloat(defaults["LiquidFrequency"].Label, glWrapper, defaults["LiquidFrequency"].Default.(string))
+		index := form.AddFormItemFloat(defaults["LiquidFrequency"].Label, glWrapper, defaults["LiquidFrequency"].Default.(string), nil)
 		defaults["LiquidFrequency"].Index = index
 	}
 	if _, ok := defaults["LiquidDetail"]; ok {
-		index := form.AddFormItemInt(defaults["LiquidDetail"].Label, glWrapper, defaults["LiquidDetail"].Default.(string))
+		index := form.AddFormItemInt(defaults["LiquidDetail"].Label, glWrapper, defaults["LiquidDetail"].Default.(string), nil)
 		defaults["LiquidDetail"].Index = index
 	}
 	if _, ok := defaults["WaterLevel"]; ok {
-		index := form.AddFormItemFloat(defaults["WaterLevel"].Label, glWrapper, defaults["WaterLevel"].Default.(string))
+		index := form.AddFormItemFloat(defaults["WaterLevel"].Label, glWrapper, defaults["WaterLevel"].Default.(string), nil)
 		defaults["WaterLevel"].Index = index
 	}
 	if _, ok := defaults["LiquidTexture"]; ok {
-		index := form.AddFormItemText(defaults["LiquidTexture"].Label, glWrapper, defaults["LiquidTexture"].Default.(string))
+		index := form.AddFormItemText(defaults["LiquidTexture"].Label, glWrapper, defaults["LiquidTexture"].Default.(string), nil)
 		defaults["LiquidTexture"].Index = index
 	}
 	if _, ok := defaults["Debug"]; ok {
 		index := form.AddFormItemBool(defaults["Debug"].Label, glWrapper, defaults["Debug"].Default.(bool))
 		defaults["Debug"].Index = index
 	}
-	if _, ok := defaults["ClearR"]; ok {
-		index := form.AddFormItemFloat(defaults["ClearR"].Label, glWrapper, defaults["ClearR"].Default.(string))
-		defaults["ClearR"].Index = index
-	}
-	if _, ok := defaults["ClearG"]; ok {
-		index := form.AddFormItemFloat(defaults["ClearG"].Label, glWrapper, defaults["ClearG"].Default.(string))
-		defaults["ClearG"].Index = index
-	}
-	if _, ok := defaults["ClearB"]; ok {
-		index := form.AddFormItemFloat(defaults["ClearB"].Label, glWrapper, defaults["ClearB"].Default.(string))
-		defaults["ClearB"].Index = index
+	if _, ok := defaults["ClearCol"]; ok {
+		index := form.AddFormItemVector(defaults["ClearCol"].Label, glWrapper, defaults["ClearCol"].Default.([3]string), func(f float32) bool { return f >= 0.0 && f <= 1.0 })
+		defaults["ClearCol"].Index = index
 	}
 	return form
 }
@@ -309,10 +299,8 @@ func setupApp(glWrapper interfaces.GLWrapper) {
 	glWrapper.DepthFunc(glwrapper.LESS)
 	glWrapper.Enable(glwrapper.BLEND)
 	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
-	r := SettingsScreen.GetFormItem(Settings["ClearR"].Index).(*model.FormItemFloat).GetValue()
-	g := SettingsScreen.GetFormItem(Settings["ClearG"].Index).(*model.FormItemFloat).GetValue()
-	b := SettingsScreen.GetFormItem(Settings["ClearB"].Index).(*model.FormItemFloat).GetValue()
-	glWrapper.ClearColor(r, g, b, 1.0)
+	col := SettingsScreen.GetFormItem(Settings["ClearCol"].Index).(*model.FormItemVector).GetValue()
+	glWrapper.ClearColor(col.X(), col.Y(), col.Z(), 1.0)
 }
 func Update() {
 	nowNano := time.Now().UnixNano()
