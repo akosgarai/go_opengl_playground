@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path"
 	"runtime"
 	"strconv"
@@ -35,18 +36,20 @@ const (
 )
 
 type Config struct {
-	FormItemType interface{}
+	FormItemType string
 	Index        int
 	Label        string
+	Description  string
 	Default      interface{}
 }
 type Conf map[string]*Config
 
-func (c Conf) AddConfig(name string, itemType interface{}, def interface{}, label string) {
+func (c Conf) AddConfig(name, description, label, itemType string, def interface{}) {
 	c[name] = &Config{}
 	c[name].Default = def
 	c[name].FormItemType = itemType
 	c[name].Label = label
+	c[name].Description = description
 }
 
 var (
@@ -67,27 +70,27 @@ var (
 )
 
 func InitSettings() {
-	Settings.AddConfig("Width", &model.FormItemInt{}, "4", "Rows (i)")
-	Settings.AddConfig("Length", &model.FormItemInt{}, "4", "Cols (i)")
-	Settings.AddConfig("Iterations", &model.FormItemInt{}, "10", "Iter (i)")
-	Settings.AddConfig("Scale", &model.FormItemFloat{}, "5.0", "Scale (f)")
-	Settings.AddConfig("PeakProb", &model.FormItemInt{}, "5", "Peak (i)")
-	Settings.AddConfig("CliffProb", &model.FormItemInt{}, "5", "Cliff (i)")
-	Settings.AddConfig("TerrainMinHeight", &model.FormItemFloat{}, "-1.0", "MinH (f)")
-	Settings.AddConfig("TerrainMaxHeight", &model.FormItemFloat{}, "3.0", "MaxH (f)")
-	Settings.AddConfig("TerrainPosY", &model.FormItemFloat{}, "1.003", "PosY (f)")
-	Settings.AddConfig("Seed", &model.FormItemInt64{}, "0", "Seed (i64)")
-	Settings.AddConfig("RandomSeed", &model.FormItemBool{}, false, "Rand Seed")
-	Settings.AddConfig("TerrainTexture", &model.FormItemText{}, "Grass", "Terr tex")
-	Settings.AddConfig("NeedLiquid", &model.FormItemBool{}, true, "Has Liquid")
-	Settings.AddConfig("LiquidEta", &model.FormItemFloat{}, "0.75", "Leta (f)")
-	Settings.AddConfig("LiquidAmplitude", &model.FormItemFloat{}, "0.0625", "Lampl (f)")
-	Settings.AddConfig("LiquidFrequency", &model.FormItemFloat{}, "1.0", "LFreq (f)")
-	Settings.AddConfig("LiquidDetail", &model.FormItemInt{}, "10", "Ldetail (i)")
-	Settings.AddConfig("WaterLevel", &model.FormItemFloat{}, "0.25", "W Lev (f)")
-	Settings.AddConfig("LiquidTexture", &model.FormItemText{}, "Water", "Liq tex")
-	Settings.AddConfig("Debug", &model.FormItemBool{}, false, "Debug mode")
-	Settings.AddConfig("ClearCol", &model.FormItemVector{}, [3]string{"0.2", "0.3", "0.8"}, "BG color")
+	Settings.AddConfig("Width", "The width / rows of the heightmap of the terrain.", "Rows (i)", "int", "4")
+	Settings.AddConfig("Length", "The length / columns of the heightmap of the terrain.", "Cols (i)", "int", "4")
+	Settings.AddConfig("Iterations", "The number of the iterations of the random height generation step.", "Iter (i)", "int", "10")
+	Settings.AddConfig("PeakProb", "The probability of a given map position will be a peak.", "Peak (i)", "int", "5")
+	Settings.AddConfig("CliffProb", "The probability of a given map position will be a cliff.", "Cliff (i)", "int", "5")
+	Settings.AddConfig("TerrainMinHeight", "The minimum height of the terrain surface.", "MinH (f)", "float", "-1.0")
+	Settings.AddConfig("TerrainMaxHeight", "The maximum height of the terrain surface.", "MaxH (f)", "float", "3.0")
+	Settings.AddConfig("TerrainScale", "The generated terrain is scaled with the components of this vector.", "Scale (f)", "vector", [3]string{"5.0", "1.0", "5.0"})
+	Settings.AddConfig("TerrainPos", "The center / middle point of the terrain mesh.", "PosY (f)", "vector", [3]string{"0.0", "1.003", "0.0"})
+	Settings.AddConfig("Seed", "This value is used as seed for the random number generation, if the random is not set.", "Seed (i64)", "int64", "0")
+	Settings.AddConfig("RandomSeed", "If this is set, the seed will be based on the current timestamp.", "Rand Seed", "bool", false)
+	Settings.AddConfig("TerrainTexture", "The texture of the terrain. Currently the 'Grass' is supported.", "Terr tex", "text", "Grass")
+	Settings.AddConfig("NeedLiquid", "If this is set, water will also be generated to the terrain.", "Has Liquid", "bool", true)
+	Settings.AddConfig("LiquidEta", "The refraction ratio between the air and the liquid surface.", "Leta (f)", "float", "0.75")
+	Settings.AddConfig("LiquidAmplitude", "The amplitude of the waves (sin wave) in the liquid surface", "Lampl (f)", "float", "0.0625")
+	Settings.AddConfig("LiquidFrequency", "The wavelengts of the waves of the liquid surface.", "LFreq (f)", "float", "1.0")
+	Settings.AddConfig("LiquidDetail", "The size of the liquid surface is the same as the terrain, but its height map is bigger this times.", "Ldetail (i)", "int", "10")
+	Settings.AddConfig("WaterLevel", "The water level of the liquid surface.", "W Lev (f)", "float", "0.25")
+	Settings.AddConfig("LiquidTexture", "The texture of the liquid surface. Currently the 'Water' is supported.", "Liq tex", "text", "Water")
+	Settings.AddConfig("Debug", "Turn debug mode on - off. Currently it does nothing.", "Debug mode", "bool", false)
+	Settings.AddConfig("ClearCol", "The clear color of the window. It is used as the color of the sky.", "BG color", "vector", [3]string{"0.2", "0.3", "0.8"})
 }
 
 // Setup keymap for the camera movement
@@ -127,89 +130,55 @@ func createMenu() *screen.MenuScreen {
 }
 func createSettings(defaults Conf) *screen.FormScreen {
 	form := screen.NewFormScreen(material.Ruby, "Settings", glWrapper, float32(WindowWidth), float32(WindowHeight))
-	if _, ok := defaults["Width"]; ok {
-		index := form.AddFormItemInt(defaults["Width"].Label, glWrapper, defaults["Width"].Default.(string), nil)
-		defaults["Width"].Index = index
+	formItemOrders := []string{
+		"Width", "Length",
+		"Iterations", "PeakProb",
+		"CliffProb", "TerrainMinHeight",
+		"TerrainMaxHeight",
+		"TerrainScale",
+		"TerrainPos",
+		"RandomSeed", "Seed",
+		"TerrainTexture",
+		"NeedLiquid", "LiquidEta",
+		"LiquidAmplitude", "LiquidFrequency",
+		"LiquidDetail", "WaterLevel",
+		"LiquidTexture",
+		"ClearCol",
+		"Debug",
 	}
-	if _, ok := defaults["Length"]; ok {
-		index := form.AddFormItemInt(defaults["Length"].Label, glWrapper, defaults["Length"].Default.(string), nil)
-		defaults["Length"].Index = index
-	}
-	if _, ok := defaults["Iterations"]; ok {
-		index := form.AddFormItemInt(defaults["Iterations"].Label, glWrapper, defaults["Iterations"].Default.(string), nil)
-		defaults["Iterations"].Index = index
-	}
-	if _, ok := defaults["Scale"]; ok {
-		index := form.AddFormItemFloat(defaults["Scale"].Label, glWrapper, defaults["Scale"].Default.(string), nil)
-		defaults["Scale"].Index = index
-	}
-	if _, ok := defaults["PeakProb"]; ok {
-		index := form.AddFormItemInt(defaults["PeakProb"].Label, glWrapper, defaults["PeakProb"].Default.(string), nil)
-		defaults["PeakProb"].Index = index
-	}
-	if _, ok := defaults["CliffProb"]; ok {
-		index := form.AddFormItemInt(defaults["CliffProb"].Label, glWrapper, defaults["CliffProb"].Default.(string), nil)
-		defaults["CliffProb"].Index = index
-	}
-	if _, ok := defaults["TerrainMinHeight"]; ok {
-		index := form.AddFormItemFloat(defaults["TerrainMinHeight"].Label, glWrapper, defaults["TerrainMinHeight"].Default.(string), nil)
-		defaults["TerrainMinHeight"].Index = index
-	}
-	if _, ok := defaults["TerrainMaxHeight"]; ok {
-		index := form.AddFormItemFloat(defaults["TerrainMaxHeight"].Label, glWrapper, defaults["TerrainMaxHeight"].Default.(string), nil)
-		defaults["TerrainMaxHeight"].Index = index
-	}
-	if _, ok := defaults["TerrainPosY"]; ok {
-		index := form.AddFormItemFloat(defaults["TerrainPosY"].Label, glWrapper, defaults["TerrainPosY"].Default.(string), nil)
-		defaults["TerrainPosY"].Index = index
-	}
-	if _, ok := defaults["Seed"]; ok {
-		index := form.AddFormItemInt64(defaults["Seed"].Label, glWrapper, defaults["Seed"].Default.(string), nil)
-		defaults["Seed"].Index = index
-	}
-	if _, ok := defaults["RandomSeed"]; ok {
-		index := form.AddFormItemBool(defaults["RandomSeed"].Label, glWrapper, defaults["RandomSeed"].Default.(bool))
-		defaults["RandomSeed"].Index = index
-	}
-	if _, ok := defaults["TerrainTexture"]; ok {
-		index := form.AddFormItemText(defaults["TerrainTexture"].Label, glWrapper, defaults["TerrainTexture"].Default.(string), nil)
-		defaults["TerrainTexture"].Index = index
-	}
-	if _, ok := defaults["NeedLiquid"]; ok {
-		index := form.AddFormItemBool(defaults["NeedLiquid"].Label, glWrapper, defaults["NeedLiquid"].Default.(bool))
-		defaults["NeedLiquid"].Index = index
-	}
-	if _, ok := defaults["LiquidEta"]; ok {
-		index := form.AddFormItemFloat(defaults["LiquidEta"].Label, glWrapper, defaults["LiquidEta"].Default.(string), nil)
-		defaults["LiquidEta"].Index = index
-	}
-	if _, ok := defaults["LiquidAmplitude"]; ok {
-		index := form.AddFormItemFloat(defaults["LiquidAmplitude"].Label, glWrapper, defaults["LiquidAmplitude"].Default.(string), nil)
-		defaults["LiquidAmplitude"].Index = index
-	}
-	if _, ok := defaults["LiquidFrequency"]; ok {
-		index := form.AddFormItemFloat(defaults["LiquidFrequency"].Label, glWrapper, defaults["LiquidFrequency"].Default.(string), nil)
-		defaults["LiquidFrequency"].Index = index
-	}
-	if _, ok := defaults["LiquidDetail"]; ok {
-		index := form.AddFormItemInt(defaults["LiquidDetail"].Label, glWrapper, defaults["LiquidDetail"].Default.(string), nil)
-		defaults["LiquidDetail"].Index = index
-	}
-	if _, ok := defaults["WaterLevel"]; ok {
-		index := form.AddFormItemFloat(defaults["WaterLevel"].Label, glWrapper, defaults["WaterLevel"].Default.(string), nil)
-		defaults["WaterLevel"].Index = index
-	}
-	if _, ok := defaults["LiquidTexture"]; ok {
-		index := form.AddFormItemText(defaults["LiquidTexture"].Label, glWrapper, defaults["LiquidTexture"].Default.(string), nil)
-		defaults["LiquidTexture"].Index = index
-	}
-	if _, ok := defaults["Debug"]; ok {
-		index := form.AddFormItemBool(defaults["Debug"].Label, glWrapper, defaults["Debug"].Default.(bool))
-		defaults["Debug"].Index = index
-	}
-	if _, ok := defaults["ClearCol"]; ok {
-		index := form.AddFormItemVector(defaults["ClearCol"].Label, glWrapper, defaults["ClearCol"].Default.([3]string), func(f float32) bool { return f >= 0.0 && f <= 1.0 })
-		defaults["ClearCol"].Index = index
+	for i := 0; i < len(formItemOrders); i++ {
+		itemName := formItemOrders[i]
+		if _, ok := defaults[itemName]; ok {
+			switch defaults[itemName].FormItemType {
+			case "text":
+				index := form.AddFormItemText(defaults[itemName].Label, defaults[itemName].Description, glWrapper, defaults[itemName].Default.(string), nil)
+				defaults[itemName].Index = index
+				break
+			case "int":
+				index := form.AddFormItemInt(defaults[itemName].Label, defaults[itemName].Description, glWrapper, defaults[itemName].Default.(string), nil)
+				defaults[itemName].Index = index
+				break
+			case "int64":
+				index := form.AddFormItemInt64(defaults[itemName].Label, defaults[itemName].Description, glWrapper, defaults[itemName].Default.(string), nil)
+				defaults[itemName].Index = index
+				break
+			case "bool":
+				index := form.AddFormItemBool(defaults[itemName].Label, defaults[itemName].Description, glWrapper, defaults[itemName].Default.(bool))
+				defaults[itemName].Index = index
+				break
+			case "float":
+				index := form.AddFormItemFloat(defaults[itemName].Label, defaults[itemName].Description, glWrapper, defaults[itemName].Default.(string), nil)
+				defaults[itemName].Index = index
+				break
+			case "vector":
+				index := form.AddFormItemVector(defaults[itemName].Label, defaults[itemName].Description, glWrapper, defaults[itemName].Default.([3]string), nil)
+				defaults[itemName].Index = index
+				break
+			default:
+				fmt.Printf("Unhandled form item type '%s'. (%#v)\n", defaults[itemName].FormItemType, defaults[itemName])
+				break
+			}
+		}
 	}
 	return form
 }
@@ -231,14 +200,12 @@ func createGame(preSets Conf, form *screen.FormScreen) *screen.Screen {
 	gb.SetWidth(form.GetFormItem(Settings["Width"].Index).(*model.FormItemInt).GetValue())
 	gb.SetLength(form.GetFormItem(Settings["Length"].Index).(*model.FormItemInt).GetValue())
 	gb.SetIterations(form.GetFormItem(Settings["Iterations"].Index).(*model.FormItemInt).GetValue())
-	scaleValue := form.GetFormItem(Settings["Scale"].Index).(*model.FormItemFloat).GetValue()
-	gb.SetScale(mgl32.Vec3{scaleValue, 1, scaleValue})
+	gb.SetScale(form.GetFormItem(Settings["TerrainScale"].Index).(*model.FormItemVector).GetValue())
 	gb.SetPeakProbability(form.GetFormItem(Settings["PeakProb"].Index).(*model.FormItemInt).GetValue())
 	gb.SetCliffProbability(form.GetFormItem(Settings["CliffProb"].Index).(*model.FormItemInt).GetValue())
 	gb.SetMinHeight(form.GetFormItem(Settings["TerrainMinHeight"].Index).(*model.FormItemFloat).GetValue())
 	gb.SetMaxHeight(form.GetFormItem(Settings["TerrainMaxHeight"].Index).(*model.FormItemFloat).GetValue())
-	posY := form.GetFormItem(Settings["TerrainPosY"].Index).(*model.FormItemFloat).GetValue()
-	gb.SetPosition(mgl32.Vec3{0.0, posY, 0.0})
+	gb.SetPosition(form.GetFormItem(Settings["TerrainPos"].Index).(*model.FormItemVector).GetValue())
 	if form.GetFormItem(Settings["RandomSeed"].Index).(*model.FormItemBool).GetValue() {
 		seed := gb.RandomSeed()
 		form.SetFormItemValue(Settings["Seed"].Index, strconv.FormatInt(seed, 10), glWrapper)
