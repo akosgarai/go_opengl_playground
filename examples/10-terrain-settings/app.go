@@ -29,10 +29,7 @@ const (
 	WindowTitle  = "Example - terrain generator with settings"
 	FontFile     = "/assets/fonts/Desyrel/desyrel.regular.ttf"
 
-	CameraMoveSpeed      = 0.005
-	CameraDirectionSpeed = float32(0.050)
-	CameraDistance       = 0.1
-	LEFT_MOUSE_BUTTON    = glfw.MouseButtonLeft
+	LEFT_MOUSE_BUTTON = glfw.MouseButtonLeft
 )
 
 type Config struct {
@@ -91,6 +88,24 @@ func InitSettings() {
 	Settings.AddConfig("LiquidTexture", "The texture of the liquid surface. Currently the 'Water' is supported.", "Liq tex", "text", "Water")
 	Settings.AddConfig("Debug", "Turn debug mode on - off. Currently it does nothing.", "Debug mode", "bool", false)
 	Settings.AddConfig("ClearCol", "The clear color of the window. It is used as the color of the sky.", "BG color", "vector", [3]string{"0.2", "0.3", "0.8"})
+	// camera options:
+	// - position
+	Settings.AddConfig("CameraPos", "The initial position of the camera.", "Cam position", "vector", [3]string{"0.0", "-0.5", "3.0"})
+	// - up direction
+	Settings.AddConfig("WorldUp", "The initial position of the camera.", "World up dir", "vector", [3]string{"0.0", "1.0", "0.0"})
+	// - pitch, yaw
+	Settings.AddConfig("CameraYaw", "The yaw (angle) of the camera. Rotation on the Z axis.", "Cam Yaw", "float", "-85.0")
+	Settings.AddConfig("CameraPitch", "The pitch (angle) of the camera. Rotation on the Y axis.", "Cam Pitch", "float", "0.0")
+	// - fov, far, near clip
+	Settings.AddConfig("CameraNear", "The near clip plane of the camera.", "Cam Near", "float", "0.001")
+	Settings.AddConfig("CameraFar", "The far clip plane of the camera.", "Cam Far", "float", "20.0")
+	Settings.AddConfig("CameraFov", "The field of view (angle) of the camera.", "Cam Fov", "float", "45.0")
+	// - move speed
+	Settings.AddConfig("CameraVelocity", "The movement velocity of the camera. If it moves, it moves with this speed.", "Cam Speed", "float", "0.005")
+	// - direction speed
+	Settings.AddConfig("CameraRotation", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", "Cam Rotate", "float", "0.0")
+	// - rotate on edge distance.
+	Settings.AddConfig("CameraRotationEdge", "The rotation cam be triggered if the mouse is near to the edge of the screen.", "Cam Edge", "float", "0.0")
 }
 
 // Setup keymap for the camera movement
@@ -109,8 +124,26 @@ func CameraMovementMap() map[string]glfw.Key {
 func CreateCamera() *camera.Camera {
 	camera := camera.NewCamera(mgl32.Vec3{0.0, -0.5, 3.0}, mgl32.Vec3{0, 1, 0}, -85.0, -0.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.001, 20.0)
-	camera.SetVelocity(CameraMoveSpeed)
-	camera.SetRotationStep(CameraDirectionSpeed)
+	camera.SetVelocity(0.005)
+	camera.SetRotationStep(0.050)
+	return camera
+}
+
+// It creates a new camera with the necessary setup from settings screen
+func CreateCameraFromSettings(preSets Conf, form *screen.FormScreen) *camera.Camera {
+	cameraPosition := form.GetFormItem(Settings["CameraPos"].Index).(*model.FormItemVector).GetValue()
+	worldUp := form.GetFormItem(Settings["WorldUp"].Index).(*model.FormItemVector).GetValue()
+	yawAngle := form.GetFormItem(Settings["CameraYaw"].Index).(*model.FormItemFloat).GetValue()
+	pitchAngle := form.GetFormItem(Settings["CameraPitch"].Index).(*model.FormItemFloat).GetValue()
+	fov := form.GetFormItem(Settings["CameraFov"].Index).(*model.FormItemFloat).GetValue()
+	near := form.GetFormItem(Settings["CameraNear"].Index).(*model.FormItemFloat).GetValue()
+	far := form.GetFormItem(Settings["CameraFar"].Index).(*model.FormItemFloat).GetValue()
+	moveSpeed := form.GetFormItem(Settings["CameraVelocity"].Index).(*model.FormItemFloat).GetValue()
+	directionSpeed := form.GetFormItem(Settings["CameraRotation"].Index).(*model.FormItemFloat).GetValue()
+	camera := camera.NewCamera(cameraPosition, worldUp, yawAngle, pitchAngle)
+	camera.SetupProjection(fov, float32(WindowWidth)/float32(WindowHeight), near, far)
+	camera.SetVelocity(moveSpeed)
+	camera.SetRotationStep(directionSpeed)
 	return camera
 }
 func baseDir() string {
@@ -145,6 +178,12 @@ func createSettings(defaults Conf) *screen.FormScreen {
 		"LiquidTexture",
 		"ClearCol",
 		"Debug",
+		"WorldUp",
+		"CameraPos",
+		"CameraYaw", "CameraPitch",
+		"CameraNear", "CameraFar",
+		"CameraFov", "CameraVelocity",
+		"CameraRotation", "CameraRotationEdge",
 	}
 	for i := 0; i < len(formItemOrders); i++ {
 		itemName := formItemOrders[i]
@@ -191,9 +230,9 @@ func createGame(preSets Conf, form *screen.FormScreen) *screen.Screen {
 	shaderProgramLiquid := shader.NewTextureShaderLiquidWithFog(glWrapper)
 	AppScreen.AddShader(shaderProgramLiquid)
 
-	AppScreen.SetCamera(CreateCamera())
+	AppScreen.SetCamera(CreateCameraFromSettings(preSets, form))
 	AppScreen.SetCameraMovementMap(CameraMovementMap())
-	AppScreen.SetRotateOnEdgeDistance(CameraDistance)
+	AppScreen.SetRotateOnEdgeDistance(form.GetFormItem(Settings["CameraRotationEdge"].Index).(*model.FormItemFloat).GetValue())
 
 	gb := model.NewTerrainBuilder()
 	// terrain related ones
