@@ -1,14 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"path"
 	"runtime"
-	"strconv"
 	"time"
 
 	"github.com/akosgarai/playground_engine/pkg/application"
 	"github.com/akosgarai/playground_engine/pkg/camera"
+	"github.com/akosgarai/playground_engine/pkg/config"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
 	"github.com/akosgarai/playground_engine/pkg/interfaces"
 	"github.com/akosgarai/playground_engine/pkg/light"
@@ -17,6 +16,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/texture"
+	"github.com/akosgarai/playground_engine/pkg/transformations"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -55,7 +55,7 @@ var (
 	glWrapper      glwrapper.Wrapper
 	lastUpdate     int64
 	startTime      int64
-	Settings       = make(Conf)
+	Settings       = config.New()
 
 	DefaultMaterial   = material.Jade
 	HighlightMaterial = material.Ruby
@@ -67,45 +67,45 @@ var (
 )
 
 func InitSettings() {
-	Settings.AddConfig("Width", "The width / rows of the heightmap of the terrain.", "Rows (i)", "int", "4")
-	Settings.AddConfig("Length", "The length / columns of the heightmap of the terrain.", "Cols (i)", "int", "4")
-	Settings.AddConfig("Iterations", "The number of the iterations of the random height generation step.", "Iter (i)", "int", "10")
-	Settings.AddConfig("PeakProb", "The probability of a given map position will be a peak.", "Peak (i)", "int", "5")
-	Settings.AddConfig("CliffProb", "The probability of a given map position will be a cliff.", "Cliff (i)", "int", "5")
-	Settings.AddConfig("TerrainMinHeight", "The minimum height of the terrain surface.", "MinH (f)", "float", "-1.0")
-	Settings.AddConfig("TerrainMaxHeight", "The maximum height of the terrain surface.", "MaxH (f)", "float", "3.0")
-	Settings.AddConfig("TerrainScale", "The generated terrain is scaled with the components of this vector.", "Scale (f)", "vector", [3]string{"5.0", "1.0", "5.0"})
-	Settings.AddConfig("TerrainPos", "The center / middle point of the terrain mesh.", "PosY (f)", "vector", [3]string{"0.0", "1.003", "0.0"})
-	Settings.AddConfig("Seed", "This value is used as seed for the random number generation, if the random is not set.", "Seed (i64)", "int64", "0")
-	Settings.AddConfig("RandomSeed", "If this is set, the seed will be based on the current timestamp.", "Rand Seed", "bool", false)
-	Settings.AddConfig("TerrainTexture", "The texture of the terrain. Currently the 'Grass' is supported.", "Terr tex", "text", "Grass")
-	Settings.AddConfig("NeedLiquid", "If this is set, water will also be generated to the terrain.", "Has Liquid", "bool", true)
-	Settings.AddConfig("LiquidEta", "The refraction ratio between the air and the liquid surface.", "Leta (f)", "float", "0.75")
-	Settings.AddConfig("LiquidAmplitude", "The amplitude of the waves (sin wave) in the liquid surface", "Lampl (f)", "float", "0.0625")
-	Settings.AddConfig("LiquidFrequency", "The wavelengts of the waves of the liquid surface.", "LFreq (f)", "float", "1.0")
-	Settings.AddConfig("LiquidDetail", "The size of the liquid surface is the same as the terrain, but its height map is bigger this times.", "Ldetail (i)", "int", "10")
-	Settings.AddConfig("WaterLevel", "The water level of the liquid surface.", "W Lev (f)", "float", "0.25")
-	Settings.AddConfig("LiquidTexture", "The texture of the liquid surface. Currently the 'Water' is supported.", "Liq tex", "text", "Water")
-	Settings.AddConfig("Debug", "Turn debug mode on - off. Currently it does nothing.", "Debug mode", "bool", false)
-	Settings.AddConfig("ClearCol", "The clear color of the window. It is used as the color of the sky.", "BG color", "vector", [3]string{"0.2", "0.3", "0.8"})
+	Settings.AddConfig("Width", "Rows (i)", "The width / rows of the heightmap of the terrain.", 4, nil)
+	Settings.AddConfig("Length", "Cols (i)", "The length / columns of the heightmap of the terrain.", 4, nil)
+	Settings.AddConfig("Iterations", "Iter (i)", "The number of the iterations of the random height generation step.", 10, nil)
+	Settings.AddConfig("PeakProb", "Peak (i)", "The probability of a given map position will be a peak.", 5, nil)
+	Settings.AddConfig("CliffProb", "Cliff (i)", "The probability of a given map position will be a cliff.", 5, nil)
+	Settings.AddConfig("TerrainMinHeight", "MinH (f)", "The minimum height of the terrain surface.", float32(-1.0), nil)
+	Settings.AddConfig("TerrainMaxHeight", "MaxH (f)", "The maximum height of the terrain surface.", float32(3.0), nil)
+	Settings.AddConfig("TerrainScale", "Scale (f)", "The generated terrain is scaled with the components of this vector.", mgl32.Vec3{5.0, 1.0, 5.0}, nil)
+	Settings.AddConfig("TerrainPos", "PosY (f)", "The center / middle point of the terrain mesh.", mgl32.Vec3{0.0, 1.003, 0.0}, nil)
+	Settings.AddConfig("Seed", "Seed (i64)", "This value is used as seed for the random number generation, if the random is not set.", int64(0), nil)
+	Settings.AddConfig("RandomSeed", "Rand Seed", "If this is set, the seed will be based on the current timestamp.", false, nil)
+	Settings.AddConfig("TerrainTexture", "Terr tex", "The texture of the terrain. Currently the 'Grass' is supported.", "Grass", nil)
+	Settings.AddConfig("NeedLiquid", "Has Liquid", "If this is set, water will also be generated to the terrain.", true, nil)
+	Settings.AddConfig("LiquidEta", "Leta (f)", "The refraction ratio between the air and the liquid surface.", float32(0.75), nil)
+	Settings.AddConfig("LiquidAmplitude", "Lampl (f)", "The amplitude of the waves (sin wave) in the liquid surface", float32(0.0625), nil)
+	Settings.AddConfig("LiquidFrequency", "LFreq (f)", "The wavelengts of the waves of the liquid surface.", float32(1.0), nil)
+	Settings.AddConfig("LiquidDetail", "Ldetail (i)", "The size of the liquid surface is the same as the terrain, but its height map is bigger this times.", 10, nil)
+	Settings.AddConfig("WaterLevel", "W Lev (f)", "The water level of the liquid surface.", float32(0.25), nil)
+	Settings.AddConfig("LiquidTexture", "Liq tex", "The texture of the liquid surface. Currently the 'Water' is supported.", "Water", nil)
+	Settings.AddConfig("Debug", "Debug mode", "Turn debug mode on - off. Currently it does nothing.", false, nil)
+	Settings.AddConfig("ClearCol", "BG color", "The clear color of the window. It is used as the color of the sky.", mgl32.Vec3{0.2, 0.3, 0.8}, nil)
 	// camera options:
 	// - position
-	Settings.AddConfig("CameraPos", "The initial position of the camera.", "Cam position", "vector", [3]string{"0.0", "-0.5", "3.0"})
+	Settings.AddConfig("CameraPos", "Cam position", "The initial position of the camera.", mgl32.Vec3{0.0, -0.5, 3.0}, nil)
 	// - up direction
-	Settings.AddConfig("WorldUp", "The initial position of the camera.", "World up dir", "vector", [3]string{"0.0", "1.0", "0.0"})
+	Settings.AddConfig("WorldUp", "World up dir", "The initial position of the camera.", mgl32.Vec3{0.0, 1.0, 0.0}, nil)
 	// - pitch, yaw
-	Settings.AddConfig("CameraYaw", "The yaw (angle) of the camera. Rotation on the Z axis.", "Cam Yaw", "float", "-85.0")
-	Settings.AddConfig("CameraPitch", "The pitch (angle) of the camera. Rotation on the Y axis.", "Cam Pitch", "float", "0.0")
+	Settings.AddConfig("CameraYaw", "Cam Yaw", "The yaw (angle) of the camera. Rotation on the Z axis.", float32(-85.0), nil)
+	Settings.AddConfig("CameraPitch", "Cam Pitch", "The pitch (angle) of the camera. Rotation on the Y axis.", float32(0.0), nil)
 	// - fov, far, near clip
-	Settings.AddConfig("CameraNear", "The near clip plane of the camera.", "Cam Near", "float", "0.001")
-	Settings.AddConfig("CameraFar", "The far clip plane of the camera.", "Cam Far", "float", "20.0")
-	Settings.AddConfig("CameraFov", "The field of view (angle) of the camera.", "Cam Fov", "float", "45.0")
+	Settings.AddConfig("CameraNear", "Cam Near", "The near clip plane of the camera.", float32(0.001), nil)
+	Settings.AddConfig("CameraFar", "Cam Far", "The far clip plane of the camera.", float32(20.0), nil)
+	Settings.AddConfig("CameraFov", "Cam Fov", "The field of view (angle) of the camera.", float32(45.0), nil)
 	// - move speed
-	Settings.AddConfig("CameraVelocity", "The movement velocity of the camera. If it moves, it moves with this speed.", "Cam Speed", "float", "0.005")
+	Settings.AddConfig("CameraVelocity", "Cam Speed", "The movement velocity of the camera. If it moves, it moves with this speed.", float32(0.005), nil)
 	// - direction speed
-	Settings.AddConfig("CameraRotation", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", "Cam Rotate", "float", "0.0")
+	Settings.AddConfig("CameraRotation", "Cam Rotate", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", float32(0.0), nil)
 	// - rotate on edge distance.
-	Settings.AddConfig("CameraRotationEdge", "The rotation cam be triggered if the mouse is near to the edge of the screen.", "Cam Edge", "float", "0.0")
+	Settings.AddConfig("CameraRotationEdge", "Cam Edge", "The rotation cam be triggered if the mouse is near to the edge of the screen.", float32(0.0), nil)
 }
 
 // Setup keymap for the camera movement
@@ -130,16 +130,16 @@ func CreateCamera() *camera.Camera {
 }
 
 // It creates a new camera with the necessary setup from settings screen
-func CreateCameraFromSettings(preSets Conf, form *screen.FormScreen) *camera.Camera {
-	cameraPosition := form.GetFormItem(Settings["CameraPos"].Index).(*model.FormItemVector).GetValue()
-	worldUp := form.GetFormItem(Settings["WorldUp"].Index).(*model.FormItemVector).GetValue()
-	yawAngle := form.GetFormItem(Settings["CameraYaw"].Index).(*model.FormItemFloat).GetValue()
-	pitchAngle := form.GetFormItem(Settings["CameraPitch"].Index).(*model.FormItemFloat).GetValue()
-	fov := form.GetFormItem(Settings["CameraFov"].Index).(*model.FormItemFloat).GetValue()
-	near := form.GetFormItem(Settings["CameraNear"].Index).(*model.FormItemFloat).GetValue()
-	far := form.GetFormItem(Settings["CameraFar"].Index).(*model.FormItemFloat).GetValue()
-	moveSpeed := form.GetFormItem(Settings["CameraVelocity"].Index).(*model.FormItemFloat).GetValue()
-	directionSpeed := form.GetFormItem(Settings["CameraRotation"].Index).(*model.FormItemFloat).GetValue()
+func CreateCameraFromSettings(conf config.Config) *camera.Camera {
+	cameraPosition := conf["CameraPos"].GetCurrentValue().(mgl32.Vec3)
+	worldUp := conf["WorldUp"].GetCurrentValue().(mgl32.Vec3)
+	yawAngle := conf["CameraYaw"].GetCurrentValue().(float32)
+	pitchAngle := conf["CameraPitch"].GetCurrentValue().(float32)
+	fov := conf["CameraFov"].GetCurrentValue().(float32)
+	near := conf["CameraNear"].GetCurrentValue().(float32)
+	far := conf["CameraFar"].GetCurrentValue().(float32)
+	moveSpeed := conf["CameraVelocity"].GetCurrentValue().(float32)
+	directionSpeed := conf["CameraRotation"].GetCurrentValue().(float32)
 	camera := camera.NewCamera(cameraPosition, worldUp, yawAngle, pitchAngle)
 	camera.SetupProjection(fov, float32(WindowWidth)/float32(WindowHeight), near, far)
 	camera.SetVelocity(moveSpeed)
@@ -161,8 +161,7 @@ func createMenu() *screen.MenuScreen {
 	tex.AddTexture(baseDir()+"/assets/paper.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "paper", glWrapper)
 	return screen.NewMenuScreen(tex, DefaultMaterial, HighlightMaterial, MenuFonts, mgl32.Vec3{1, 0, 0}, mgl32.Vec3{1, 0, 0}, glWrapper)
 }
-func createSettings(defaults Conf) *screen.FormScreen {
-	form := screen.NewFormScreen(material.Ruby, "Settings", glWrapper, float32(WindowWidth), float32(WindowHeight))
+func createSettings(defaults config.Config) *screen.FormScreen {
 	formItemOrders := []string{
 		"Width", "Length",
 		"Iterations", "PeakProb",
@@ -185,43 +184,16 @@ func createSettings(defaults Conf) *screen.FormScreen {
 		"CameraFov", "CameraVelocity",
 		"CameraRotation", "CameraRotationEdge",
 	}
-	for i := 0; i < len(formItemOrders); i++ {
-		itemName := formItemOrders[i]
-		if _, ok := defaults[itemName]; ok {
-			switch defaults[itemName].FormItemType {
-			case "text":
-				index := form.AddFormItemText(defaults[itemName].Label, defaults[itemName].Description, glWrapper, defaults[itemName].Default.(string), nil)
-				defaults[itemName].Index = index
-				break
-			case "int":
-				index := form.AddFormItemInt(defaults[itemName].Label, defaults[itemName].Description, glWrapper, defaults[itemName].Default.(string), nil)
-				defaults[itemName].Index = index
-				break
-			case "int64":
-				index := form.AddFormItemInt64(defaults[itemName].Label, defaults[itemName].Description, glWrapper, defaults[itemName].Default.(string), nil)
-				defaults[itemName].Index = index
-				break
-			case "bool":
-				index := form.AddFormItemBool(defaults[itemName].Label, defaults[itemName].Description, glWrapper, defaults[itemName].Default.(bool))
-				defaults[itemName].Index = index
-				break
-			case "float":
-				index := form.AddFormItemFloat(defaults[itemName].Label, defaults[itemName].Description, glWrapper, defaults[itemName].Default.(string), nil)
-				defaults[itemName].Index = index
-				break
-			case "vector":
-				index := form.AddFormItemVector(defaults[itemName].Label, defaults[itemName].Description, glWrapper, defaults[itemName].Default.([3]string), nil)
-				defaults[itemName].Index = index
-				break
-			default:
-				fmt.Printf("Unhandled form item type '%s'. (%#v)\n", defaults[itemName].FormItemType, defaults[itemName])
-				break
-			}
-		}
-	}
-	return form
+	builder := screen.NewFormScreenBuilder()
+	builder.SetWrapper(glWrapper)
+	builder.SetWindowSize(float32(WindowWidth), float32(WindowHeight))
+	builder.SetFrameMaterial(material.Ruby)
+	builder.SetHeaderLabel("Settings")
+	builder.SetConfig(Settings)
+	builder.SetConfigOrder(formItemOrders)
+	return builder.Build()
 }
-func createGame(preSets Conf, form *screen.FormScreen) *screen.Screen {
+func createGame(conf config.Config, form *screen.FormScreen) *screen.Screen {
 	AppScreen := screen.New()
 	// Shader application for the textured meshes.
 	shaderProgramTexture := shader.NewTextureShaderBlendingWithFog(glWrapper)
@@ -230,30 +202,30 @@ func createGame(preSets Conf, form *screen.FormScreen) *screen.Screen {
 	shaderProgramLiquid := shader.NewTextureShaderLiquidWithFog(glWrapper)
 	AppScreen.AddShader(shaderProgramLiquid)
 
-	AppScreen.SetCamera(CreateCameraFromSettings(preSets, form))
+	AppScreen.SetCamera(CreateCameraFromSettings(conf))
 	AppScreen.SetCameraMovementMap(CameraMovementMap())
-	AppScreen.SetRotateOnEdgeDistance(form.GetFormItem(Settings["CameraRotationEdge"].Index).(*model.FormItemFloat).GetValue())
+	AppScreen.SetRotateOnEdgeDistance(conf["CameraRotationEdge"].GetCurrentValue().(float32))
 
 	gb := model.NewTerrainBuilder()
 	// terrain related ones
-	gb.SetWidth(form.GetFormItem(Settings["Width"].Index).(*model.FormItemInt).GetValue())
-	gb.SetLength(form.GetFormItem(Settings["Length"].Index).(*model.FormItemInt).GetValue())
-	gb.SetIterations(form.GetFormItem(Settings["Iterations"].Index).(*model.FormItemInt).GetValue())
-	gb.SetScale(form.GetFormItem(Settings["TerrainScale"].Index).(*model.FormItemVector).GetValue())
-	gb.SetPeakProbability(form.GetFormItem(Settings["PeakProb"].Index).(*model.FormItemInt).GetValue())
-	gb.SetCliffProbability(form.GetFormItem(Settings["CliffProb"].Index).(*model.FormItemInt).GetValue())
-	gb.SetMinHeight(form.GetFormItem(Settings["TerrainMinHeight"].Index).(*model.FormItemFloat).GetValue())
-	gb.SetMaxHeight(form.GetFormItem(Settings["TerrainMaxHeight"].Index).(*model.FormItemFloat).GetValue())
-	gb.SetPosition(form.GetFormItem(Settings["TerrainPos"].Index).(*model.FormItemVector).GetValue())
-	if form.GetFormItem(Settings["RandomSeed"].Index).(*model.FormItemBool).GetValue() {
+	gb.SetWidth(conf["Width"].GetCurrentValue().(int))
+	gb.SetLength(conf["Length"].GetCurrentValue().(int))
+	gb.SetIterations(conf["Iterations"].GetCurrentValue().(int))
+	gb.SetScale(conf["TerrainScale"].GetCurrentValue().(mgl32.Vec3))
+	gb.SetPeakProbability(conf["PeakProb"].GetCurrentValue().(int))
+	gb.SetCliffProbability(conf["CliffProb"].GetCurrentValue().(int))
+	gb.SetMinHeight(conf["TerrainMinHeight"].GetCurrentValue().(float32))
+	gb.SetMaxHeight(conf["TerrainMaxHeight"].GetCurrentValue().(float32))
+	gb.SetPosition(conf["TerrainPos"].GetCurrentValue().(mgl32.Vec3))
+	if conf["RandomSeed"].GetCurrentValue().(bool) {
 		seed := gb.RandomSeed()
-		form.SetFormItemValue(Settings["Seed"].Index, strconv.FormatInt(seed, 10), glWrapper)
-		form.SetFormItemValue(Settings["RandomSeed"].Index, false, glWrapper)
+		form.SetFormItemValue(form.GetFormItem("Seed"), transformations.Integer64ToString(seed))
+		form.SetFormItemValue(form.GetFormItem("RandomSeed"), false)
 	} else {
-		gb.SetSeed(form.GetFormItem(Settings["Seed"].Index).(*model.FormItemInt64).GetValue())
+		gb.SetSeed(conf["Seed"].GetCurrentValue().(int64))
 	}
 	gb.SetGlWrapper(glWrapper)
-	switch form.GetFormItem(Settings["TerrainTexture"].Index).(*model.FormItemText).GetValue() {
+	switch conf["TerrainTexture"].GetCurrentValue().(string) {
 	case "Grass", "grass", "GRASS":
 		gb.SurfaceTextureGrass()
 		break
@@ -261,16 +233,16 @@ func createGame(preSets Conf, form *screen.FormScreen) *screen.Screen {
 		gb.SurfaceTextureGrass()
 		break
 	}
-	if form.GetFormItem(Settings["Debug"].Index).(*model.FormItemBool).GetValue() {
-		gb.SetDebugMode(false)
+	if conf["Debug"].GetCurrentValue().(bool) {
+		gb.SetDebugMode(true)
 	}
-	if form.GetFormItem(Settings["NeedLiquid"].Index).(*model.FormItemBool).GetValue() {
-		gb.SetLiquidEta(form.GetFormItem(Settings["LiquidEta"].Index).(*model.FormItemFloat).GetValue())
-		gb.SetLiquidAmplitude(form.GetFormItem(Settings["LiquidAmplitude"].Index).(*model.FormItemFloat).GetValue())
-		gb.SetLiquidFrequency(form.GetFormItem(Settings["LiquidFrequency"].Index).(*model.FormItemFloat).GetValue())
-		gb.SetLiquidDetailMultiplier(form.GetFormItem(Settings["LiquidDetail"].Index).(*model.FormItemInt).GetValue())
-		gb.SetLiquidWaterLevel(form.GetFormItem(Settings["WaterLevel"].Index).(*model.FormItemFloat).GetValue())
-		switch form.GetFormItem(Settings["LiquidTexture"].Index).(*model.FormItemText).GetValue() {
+	if conf["NeedLiquid"].GetCurrentValue().(bool) {
+		gb.SetLiquidEta(conf["LiquidEta"].GetCurrentValue().(float32))
+		gb.SetLiquidAmplitude(conf["LiquidAmplitude"].GetCurrentValue().(float32))
+		gb.SetLiquidFrequency(conf["LiquidFrequency"].GetCurrentValue().(float32))
+		gb.SetLiquidDetailMultiplier(conf["LiquidDetail"].GetCurrentValue().(int))
+		gb.SetLiquidWaterLevel(conf["WaterLevel"].GetCurrentValue().(float32))
+		switch conf["LiquidTexture"].GetCurrentValue().(string) {
 		case "Water", "water", "WATER":
 			gb.LiquidTextureWater()
 			break
@@ -305,7 +277,7 @@ func setupApp(glWrapper interfaces.GLWrapper) {
 	glWrapper.DepthFunc(glwrapper.LESS)
 	glWrapper.Enable(glwrapper.BLEND)
 	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
-	col := SettingsScreen.GetFormItem(Settings["ClearCol"].Index).(*model.FormItemVector).GetValue()
+	col := Settings["ClearCol"].GetCurrentValue().(mgl32.Vec3)
 	glWrapper.ClearColor(col.X(), col.Y(), col.Z(), 1.0)
 }
 func Update() {
