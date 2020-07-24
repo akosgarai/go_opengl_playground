@@ -145,23 +145,31 @@ func main() {
 	var tex texture.Textures
 	tex.AddTexture(baseDir()+"/assets/paper.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "paper", glWrapper)
 	menu := screen.NewMenuScreen(tex, DefaultMaterial, HighlightMaterial, StartableFonts, mgl32.Vec3{1, 0, 0}, mgl32.Vec3{1, 0, 0}, glWrapper)
-	form := screen.NewFormScreen(material.Ruby, "Settings", glWrapper, float32(WindowWidth), float32(WindowHeight))
-	form.AddFormItemBool("Bool 01.", "Bool 01 description. This is a long description. A super long one. This is a long description. A super long one. This is a long description. A super long one.", glWrapper, true)
-	form.AddFormItemBool("Bool 02.", "Bool 02 description", glWrapper, false)
-	form.AddFormItemBool("Bool 03.", "Bool 03 description", glWrapper, false)
-	form.AddFormItemInt("Int 04.", "Int 04 description", glWrapper, 0, nil)
-	form.AddFormItemInt("Int 05.", "Int 05 description", glWrapper, 12, nil)
-	form.AddFormItemInt("Int 06.", "Int 06 description", glWrapper, -3, nil)
-	form.AddFormItemBool("Bool 07.", "Bool 07 description", glWrapper, true)
-	form.AddFormItemFloat("Float 08.", "Float 08 description", glWrapper, 0.0, nil)
-	form.AddFormItemFloat("Float 09.", "Float 09 description", glWrapper, 1.876, nil)
-	form.AddFormItemFloat("Float 10.", "Float 10 description", glWrapper, -0.44, nil)
-	form.AddFormItemText("Text 11.", "Text 11 description", glWrapper, "Some", nil)
-	form.AddFormItemText("Text 12.", "Text 12 description", glWrapper, "sample", nil)
-	form.AddFormItemText("Text 13.", "Text 13 description", glWrapper, "text", nil)
-	form.AddFormItemInt64("Int64 14.", "Int64 14 description", glWrapper, 0, nil)
-	form.AddFormItemInt64("Int64 15.", "Int64 15 description", glWrapper, 1231234, nil)
-	form.AddFormItemInt64("Int64 16.", "Int64 16 description", glWrapper, -1239876, nil)
+	builder := screen.NewFormScreenBuilder()
+	builder.SetWrapper(glWrapper)
+	builder.SetWindowSize(float32(WindowWidth), float32(WindowHeight))
+	builder.SetFrameMaterial(material.Ruby)
+	builder.SetHeaderLabel("Settings Screen")
+	formItemOrders := []string{
+		builder.AddConfigBool("Bool 01.", "Bool 01 description. This is a long description. A super long one. This is a long description. A super long one. This is a long description. A super long one.", true),
+		builder.AddConfigBool("Bool 02.", "Bool 02 description", false),
+		builder.AddConfigBool("Bool 03.", "Bool 03 description", false),
+		builder.AddConfigInt("Int 04.", "Int 04 description", 0, nil),
+		builder.AddConfigInt("Int 05.", "Int 05 description", 12, nil),
+		builder.AddConfigInt("Int 06.", "Int 06 description", -3, nil),
+		builder.AddConfigBool("Bool 07.", "Bool 07 description", true),
+		builder.AddConfigFloat("Float 08.", "Float 08 description", 0.0, nil),
+		builder.AddConfigFloat("Float 09.", "Float 09 description", 1.876, nil),
+		builder.AddConfigFloat("Float 10.", "Float 10 description", -0.44, nil),
+		builder.AddConfigText("Text 11.", "Text 11 description", "Some", nil),
+		builder.AddConfigText("Text 12.", "Text 12 description", "sample", nil),
+		builder.AddConfigText("Text 13.", "Text 13 description", "text", nil),
+		builder.AddConfigInt64("Int64 14.", "Int64 14 description", 0, nil),
+		builder.AddConfigInt64("Int64 15.", "Int64 15 description", 1231234, nil),
+		builder.AddConfigInt64("Int64 16.", "Int64 16 description", -1239876, nil),
+	}
+	builder.SetConfigOrder(formItemOrders)
+	form := builder.Build()
 	AppScreen = GameScreen()
 	contS := func(m map[string]bool) bool {
 		return m["world-started"]
