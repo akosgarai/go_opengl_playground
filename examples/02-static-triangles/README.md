@@ -2,4 +2,20 @@
 
 This application draws triangles to the screen. It hasn't any mouse or keyboard control, just the image on the screen.
 
-![Sample image](./sample/sample.png)
+The application could be started with a settings screen, where the triangle and the background colors could be set.
+
+How to run the application (if you are in the main directory):
+
+- without settings:
+
+```
+go run examples/02-static-triangle/app.go
+```
+
+![Sample image app without settings](./sample/sample.png)
+
+- with settings:
+
+```
+SETTINGS=on go run examples/02-static-triangle/app.go
+```
