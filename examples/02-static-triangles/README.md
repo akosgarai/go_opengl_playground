@@ -9,7 +9,7 @@ How to run the application (if you are in the main directory):
 - without settings:
 
 ```
-go run examples/02-static-triangle/app.go
+go run examples/02-static-triangles/app.go
 ```
 
 ![Sample image app without settings](./sample/sample.png)
@@ -17,7 +17,7 @@ go run examples/02-static-triangle/app.go
 - with settings:
 
 ```
-SETTINGS=on go run examples/02-static-triangle/app.go
+SETTINGS=on go run examples/02-static-triangles/app.go
 ```
 
 In settings mode, the `escape` key displays the menu screen, where the main screen could be started / continued / restarted with the latest settings. The settings page and exit function also available from the menu screen.
