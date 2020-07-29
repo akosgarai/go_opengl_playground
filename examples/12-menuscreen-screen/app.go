@@ -35,10 +35,12 @@ const (
 )
 
 var (
-	app        *application.Application
-	AppScreen  *screen.Screen
-	glWrapper  glwrapper.Wrapper
-	lastUpdate int64
+	app            *application.Application
+	SettingsScreen *screen.FormScreen
+	MenuScreen     *screen.MenuScreen
+	AppScreen      *screen.Screen
+	glWrapper      glwrapper.Wrapper
+	lastUpdate     int64
 
 	DefaultMaterial   = material.Jade
 	HighlightMaterial = material.Ruby
@@ -128,23 +130,68 @@ func GameScreen() *screen.Screen {
 	gameScreen.AddModelToShader(StartableFonts, fgShaderApplication)
 	return gameScreen
 }
+func createMenu() *screen.MenuScreen {
+	var tex texture.Textures
+	tex.AddTexture(baseDir()+"/assets/paper.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "paper", glWrapper)
+	builder := screen.NewMenuScreenBuilder()
+	builder.SetWrapper(glWrapper)
+	builder.SetWindowSize(float32(WindowWidth), float32(WindowHeight))
+	builder.SetFrameMaterial(DefaultMaterial)
+	builder.SetBackgroundColor(DefaultMaterial.GetAmbient())
+	builder.SetMenuItemSurfaceTexture(tex)
+	builder.SetMenuItemDefaultMaterial(DefaultMaterial)
+	builder.SetMenuItemHighlightMaterial(HighlightMaterial)
+	builder.SetMenuItemFontColor(mgl32.Vec3{0, 0, 0})
 
-func main() {
-	runtime.LockOSThread()
-	app = application.New(glWrapper)
-	Window := window.InitGlfw(WindowWidth, WindowHeight, WindowTitle)
-	app.SetWindow(Window)
-	defer glfw.Terminate()
-	glWrapper.InitOpenGL()
-
-	StartableFonts, err := model.LoadCharset(baseDir()+FontFile, 32, 127, 40.0, 72, glWrapper)
+	MenuFonts, err := model.LoadCharset(baseDir()+FontFile, 32, 127, 40.0, 72, glWrapper)
 	if err != nil {
 		panic(err)
 	}
-	StartableFonts.SetTransparent(true)
-	var tex texture.Textures
-	tex.AddTexture(baseDir()+"/assets/paper.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "paper", glWrapper)
-	menu := screen.NewMenuScreen(tex, DefaultMaterial, HighlightMaterial, StartableFonts, mgl32.Vec3{1, 0, 0}, mgl32.Vec3{1, 0, 0}, glWrapper)
+	MenuFonts.SetTransparent(true)
+	builder.SetCharset(MenuFonts)
+	contS := func(m map[string]bool) bool {
+		return m["world-started"]
+	}
+	contNS := func(m map[string]bool) bool {
+		return !m["world-started"]
+	}
+	contAll := func(m map[string]bool) bool {
+		return true
+	}
+	restartEvent := func() {
+		lastUpdate = time.Now().UnixNano()
+		AppScreen = GameScreen()
+		app.ActivateScreen(AppScreen)
+	}
+	startEvent := func() {
+		lastUpdate = time.Now().UnixNano()
+		AppScreen = GameScreen()
+		app.ActivateScreen(AppScreen)
+		MenuScreen.SetState("world-started", true)
+		MenuScreen.BuildScreen()
+	}
+	settingsEvent := func() {
+		app.ActivateScreen(SettingsScreen)
+	}
+	continueEvent := func() {
+		app.ActivateScreen(AppScreen)
+	}
+	exitEvent := func() {
+		app.GetWindow().SetShouldClose(true)
+	}
+	cont := screen.NewMenuScreenOption("continue", contS, continueEvent)
+	builder.AddOption(*cont) // continue
+	start := screen.NewMenuScreenOption("start", contNS, startEvent)
+	builder.AddOption(*start) // start
+	restart := screen.NewMenuScreenOption("restart", contS, restartEvent)
+	builder.AddOption(*restart) // restart
+	settings := screen.NewMenuScreenOption("settings", contAll, settingsEvent)
+	builder.AddOption(*settings) // settings
+	exit := screen.NewMenuScreenOption("exit", contAll, exitEvent)
+	builder.AddOption(*exit) // exit
+	return builder.Build()
+}
+func createSettings() *screen.FormScreen {
 	builder := screen.NewFormScreenBuilder()
 	builder.SetWrapper(glWrapper)
 	builder.SetWindowSize(float32(WindowWidth), float32(WindowHeight))
@@ -169,56 +216,30 @@ func main() {
 		builder.AddConfigInt64("Int64 16.", "Int64 16 description", -1239876, nil),
 	}
 	builder.SetConfigOrder(formItemOrders)
-	form := builder.Build()
+	return builder.Build()
+}
+
+func main() {
+	runtime.LockOSThread()
+	app = application.New(glWrapper)
+	Window := window.InitGlfw(WindowWidth, WindowHeight, WindowTitle)
+	app.SetWindow(Window)
+	defer glfw.Terminate()
+	glWrapper.InitOpenGL()
+
+	MenuScreen = createMenu()
+	SettingsScreen = createSettings()
 	AppScreen = GameScreen()
-	contS := func(m map[string]bool) bool {
-		return m["world-started"]
-	}
-	contNS := func(m map[string]bool) bool {
-		return !m["world-started"]
-	}
-	contAll := func(m map[string]bool) bool {
-		return true
-	}
-	restartEvent := func() {
-		AppScreen.SetCamera(CreateCamera())
-		app.ActivateScreen(AppScreen)
-	}
-	startEvent := func() {
-		app.ActivateScreen(AppScreen)
-		menu.SetState("world-started", true)
-		menu.BuildScreen(glWrapper, 3/float32(WindowWidth))
-	}
-	settingsEvent := func() {
-		app.ActivateScreen(form)
-	}
-	continueEvent := func() {
-		app.ActivateScreen(AppScreen)
-	}
-	exitEvent := func() {
-		app.GetWindow().SetShouldClose(true)
-	}
-	cont := screen.NewMenuScreenOption("continue", contS, continueEvent)
-	menu.AddOption(*cont) // continue
-	start := screen.NewMenuScreenOption("start", contNS, startEvent)
-	menu.AddOption(*start) // start
-	restart := screen.NewMenuScreenOption("restart", contS, restartEvent)
-	menu.AddOption(*restart) // restart
-	settings := screen.NewMenuScreenOption("settings", contAll, settingsEvent)
-	menu.AddOption(*settings) // settings
-	exit := screen.NewMenuScreenOption("exit", contAll, exitEvent)
-	menu.AddOption(*exit) // exit
-	menu.BuildScreen(glWrapper, 3/float32(WindowWidth))
 
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
 	app.SetWrapper(glWrapper)
 	app.GetWindow().SetCharCallback(app.CharCallback)
 	app.AddScreen(AppScreen)
-	app.AddScreen(menu)
-	app.AddScreen(form)
-	app.MenuScreen(menu)
-	app.ActivateScreen(menu)
+	app.AddScreen(MenuScreen)
+	app.AddScreen(SettingsScreen)
+	app.MenuScreen(MenuScreen)
+	app.ActivateScreen(MenuScreen)
 
 	lastUpdate = time.Now().UnixNano()
 
