@@ -52,7 +52,7 @@ func InitSettings() {
 	Settings.AddConfig("ClearCol", "BG color", "The clear color of the window. It is used as the color of the background.", mgl32.Vec3{0.0, 0.0, 0.0}, nil)
 	Settings.AddConfig("ItemColor", "Item color", "The color of the item.", mgl32.Vec3{0.0, 1.0, 0.0}, nil)
 	Settings.AddConfig("Width", "Rows", "The number of triangles in one row.", 4, nil)
-	Settings.AddConfig("Length", "Cols", "The number of trinagle in on column.", 4, nil)
+	Settings.AddConfig("Length", "Cols", "The number of triangles in on column.", 4, nil)
 }
 
 // GenerateTrianglesModel returns a model filled up with the triangles.
