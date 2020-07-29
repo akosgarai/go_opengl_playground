@@ -2,7 +2,6 @@
 
 This application draws a green square and a green triangle to the screen. It hasn't any mouse or keyboard control, just the image on the screen.
 
-![Sample image](./sample/sample.png)
 The application could be started with a settings screen, where the color, position, scale of the items and the background color could be set.
 
 How to run the application (if you are in the main directory):
