@@ -33,8 +33,6 @@ const (
 )
 
 var (
-	color = []mgl32.Vec3{mgl32.Vec3{0, 1, 0}}
-
 	app            *application.Application
 	SettingsScreen *screen.FormScreen
 	MenuScreen     *screen.MenuScreen
