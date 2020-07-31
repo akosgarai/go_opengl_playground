@@ -16,7 +16,6 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/primitives/triangle"
 	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
-	"github.com/akosgarai/playground_engine/pkg/texture"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -89,24 +88,6 @@ func mainScreen() *screen.Screen {
 	return scrn
 }
 func createMenu() *screen.MenuScreen {
-	var tex texture.Textures
-	tex.TransparentTexture(1, 1, 0, "paper", glWrapper)
-	builder := screen.NewMenuScreenBuilder()
-	builder.SetWrapper(glWrapper)
-	builder.SetWindowSize(float32(WindowWidth), float32(WindowHeight))
-	builder.SetFrameMaterial(DefaultMaterial)
-	builder.SetBackgroundColor(DefaultMaterial.GetAmbient())
-	builder.SetMenuItemSurfaceTexture(tex)
-	builder.SetMenuItemDefaultMaterial(DefaultMaterial)
-	builder.SetMenuItemHighlightMaterial(HighlightMaterial)
-	builder.SetMenuItemFontColor(mgl32.Vec3{0, 0, 0})
-
-	MenuFonts, err := model.LoadCharset(baseDir()+FontFile, 32, 127, 40.0, 72, glWrapper)
-	if err != nil {
-		panic(err)
-	}
-	MenuFonts.SetTransparent(true)
-	builder.SetCharset(MenuFonts)
 	contS := func(m map[string]bool) bool {
 		return m["world-started"]
 	}
@@ -139,31 +120,21 @@ func createMenu() *screen.MenuScreen {
 	exitEvent := func() {
 		app.GetWindow().SetShouldClose(true)
 	}
-	cont := screen.NewMenuScreenOption("continue", contS, continueEvent)
-	builder.AddOption(*cont) // continue
-	start := screen.NewMenuScreenOption("start", contNS, startEvent)
-	builder.AddOption(*start) // start
-	restart := screen.NewMenuScreenOption("restart", contS, restartEvent)
-	builder.AddOption(*restart) // restart
-	settings := screen.NewMenuScreenOption("settings", contAll, settingsEvent)
-	builder.AddOption(*settings) // settings
-	exit := screen.NewMenuScreenOption("exit", contAll, exitEvent)
-	builder.AddOption(*exit) // exit
-	return builder.Build()
+	options := []screen.Option{
+		*screen.NewMenuScreenOption("continue", contS, continueEvent),
+		*screen.NewMenuScreenOption("start", contNS, startEvent),
+		*screen.NewMenuScreenOption("restart", contS, restartEvent),
+		*screen.NewMenuScreenOption("settings", contAll, settingsEvent),
+		*screen.NewMenuScreenOption("exit", contAll, exitEvent),
+	}
+	return app.BuildMenuScreen(options)
 }
 func createSettings(defaults config.Config) *screen.FormScreen {
 	formItemOrders := []string{
 		"ClearCol",
 		"ItemColor",
 	}
-	builder := screen.NewFormScreenBuilder()
-	builder.SetWrapper(glWrapper)
-	builder.SetWindowSize(float32(WindowWidth), float32(WindowHeight))
-	builder.SetFrameMaterial(material.Ruby)
-	builder.SetHeaderLabel("Settings")
-	builder.SetConfig(defaults)
-	builder.SetConfigOrder(formItemOrders)
-	return builder.Build()
+	return app.BuildFormScreen(defaults, formItemOrders, "Settings")
 }
 func Update() {
 	nowNano := time.Now().UnixNano()
