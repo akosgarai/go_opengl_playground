@@ -9,4 +9,22 @@ This application draws a square and a triangle to the screen. The cube's positio
 - **A** Move the square left, the triangle right direction.
 - **D** Move the square right, the triangle left direction.
 
-![Sample gif](./sample/sample.gif)
+The application could be started with a settings screen, where the color, position, scale of the items and the background color and the alpha value (for blending) could be set.
+
+How to run the application (if you are in the main directory):
+
+- without settings:
+
+```
+go run examples/03-button-handler/app.go
+```
+
+![Sample image app without settings](./sample/sample.png)
+
+- with settings:
+
+```
+SETTINGS=on go run examples/03-button-handler/app.go
+```
+
+In settings mode, the `escape` key displays the menu screen, where the main screen could be started / continued / restarted with the latest settings. The settings page and exit function also available from the menu screen.

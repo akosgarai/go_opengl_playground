@@ -5,8 +5,9 @@ smooth out vec4 vSmoothColor;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform float alpha;
 void main()
 {
-    vSmoothColor = vec4(vColor,1);
+    vSmoothColor = vec4(vColor,alpha);
     gl_Position = projection * view * model * vec4(vVertex,1);
 }
