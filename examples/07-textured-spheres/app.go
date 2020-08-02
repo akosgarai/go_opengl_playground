@@ -196,6 +196,8 @@ func createSettings(defaults config.Config) *screen.FormScreen {
 		"LSDiffuse",
 		"LSSpecular",
 		"LSPosition",
+		"LSConstantTerm", "LSLinearTerm",
+		"LSQuadraticTerm",
 		"SunPosition",
 		"SunRadius", "SunRoundSpeed",
 		"EarthPosition",
