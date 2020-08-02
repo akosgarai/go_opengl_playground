@@ -1,12 +1,14 @@
 package main
 
 import (
+	"os"
 	"path"
 	"runtime"
 	"time"
 
 	"github.com/akosgarai/playground_engine/pkg/application"
 	"github.com/akosgarai/playground_engine/pkg/camera"
+	"github.com/akosgarai/playground_engine/pkg/config"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
 	"github.com/akosgarai/playground_engine/pkg/interfaces"
 	"github.com/akosgarai/playground_engine/pkg/light"
@@ -18,6 +20,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/texture"
+	"github.com/akosgarai/playground_engine/pkg/transformations"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -29,54 +32,93 @@ const (
 	WindowHeight = 800
 	WindowTitle  = "Example - multiple light source"
 
-	MoveSpeed            = 0.005
-	CameraDirectionSpeed = float32(0.100)
-	CameraMoveSpeed      = 0.005
-	CameraDistance       = 0.1
+	FORM_ENV_NAME = "SETTINGS"
+	OFF_VALUE     = "off"
 )
 
 var (
-	app                       *application.Application
-	Bug1                      *model.Bug
-	Bug2                      *mesh.TexturedMesh
-	BugOneLastRotate          int64
-	lastUpdate                int64
-	ShaderProgramsWithViewPos []*shader.Shader
-	DirectionalLightSource    *light.Light
-	PointLightSource_1        *light.Light
-	PointLightSource_2        *light.Light
-	SpotLightSource_1         *light.Light
-	SpotLightSource_2         *light.Light
+	app                    *application.Application
+	Bug1                   *model.Bug
+	Bug2                   *mesh.TexturedMesh
+	BugOneLastRotate       int64
+	lastUpdate             int64
+	startTime              int64
+	DirectionalLightSource *light.Light
+	PointLightSource_1     *light.Light
+	PointLightSource_2     *light.Light
+	SpotLightSource_1      *light.Light
+	SpotLightSource_2      *light.Light
 
-	BugOneForwardMove         = float64(1000)
-	DirectionalLightDirection = (mgl32.Vec3{0.7, 0.7, 0.7}).Normalize()
-	DirectionalLightAmbient   = mgl32.Vec3{0.1, 0.1, 0.1}
-	DirectionalLightDiffuse   = mgl32.Vec3{0.1, 0.1, 0.1}
-	DirectionalLightSpecular  = mgl32.Vec3{0.1, 0.1, 0.1}
-	PointLightAmbient         = mgl32.Vec3{0.5, 0.5, 0.5}
-	PointLightDiffuse         = mgl32.Vec3{0.5, 0.5, 0.5}
-	PointLightSpecular        = mgl32.Vec3{0.5, 0.5, 0.5}
-	PointLightPosition_1      = mgl32.Vec3{8, -0.5, -1.0}
-	PointLightPosition_2      = mgl32.Vec3{8, -5, -30}
-	LightConstantTerm         = float32(1.0)
-	LightLinearTerm           = float32(0.14)
-	LightQuadraticTerm        = float32(0.07)
-	SpotLightAmbient          = mgl32.Vec3{1, 1, 1}
-	SpotLightDiffuse          = mgl32.Vec3{1, 1, 1}
-	SpotLightSpecular         = mgl32.Vec3{1, 1, 1}
-	SpotLightDirection_1      = (mgl32.Vec3{0, 1, 0}).Normalize()
-	SpotLightDirection_2      = (mgl32.Vec3{0, 1, 0}).Normalize()
-	SpotLightPosition_1       = mgl32.Vec3{0.20, -6, -0.65}
-	SpotLightPosition_2       = mgl32.Vec3{10.20, -6, -0.65}
-	SpotLightCutoff_1         = float32(4)
-	SpotLightCutoff_2         = float32(4)
-	SpotLightOuterCutoff_1    = float32(5)
-	SpotLightOuterCutoff_2    = float32(5)
-	TexModel                  = model.New()
-	MatModel                  = model.New()
+	SettingsScreen *screen.FormScreen
+	MenuScreen     *screen.MenuScreen
+	AppScreen      *screen.Screen
+	Settings       = config.New()
 
 	glWrapper glwrapper.Wrapper
 )
+
+func InitSettings() {
+	var colorValidator model.FloatValidator
+	colorValidator = func(f float32) bool { return f >= 0 && f <= 1 }
+	Settings.AddConfig("ClearCol", "BG color", "The clear color of the window. It is used as the color of the background.", mgl32.Vec3{0.0, 0.0, 0.0}, colorValidator)
+	Settings.AddConfig("SurfaceSize", "Surface size", "The size of the surface area. This value is used for scaling", float32(100.0), nil)
+	// light sources
+	Settings.AddConfig("LSConstantTerm", "Constant term", "The constant term of the light equasion.", float32(1.0), nil)
+	Settings.AddConfig("LSLinearTerm", "Linear term", "The linear term of the light equasion.", float32(0.14), nil)
+	Settings.AddConfig("LSQuadraticTerm", "Quadratic term", "The quadratic term of the light equasion.", float32(0.07), nil)
+	// directional light
+	Settings.AddConfig("DLAmbient", "DL ambient", "The ambient color component of the directional lightsource.", mgl32.Vec3{0.1, 0.1, 0.1}, colorValidator)
+	Settings.AddConfig("DLDiffuse", "DL diffuse", "The diffuse color component of the directional lightsource.", mgl32.Vec3{0.1, 0.1, 0.1}, colorValidator)
+	Settings.AddConfig("DLSpecular", "DL specular", "The specular color component of the directional lightsource.", mgl32.Vec3{0.1, 0.1, 0.1}, colorValidator)
+	Settings.AddConfig("DLDirection", "DL direction", "The direction vector of the directional lightsource.", mgl32.Vec3{0.7, 0.7, 0.7}, nil)
+	// point light
+	Settings.AddConfig("PLAmbient", "PL ambient", "The ambient color component of the point lightsource.", mgl32.Vec3{0.5, 0.5, 0.5}, colorValidator)
+	Settings.AddConfig("PLDiffuse", "PL diffuse", "The diffuse color component of the point lightsource.", mgl32.Vec3{0.5, 0.5, 0.5}, colorValidator)
+	Settings.AddConfig("PLSpecular", "PL specular", "The specular color component of the point lightsource.", mgl32.Vec3{0.5, 0.5, 0.5}, colorValidator)
+	Settings.AddConfig("PL1Position", "PL1 position", "The position vector of the 1. point lightsource.", mgl32.Vec3{8, -0.5, -1.0}, nil)
+	Settings.AddConfig("PL2Position", "PL2 position", "The position vector of the 2. point lightsource.", mgl32.Vec3{8, -5, -30}, nil)
+	// spot light
+	Settings.AddConfig("SLAmbient", "SL ambient", "The ambient color component of the spot lightsource.", mgl32.Vec3{1.0, 1.0, 1.0}, colorValidator)
+	Settings.AddConfig("SLDiffuse", "SL diffuse", "The diffuse color component of the spot lightsource.", mgl32.Vec3{1.0, 1.0, 1.0}, colorValidator)
+	Settings.AddConfig("SLSpecular", "SL specular", "The specular color component of the spot lightsource.", mgl32.Vec3{1.0, 1.0, 1.0}, colorValidator)
+	Settings.AddConfig("SLCutoff", "SL cutoff", "The inner cutoff component of the spot light equasion.", float32(4.0), nil)
+	Settings.AddConfig("SLOuterCutoff", "SL o. cutoff", "The inner cutoff component of the spot light equasion.", float32(5.0), nil)
+	Settings.AddConfig("SL1Position", "SL1 position", "The position vector of the 1. spot lightsource.", mgl32.Vec3{0.20, -6, -0.65}, nil)
+	Settings.AddConfig("SL1Direction", "SL1 direction", "The direction vector of the 1. spot lightsource.", mgl32.Vec3{0, 1, 0}, nil)
+	Settings.AddConfig("SL2Position", "SL2 position", "The position vector of the 2. spot lightsource.", mgl32.Vec3{10.20, -6, -0.65}, nil)
+	Settings.AddConfig("SL2Direction", "SL2 direction", "The direction vector of the 2. spot lightsource.", mgl32.Vec3{0, 1, 0}, nil)
+	// boxes
+	Settings.AddConfig("Box1Position", "Box 1 pos", "The position vector of the 1. box.", mgl32.Vec3{-5.0, -0.51, 0.0}, nil)
+	Settings.AddConfig("Box2Position", "Box 2 pos", "The position vector of the 2. box.", mgl32.Vec3{0.0, -0.51, 0.0}, nil)
+	Settings.AddConfig("Box3Position", "Box 3 pos", "The position vector of the 3. box.", mgl32.Vec3{5.0, -0.51, 0.0}, nil)
+	// streetlamps
+	Settings.AddConfig("StreetLamp1Position", "St. lamp 1 pos", "The position vector of the 1. street lamp (textured).", mgl32.Vec3{0.4, -6.0, -1.3}, nil)
+	Settings.AddConfig("StreetLamp2Position", "St. lamp 2 pos", "The position vector of the 2. street lamp (material).", mgl32.Vec3{10.4, -6.0, -1.3}, nil)
+	// bug that moves around.
+	Settings.AddConfig("BugPosition", "Bug position", "The position vector of the material bug.", mgl32.Vec3{9, -0.5, -1.0}, nil)
+	Settings.AddConfig("BugScale", "Bug scale", "The scale vector of the material bug.", mgl32.Vec3{0.2, 0.2, 0.2}, nil)
+	Settings.AddConfig("BugVelocity", "Bug velocity", "The speed of the material bug.", float32(0.005), nil)
+	Settings.AddConfig("BugRotationAngle", "Bug rotation", "The rotation angle of the material bug.", float32(-45.0), nil)
+	Settings.AddConfig("BugForwardTime", "Bug forward ms", "The time in ms during the material bug goes into the same direction.", float32(1000.0), nil)
+	// camera options:
+	// - position
+	Settings.AddConfig("CameraPos", "Cam position", "The initial position of the camera.", mgl32.Vec3{-11.2, -5.0, 4.2}, nil)
+	// - up direction
+	Settings.AddConfig("WorldUp", "World up dir", "The up direction in the world.", mgl32.Vec3{0.0, 1.0, 0.0}, nil)
+	// - pitch, yaw
+	Settings.AddConfig("CameraYaw", "Cam Yaw", "The yaw (angle) of the camera. Rotation on the Z axis.", float32(-37.0), nil)
+	Settings.AddConfig("CameraPitch", "Cam Pitch", "The pitch (angle) of the camera. Rotation on the Y axis.", float32(-2.0), nil)
+	// - fov, far, near clip
+	Settings.AddConfig("CameraNear", "Cam Near", "The near clip plane of the camera.", float32(0.001), nil)
+	Settings.AddConfig("CameraFar", "Cam Far", "The far clip plane of the camera.", float32(50.0), nil)
+	Settings.AddConfig("CameraFov", "Cam Fov", "The field of view (angle) of the camera.", float32(45.0), nil)
+	// - move speed
+	Settings.AddConfig("CameraVelocity", "Cam Speed", "The movement velocity of the camera. If it moves, it moves with this speed.", float32(0.005), nil)
+	// - direction speed
+	Settings.AddConfig("CameraRotation", "Cam Rotate", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", float32(0.005), nil)
+	// - rotate on edge distance.
+	Settings.AddConfig("CameraRotationEdge", "Cam Edge", "The rotation cam be triggered if the mouse is near to the edge of the screen.", float32(0.1), nil)
+}
 
 // Setup keymap for the camera movement
 func CameraMovementMap() map[string]glfw.Key {
@@ -94,7 +136,8 @@ func CreateGrassMesh(t texture.Textures) *mesh.TexturedMesh {
 	square := rectangle.NewSquare()
 	v, i, bo := square.MeshInput()
 	m := mesh.NewTexturedMesh(v, i, t, glWrapper)
-	m.SetScale(mgl32.Vec3{1000, 1, 1000})
+	scale := Settings["SurfaceSize"].GetCurrentValue().(float32)
+	m.SetScale(mgl32.Vec3{scale, 1, scale})
 	m.SetBoundingObject(bo)
 	return m
 }
@@ -109,43 +152,52 @@ func CreateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 
 // It generates the lamp. Now it uses the StreetLamp model for creating it.
 func StreetLamp(position mgl32.Vec3) *model.StreetLamp {
-	StreetLamp := model.NewMaterialStreetLamp(position, 6, glWrapper)
+	StreetLamp := model.NewMaterialStreetLamp(position, transformations.Float32Abs(position.Y()), glWrapper)
 	StreetLamp.RotateX(90)
 	StreetLamp.RotateY(-90)
 	return StreetLamp
 }
 func TexturedStreetLamp(position mgl32.Vec3) *model.StreetLamp {
-	StreetLamp := model.NewTexturedStreetLamp(position, 6, glWrapper)
+	StreetLamp := model.NewTexturedStreetLamp(position, transformations.Float32Abs(position.Y()), glWrapper)
 	StreetLamp.RotateX(90)
 	StreetLamp.RotateY(-90)
 	return StreetLamp
 }
 
-func TexturedBug(t texture.Textures) {
+func TexturedBug(t texture.Textures) *mesh.TexturedMesh {
 	sph := sphere.New(15)
 	v, i, bo := sph.TexturedMeshInput()
 	Bug2 = mesh.NewTexturedMesh(v, i, t, glWrapper)
-	Bug2.SetPosition(PointLightPosition_2)
+	Bug2.SetPosition(Settings["PL2Position"].GetCurrentValue().(mgl32.Vec3))
 	Bug2.SetDirection(mgl32.Vec3{0, 0, 1})
-	Bug2.SetSpeed(MoveSpeed)
+	Bug2.SetSpeed(Settings["BugVelocity"].GetCurrentValue().(float32))
 	Bug2.SetBoundingObject(bo)
-	TexModel.AddMesh(Bug2)
+	return Bug2
 }
 
-// It creates a new camera with the necessary setup
-func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{-11.2, -5.0, 4.2}, mgl32.Vec3{0, 1, 0}, -37.0, -2.0)
-	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.01, 100.0)
-	camera.SetVelocity(CameraMoveSpeed)
-	camera.SetRotationStep(CameraDirectionSpeed)
+// It creates a new camera with the necessary setup from settings screen
+func CreateCameraFromSettings() *camera.Camera {
+	cameraPosition := Settings["CameraPos"].GetCurrentValue().(mgl32.Vec3)
+	worldUp := Settings["WorldUp"].GetCurrentValue().(mgl32.Vec3)
+	yawAngle := Settings["CameraYaw"].GetCurrentValue().(float32)
+	pitchAngle := Settings["CameraPitch"].GetCurrentValue().(float32)
+	fov := Settings["CameraFov"].GetCurrentValue().(float32)
+	near := Settings["CameraNear"].GetCurrentValue().(float32)
+	far := Settings["CameraFar"].GetCurrentValue().(float32)
+	moveSpeed := Settings["CameraVelocity"].GetCurrentValue().(float32)
+	directionSpeed := Settings["CameraRotation"].GetCurrentValue().(float32)
+	camera := camera.NewCamera(cameraPosition, worldUp, yawAngle, pitchAngle)
+	camera.SetupProjection(fov, float32(WindowWidth)/float32(WindowHeight), near, far)
+	camera.SetVelocity(moveSpeed)
+	camera.SetRotationStep(directionSpeed)
 	return camera
 }
 func RotateBugOne(now int64) {
 	moveTime := float64(now-BugOneLastRotate) / float64(time.Millisecond)
-	if moveTime > BugOneForwardMove {
+	if moveTime > float64(Settings["BugForwardTime"].GetCurrentValue().(float32)) {
 		BugOneLastRotate = now
 		// rotate 45 deg
-		Bug1.RotateY(-45)
+		Bug1.RotateY(Settings["BugRotationAngle"].GetCurrentValue().(float32))
 	}
 }
 func Update() {
@@ -165,54 +217,158 @@ func baseDir() string {
 func setupApp(glWrapper interfaces.GLWrapper) {
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)
-	glWrapper.ClearColor(0.0, 0.0, 0.0, 1.0)
+	clearColor := Settings["ClearCol"].GetCurrentValue().(mgl32.Vec3)
+	glWrapper.ClearColor(clearColor.X(), clearColor.Y(), clearColor.Z(), 1.0)
+}
+func createSettings(defaults config.Config) *screen.FormScreen {
+	formItemOrders := []string{
+		"ClearCol",
+		"LSConstantTerm", "LSLinearTerm",
+		"LSQuadraticTerm",
+
+		"DLAmbient",
+		"DLDiffuse",
+		"DLSpecular",
+		"DLDirection",
+
+		"PLAmbient",
+		"PLDiffuse",
+		"PLSpecular",
+		"PL1Position",
+		"PL2Position",
+
+		"SLAmbient",
+		"SLDiffuse",
+		"SLSpecular",
+		"SLCutoff", "SLOuterCutoff",
+		"SL1Position",
+		"SL1Direction",
+		"SL2Position",
+		"SL2Direction",
+
+		"Box1Position",
+		"Box2Position",
+		"Box3Position",
+
+		"StreetLamp1Position",
+		"StreetLamp2Position",
+
+		"BugPosition",
+		"BugScale",
+		"BugVelocity", "BugRotationAngle",
+		"BugForwardTime",
+
+		"CameraPos",
+		"WorldUp",
+		"CameraYaw", "CameraPitch",
+		"CameraNear", "CameraFar",
+		"CameraFov", "CameraVelocity",
+		"CameraRotation", "CameraRotationEdge",
+	}
+	return app.BuildFormScreen(defaults, formItemOrders, "Settings")
+}
+func createMenu() *screen.MenuScreen {
+	contS := func(m map[string]bool) bool {
+		return m["world-started"]
+	}
+	contNS := func(m map[string]bool) bool {
+		return !m["world-started"]
+	}
+	contAll := func(m map[string]bool) bool {
+		return true
+	}
+	restartEvent := func() {
+		lastUpdate = time.Now().UnixNano()
+		startTime = lastUpdate
+		AppScreen = mainScreen()
+		app.ActivateScreen(AppScreen)
+	}
+	startEvent := func() {
+		lastUpdate = time.Now().UnixNano()
+		startTime = lastUpdate
+		AppScreen = mainScreen()
+		app.ActivateScreen(AppScreen)
+		MenuScreen.SetState("world-started", true)
+		MenuScreen.BuildScreen()
+	}
+	settingsEvent := func() {
+		app.ActivateScreen(SettingsScreen)
+	}
+	continueEvent := func() {
+		app.ActivateScreen(AppScreen)
+	}
+	exitEvent := func() {
+		app.GetWindow().SetShouldClose(true)
+	}
+	options := []screen.Option{
+		*screen.NewMenuScreenOption("continue", contS, continueEvent),
+		*screen.NewMenuScreenOption("start", contNS, startEvent),
+		*screen.NewMenuScreenOption("restart", contS, restartEvent),
+		*screen.NewMenuScreenOption("settings", contAll, settingsEvent),
+		*screen.NewMenuScreenOption("exit", contAll, exitEvent),
+	}
+	return app.BuildMenuScreen(options)
 }
 
-func main() {
-	runtime.LockOSThread()
-	app = application.New(glWrapper)
-	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
-	defer glfw.Terminate()
-	glWrapper.InitOpenGL()
-
+func mainScreen() *screen.Screen {
 	scrn := screen.New()
-	scrn.SetCamera(CreateCamera())
+	scrn.SetCamera(CreateCameraFromSettings())
 	scrn.SetCameraMovementMap(CameraMovementMap())
-	scrn.SetRotateOnEdgeDistance(CameraDistance)
+	scrn.SetRotateOnEdgeDistance(Settings["CameraRotationEdge"].GetCurrentValue().(float32))
 
 	// directional light is coming from the up direction but not from too up.
 	DirectionalLightSource = light.NewDirectionalLight([4]mgl32.Vec3{
-		DirectionalLightDirection,
-		DirectionalLightAmbient,
-		DirectionalLightDiffuse,
-		DirectionalLightSpecular,
+		Settings["DLDirection"].GetCurrentValue().(mgl32.Vec3).Normalize(),
+		Settings["DLAmbient"].GetCurrentValue().(mgl32.Vec3),
+		Settings["DLDiffuse"].GetCurrentValue().(mgl32.Vec3),
+		Settings["DLSpecular"].GetCurrentValue().(mgl32.Vec3),
 	})
 	PointLightSource_1 = light.NewPointLight([4]mgl32.Vec3{
-		PointLightPosition_1,
-		PointLightAmbient,
-		PointLightDiffuse,
-		PointLightSpecular},
-		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
-	SpotLightSource_1 = light.NewSpotLight([5]mgl32.Vec3{
-		SpotLightPosition_1,
-		SpotLightDirection_1,
-		SpotLightAmbient,
-		SpotLightDiffuse,
-		SpotLightSpecular},
-		[5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, SpotLightCutoff_1, SpotLightOuterCutoff_1})
-	SpotLightSource_2 = light.NewSpotLight([5]mgl32.Vec3{
-		SpotLightPosition_2,
-		SpotLightDirection_2,
-		SpotLightAmbient,
-		SpotLightDiffuse,
-		SpotLightSpecular},
-		[5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, SpotLightCutoff_2, SpotLightOuterCutoff_2})
+		Settings["PL1Position"].GetCurrentValue().(mgl32.Vec3),
+		Settings["PLAmbient"].GetCurrentValue().(mgl32.Vec3),
+		Settings["PLDiffuse"].GetCurrentValue().(mgl32.Vec3),
+		Settings["PLSpecular"].GetCurrentValue().(mgl32.Vec3)},
+		[3]float32{
+			Settings["LSConstantTerm"].GetCurrentValue().(float32),
+			Settings["LSLinearTerm"].GetCurrentValue().(float32),
+			Settings["LSQuadraticTerm"].GetCurrentValue().(float32),
+		})
 	PointLightSource_2 = light.NewPointLight([4]mgl32.Vec3{
-		PointLightPosition_2,
-		PointLightAmbient,
-		PointLightDiffuse,
-		PointLightSpecular},
-		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
+		Settings["PL2Position"].GetCurrentValue().(mgl32.Vec3),
+		Settings["PLAmbient"].GetCurrentValue().(mgl32.Vec3),
+		Settings["PLDiffuse"].GetCurrentValue().(mgl32.Vec3),
+		Settings["PLSpecular"].GetCurrentValue().(mgl32.Vec3)},
+		[3]float32{
+			Settings["LSConstantTerm"].GetCurrentValue().(float32),
+			Settings["LSLinearTerm"].GetCurrentValue().(float32),
+			Settings["LSQuadraticTerm"].GetCurrentValue().(float32),
+		})
+	SpotLightSource_1 = light.NewSpotLight([5]mgl32.Vec3{
+		Settings["SL1Position"].GetCurrentValue().(mgl32.Vec3),
+		Settings["SL1Direction"].GetCurrentValue().(mgl32.Vec3).Normalize(),
+		Settings["SLAmbient"].GetCurrentValue().(mgl32.Vec3),
+		Settings["SLDiffuse"].GetCurrentValue().(mgl32.Vec3),
+		Settings["SLSpecular"].GetCurrentValue().(mgl32.Vec3)},
+		[5]float32{
+			Settings["LSConstantTerm"].GetCurrentValue().(float32),
+			Settings["LSLinearTerm"].GetCurrentValue().(float32),
+			Settings["LSQuadraticTerm"].GetCurrentValue().(float32),
+			Settings["SLCutoff"].GetCurrentValue().(float32),
+			Settings["SLOuterCutoff"].GetCurrentValue().(float32),
+		})
+	SpotLightSource_2 = light.NewSpotLight([5]mgl32.Vec3{
+		Settings["SL2Position"].GetCurrentValue().(mgl32.Vec3),
+		Settings["SL2Direction"].GetCurrentValue().(mgl32.Vec3).Normalize(),
+		Settings["SLAmbient"].GetCurrentValue().(mgl32.Vec3),
+		Settings["SLDiffuse"].GetCurrentValue().(mgl32.Vec3),
+		Settings["SLSpecular"].GetCurrentValue().(mgl32.Vec3)},
+		[5]float32{
+			Settings["LSConstantTerm"].GetCurrentValue().(float32),
+			Settings["LSLinearTerm"].GetCurrentValue().(float32),
+			Settings["LSQuadraticTerm"].GetCurrentValue().(float32),
+			Settings["SLCutoff"].GetCurrentValue().(float32),
+			Settings["SLOuterCutoff"].GetCurrentValue().(float32),
+		})
 
 	// Add the lightources to the application
 	scrn.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
@@ -224,6 +380,9 @@ func main() {
 	// Define the shader application for the textured meshes.
 	shaderProgramTexture := shader.NewShader(baseDir()+"/shaders/texture.vert", baseDir()+"/shaders/texture.frag", glWrapper)
 	scrn.AddShader(shaderProgramTexture)
+
+	TexModel := model.New()
+	MatModel := model.New()
 
 	// grass textures
 	var grassTexture texture.Textures
@@ -240,9 +399,9 @@ func main() {
 
 	// we have 3 boxes in the following coordinates.
 	boxPositions := []mgl32.Vec3{
-		mgl32.Vec3{-5.0, -0.51, 0.0},
-		mgl32.Vec3{0.0, -0.51, 0.0},
-		mgl32.Vec3{5.0, -0.51, 0.0},
+		Settings["Box1Position"].GetCurrentValue().(mgl32.Vec3),
+		Settings["Box2Position"].GetCurrentValue().(mgl32.Vec3),
+		Settings["Box3Position"].GetCurrentValue().(mgl32.Vec3),
 	}
 	for _, pos := range boxPositions {
 		box := CreateCubeMesh(boxTexture, pos)
@@ -255,14 +414,17 @@ func main() {
 	shaderProgramTextureMat := shader.NewShader(baseDir()+"/shaders/texturemat.vert", baseDir()+"/shaders/texturemat.frag", glWrapper)
 	scrn.AddShader(shaderProgramTextureMat)
 
-	lamp1 := TexturedStreetLamp(mgl32.Vec3{0.4, -6.0, -1.3})
+	lamp1 := TexturedStreetLamp(Settings["StreetLamp1Position"].GetCurrentValue().(mgl32.Vec3))
 	scrn.AddModelToShader(lamp1, shaderProgramTextureMat)
-	lamp2 := StreetLamp(mgl32.Vec3{10.4, -6.0, -1.3})
+	lamp2 := StreetLamp(Settings["StreetLamp2Position"].GetCurrentValue().(mgl32.Vec3))
 	scrn.AddModelToShader(lamp2, shaderProgramMaterial)
 
-	Bug1 = model.NewBug(mgl32.Vec3{9, -0.5, -1.0}, mgl32.Vec3{0.2, 0.2, 0.2}, glWrapper)
+	Bug1 = model.NewBug(
+		Settings["BugPosition"].GetCurrentValue().(mgl32.Vec3),
+		Settings["BugScale"].GetCurrentValue().(mgl32.Vec3),
+		glWrapper)
 	Bug1.SetDirection(mgl32.Vec3{1, 0, 0})
-	Bug1.SetSpeed(MoveSpeed)
+	Bug1.SetSpeed(Settings["BugVelocity"].GetCurrentValue().(float32))
 
 	scrn.AddModelToShader(Bug1, shaderProgramMaterial)
 
@@ -270,17 +432,46 @@ func main() {
 	var sunTexture texture.Textures
 	sunTexture.AddTexture(baseDir()+"/assets/sun.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.diffuse", glWrapper)
 	sunTexture.AddTexture(baseDir()+"/assets/sun.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "material.specular", glWrapper)
-	TexturedBug(sunTexture)
+	TexModel.AddMesh(TexturedBug(sunTexture))
 	scrn.AddModelToShader(TexModel, shaderProgramTexture)
 	scrn.AddModelToShader(MatModel, shaderProgramMaterial)
 	scrn.Setup(setupApp)
-	app.AddScreen(scrn)
-	app.ActivateScreen(scrn)
+	return scrn
+}
+func SkipFormScreen() bool {
+	val := os.Getenv(FORM_ENV_NAME)
+	if val == OFF_VALUE {
+		return true
+	}
+	return false
+}
 
-	lastUpdate = time.Now().UnixNano()
-	BugOneLastRotate = lastUpdate
-	// register keyboard button callback
+func main() {
+	runtime.LockOSThread()
+	InitSettings()
+
+	app = application.New(glWrapper)
+	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
+	defer glfw.Terminate()
+	glWrapper.InitOpenGL()
+
+	AppScreen = mainScreen()
+	app.AddScreen(AppScreen)
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
+	if SkipFormScreen() {
+		app.ActivateScreen(AppScreen)
+	} else {
+		app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
+		app.GetWindow().SetCharCallback(app.CharCallback)
+		MenuScreen = createMenu()
+		app.AddScreen(MenuScreen)
+		app.MenuScreen(MenuScreen)
+		SettingsScreen = createSettings(Settings)
+		app.AddScreen(SettingsScreen)
+		app.ActivateScreen(SettingsScreen)
+	}
+	lastUpdate = time.Now().UnixNano()
+	startTime = lastUpdate
 
 	for !app.GetWindow().ShouldClose() {
 		glWrapper.Clear(glwrapper.COLOR_BUFFER_BIT | glwrapper.DEPTH_BUFFER_BIT)
