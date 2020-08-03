@@ -19,7 +19,7 @@ How to run the application (if you are in the main directory):
 go run examples/03-button-handler/app.go
 ```
 
-![Sample image app without settings](./sample/sample.png)
+![Sample gif app without settings](./sample/sample.gif)
 
 - with settings:
 
