@@ -21,7 +21,6 @@ const (
 	WindowWidth  = 800
 	WindowHeight = 800
 	WindowTitle  = "Example - frame screen generator"
-	FontFile     = "/assets/fonts/Desyrel/desyrel.regular.ttf"
 
 	LEFT_MOUSE_BUTTON = glfw.MouseButtonLeft
 )
@@ -35,9 +34,6 @@ var (
 	lastUpdate     int64
 	startTime      int64
 	Settings       = config.New()
-
-	DefaultMaterial   = material.Jade
-	HighlightMaterial = material.Ruby
 
 	DirectionalLightDirection = mgl32.Vec3{0.5, 0.5, -0.7}.Normalize()
 	DirectionalLightAmbient   = mgl32.Vec3{0.3, 0.3, 0.3}
