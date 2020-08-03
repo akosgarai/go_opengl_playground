@@ -28,7 +28,6 @@ const (
 	WindowTitle   = "Example - static triangles, lots of them"
 	FORM_ENV_NAME = "SETTINGS"
 	ON_VALUE      = "on"
-	FontFile      = "/../../assets/fonts/Desyrel/desyrel.regular.ttf"
 )
 
 var (
@@ -41,10 +40,8 @@ var (
 
 	glWrapper glwrapper.Wrapper
 
-	DefaultMaterial   = material.Jade
-	HighlightMaterial = material.Ruby
-	lastUpdate        int64
-	startTime         int64
+	lastUpdate int64
+	startTime  int64
 )
 
 func InitSettings() {
