@@ -109,7 +109,6 @@ func Update() {
 	nowNano := time.Now().UnixNano()
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
-	app.SetUniformFloat("time", float32(float64(nowNano-startTime)/float64(time.Second)))
 	app.Update(delta)
 }
 func createMenu() *screen.MenuScreen {
