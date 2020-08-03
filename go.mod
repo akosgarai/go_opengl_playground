@@ -3,7 +3,7 @@ module github.com/akosgarai/opengl_playground
 go 1.13
 
 require (
-	github.com/akosgarai/playground_engine v0.0.0-20200730171224-2fb8f0cb720b
+	github.com/akosgarai/playground_engine v0.0.0-20200803111942-8eeb44a1b705
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200420212212-258d9bec320e
 	github.com/go-gl/mathgl v0.0.0-20190713194549-592312d8590a
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
