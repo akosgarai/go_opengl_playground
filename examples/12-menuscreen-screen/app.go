@@ -6,16 +6,13 @@ import (
 	"time"
 
 	"github.com/akosgarai/playground_engine/pkg/application"
-	"github.com/akosgarai/playground_engine/pkg/camera"
+	"github.com/akosgarai/playground_engine/pkg/config"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
-	"github.com/akosgarai/playground_engine/pkg/interfaces"
 	"github.com/akosgarai/playground_engine/pkg/material"
-	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
-	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
 	"github.com/akosgarai/playground_engine/pkg/screen"
-	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/texture"
+	"github.com/akosgarai/playground_engine/pkg/theme"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -25,7 +22,7 @@ import (
 const (
 	WindowWidth  = 800
 	WindowHeight = 800
-	WindowTitle  = "Example - menu screen with screen"
+	WindowTitle  = "Example - theme editor for menu and form screens"
 	FontFile     = "/assets/fonts/Desyrel/desyrel.regular.ttf"
 
 	CameraMoveSpeed      = 0.005
@@ -38,17 +35,131 @@ var (
 	app            *application.Application
 	SettingsScreen *screen.FormScreen
 	MenuScreen     *screen.MenuScreen
-	AppScreen      *screen.Screen
-	glWrapper      glwrapper.Wrapper
-	lastUpdate     int64
+	FormScreenApp  *screen.FormScreen
+	MenuScreenApp  *screen.MenuScreen
+	Settings       = config.New()
+	TestSettings   = config.New()
 
-	DefaultMaterial   = material.Jade
-	HighlightMaterial = material.Ruby
+	glWrapper  glwrapper.Wrapper
+	lastUpdate int64
+
+	MaterialMap = map[string]*material.Material{
+		"Emerald":       material.Emerald,
+		"Jade":          material.Jade,
+		"Obsidian":      material.Obsidian,
+		"Pearl":         material.Pearl,
+		"Ruby":          material.Ruby,
+		"Turquoise":     material.Turquoise,
+		"Brass":         material.Brass,
+		"Bronze":        material.Bronze,
+		"Chrome":        material.Chrome,
+		"Copper":        material.Copper,
+		"Gold":          material.Gold,
+		"Silver":        material.Silver,
+		"Blackplastic":  material.Blackplastic,
+		"Cyanplastic":   material.Cyanplastic,
+		"Greenplastic":  material.Greenplastic,
+		"Redplastic":    material.Redplastic,
+		"Whiteplastic":  material.Whiteplastic,
+		"Yellowplastic": material.Yellowplastic,
+		"Blackrubber":   material.Blackrubber,
+		"Cyanrubber":    material.Cyanrubber,
+		"Greenrubber":   material.Greenrubber,
+		"Redrubber":     material.Redrubber,
+		"Whiterubber":   material.Whiterubber,
+		"Yellowrubber":  material.Yellowrubber,
+	}
 )
 
+func InitThemeSettings() {
+	Settings.AddConfig("FrameWidth", "Width", "The width of the screen.", float32(2.0), nil)
+	Settings.AddConfig("FrameLength", "Frame Width", "The width of the frame.", float32(0.02), nil)
+	Settings.AddConfig("FrameLeftOffset", "Left width", "The width of the left offset.", float32(0.1), nil)
+	Settings.AddConfig("DCBHeight", "DCB height", "The height of the detail content box.", float32(0.4), nil)
+	Settings.AddConfig("HeaderLabelColor", "Header Label Col", "The color of the header label text.", mgl32.Vec3{1, 0, 0}, nil)
+	Settings.AddConfig("ItemLabelColor", "Item Label Col", "The color of the item label text.", mgl32.Vec3{0, 1, 0}, nil)
+	Settings.AddConfig("ItemInputColor", "Item Input Col", "The color of the item input text.", mgl32.Vec3{0, 0, 0}, nil)
+	Settings.AddConfig("BGColor", "Background Col", "The color of the background.", mgl32.Vec3{0, 0, 0}, nil)
+	materialList := ""
+	for k, _ := range MaterialMap {
+		materialList = materialList + k + ", "
+	}
+	Settings.AddConfig("FrameMaterial", "Frame material", "The material of the frame. Options: "+materialList, "Jade", nil)
+	Settings.AddConfig("DefaultMat", "Default material", "The material of the items. Options: "+materialList, "Whiteplastic", nil)
+	Settings.AddConfig("HoverMat", "Hover material", "The material of the hovered items. Options: "+materialList, "Ruby", nil)
+}
+
+func InitAppSettings() {
+	var colorValidator model.FloatValidator
+	colorValidator = func(f float32) bool { return f >= 0 && f <= 1 }
+	TestSettings.AddConfig("ClearCol", "BG color", "The clear color of the window. It is used as the color of the background.", mgl32.Vec3{0.3, 0.3, 0.3}, colorValidator)
+	TestSettings.AddConfig("Color1", "Cube color 1", "The color of the 1. side of the cube.", mgl32.Vec3{1.0, 1.0, 0.0}, colorValidator)
+	TestSettings.AddConfig("Color2", "Cube color 2", "The color of the 2. side of the cube.", mgl32.Vec3{1.0, 0.0, 1.0}, colorValidator)
+	TestSettings.AddConfig("Color3", "Cube color 3", "The color of the 3. side of the cube.", mgl32.Vec3{1.0, 0.0, 0.0}, colorValidator)
+	TestSettings.AddConfig("TestBool05", "Bool param", "For checking the bool params with different theme", false, nil)
+	TestSettings.AddConfig("Color4", "Cube color 4", "The color of the 4. side of the cube.", mgl32.Vec3{0.0, 1.0, 0.0}, colorValidator)
+	TestSettings.AddConfig("TestBool04", "Bool param", "For checking the bool params with different theme", false, nil)
+	TestSettings.AddConfig("TestBool06", "Bool param", "For checking the bool params with different theme", false, nil)
+	TestSettings.AddConfig("Color5", "Cube color 5", "The color of the 5. side of the cube.", mgl32.Vec3{0.0, 1.0, 1.0}, colorValidator)
+	TestSettings.AddConfig("TestBool01", "Bool param", "For checking the bool params with different theme", false, nil)
+	TestSettings.AddConfig("TestBool02", "Bool param", "For checking the bool params with different theme", true, nil)
+	TestSettings.AddConfig("TestBool03", "Bool param", "For checking the bool params with different theme", false, nil)
+	TestSettings.AddConfig("Color6", "Cube color 6", "The color of the 6. side of the cube.", mgl32.Vec3{0.0, 0.0, 1.0}, colorValidator)
+	TestSettings.AddConfig("CubePosition", "Cube position", "The position of the cube.", mgl32.Vec3{-0.5, -0.5, 0.5}, nil)
+	TestSettings.AddConfig("CameraPos", "Cam position", "The initial position of the camera.", mgl32.Vec3{0, 0, 10.0}, nil)
+	TestSettings.AddConfig("WorldUp", "World up dir", "The up direction in the world.", mgl32.Vec3{0.0, 1.0, 0.0}, nil)
+	TestSettings.AddConfig("CameraYaw", "Cam Yaw", "The yaw (angle) of the camera. Rotation on the Z axis.", float32(-90.0), nil)
+	TestSettings.AddConfig("CameraPitch", "Cam Pitch", "The pitch (angle) of the camera. Rotation on the Y axis.", float32(0.0), nil)
+	TestSettings.AddConfig("CameraNear", "Cam Near", "The near clip plane of the camera.", float32(0.1), nil)
+	TestSettings.AddConfig("CameraFar", "Cam Far", "The far clip plane of the camera.", float32(100.0), nil)
+	TestSettings.AddConfig("CameraFov", "Cam Fov", "The field of view (angle) of the camera.", float32(45.0), nil)
+	TestSettings.AddConfig("CameraVelocity", "Cam Speed", "The movement velocity of the camera. If it moves, it moves with this speed.", float32(0.005), nil)
+	TestSettings.AddConfig("CameraRotation", "Cam Rotate", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", float32(0.005), nil)
+	TestSettings.AddConfig("CameraRotationEdge", "Cam Edge", "The rotation cam be triggered if the mouse is near to the edge of the screen.", float32(0.1), nil)
+}
 func baseDir() string {
 	_, filename, _, _ := runtime.Caller(1)
 	return path.Dir(filename)
+}
+func createSettings(defaults config.Config) *screen.FormScreen {
+	formItemOrders := []string{
+		"FrameWidth", "FrameLength",
+		"FrameLeftOffset", "DCBHeight",
+		"HeaderLabelColor",
+		"ItemLabelColor",
+		"ItemInputColor",
+		"BGColor",
+		"FrameMaterial",
+		"DefaultMat",
+		"HoverMat",
+	}
+	return app.BuildFormScreen(defaults, formItemOrders, "Theme editor")
+}
+func createMenu() *screen.MenuScreen {
+	contAll := func(m map[string]bool) bool {
+		return true
+	}
+	startFormEvent := func() {
+		FormScreenApp = formScreenApp(TestSettings)
+		app.ActivateScreen(FormScreenApp)
+	}
+	startMenuEvent := func() {
+		MenuScreenApp = menuScreenApp()
+		app.ActivateScreen(MenuScreenApp)
+	}
+	settingsEvent := func() {
+		app.ActivateScreen(SettingsScreen)
+	}
+	exitEvent := func() {
+		app.GetWindow().SetShouldClose(true)
+	}
+	options := []screen.Option{
+		*screen.NewMenuScreenOption("Menu screen", contAll, startMenuEvent),
+		*screen.NewMenuScreenOption("Form screen", contAll, startFormEvent),
+		*screen.NewMenuScreenOption("Settings", contAll, settingsEvent),
+		*screen.NewMenuScreenOption("Exit", contAll, exitEvent),
+	}
+	return app.BuildMenuScreen(options)
 }
 
 // Setup keymap for the camera movement
@@ -63,183 +174,102 @@ func CameraMovementMap() map[string]glfw.Key {
 	return cm
 }
 
-func setupApp(glWrapper interfaces.GLWrapper) {
-	glWrapper.Enable(glwrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(glwrapper.LESS)
-	glWrapper.ClearColor(1.0, 1.0, 0.0, 1.0)
-}
 func Update() {
 	nowNano := time.Now().UnixNano()
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
 	app.Update(delta)
 }
-func Paper(width, height float32, position mgl32.Vec3) *mesh.TexturedMaterialMesh {
-	rect := rectangle.NewExact(width, height)
-	v, i, bo := rect.MeshInput()
+func themeFromSettings() theme.Theme {
+	var t theme.Theme
+	t.SetBackgroundColor(Settings["BGColor"].GetCurrentValue().(mgl32.Vec3))
+	t.SetHeaderLabelColor(Settings["HeaderLabelColor"].GetCurrentValue().(mgl32.Vec3))
+	t.SetInputColor(Settings["ItemInputColor"].GetCurrentValue().(mgl32.Vec3))
+	t.SetLabelColor(Settings["ItemLabelColor"].GetCurrentValue().(mgl32.Vec3))
+	t.SetDetailContentBoxHeight(Settings["DCBHeight"].GetCurrentValue().(float32))
+	t.SetFrameLength(Settings["FrameLength"].GetCurrentValue().(float32))
+	t.SetFrameWidth(Settings["FrameWidth"].GetCurrentValue().(float32))
+	t.SetFrameTopLeftWidth(Settings["FrameLeftOffset"].GetCurrentValue().(float32))
+	t.SetFrameMaterial(MaterialMap[Settings["FrameMaterial"].GetCurrentValue().(string)])
+	t.SetMenuItemDefaultMaterial(MaterialMap[Settings["DefaultMat"].GetCurrentValue().(string)])
+	t.SetMenuItemHoverMaterial(MaterialMap[Settings["HoverMat"].GetCurrentValue().(string)])
 	var tex texture.Textures
-	tex.AddTexture(baseDir()+"/assets/paper.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "paper", glWrapper)
-
-	msh := mesh.NewTexturedMaterialMesh(v, i, tex, DefaultMaterial, glWrapper)
-	msh.SetBoundingObject(bo)
-	msh.SetPosition(position)
-	return msh
+	tex.TransparentTexture(1, 1, 1, "paper", glWrapper)
+	t.SetMenuItemSurfaceTexture(tex)
+	return t
 }
-
-// It creates a new camera with the necessary setup
-func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{-0.28, -0.23, 2.4}, mgl32.Vec3{0, -1, 0}, -90.0, 0.0)
-	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
-	camera.SetVelocity(CameraMoveSpeed)
-	camera.SetRotationStep(CameraDirectionSpeed)
-	return camera
-}
-func GameScreen() *screen.Screen {
-	gameScreen := screen.New()
-	gameScreen.SetCamera(CreateCamera())
-	gameScreen.SetCameraMovementMap(CameraMovementMap())
-	gameScreen.SetRotateOnEdgeDistance(CameraDistance)
-	bgShaderApplication := shader.NewMenuBackgroundShader(glWrapper)
-	fgShaderApplication := shader.NewFontShader(glWrapper)
-	gameScreen.AddShader(bgShaderApplication)
-	gameScreen.AddShader(fgShaderApplication)
-
-	StartableModel := model.New()
-	Wall := Paper(2, 2, mgl32.Vec3{-0.4, -0.3, -0.0})
-	Wall.RotateX(-90)
-	StartableModel.AddMesh(Wall)
-
-	gameScreen.AddModelToShader(StartableModel, bgShaderApplication)
-	StartableFonts, err := model.LoadCharset(baseDir()+FontFile, 32, 127, 40.0, 72, glWrapper)
-	if err != nil {
-		panic(err)
-	}
-	cols1 := []mgl32.Vec3{
-		mgl32.Vec3{0.0, 1.0, 0.0},
-	}
-	cols2 := []mgl32.Vec3{
-		mgl32.Vec3{0.0, 0.0, 1.0},
-	}
-	cols3 := []mgl32.Vec3{
-		mgl32.Vec3{0.0, 0.0, 0.0},
-	}
-	StartableFonts.PrintTo("How are You?", -0.5, 0.2, -0.01, 3.0/float32(WindowWidth), glWrapper, Wall, cols2)
-	StartableFonts.PrintTo("Press Esc for Menu!", -0.7, -0.2, -0.01, 3.0/float32(WindowWidth), glWrapper, Wall, cols3)
-	StartableFonts.PrintTo("Ken sent me!", -0.2, -0.75, -0.01, 3.0/float32(WindowWidth), glWrapper, Wall, cols1)
-	StartableFonts.SetTransparent(true)
-	gameScreen.AddModelToShader(StartableFonts, fgShaderApplication)
-	return gameScreen
-}
-func createMenu() *screen.MenuScreen {
-	var tex texture.Textures
-	tex.AddTexture(baseDir()+"/assets/paper.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "paper", glWrapper)
-	builder := screen.NewMenuScreenBuilder()
-	builder.SetWrapper(glWrapper)
-	builder.SetWindowSize(float32(WindowWidth), float32(WindowHeight))
-	builder.SetFrameMaterial(DefaultMaterial)
-	builder.SetBackgroundColor(DefaultMaterial.GetAmbient())
-	builder.SetMenuItemSurfaceTexture(tex)
-	builder.SetMenuItemDefaultMaterial(DefaultMaterial)
-	builder.SetMenuItemHighlightMaterial(HighlightMaterial)
-	builder.SetMenuItemFontColor(mgl32.Vec3{0, 0, 0})
-
-	MenuFonts, err := model.LoadCharset(baseDir()+FontFile, 32, 127, 40.0, 72, glWrapper)
-	if err != nil {
-		panic(err)
-	}
-	MenuFonts.SetTransparent(true)
-	builder.SetCharset(MenuFonts)
-	contS := func(m map[string]bool) bool {
-		return m["world-started"]
-	}
-	contNS := func(m map[string]bool) bool {
-		return !m["world-started"]
-	}
-	contAll := func(m map[string]bool) bool {
+func menuScreenApp() *screen.MenuScreen {
+	app.SetTheme(themeFromSettings())
+	stateFunction := func(m map[string]bool) bool {
 		return true
 	}
-	restartEvent := func() {
-		lastUpdate = time.Now().UnixNano()
-		AppScreen = GameScreen()
-		app.ActivateScreen(AppScreen)
+	eventFunction := func() {
 	}
-	startEvent := func() {
-		lastUpdate = time.Now().UnixNano()
-		AppScreen = GameScreen()
-		app.ActivateScreen(AppScreen)
-		MenuScreen.SetState("world-started", true)
-		MenuScreen.BuildScreen()
+	options := []screen.Option{
+		*screen.NewMenuScreenOption("continue", stateFunction, eventFunction),
+		*screen.NewMenuScreenOption("start", stateFunction, eventFunction),
+		*screen.NewMenuScreenOption("restart", stateFunction, eventFunction),
+		*screen.NewMenuScreenOption("settings", stateFunction, eventFunction),
+		*screen.NewMenuScreenOption("exit", stateFunction, eventFunction),
 	}
-	settingsEvent := func() {
-		app.ActivateScreen(SettingsScreen)
-	}
-	continueEvent := func() {
-		app.ActivateScreen(AppScreen)
-	}
-	exitEvent := func() {
-		app.GetWindow().SetShouldClose(true)
-	}
-	cont := screen.NewMenuScreenOption("continue", contS, continueEvent)
-	builder.AddOption(*cont) // continue
-	start := screen.NewMenuScreenOption("start", contNS, startEvent)
-	builder.AddOption(*start) // start
-	restart := screen.NewMenuScreenOption("restart", contS, restartEvent)
-	builder.AddOption(*restart) // restart
-	settings := screen.NewMenuScreenOption("settings", contAll, settingsEvent)
-	builder.AddOption(*settings) // settings
-	exit := screen.NewMenuScreenOption("exit", contAll, exitEvent)
-	builder.AddOption(*exit) // exit
-	return builder.Build()
+	return app.BuildMenuScreen(options)
 }
-func createSettings() *screen.FormScreen {
-	builder := screen.NewFormScreenBuilder()
-	builder.SetWrapper(glWrapper)
-	builder.SetWindowSize(float32(WindowWidth), float32(WindowHeight))
-	builder.SetFrameMaterial(material.Ruby)
-	builder.SetHeaderLabel("Settings Screen")
+func formScreenApp(defaults config.Config) *screen.FormScreen {
+	app.SetTheme(themeFromSettings())
 	formItemOrders := []string{
-		builder.AddConfigBool("Bool 01.", "Bool 01 description. This is a long description. A super long one. This is a long description. A super long one. This is a long description. A super long one.", true),
-		builder.AddConfigBool("Bool 02.", "Bool 02 description", false),
-		builder.AddConfigBool("Bool 03.", "Bool 03 description", false),
-		builder.AddConfigInt("Int 04.", "Int 04 description", 0, nil),
-		builder.AddConfigInt("Int 05.", "Int 05 description", 12, nil),
-		builder.AddConfigInt("Int 06.", "Int 06 description", -3, nil),
-		builder.AddConfigBool("Bool 07.", "Bool 07 description", true),
-		builder.AddConfigFloat("Float 08.", "Float 08 description", 0.0, nil),
-		builder.AddConfigFloat("Float 09.", "Float 09 description", 1.876, nil),
-		builder.AddConfigFloat("Float 10.", "Float 10 description", -0.44, nil),
-		builder.AddConfigText("Text 11.", "Text 11 description", "Some", nil),
-		builder.AddConfigText("Text 12.", "Text 12 description", "sample", nil),
-		builder.AddConfigText("Text 13.", "Text 13 description", "text", nil),
-		builder.AddConfigInt64("Int64 14.", "Int64 14 description", 0, nil),
-		builder.AddConfigInt64("Int64 15.", "Int64 15 description", 1231234, nil),
-		builder.AddConfigInt64("Int64 16.", "Int64 16 description", -1239876, nil),
+		"ClearCol",
+		"Color1",
+		"Color2",
+		"Color3",
+		"TestBool06",
+		"Color4",
+		"TestBool05",
+		"TestBool04",
+		"Color5",
+		"TestBool03",
+		"TestBool02",
+		"TestBool01",
+		"Color6",
+		"CubePosition",
+
+		"CameraPos",
+		"WorldUp",
+		"CameraYaw", "CameraPitch",
+		"CameraNear", "CameraFar",
+		"CameraFov", "CameraVelocity",
+		"CameraRotation", "CameraRotationEdge",
 	}
-	builder.SetConfigOrder(formItemOrders)
-	return builder.Build()
+	return app.BuildFormScreen(defaults, formItemOrders, "Settings")
 }
 
 func main() {
 	runtime.LockOSThread()
+	InitThemeSettings()
+	InitAppSettings()
+
 	app = application.New(glWrapper)
 	Window := window.InitGlfw(WindowWidth, WindowHeight, WindowTitle)
 	app.SetWindow(Window)
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	MenuScreen = createMenu()
-	SettingsScreen = createSettings()
-	AppScreen = GameScreen()
-
+	app.SetWrapper(glWrapper)
+	app.SetTheme(*theme.Dark)
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
 	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
-	app.SetWrapper(glWrapper)
 	app.GetWindow().SetCharCallback(app.CharCallback)
-	app.AddScreen(AppScreen)
+
+	MenuScreen = createMenu()
+	SettingsScreen = createSettings(Settings)
 	app.AddScreen(MenuScreen)
 	app.AddScreen(SettingsScreen)
 	app.MenuScreen(MenuScreen)
 	app.ActivateScreen(MenuScreen)
+
+	FormScreenApp = formScreenApp(TestSettings)
+	MenuScreenApp = menuScreenApp()
+	app.AddScreen(MenuScreenApp)
+	app.AddScreen(FormScreenApp)
 
 	lastUpdate = time.Now().UnixNano()
 
