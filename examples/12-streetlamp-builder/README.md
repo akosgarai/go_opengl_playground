@@ -5,7 +5,7 @@ The purpose of this application is to demonstrate the StreetLampBuilder tool. Th
 How to run the application (if you are in the main directory):
 
 ```
-go run examples/12-room-builder/app.go
+go run examples/12-streetlamp-builder/app.go
 ```
 
 The app starts the menu screen, where you can start the world screen with the current settings, activate the settings screen to update the settings, exit the application. If the world has been started, the menu screen changes, the continue activates the world screen, with the latest state, the restart option activates the world screen with the latest settings.
