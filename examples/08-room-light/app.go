@@ -34,8 +34,7 @@ const (
 	CameraDistance       = 0.1
 	FontFile             = "/assets/fonts/Desyrel/desyrel.ttf"
 	LEFT_MOUSE_BUTTON    = glfw.MouseButtonLeft
-	MENU_BUTTON          = glfw.KeyM
-	TOGGLE_DOOR_BUTTON   = glfw.KeyC
+	Epsilon              = float64(200)
 )
 
 var (
@@ -53,40 +52,28 @@ var (
 	lastUpdate             int64
 	startTime              int64
 	DirectionalLightSource *light.Light
-	PointLightSource_1     *light.Light
-	PointLightSource_2     *light.Light
-	SpotLightSource_1      *light.Light
-	SpotLightSource_2      *light.Light
 
 	TexModel                  = model.New()
 	DirectionalLightDirection = (mgl32.Vec3{0.5, 0.5, -0.7}).Normalize()
 	DirectionalLightAmbient   = mgl32.Vec3{0.3, 0.3, 0.3}
 	DirectionalLightDiffuse   = mgl32.Vec3{0.3, 0.3, 0.3}
 	DirectionalLightSpecular  = mgl32.Vec3{0.3, 0.3, 0.3}
-	PointLightAmbient         = mgl32.Vec3{0.5, 0.5, 0.5}
-	PointLightDiffuse         = mgl32.Vec3{0.5, 0.5, 0.5}
-	PointLightSpecular        = mgl32.Vec3{0.5, 0.5, 0.5}
-	PointLightPosition_1      = mgl32.Vec3{8, -0.5, -1.0}
-	PointLightPosition_2      = mgl32.Vec3{8, -5, -30}
 	LightConstantTerm         = float32(1.0)
 	LightLinearTerm           = float32(0.14)
 	LightQuadraticTerm        = float32(0.07)
 	SpotLightAmbient          = mgl32.Vec3{1, 1, 1}
 	SpotLightDiffuse          = mgl32.Vec3{1, 1, 1}
 	SpotLightSpecular         = mgl32.Vec3{1, 1, 1}
-	SpotLightDirection_1      = (mgl32.Vec3{0, 1, 0}).Normalize()
-	SpotLightDirection_2      = (mgl32.Vec3{0, 1, 0}).Normalize()
-	SpotLightPosition_1       = mgl32.Vec3{0.20, -6, -0.65}
-	SpotLightPosition_2       = mgl32.Vec3{10.20, -6, -0.65}
-	SpotLightCutoff_1         = float32(4)
-	SpotLightCutoff_2         = float32(4)
-	SpotLightOuterCutoff_1    = float32(5)
-	SpotLightOuterCutoff_2    = float32(5)
+	SpotLightCutoff           = float32(4)
+	SpotLightOuterCutoff      = float32(5)
 
 	DefaultMaterial   = material.Jade
 	HighlightMaterial = material.Ruby
 
 	glWrapper glwrapper.Wrapper
+
+	LampOn     bool
+	LastToggle float64
 )
 
 // Setup keymap for the camera movement
@@ -145,6 +132,7 @@ func Update() {
 	// Delta
 	nowNano := time.Now().UnixNano()
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
+	LastToggle += delta
 	lastUpdate = nowNano
 	app.SetUniformFloat("time", float32(float64(nowNano-startTime)/float64(time.Second)))
 	app.Update(delta)
@@ -175,9 +163,21 @@ func Update() {
 		}
 		break
 	case *model.Room:
-		if app.GetKeyState(TOGGLE_DOOR_BUTTON) {
+		if app.GetMouseButtonState(LEFT_MOUSE_BUTTON) {
 			room := mdl.(*model.Room)
 			room.PushDoorState()
+		}
+		break
+	case *model.StreetLamp:
+		if app.GetMouseButtonState(LEFT_MOUSE_BUTTON) && LastToggle > Epsilon {
+			LastToggle = 0
+			LampOn = !LampOn
+			light := mdl.(*model.StreetLamp)
+			if LampOn {
+				light.TurnLampOn()
+			} else {
+				light.TurnLampOff()
+			}
 		}
 		break
 	}
@@ -268,13 +268,22 @@ func main() {
 	Room3 = builder.BuildTexture()
 	AppScreen.AddModelToShader(Room3, shaderProgramTextureMat)
 
-	streetLamp := model.NewMaterialStreetLamp(GroundPos(mgl32.Vec3{-6.6, -2.0, 1.3}), 1.3, glWrapper)
-	streetLamp.RotateX(90)
-	streetLamp.RotateY(-90)
+	lampBuilder := model.NewStreetLampBuilder()
+	lampBuilder.SetWrapper(glWrapper)
+	lampBuilder.SetRotation(90, -90, 0)
+	lampBuilder.SetPosition(GroundPos(mgl32.Vec3{-6.6, -2.0, 1.3}))
+	lampBuilder.SetPoleLength(1.3)
+	lampBuilder.SetLightTerms(LightConstantTerm, LightLinearTerm, LightQuadraticTerm)
+	lampBuilder.SetCutoff(SpotLightCutoff, SpotLightOuterCutoff)
+	lightMaterial := material.New(SpotLightAmbient,
+		SpotLightDiffuse,
+		SpotLightSpecular,
+		256.0)
+	lampBuilder.SetBulbMaterial(lightMaterial)
+	streetLamp := lampBuilder.BuildMaterial()
 	AppScreen.AddModelToShader(streetLamp, shaderProgramMaterial)
-	streetLampDark := model.NewTexturedStreetLamp(GroundPos(mgl32.Vec3{-4.8, -2.0, 6.9}), 1.3, glWrapper)
-	streetLampDark.RotateX(90)
-	streetLampDark.RotateY(-90)
+	lampBuilder.SetPosition(GroundPos(mgl32.Vec3{-4.8, -2.0, 6.9}))
+	streetLampDark := lampBuilder.BuildTexture()
 	AppScreen.AddModelToShader(streetLampDark, shaderProgramTextureMat)
 
 	// directional light is coming from the up direction but not from too up.
@@ -284,39 +293,17 @@ func main() {
 		DirectionalLightDiffuse,
 		DirectionalLightSpecular,
 	})
-	PointLightSource_1 = light.NewPointLight([4]mgl32.Vec3{
-		PointLightPosition_1,
-		PointLightAmbient,
-		PointLightDiffuse,
-		PointLightSpecular},
-		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
-	SpotLightSource_1 = light.NewSpotLight([5]mgl32.Vec3{
-		streetLamp.GetBulbPosition(),
-		SpotLightDirection_1,
-		SpotLightAmbient,
-		SpotLightDiffuse,
-		SpotLightSpecular},
-		[5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, SpotLightCutoff_1, SpotLightOuterCutoff_1})
-	SpotLightSource_2 = light.NewSpotLight([5]mgl32.Vec3{
-		streetLampDark.GetBulbPosition(),
-		SpotLightDirection_2,
-		SpotLightAmbient,
-		SpotLightDiffuse,
-		SpotLightSpecular},
-		[5]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm, SpotLightCutoff_2, SpotLightOuterCutoff_2})
-	PointLightSource_2 = light.NewPointLight([4]mgl32.Vec3{
-		PointLightPosition_2,
-		PointLightAmbient,
-		PointLightDiffuse,
-		PointLightSpecular},
-		[3]float32{LightConstantTerm, LightLinearTerm, LightQuadraticTerm})
 
 	// Add the lightources to the application
 	AppScreen.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
-	//AppScreen.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
-	//AppScreen.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
-	AppScreen.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
-	AppScreen.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
+	AppScreen.AddSpotLightSource(streetLamp.GetLightSource(), [10]string{
+		"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient",
+		"spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant",
+		"spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
+	AppScreen.AddSpotLightSource(streetLampDark.GetLightSource(), [10]string{
+		"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient",
+		"spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant",
+		"spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 	AppScreen.Setup(setupApp)
 
 	lastUpdate = time.Now().UnixNano()

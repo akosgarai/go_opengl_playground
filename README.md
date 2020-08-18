@@ -20,13 +20,22 @@ go run examples/directory-name/app.go
 
 ## Possible issues ubuntu.
 
+- Missing dependencies
+
+For using this app,the following packagees needs to be installed: `libgl1-mesa-dev`, `xorg-dev`, `mesa-utils`.
+It some of them missing, run the following command:
+
+```bash
+sudo apt-get install libgl1-mesa-dev xorg-dev mesa-util
+```
+
 - Opengl version mismatch.
 
 The applications are using the opengl 4.1 package. If your version is same or higher, the appliactions should run without issues.
 To check your opengl version just run the following command in terminal (based on [this](https://askubuntu.com/questions/47062/what-is-terminal-command-that-can-show-opengl-version)):
 
 ```bash
-glxinfo | grep "OpenGL version"
+glxinfo | grep "OpenGL core profile version string"
 ```
 
-The output is something like: `OpenGL version string: 4.6.0 NVIDIA 440.82`.
+The output is something like: `OpenGL core profile version string: 4.6.0 NVIDIA 440.100`.

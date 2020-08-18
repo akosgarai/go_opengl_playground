@@ -12,6 +12,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
 	"github.com/akosgarai/playground_engine/pkg/interfaces"
 	"github.com/akosgarai/playground_engine/pkg/light"
+	"github.com/akosgarai/playground_engine/pkg/material"
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
 	"github.com/akosgarai/playground_engine/pkg/primitives/cuboid"
@@ -20,7 +21,6 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
 	"github.com/akosgarai/playground_engine/pkg/texture"
-	"github.com/akosgarai/playground_engine/pkg/transformations"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -46,8 +46,6 @@ var (
 	DirectionalLightSource *light.Light
 	PointLightSource_1     *light.Light
 	PointLightSource_2     *light.Light
-	SpotLightSource_1      *light.Light
-	SpotLightSource_2      *light.Light
 
 	SettingsScreen *screen.FormScreen
 	MenuScreen     *screen.MenuScreen
@@ -83,10 +81,6 @@ func InitSettings() {
 	Settings.AddConfig("SLSpecular", "SL specular", "The specular color component of the spot lightsource.", mgl32.Vec3{1.0, 1.0, 1.0}, colorValidator)
 	Settings.AddConfig("SLCutoff", "SL cutoff", "The inner cutoff component of the spot light equasion.", float32(4.0), nil)
 	Settings.AddConfig("SLOuterCutoff", "SL o. cutoff", "The inner cutoff component of the spot light equasion.", float32(5.0), nil)
-	Settings.AddConfig("SL1Position", "SL1 position", "The position vector of the 1. spot lightsource.", mgl32.Vec3{0.20, -6, -0.65}, nil)
-	Settings.AddConfig("SL1Direction", "SL1 direction", "The direction vector of the 1. spot lightsource.", mgl32.Vec3{0, 1, 0}, nil)
-	Settings.AddConfig("SL2Position", "SL2 position", "The position vector of the 2. spot lightsource.", mgl32.Vec3{10.20, -6, -0.65}, nil)
-	Settings.AddConfig("SL2Direction", "SL2 direction", "The direction vector of the 2. spot lightsource.", mgl32.Vec3{0, 1, 0}, nil)
 	// boxes
 	Settings.AddConfig("Box1Position", "Box 1 pos", "The position vector of the 1. box.", mgl32.Vec3{-5.0, -0.51, 0.0}, nil)
 	Settings.AddConfig("Box2Position", "Box 2 pos", "The position vector of the 2. box.", mgl32.Vec3{0.0, -0.51, 0.0}, nil)
@@ -151,17 +145,45 @@ func CreateCubeMesh(t texture.Textures, pos mgl32.Vec3) *mesh.TexturedMesh {
 }
 
 // It generates the lamp. Now it uses the StreetLamp model for creating it.
-func StreetLamp(position mgl32.Vec3) *model.StreetLamp {
-	StreetLamp := model.NewMaterialStreetLamp(position, transformations.Float32Abs(position.Y()), glWrapper)
-	StreetLamp.RotateX(90)
-	StreetLamp.RotateY(-90)
-	return StreetLamp
+func StreetLamp() *model.StreetLamp {
+	builder := model.NewStreetLampBuilder()
+	builder.SetWrapper(glWrapper)
+	builder.SetPosition(Settings["StreetLamp1Position"].GetCurrentValue().(mgl32.Vec3))
+	c := Settings["LSConstantTerm"].GetCurrentValue().(float32)
+	l := Settings["LSLinearTerm"].GetCurrentValue().(float32)
+	q := Settings["LSQuadraticTerm"].GetCurrentValue().(float32)
+	builder.SetLightTerms(c, l, q)
+	cutoff := Settings["SLCutoff"].GetCurrentValue().(float32)
+	outerCutoff := Settings["SLOuterCutoff"].GetCurrentValue().(float32)
+	builder.SetCutoff(cutoff, outerCutoff)
+	builder.SetPoleLength(6.0)
+	builder.SetRotation(90, -90, 0)
+	mat := material.New(Settings["SLAmbient"].GetCurrentValue().(mgl32.Vec3),
+		Settings["SLDiffuse"].GetCurrentValue().(mgl32.Vec3),
+		Settings["SLSpecular"].GetCurrentValue().(mgl32.Vec3),
+		256.0)
+	builder.SetBulbMaterial(mat)
+	return builder.BuildMaterial()
 }
-func TexturedStreetLamp(position mgl32.Vec3) *model.StreetLamp {
-	StreetLamp := model.NewTexturedStreetLamp(position, transformations.Float32Abs(position.Y()), glWrapper)
-	StreetLamp.RotateX(90)
-	StreetLamp.RotateY(-90)
-	return StreetLamp
+func TexturedStreetLamp() *model.StreetLamp {
+	builder := model.NewStreetLampBuilder()
+	builder.SetWrapper(glWrapper)
+	builder.SetPosition(Settings["StreetLamp2Position"].GetCurrentValue().(mgl32.Vec3))
+	c := Settings["LSConstantTerm"].GetCurrentValue().(float32)
+	l := Settings["LSLinearTerm"].GetCurrentValue().(float32)
+	q := Settings["LSQuadraticTerm"].GetCurrentValue().(float32)
+	builder.SetLightTerms(c, l, q)
+	cutoff := Settings["SLCutoff"].GetCurrentValue().(float32)
+	outerCutoff := Settings["SLOuterCutoff"].GetCurrentValue().(float32)
+	builder.SetCutoff(cutoff, outerCutoff)
+	builder.SetPoleLength(6.0)
+	builder.SetRotation(90, -90, 0)
+	mat := material.New(Settings["SLAmbient"].GetCurrentValue().(mgl32.Vec3),
+		Settings["SLDiffuse"].GetCurrentValue().(mgl32.Vec3),
+		Settings["SLSpecular"].GetCurrentValue().(mgl32.Vec3),
+		256.0)
+	builder.SetBulbMaterial(mat)
+	return builder.BuildTexture()
 }
 
 func TexturedBug(t texture.Textures) *mesh.TexturedMesh {
@@ -241,10 +263,6 @@ func createSettings(defaults config.Config) *screen.FormScreen {
 		"SLDiffuse",
 		"SLSpecular",
 		"SLCutoff", "SLOuterCutoff",
-		"SL1Position",
-		"SL1Direction",
-		"SL2Position",
-		"SL2Direction",
 
 		"Box1Position",
 		"Box2Position",
@@ -343,39 +361,11 @@ func mainScreen() *screen.Screen {
 			Settings["LSLinearTerm"].GetCurrentValue().(float32),
 			Settings["LSQuadraticTerm"].GetCurrentValue().(float32),
 		})
-	SpotLightSource_1 = light.NewSpotLight([5]mgl32.Vec3{
-		Settings["SL1Position"].GetCurrentValue().(mgl32.Vec3),
-		Settings["SL1Direction"].GetCurrentValue().(mgl32.Vec3).Normalize(),
-		Settings["SLAmbient"].GetCurrentValue().(mgl32.Vec3),
-		Settings["SLDiffuse"].GetCurrentValue().(mgl32.Vec3),
-		Settings["SLSpecular"].GetCurrentValue().(mgl32.Vec3)},
-		[5]float32{
-			Settings["LSConstantTerm"].GetCurrentValue().(float32),
-			Settings["LSLinearTerm"].GetCurrentValue().(float32),
-			Settings["LSQuadraticTerm"].GetCurrentValue().(float32),
-			Settings["SLCutoff"].GetCurrentValue().(float32),
-			Settings["SLOuterCutoff"].GetCurrentValue().(float32),
-		})
-	SpotLightSource_2 = light.NewSpotLight([5]mgl32.Vec3{
-		Settings["SL2Position"].GetCurrentValue().(mgl32.Vec3),
-		Settings["SL2Direction"].GetCurrentValue().(mgl32.Vec3).Normalize(),
-		Settings["SLAmbient"].GetCurrentValue().(mgl32.Vec3),
-		Settings["SLDiffuse"].GetCurrentValue().(mgl32.Vec3),
-		Settings["SLSpecular"].GetCurrentValue().(mgl32.Vec3)},
-		[5]float32{
-			Settings["LSConstantTerm"].GetCurrentValue().(float32),
-			Settings["LSLinearTerm"].GetCurrentValue().(float32),
-			Settings["LSQuadraticTerm"].GetCurrentValue().(float32),
-			Settings["SLCutoff"].GetCurrentValue().(float32),
-			Settings["SLOuterCutoff"].GetCurrentValue().(float32),
-		})
 
 	// Add the lightources to the application
 	scrn.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
 	scrn.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
 	scrn.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
-	scrn.AddSpotLightSource(SpotLightSource_1, [10]string{"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient", "spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant", "spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
-	scrn.AddSpotLightSource(SpotLightSource_2, [10]string{"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient", "spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant", "spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 
 	// Define the shader application for the textured meshes.
 	shaderProgramTexture := shader.NewShader(baseDir()+"/shaders/texture.vert", baseDir()+"/shaders/texture.frag", glWrapper)
@@ -414,10 +404,18 @@ func mainScreen() *screen.Screen {
 	shaderProgramTextureMat := shader.NewShader(baseDir()+"/shaders/texturemat.vert", baseDir()+"/shaders/texturemat.frag", glWrapper)
 	scrn.AddShader(shaderProgramTextureMat)
 
-	lamp1 := TexturedStreetLamp(Settings["StreetLamp1Position"].GetCurrentValue().(mgl32.Vec3))
+	lamp1 := TexturedStreetLamp()
 	scrn.AddModelToShader(lamp1, shaderProgramTextureMat)
-	lamp2 := StreetLamp(Settings["StreetLamp2Position"].GetCurrentValue().(mgl32.Vec3))
+	lamp2 := StreetLamp()
 	scrn.AddModelToShader(lamp2, shaderProgramMaterial)
+	scrn.AddSpotLightSource(lamp1.GetLightSource(), [10]string{
+		"spotLight[0].position", "spotLight[0].direction", "spotLight[0].ambient",
+		"spotLight[0].diffuse", "spotLight[0].specular", "spotLight[0].constant",
+		"spotLight[0].linear", "spotLight[0].quadratic", "spotLight[0].cutOff", "spotLight[0].outerCutOff"})
+	scrn.AddSpotLightSource(lamp2.GetLightSource(), [10]string{
+		"spotLight[1].position", "spotLight[1].direction", "spotLight[1].ambient",
+		"spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant",
+		"spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 
 	Bug1 = model.NewBug(
 		Settings["BugPosition"].GetCurrentValue().(mgl32.Vec3),
