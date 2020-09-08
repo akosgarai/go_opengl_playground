@@ -31,13 +31,11 @@ var (
 	MenuScreen     *screen.MenuScreen
 	AppScreen      *screen.Screen
 	Settings       = config.New()
-	SpotLight      light.Light
 
 	glWrapper glwrapper.Wrapper
 
 	lastUpdate int64
 	startTime  int64
-	LampOn     bool
 )
 
 func InitRoomSettings() {
