@@ -44,7 +44,6 @@ var (
 	lastUpdate             int64
 	startTime              int64
 	DirectionalLightSource *light.Light
-	PointLightSource_1     *light.Light
 	PointLightSource_2     *light.Light
 
 	SettingsScreen *screen.FormScreen
@@ -109,7 +108,7 @@ func InitSettings() {
 	// - move speed
 	Settings.AddConfig("CameraVelocity", "Cam Speed", "The movement velocity of the camera. If it moves, it moves with this speed.", float32(0.005), nil)
 	// - direction speed
-	Settings.AddConfig("CameraRotation", "Cam Rotate", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", float32(0.005), nil)
+	Settings.AddConfig("CameraRotation", "Cam Rotate", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", float32(0.05), nil)
 	// - rotate on edge distance.
 	Settings.AddConfig("CameraRotationEdge", "Cam Edge", "The rotation cam be triggered if the mouse is near to the edge of the screen.", float32(0.1), nil)
 }
@@ -214,20 +213,10 @@ func CreateCameraFromSettings() *camera.Camera {
 	camera.SetRotationStep(directionSpeed)
 	return camera
 }
-func RotateBugOne(now int64) {
-	moveTime := float64(now-BugOneLastRotate) / float64(time.Millisecond)
-	if moveTime > float64(Settings["BugForwardTime"].GetCurrentValue().(float32)) {
-		BugOneLastRotate = now
-		// rotate 45 deg
-		Bug1.RotateY(Settings["BugRotationAngle"].GetCurrentValue().(float32))
-	}
-}
 func Update() {
 	nowNano := time.Now().UnixNano()
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
-	RotateBugOne(nowNano)
-	PointLightSource_1.SetPosition(Bug1.GetBottomPosition())
 	PointLightSource_2.SetPosition(Bug2.GetPosition())
 	app.Update(delta)
 }
@@ -341,16 +330,6 @@ func mainScreen() *screen.Screen {
 		Settings["DLDiffuse"].GetCurrentValue().(mgl32.Vec3),
 		Settings["DLSpecular"].GetCurrentValue().(mgl32.Vec3),
 	})
-	PointLightSource_1 = light.NewPointLight([4]mgl32.Vec3{
-		Settings["PL1Position"].GetCurrentValue().(mgl32.Vec3),
-		Settings["PLAmbient"].GetCurrentValue().(mgl32.Vec3),
-		Settings["PLDiffuse"].GetCurrentValue().(mgl32.Vec3),
-		Settings["PLSpecular"].GetCurrentValue().(mgl32.Vec3)},
-		[3]float32{
-			Settings["LSConstantTerm"].GetCurrentValue().(float32),
-			Settings["LSLinearTerm"].GetCurrentValue().(float32),
-			Settings["LSQuadraticTerm"].GetCurrentValue().(float32),
-		})
 	PointLightSource_2 = light.NewPointLight([4]mgl32.Vec3{
 		Settings["PL2Position"].GetCurrentValue().(mgl32.Vec3),
 		Settings["PLAmbient"].GetCurrentValue().(mgl32.Vec3),
@@ -364,7 +343,6 @@ func mainScreen() *screen.Screen {
 
 	// Add the lightources to the application
 	scrn.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
-	scrn.AddPointLightSource(PointLightSource_1, [7]string{"pointLight[0].position", "pointLight[0].ambient", "pointLight[0].diffuse", "pointLight[0].specular", "pointLight[0].constant", "pointLight[0].linear", "pointLight[0].quadratic"})
 	scrn.AddPointLightSource(PointLightSource_2, [7]string{"pointLight[1].position", "pointLight[1].ambient", "pointLight[1].diffuse", "pointLight[1].specular", "pointLight[1].constant", "pointLight[1].linear", "pointLight[1].quadratic"})
 
 	// Define the shader application for the textured meshes.
@@ -417,14 +395,33 @@ func mainScreen() *screen.Screen {
 		"spotLight[1].diffuse", "spotLight[1].specular", "spotLight[1].constant",
 		"spotLight[1].linear", "spotLight[1].quadratic", "spotLight[1].cutOff", "spotLight[1].outerCutOff"})
 
-	Bug1 = model.NewBug(
-		Settings["BugPosition"].GetCurrentValue().(mgl32.Vec3),
-		Settings["BugScale"].GetCurrentValue().(mgl32.Vec3),
-		glWrapper)
-	Bug1.SetDirection(mgl32.Vec3{1, 0, 0})
-	Bug1.SetSpeed(Settings["BugVelocity"].GetCurrentValue().(float32))
+	bBuilder := model.NewBugBuilder()
+	bBuilder.SetWrapper(glWrapper)
+	bBuilder.SetPosition(Settings["BugPosition"].GetCurrentValue().(mgl32.Vec3))
+	bBuilder.SetScale(Settings["BugScale"].GetCurrentValue().(mgl32.Vec3))
+	bBuilder.SetDirection(mgl32.Vec3{1, 0, 0})
+	bBuilder.SetVelocity(Settings["BugVelocity"].GetCurrentValue().(float32))
+	bBuilder.SetWithLight(true)
+	c := Settings["LSConstantTerm"].GetCurrentValue().(float32)
+	l := Settings["LSLinearTerm"].GetCurrentValue().(float32)
+	q := Settings["LSQuadraticTerm"].GetCurrentValue().(float32)
+	bBuilder.SetLightTerms(c, l, q)
+	bBuilder.SetLightAmbient(Settings["PLAmbient"].GetCurrentValue().(mgl32.Vec3))
+	bBuilder.SetLightDiffuse(Settings["PLDiffuse"].GetCurrentValue().(mgl32.Vec3))
+	bBuilder.SetLightSpecular(Settings["PLSpecular"].GetCurrentValue().(mgl32.Vec3))
+	bBuilder.SetWithWings(true)
+	bBuilder.SetWingStrikeTime(250)
+	bBuilder.SetSameDirectionTime(Settings["BugForwardTime"].GetCurrentValue().(float32))
+	bBuilder.SetMovementRotationAxis(mgl32.Vec3{0, 1, 0})
+	bBuilder.SetMovementRotationAngle(Settings["BugRotationAngle"].GetCurrentValue().(float32))
 
-	scrn.AddModelToShader(Bug1, shaderProgramMaterial)
+	bug := bBuilder.BuildMaterial()
+	scrn.AddPointLightSource(bug.GetLightSource(), [7]string{
+		"pointLight[0].position",
+		"pointLight[0].ambient", "pointLight[0].diffuse",
+		"pointLight[0].specular", "pointLight[0].constant",
+		"pointLight[0].linear", "pointLight[0].quadratic"})
+	scrn.AddModelToShader(bug, shaderProgramMaterial)
 
 	// sun texture
 	var sunTexture texture.Textures
