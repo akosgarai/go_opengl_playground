@@ -23,9 +23,6 @@ const (
 	WindowWidth  = 800
 	WindowHeight = 800
 	WindowTitle  = "Example - bug builder tool."
-
-	TOGGLE_LIGHT_BUTTON = glfw.KeyC
-	Epsilon             = float64(200)
 )
 
 var (
@@ -41,7 +38,6 @@ var (
 	lastUpdate int64
 	startTime  int64
 	LampOn     bool
-	LastToggle float64
 )
 
 func InitRoomSettings() {
@@ -181,23 +177,6 @@ func Update() {
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
 	app.Update(delta)
-	LastToggle += delta
-	mdl, _, _ := app.GetClosestModelMeshDistance()
-	switch mdl.(type) {
-	case *model.StreetLamp:
-		if app.GetKeyState(TOGGLE_LIGHT_BUTTON) && LastToggle > Epsilon {
-			LastToggle = 0
-			LampOn = !LampOn
-			light := mdl.(*model.StreetLamp)
-			if LampOn {
-				light.TurnLampOn()
-			} else {
-				light.TurnLampOff()
-			}
-
-		}
-		break
-	}
 }
 func CreateGround() *model.Terrain {
 	gb := model.NewTerrainBuilder()
