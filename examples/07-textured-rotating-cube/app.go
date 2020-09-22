@@ -92,7 +92,7 @@ func CameraMovementMap() map[string]glfw.Key {
 }
 
 // It creates a new camera with the necessary setup from settings screen
-func CreateCameraFromSettings() *camera.Camera {
+func CreateCameraFromSettings() *camera.DefaultCamera {
 	cameraPosition := Settings["CameraPos"].GetCurrentValue().(mgl32.Vec3)
 	worldUp := Settings["WorldUp"].GetCurrentValue().(mgl32.Vec3)
 	yawAngle := Settings["CameraYaw"].GetCurrentValue().(float32)

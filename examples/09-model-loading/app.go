@@ -128,7 +128,7 @@ func CameraMovementMap() map[string]glfw.Key {
 }
 
 // It creates a new camera with the necessary setup
-func CreateCamera() *camera.Camera {
+func CreateCamera() *camera.DefaultCamera {
 	camera := camera.NewCamera(mgl32.Vec3{0.0, 0.0, -5.0}, mgl32.Vec3{0, 1, 0}, 90.0, 0.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.1, 100.0)
 	camera.SetVelocity(CameraMoveSpeed)
