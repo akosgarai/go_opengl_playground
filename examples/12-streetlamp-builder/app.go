@@ -94,6 +94,8 @@ func InitRoomSettings() {
 	Settings.AddConfig("CameraRotation", "Cam Rotate", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", float32(0.05), nil)
 	// - rotate on edge distance.
 	Settings.AddConfig("CameraRotationEdge", "Cam Edge", "The rotation cam be triggered if the mouse is near to the edge of the screen.", float32(0.1), nil)
+	// - FPS camera
+	Settings.AddConfig("CameraFPS", "FPS Camera", "If this flag is true, the camera will be FPS like.", false, nil)
 }
 
 func createSettings(defaults config.Config) *screen.FormScreen {
@@ -120,6 +122,7 @@ func createSettings(defaults config.Config) *screen.FormScreen {
 		"CameraNear", "CameraFar",
 		"CameraFov", "CameraVelocity",
 		"CameraRotation", "CameraRotationEdge",
+		"CameraFPS",
 	}
 	return app.BuildFormScreen(defaults, formItemOrders, "Spotlight editor")
 }
@@ -286,7 +289,7 @@ func mainScreen() *screen.Screen {
 }
 
 // It creates a new camera with the necessary setup from settings screen
-func CreateCameraFromSettings() *camera.DefaultCamera {
+func CreateCameraFromSettings() interfaces.Camera {
 	cameraPosition := Settings["CameraPos"].GetCurrentValue().(mgl32.Vec3)
 	worldUp := Settings["WorldUp"].GetCurrentValue().(mgl32.Vec3)
 	yawAngle := Settings["CameraYaw"].GetCurrentValue().(float32)
@@ -296,11 +299,18 @@ func CreateCameraFromSettings() *camera.DefaultCamera {
 	far := Settings["CameraFar"].GetCurrentValue().(float32)
 	moveSpeed := Settings["CameraVelocity"].GetCurrentValue().(float32)
 	directionSpeed := Settings["CameraRotation"].GetCurrentValue().(float32)
-	camera := camera.NewCamera(cameraPosition, worldUp, yawAngle, pitchAngle)
-	camera.SetupProjection(fov, float32(WindowWidth)/float32(WindowHeight), near, far)
-	camera.SetVelocity(moveSpeed)
-	camera.SetRotationStep(directionSpeed)
-	return camera
+	if Settings["CameraFPS"].GetCurrentValue().(bool) {
+		cam := camera.NewFPSCamera(cameraPosition, worldUp, yawAngle, pitchAngle)
+		cam.SetupProjection(fov, float32(WindowWidth)/float32(WindowHeight), near, far)
+		cam.SetVelocity(moveSpeed)
+		cam.SetRotationStep(directionSpeed)
+		return cam
+	}
+	cam := camera.NewCamera(cameraPosition, worldUp, yawAngle, pitchAngle)
+	cam.SetupProjection(fov, float32(WindowWidth)/float32(WindowHeight), near, far)
+	cam.SetVelocity(moveSpeed)
+	cam.SetRotationStep(directionSpeed)
+	return cam
 }
 
 // Setup keymap for the camera movement
