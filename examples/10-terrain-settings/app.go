@@ -91,6 +91,8 @@ func InitSettings() {
 	Settings.AddConfig("CameraRotation", "Cam Rotate", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", float32(0.0), nil)
 	// - rotate on edge distance.
 	Settings.AddConfig("CameraRotationEdge", "Cam Edge", "The rotation cam be triggered if the mouse is near to the edge of the screen.", float32(0.0), nil)
+	// - FPS camera
+	Settings.AddConfig("CameraFPS", "FPS Camera", "If this flag is true, the camera will be FPS like.", false, nil)
 }
 
 // Setup keymap for the camera movement
@@ -105,17 +107,8 @@ func CameraMovementMap() map[string]glfw.Key {
 	return cm
 }
 
-// It creates a new camera with the necessary setup
-func CreateCamera() *camera.Camera {
-	camera := camera.NewCamera(mgl32.Vec3{0.0, -0.5, 3.0}, mgl32.Vec3{0, 1, 0}, -85.0, -0.0)
-	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.001, 20.0)
-	camera.SetVelocity(0.005)
-	camera.SetRotationStep(0.050)
-	return camera
-}
-
 // It creates a new camera with the necessary setup from settings screen
-func CreateCameraFromSettings(conf config.Config) *camera.Camera {
+func CreateCameraFromSettings(conf config.Config) interfaces.Camera {
 	cameraPosition := conf["CameraPos"].GetCurrentValue().(mgl32.Vec3)
 	worldUp := conf["WorldUp"].GetCurrentValue().(mgl32.Vec3)
 	yawAngle := conf["CameraYaw"].GetCurrentValue().(float32)
@@ -125,11 +118,18 @@ func CreateCameraFromSettings(conf config.Config) *camera.Camera {
 	far := conf["CameraFar"].GetCurrentValue().(float32)
 	moveSpeed := conf["CameraVelocity"].GetCurrentValue().(float32)
 	directionSpeed := conf["CameraRotation"].GetCurrentValue().(float32)
-	camera := camera.NewCamera(cameraPosition, worldUp, yawAngle, pitchAngle)
-	camera.SetupProjection(fov, float32(WindowWidth)/float32(WindowHeight), near, far)
-	camera.SetVelocity(moveSpeed)
-	camera.SetRotationStep(directionSpeed)
-	return camera
+	if conf["CameraFPS"].GetCurrentValue().(bool) {
+		cam := camera.NewFPSCamera(cameraPosition, worldUp, yawAngle, pitchAngle)
+		cam.SetupProjection(fov, float32(WindowWidth)/float32(WindowHeight), near, far)
+		cam.SetVelocity(moveSpeed)
+		cam.SetRotationStep(directionSpeed)
+		return cam
+	}
+	cam := camera.NewCamera(cameraPosition, worldUp, yawAngle, pitchAngle)
+	cam.SetupProjection(fov, float32(WindowWidth)/float32(WindowHeight), near, far)
+	cam.SetVelocity(moveSpeed)
+	cam.SetRotationStep(directionSpeed)
+	return cam
 }
 func baseDir() string {
 	_, filename, _, _ := runtime.Caller(1)
@@ -158,6 +158,7 @@ func createSettings(defaults config.Config) *screen.FormScreen {
 		"CameraNear", "CameraFar",
 		"CameraFov", "CameraVelocity",
 		"CameraRotation", "CameraRotationEdge",
+		"CameraFPS",
 	}
 	builder := screen.NewFormScreenBuilder()
 	builder.SetWrapper(glWrapper)
