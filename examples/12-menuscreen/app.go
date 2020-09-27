@@ -31,15 +31,14 @@ import (
 )
 
 const (
-	WindowWidth  = 800
-	WindowHeight = 800
-	WindowTitle  = "Example - menu screen"
-	FontFile     = "/assets/fonts/Desyrel/desyrel.regular.ttf"
+	WindowTitle = "Example - menu screen"
+	FontFile    = "/assets/fonts/Desyrel/desyrel.regular.ttf"
 
 	CameraMoveSpeed      = 0.005
 	CameraDirectionSpeed = float32(0.050)
 	CameraDistance       = 0.1
 	LEFT_MOUSE_BUTTON    = glfw.MouseButtonLeft
+	RefSizeInPixels      = float32(800)
 )
 
 var (
@@ -54,6 +53,8 @@ var (
 
 	DefaultMaterial   = material.Jade
 	HighlightMaterial = material.Ruby
+	WindowWidth       = 1853 / 2 //800
+	WindowHeight      = 1053     //800
 )
 
 type Glyph struct {
@@ -283,9 +284,10 @@ func setupApp(glWrapper interfaces.GLWrapper) {
 
 func main() {
 	runtime.LockOSThread()
-	Window := window.InitGlfw(WindowWidth, WindowHeight, WindowTitle)
 	app = application.New(glWrapper)
-	app.SetWindow(Window)
+	//app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
+	app.SetWindow(window.InitGlfwFullSize(WindowTitle))
+	WindowWidth, WindowHeight = app.GetWindow().GetSize()
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
@@ -298,10 +300,12 @@ func main() {
 	MenuScreen.AddShader(paperShader)
 
 	paperModel := model.New()
-	StartButton = Paper(1, 0.2, mgl32.Vec3{-0.0, 0.3, -0.0})
+	// first button mesh.
+	StartButton = Paper(RefSizeInPixels/float32(WindowWidth), 0.2*RefSizeInPixels/float32(WindowHeight), mgl32.Vec3{-0.0, 0.3 * RefSizeInPixels / float32(WindowHeight), -0.0})
 	StartButton.RotateX(-90)
 	paperModel.AddMesh(StartButton)
-	ExitButton = Paper(1, 0.2, mgl32.Vec3{-0.0, -0.3, -0.0})
+	// second button mesh.
+	ExitButton = Paper(RefSizeInPixels/float32(WindowWidth), 0.2*RefSizeInPixels/float32(WindowHeight), mgl32.Vec3{-0.0, -0.3 * RefSizeInPixels / float32(WindowHeight), -0.0})
 	ExitButton.RotateX(-90)
 	paperModel.AddMesh(ExitButton)
 
@@ -315,8 +319,9 @@ func main() {
 	cols2 := []mgl32.Vec3{
 		mgl32.Vec3{0.0, 0.0, 1.0},
 	}
-	Fonts.PrintTo(" - 1. option - ", -0.5, -0.03, 3.0/float32(WindowWidth), StartButton, cols1)
-	Fonts.PrintTo(" - 2. option - ", -0.5, -0.03, 3.0/float32(WindowWidth), ExitButton, cols2)
+	// print the given text to the given position on the surface mesh.
+	Fonts.PrintTo(" - 1. option - ", -RefSizeInPixels/float32(2*WindowWidth), -0.03, 3.0/float32(WindowWidth), StartButton, cols1)
+	Fonts.PrintTo(" - 2. option - ", -RefSizeInPixels/float32(2*WindowWidth), -0.03, 3.0/float32(WindowWidth), ExitButton, cols2)
 	Fonts.SetTransparent(true)
 	MenuScreen.AddModelToShader(Fonts, fontShader)
 	MenuScreen.Setup(setupMenu)
