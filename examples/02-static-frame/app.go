@@ -34,6 +34,7 @@ var (
 
 	WindowWidth  = 800
 	WindowHeight = 800
+	Aspect       = false
 )
 
 func init() {
@@ -50,6 +51,10 @@ func init() {
 		if err == nil {
 			WindowHeight = val
 		}
+	}
+	aspect := os.Getenv("ASPECT")
+	if aspect != "" {
+		Aspect = true
 	}
 }
 
@@ -73,29 +78,43 @@ func mainScreen() *screen.Screen {
 	// models: 4 rectangle.
 	// - top and bottom: 2 * 0.5, vertical positions: 0.75, -0.75, color: 0,0,1
 	// - left, right: 1 * 0.5 (2 - 2*widthofthetopbottom), horizontal positions: 0.75, -0.75, color: 0,1,1
+	widthMul := float32(1.0)
+	heightMul := float32(1.0)
+	if Aspect {
+		if WindowWidth > WindowHeight {
+			widthMul = float32(WindowHeight) / float32(WindowWidth)
+		}
+		if WindowWidth < WindowHeight {
+			heightMul = float32(WindowWidth) / float32(WindowHeight)
+		}
+	}
 	mod := model.New()
-	squareBaseVertical := rectangle.NewExact(2.0, 0.5)
+	verticalFrameWidth := float32(2.0)
+	verticalFrameHeight := float32(0.5) * heightMul
+	squareBaseVertical := rectangle.NewExact(verticalFrameWidth, verticalFrameHeight)
 	verticalFrameColor := []mgl32.Vec3{mgl32.Vec3{0, 0, 1}}
 	v, i, _ := squareBaseVertical.ColoredMeshInput(verticalFrameColor)
 	// top mesh
 	mshTop := mesh.NewColorMesh(v, i, verticalFrameColor, glWrapper)
-	mshTop.SetPosition(mgl32.Vec3{0, 0.75, 0})
+	mshTop.SetPosition(mgl32.Vec3{0, 1 - (verticalFrameHeight / 2), 0})
 	mod.AddMesh(mshTop)
 	// bottom mesh
 	mshBottom := mesh.NewColorMesh(v, i, verticalFrameColor, glWrapper)
-	mshBottom.SetPosition(mgl32.Vec3{0, -0.75, 0})
+	mshBottom.SetPosition(mgl32.Vec3{0, -1 + (verticalFrameHeight / 2), 0})
 	mod.AddMesh(mshBottom)
 
-	squareBaseHorizontal := rectangle.NewExact(0.5, 1.0)
+	horizontalFrameWidth := float32(0.5) * widthMul
+	horizontalFrameHeight := float32(2.0) - 2*verticalFrameHeight
+	squareBaseHorizontal := rectangle.NewExact(horizontalFrameWidth, horizontalFrameHeight)
 	horizontalFrameColor := []mgl32.Vec3{mgl32.Vec3{0, 1, 1}}
 	v, i, _ = squareBaseHorizontal.ColoredMeshInput(horizontalFrameColor)
 	// left mesh
 	mshLeft := mesh.NewColorMesh(v, i, horizontalFrameColor, glWrapper)
-	mshLeft.SetPosition(mgl32.Vec3{-0.75, 0, 0})
+	mshLeft.SetPosition(mgl32.Vec3{-1 + (horizontalFrameWidth / 2), 0, 0})
 	mod.AddMesh(mshLeft)
 	// right mesh
 	mshRight := mesh.NewColorMesh(v, i, horizontalFrameColor, glWrapper)
-	mshRight.SetPosition(mgl32.Vec3{0.75, 0, 0})
+	mshRight.SetPosition(mgl32.Vec3{1 - (horizontalFrameWidth / 2), 0, 0})
 	mod.AddMesh(mshRight)
 	mod.RotateX(90)
 	scrn.AddModelToShader(mod, shaderProgram)
