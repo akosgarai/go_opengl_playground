@@ -29,9 +29,6 @@ var (
 
 	glWrapper glwrapper.Wrapper
 
-	lastUpdate int64
-	startTime  int64
-
 	WindowWidth  = 800
 	WindowHeight = 800
 	Aspect       = false
