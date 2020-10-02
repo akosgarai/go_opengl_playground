@@ -7,3 +7,23 @@ The following environment variables are used for the setup:
 - `DECORATED` - If this env is set to "0", then the decoration of the window will be turned off (eg: no title bar).
 - `TITLE` - The value of this env (if not empty) overwrites the default window title.
 - `FULL` - If this env is set to "1", then the application will start in full screen mode.
+
+How to run the application (if you are in the main directory):
+
+With default setup:
+
+```
+go run examples/01-window-builder/app.go
+```
+
+Fullscreen mode:
+
+```
+FULL=1 go run examples/01-window-builder/app.go
+```
+
+600 * 800 window without decoration
+
+```
+WIDTH=600 HEIGHT=800 DECORATED=0 go run examples/01-window-builder/app.go
+```
