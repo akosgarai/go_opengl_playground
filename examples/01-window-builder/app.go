@@ -100,7 +100,7 @@ func (b *WindowBuilder) GetCurrentMonitorResolution() (int, int) {
 	return mode.Width, mode.Height
 }
 
-// GetCurrentMonitorPhysicalSize returns the size, in millimetres, of the display area of the monitor.
+// GetCurrentMonitorPhysicalSize returns the size, in millimeters, of the display area of the monitor.
 func (b *WindowBuilder) GetCurrentMonitorPhysicalSize() (int, int) {
 	return b.primaryMonitor.GetPhysicalSize()
 }
