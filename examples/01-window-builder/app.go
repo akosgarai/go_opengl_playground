@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"runtime"
+	"strconv"
 
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
 
@@ -10,11 +12,46 @@ import (
 )
 
 var (
-	glWrapper glwrapper.Wrapper
+	glWrapper        glwrapper.Wrapper
+	Builder          *WindowBuilder
+	WindowWidth      = 100
+	WindowHeight     = 100
+	WindowDecorated  = true
+	WindowTitle      = "Test title."
+	WindowFullScreen = false
 )
 
 func init() {
 	runtime.LockOSThread()
+
+	width := os.Getenv("WIDTH")
+	if width != "" {
+		val, err := strconv.Atoi(width)
+		if err == nil {
+			WindowWidth = val
+		}
+	}
+	height := os.Getenv("HEIGHT")
+	if height != "" {
+		val, err := strconv.Atoi(height)
+		if err == nil {
+			WindowHeight = val
+		}
+	}
+	decorated := os.Getenv("DECORATED")
+	if decorated == "0" {
+		WindowDecorated = false
+	}
+	title := os.Getenv("TITLE")
+	if title != "" {
+		WindowTitle = title
+	}
+	Builder = NewWindowBuilder()
+	fullScreen := os.Getenv("FULL")
+	if fullScreen == "1" {
+		WindowFullScreen = true
+		WindowWidth, WindowHeight = Builder.GetCurrentMonitorResolution()
+	}
 }
 
 type WindowBuilder struct {
@@ -131,15 +168,14 @@ func (b *WindowBuilder) Build() *glfw.Window {
 }
 
 func main() {
-	builder := NewWindowBuilder()
 	defer glfw.Terminate()
-	builder.PrintCurrentMonitorData()
-	builder.SetFullScreen(false)
-	builder.SetDecorated(true)
-	builder.SetTitle("Test title.")
-	builder.SetWindowSize(1920, 1080)
+	Builder.PrintCurrentMonitorData()
+	Builder.SetFullScreen(WindowFullScreen)
+	Builder.SetDecorated(WindowDecorated)
+	Builder.SetTitle(WindowTitle)
+	Builder.SetWindowSize(WindowWidth, WindowHeight)
 
-	window := builder.Build()
+	window := Builder.Build()
 	glWrapper.InitOpenGL()
 
 	program := glWrapper.CreateProgram()
