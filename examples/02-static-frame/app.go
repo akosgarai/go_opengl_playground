@@ -137,8 +137,6 @@ func mainScreen() *screen.Screen {
 }
 
 func main() {
-	runtime.LockOSThread()
-
 	app = application.New(glWrapper)
 
 	Builder.SetFullScreen(WindowFullScreen)
