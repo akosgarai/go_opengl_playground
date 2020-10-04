@@ -20,21 +20,23 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-const (
-	WindowTitle = "Example - static frame"
-)
-
 var (
 	app *application.Application
 
 	glWrapper glwrapper.Wrapper
 
-	WindowWidth  = 800
-	WindowHeight = 800
-	Aspect       = false
+	Builder          *window.WindowBuilder
+	WindowWidth      = 800
+	WindowHeight     = 800
+	WindowDecorated  = true
+	WindowTitle      = "Example - static frame"
+	WindowFullScreen = false
+	Aspect           = false
 )
 
 func init() {
+	runtime.LockOSThread()
+
 	width := os.Getenv("WIDTH")
 	if width != "" {
 		val, err := strconv.Atoi(width)
@@ -49,9 +51,24 @@ func init() {
 			WindowHeight = val
 		}
 	}
+	decorated := os.Getenv("DECORATED")
+	if decorated == "0" {
+		WindowDecorated = false
+	}
+	title := os.Getenv("TITLE")
+	if title != "" {
+		WindowTitle = title
+	}
+	Builder = window.NewWindowBuilder()
+	fullScreen := os.Getenv("FULL")
+	if fullScreen == "1" {
+		WindowFullScreen = true
+		WindowWidth, WindowHeight = Builder.GetCurrentMonitorResolution()
+	}
 	aspect := os.Getenv("ASPECT")
 	if aspect != "" {
 		Aspect = true
+
 	}
 }
 
@@ -64,6 +81,7 @@ func setupApp(glWrapper interfaces.GLWrapper) {
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
 	glWrapper.DepthFunc(glwrapper.LESS)
 	glWrapper.ClearColor(1.0, 1.0, 0.0, 1.0)
+	glWrapper.Viewport(0, 0, int32(WindowWidth), int32(WindowHeight))
 }
 
 func mainScreen() *screen.Screen {
@@ -122,7 +140,14 @@ func main() {
 	runtime.LockOSThread()
 
 	app = application.New(glWrapper)
-	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
+
+	Builder.SetFullScreen(WindowFullScreen)
+	Builder.SetDecorated(WindowDecorated)
+	Builder.SetTitle(WindowTitle)
+	Builder.SetWindowSize(WindowWidth, WindowHeight)
+	Builder.PrintCurrentMonitorData()
+
+	app.SetWindow(Builder.Build())
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
