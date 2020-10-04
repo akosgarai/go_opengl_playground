@@ -1,8 +1,10 @@
 package main
 
 import (
+	"os"
 	"path"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/akosgarai/playground_engine/pkg/application"
@@ -24,12 +26,7 @@ import (
 )
 
 const (
-	WindowWidth  = 800
-	WindowHeight = 800
-	WindowTitle  = "Example - terrain generator with settings"
-	FontFile     = "/assets/fonts/Desyrel/desyrel.regular.ttf"
-
-	LEFT_MOUSE_BUTTON = glfw.MouseButtonLeft
+	FontFile = "/assets/fonts/Desyrel/desyrel.regular.ttf"
 )
 
 var (
@@ -42,6 +39,14 @@ var (
 	startTime      int64
 	Settings       = config.New()
 
+	Builder          *window.WindowBuilder
+	WindowWidth      = 800
+	WindowHeight     = 800
+	WindowDecorated  = true
+	WindowTitle      = "Example - terrain generator with settings"
+	WindowFullScreen = false
+	Aspect           = false
+
 	DefaultMaterial   = material.Jade
 	HighlightMaterial = material.Ruby
 
@@ -51,7 +56,43 @@ var (
 	DirectionalLightSpecular  = mgl32.Vec3{0.3, 0.3, 0.3}
 )
 
-func InitSettings() {
+func init() {
+	runtime.LockOSThread()
+
+	width := os.Getenv("WIDTH")
+	if width != "" {
+		val, err := strconv.Atoi(width)
+		if err == nil {
+			WindowWidth = val
+		}
+	}
+	height := os.Getenv("HEIGHT")
+	if height != "" {
+		val, err := strconv.Atoi(height)
+		if err == nil {
+			WindowHeight = val
+		}
+	}
+	decorated := os.Getenv("DECORATED")
+	if decorated == "0" {
+		WindowDecorated = false
+	}
+	title := os.Getenv("TITLE")
+	if title != "" {
+		WindowTitle = title
+	}
+	Builder = window.NewWindowBuilder()
+	fullScreen := os.Getenv("FULL")
+	if fullScreen == "1" {
+		WindowFullScreen = true
+		WindowWidth, WindowHeight = Builder.GetCurrentMonitorResolution()
+	}
+	aspect := os.Getenv("ASPECT")
+	if aspect != "" {
+		Aspect = true
+
+	}
+
 	Settings.AddConfig("Width", "Rows (i)", "The width / rows of the heightmap of the terrain.", 4, nil)
 	Settings.AddConfig("Length", "Cols (i)", "The length / columns of the heightmap of the terrain.", 4, nil)
 	Settings.AddConfig("Iterations", "Iter (i)", "The number of the iterations of the random height generation step.", 10, nil)
@@ -255,6 +296,7 @@ func setupApp(glWrapper interfaces.GLWrapper) {
 	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
 	col := Settings["ClearCol"].GetCurrentValue().(mgl32.Vec3)
 	glWrapper.ClearColor(col.X(), col.Y(), col.Z(), 1.0)
+	glWrapper.Viewport(0, 0, int32(WindowWidth), int32(WindowHeight))
 }
 func Update() {
 	nowNano := time.Now().UnixNano()
@@ -328,13 +370,17 @@ func createMenu() *screen.MenuScreen {
 }
 
 func main() {
-	runtime.LockOSThread()
 	app = application.New(glWrapper)
-	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
+	Builder.SetFullScreen(WindowFullScreen)
+	Builder.SetDecorated(WindowDecorated)
+	Builder.SetTitle(WindowTitle)
+	Builder.SetWindowSize(WindowWidth, WindowHeight)
+	Builder.PrintCurrentMonitorData()
+
+	app.SetWindow(Builder.Build())
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
-	InitSettings()
 	MenuScreen = createMenu()
 	SettingsScreen = createSettings(Settings)
 	AppScreen = createGame(Settings, SettingsScreen)
