@@ -1,7 +1,9 @@
 package main
 
 import (
+	"os"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/akosgarai/playground_engine/pkg/application"
@@ -21,10 +23,6 @@ import (
 )
 
 const (
-	WindowWidth  = 800
-	WindowHeight = 800
-	WindowTitle  = "Example - streetlamp builder tool."
-
 	TOGGLE_LIGHT_BUTTON = glfw.KeyC
 	Epsilon             = float64(200)
 )
@@ -43,9 +41,52 @@ var (
 	startTime  int64
 	LampOn     bool
 	LastToggle float64
+
+	Builder          *window.WindowBuilder
+	WindowTitle      = "Example - streetlamp builder tool."
+	WindowWidth      = 800
+	WindowHeight     = 800
+	WindowDecorated  = true
+	WindowFullScreen = false
+	Aspect           = false
 )
 
-func InitRoomSettings() {
+func init() {
+	runtime.LockOSThread()
+
+	width := os.Getenv("WIDTH")
+	if width != "" {
+		val, err := strconv.Atoi(width)
+		if err == nil {
+			WindowWidth = val
+		}
+	}
+	height := os.Getenv("HEIGHT")
+	if height != "" {
+		val, err := strconv.Atoi(height)
+		if err == nil {
+			WindowHeight = val
+		}
+	}
+	decorated := os.Getenv("DECORATED")
+	if decorated == "0" {
+		WindowDecorated = false
+	}
+	title := os.Getenv("TITLE")
+	if title != "" {
+		WindowTitle = title
+	}
+	Builder = window.NewWindowBuilder()
+	fullScreen := os.Getenv("FULL")
+	if fullScreen == "1" {
+		WindowFullScreen = true
+		WindowWidth, WindowHeight = Builder.GetCurrentMonitorResolution()
+	}
+	aspect := os.Getenv("ASPECT")
+	if aspect != "" {
+		Aspect = true
+
+	}
 	var colorValidator model.FloatValidator
 	colorValidator = func(f float32) bool { return f >= 0 && f <= 1 }
 	Settings.AddConfig("GroundWidth", "Ground width", "The value is used for generating map. The GroundBuilder will generate width*width tiles total.", int(10), nil)
@@ -326,10 +367,13 @@ func CameraMovementMap() map[string]glfw.Key {
 }
 
 func main() {
-	runtime.LockOSThread()
-	InitRoomSettings()
 	app = application.New(glWrapper)
-	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
+	Builder.SetFullScreen(WindowFullScreen)
+	Builder.SetDecorated(WindowDecorated)
+	Builder.SetTitle(WindowTitle)
+	Builder.SetWindowSize(WindowWidth, WindowHeight)
+
+	app.SetWindow(Builder.Build())
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
