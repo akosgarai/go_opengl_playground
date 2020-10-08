@@ -5,6 +5,10 @@ This application demonstrates my FPS camera solution. It has to provide a terrai
 ## Features
 
 - Window setup with environment variables.
+- Ground builder settings
+- Camera builder settings
+- Room builder settings
+- Lamp builder settings
 
 ## Samples
 
