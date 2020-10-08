@@ -202,7 +202,7 @@ func CameraMovementMap() map[string]glfw.Key {
 	return cm
 }
 
-// It creates the terrain model. Currently the width and scale is managable.
+// It creates the terrain model. Currently the width and scale is manageable.
 func CreateGround() *model.Terrain {
 	gb := model.NewTerrainBuilder()
 	w := Settings["GroundWidth"].GetCurrentValue().(int)
