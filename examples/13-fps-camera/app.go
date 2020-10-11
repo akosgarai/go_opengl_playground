@@ -305,12 +305,20 @@ func CreateMenuScreen() *screen.MenuScreen {
 		return !m["world-started"]
 	}
 	restartEvent := func() {
+		// Disable mouse cursor
+		app.GetWindow().SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
+		app.GetWindow().SetInputMode(glfw.RawMouseMotion, 1)
+
 		lastUpdate = time.Now().UnixNano()
 		startTime = lastUpdate
 		AppScreen = CreateApplicationScreen()
 		app.ActivateScreen(AppScreen)
 	}
 	startEvent := func() {
+		// Disable mouse cursor
+		app.GetWindow().SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
+		app.GetWindow().SetInputMode(glfw.RawMouseMotion, 1)
+
 		lastUpdate = time.Now().UnixNano()
 		startTime = lastUpdate
 		AppScreen = CreateApplicationScreen()
@@ -319,12 +327,18 @@ func CreateMenuScreen() *screen.MenuScreen {
 		MenuScreen.BuildScreen()
 	}
 	settingsEvent := func() {
+		// Disable mouse cursor
+		app.GetWindow().SetInputMode(glfw.CursorMode, glfw.CursorNormal)
+		app.GetWindow().SetInputMode(glfw.RawMouseMotion, 0)
 		app.ActivateScreen(SettingsScreen)
 	}
 	exitEvent := func() {
 		app.GetWindow().SetShouldClose(true)
 	}
 	continueEvent := func() {
+		// Disable mouse cursor
+		app.GetWindow().SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
+		app.GetWindow().SetInputMode(glfw.RawMouseMotion, 1)
 		app.ActivateScreen(AppScreen)
 	}
 	options := []screen.Option{
