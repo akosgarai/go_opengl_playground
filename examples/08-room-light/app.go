@@ -31,7 +31,7 @@ const (
 
 	CameraMoveSpeed      = 0.005
 	CameraDirectionSpeed = float32(0.050)
-	CameraDistance       = 0.1
+	CameraDistance       = float32(0.1)
 	FontFile             = "/assets/fonts/Desyrel/desyrel.ttf"
 	LEFT_MOUSE_BUTTON    = glfw.MouseButtonLeft
 	Epsilon              = float64(200)
@@ -76,15 +76,17 @@ var (
 	LastToggle float64
 )
 
-// Setup keymap for the camera movement
-func CameraMovementMap() map[string]glfw.Key {
-	cm := make(map[string]glfw.Key)
-	cm["forward"] = glfw.KeyW
-	cm["back"] = glfw.KeyS
-	cm["up"] = glfw.KeyQ
-	cm["down"] = glfw.KeyE
-	cm["left"] = glfw.KeyA
-	cm["right"] = glfw.KeyD
+// Setup options for the camera
+func CameraMovementOptions() map[string]interface{} {
+	cm := make(map[string]interface{})
+	cm["forward"] = []glfw.Key{glfw.KeyW}
+	cm["back"] = []glfw.Key{glfw.KeyS}
+	cm["up"] = []glfw.Key{glfw.KeyQ}
+	cm["down"] = []glfw.Key{glfw.KeyE}
+	cm["left"] = []glfw.Key{glfw.KeyA}
+	cm["right"] = []glfw.Key{glfw.KeyD}
+	cm["rotateOnEdgeDistance"] = CameraDistance
+	cm["mode"] = "default"
 	return cm
 }
 
@@ -230,9 +232,7 @@ func main() {
 	MenuScreen = screen.New()
 	AppScreen = screen.New()
 
-	AppScreen.SetCamera(CreateCamera())
-	AppScreen.SetCameraMovementMap(CameraMovementMap())
-	AppScreen.SetRotateOnEdgeDistance(CameraDistance)
+	AppScreen.SetupCamera(CreateCamera(), CameraMovementOptions())
 	AppScreen.SetUniformFloat("fog.minDistance", 1.0)
 	AppScreen.SetUniformFloat("fog.maxDistance", 8.0)
 	AppScreen.SetUniformVector("fog.color", mgl32.Vec3{0.4, 0.4, 0.4})
