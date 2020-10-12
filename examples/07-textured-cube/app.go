@@ -46,7 +46,9 @@ var (
 	glWrapper glwrapper.Wrapper
 )
 
-func InitSettings() {
+func init() {
+	runtime.LockOSThread()
+
 	var colorValidator model.FloatValidator
 	colorValidator = func(f float32) bool { return f >= 0 && f <= 1 }
 	Settings.AddConfig("ClearCol", "BG color", "The clear color of the window. It is used as the color of the background.", mgl32.Vec3{0.3, 0.3, 0.3}, colorValidator)
@@ -77,15 +79,17 @@ func InitSettings() {
 	Settings.AddConfig("CameraRotationEdge", "Cam Edge", "The rotation cam be triggered if the mouse is near to the edge of the screen.", float32(0.1), nil)
 }
 
-// Setup keymap for the camera movement
-func CameraMovementMap() map[string]glfw.Key {
-	cm := make(map[string]glfw.Key)
-	cm["forward"] = glfw.KeyW
-	cm["back"] = glfw.KeyS
-	cm["up"] = glfw.KeyQ
-	cm["down"] = glfw.KeyE
-	cm["left"] = glfw.KeyA
-	cm["right"] = glfw.KeyD
+// Setup options for the camera
+func CameraMovementOptions() map[string]interface{} {
+	cm := make(map[string]interface{})
+	cm["forward"] = []glfw.Key{glfw.KeyW}
+	cm["back"] = []glfw.Key{glfw.KeyS}
+	cm["up"] = []glfw.Key{glfw.KeyQ}
+	cm["down"] = []glfw.Key{glfw.KeyE}
+	cm["left"] = []glfw.Key{glfw.KeyA}
+	cm["right"] = []glfw.Key{glfw.KeyD}
+	cm["rotateOnEdgeDistance"] = Settings["CameraRotationEdge"].GetCurrentValue().(float32)
+	cm["mode"] = "default"
 	return cm
 }
 
@@ -212,9 +216,7 @@ func GenerateModel(t texture.Textures) *model.BaseModel {
 
 func mainScreen() *screen.Screen {
 	scrn := screen.New()
-	scrn.SetCamera(CreateCameraFromSettings())
-	scrn.SetCameraMovementMap(CameraMovementMap())
-	scrn.SetRotateOnEdgeDistance(Settings["CameraRotationEdge"].GetCurrentValue().(float32))
+	scrn.SetupCamera(CreateCameraFromSettings(), CameraMovementOptions())
 
 	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	scrn.AddShader(shaderProgram)
@@ -233,9 +235,6 @@ func AddFormScreen() bool {
 }
 
 func main() {
-	runtime.LockOSThread()
-	InitSettings()
-
 	app = application.New(glWrapper)
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
