@@ -290,9 +290,7 @@ func GenerateStreetLamp() *model.StreetLamp {
 }
 func mainScreen() *screen.Screen {
 	scrn := screen.New()
-	scrn.SetCamera(CreateCameraFromSettings())
-	scrn.SetCameraMovementMap(CameraMovementMap())
-	scrn.SetRotateOnEdgeDistance(Settings["CameraRotationEdge"].GetCurrentValue().(float32))
+	scrn.SetupCamera(CreateCameraFromSettings(), CameraMovementOptions())
 	// Shader application for the textured meshes.
 	shaderProgramTexture := shader.NewTextureShader(glWrapper)
 	scrn.AddShader(shaderProgramTexture)
@@ -354,15 +352,21 @@ func CreateCameraFromSettings() interfaces.Camera {
 	return cam
 }
 
-// Setup keymap for the camera movement
-func CameraMovementMap() map[string]glfw.Key {
-	cm := make(map[string]glfw.Key)
-	cm["forward"] = glfw.KeyW
-	cm["back"] = glfw.KeyS
-	cm["up"] = glfw.KeyQ
-	cm["down"] = glfw.KeyE
-	cm["left"] = glfw.KeyA
-	cm["right"] = glfw.KeyD
+// Setup options for the camera
+func CameraMovementOptions() map[string]interface{} {
+	cm := make(map[string]interface{})
+	cm["forward"] = []glfw.Key{glfw.KeyW}
+	cm["back"] = []glfw.Key{glfw.KeyS}
+	cm["up"] = []glfw.Key{glfw.KeyQ}
+	cm["down"] = []glfw.Key{glfw.KeyE}
+	cm["left"] = []glfw.Key{glfw.KeyA}
+	cm["right"] = []glfw.Key{glfw.KeyD}
+	if Settings["CameraFPS"].GetCurrentValue().(bool) {
+		cm["mode"] = "fps"
+	} else {
+		cm["mode"] = "default"
+		cm["rotateOnEdgeDistance"] = Settings["CameraRotationEdge"].GetCurrentValue().(float32)
+	}
 	return cm
 }
 
