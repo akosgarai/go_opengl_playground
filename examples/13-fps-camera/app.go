@@ -96,9 +96,7 @@ func addCameraConfigToSettings() {
 	// - move speed
 	Settings.AddConfig("CameraVelocity", "Cam Speed", "The movement velocity of the camera. If it moves, it moves with this speed.", float32(0.005), nil)
 	// - direction speed
-	Settings.AddConfig("CameraRotation", "Cam Rotate", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", float32(0.05), nil)
-	// - rotate on edge distance.
-	Settings.AddConfig("CameraRotationEdge", "Cam Edge", "The rotation cam be triggered if the mouse is near to the edge of the screen.", float32(0.1), nil)
+	Settings.AddConfig("CameraRotation", "Cam Rotate", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", float32(0.5), nil)
 }
 func addTerrainConfigToSettings() {
 	Settings.AddConfig("GroundWidth", "Ground width", "The value is used for generating map. The GroundBuilder will generate width*width tiles total.", int(10), nil)
@@ -190,15 +188,16 @@ func CreateCameraFromSettings() interfaces.Camera {
 	return cam
 }
 
-// Setup keymap for the camera movement
-func CameraMovementMap() map[string]glfw.Key {
-	cm := make(map[string]glfw.Key)
-	cm["forward"] = glfw.KeyW
-	cm["back"] = glfw.KeyS
-	cm["up"] = glfw.KeyQ
-	cm["down"] = glfw.KeyE
-	cm["left"] = glfw.KeyA
-	cm["right"] = glfw.KeyD
+// Setup options for the camera
+func CameraMovementOptions() map[string]interface{} {
+	cm := make(map[string]interface{})
+	cm["forward"] = []glfw.Key{glfw.KeyW}
+	cm["back"] = []glfw.Key{glfw.KeyS}
+	cm["up"] = []glfw.Key{glfw.KeyQ}
+	cm["down"] = []glfw.Key{glfw.KeyE}
+	cm["left"] = []glfw.Key{glfw.KeyA}
+	cm["right"] = []glfw.Key{glfw.KeyD}
+	cm["mode"] = "fps"
 	return cm
 }
 
@@ -386,17 +385,14 @@ func CreateSettingsScreen(defaults config.Config) *screen.FormScreen {
 		"CameraYaw", "CameraPitch",
 		"CameraNear", "CameraFar",
 		"CameraFov", "CameraVelocity",
-		"CameraRotation", "CameraRotationEdge",
-		"CameraFPS",
+		"CameraRotation",
 	}
 	return app.BuildFormScreen(defaults, formItemOrders, "FPS editor")
 }
 
 func CreateApplicationScreen() *screen.Screen {
 	scrn := screen.New()
-	scrn.SetCamera(CreateCameraFromSettings())
-	scrn.SetCameraMovementMap(CameraMovementMap())
-	scrn.SetRotateOnEdgeDistance(Settings["CameraRotationEdge"].GetCurrentValue().(float32))
+	scrn.SetupCamera(CreateCameraFromSettings(), CameraMovementOptions())
 	// Shader application for the textured meshes.
 	shaderProgramTexture := shader.NewTextureShader(glWrapper)
 	scrn.AddShader(shaderProgramTexture)
