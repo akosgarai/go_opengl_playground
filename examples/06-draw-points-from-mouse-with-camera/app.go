@@ -51,13 +51,19 @@ var (
 	glWrapper glwrapper.Wrapper
 )
 
-// Setup keymap for the camera movement
-func CameraMovementMap() map[string]glfw.Key {
-	cm := make(map[string]glfw.Key)
-	cm["forward"] = glfw.KeyW
-	cm["back"] = glfw.KeyS
-	cm["rotateLeft"] = glfw.KeyA
-	cm["rotateRight"] = glfw.KeyD
+func init() {
+	runtime.LockOSThread()
+}
+
+// Setup options for the camera
+func CameraMovementOptions() map[string]interface{} {
+	cm := make(map[string]interface{})
+	cm["forward"] = []glfw.Key{glfw.KeyW}
+	cm["back"] = []glfw.Key{glfw.KeyS}
+	cm["rotateLeft"] = []glfw.Key{glfw.KeyA}
+	cm["rotateRight"] = []glfw.Key{glfw.KeyD}
+	cm["rotateOnEdgeDistance"] = float32(0.0)
+	cm["mode"] = "default"
 	return cm
 }
 
@@ -128,16 +134,13 @@ func setupApp(glWrapper interfaces.GLWrapper) {
 }
 
 func main() {
-	runtime.LockOSThread()
-
 	app = application.New(glWrapper)
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()
 	glWrapper.InitOpenGL()
 
 	scrn := screen.New()
-	scrn.SetCamera(CreateCamera())
-	scrn.SetCameraMovementMap(CameraMovementMap())
+	scrn.SetupCamera(CreateCamera(), CameraMovementOptions())
 
 	cameraLastUpdate = time.Now().UnixNano()
 
