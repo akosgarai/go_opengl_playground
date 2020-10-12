@@ -31,7 +31,7 @@ const (
 
 	CameraMoveSpeed      = 0.005
 	CameraDirectionSpeed = float32(0.050)
-	CameraDistance       = 0.1
+	CameraDistance       = float32(0.1)
 	LEFT_MOUSE_BUTTON    = glfw.MouseButtonLeft
 )
 
@@ -68,15 +68,17 @@ func baseDir() string {
 	return path.Dir(filename)
 }
 
-// Setup keymap for the camera movement
-func CameraMovementMap() map[string]glfw.Key {
-	cm := make(map[string]glfw.Key)
-	cm["forward"] = glfw.KeyW
-	cm["back"] = glfw.KeyS
-	cm["up"] = glfw.KeyQ
-	cm["down"] = glfw.KeyE
-	cm["left"] = glfw.KeyA
-	cm["right"] = glfw.KeyD
+// Setup options for the camera
+func CameraMovementOptions() map[string]interface{} {
+	cm := make(map[string]interface{})
+	cm["forward"] = []glfw.Key{glfw.KeyW}
+	cm["back"] = []glfw.Key{glfw.KeyS}
+	cm["up"] = []glfw.Key{glfw.KeyQ}
+	cm["down"] = []glfw.Key{glfw.KeyE}
+	cm["left"] = []glfw.Key{glfw.KeyA}
+	cm["right"] = []glfw.Key{glfw.KeyD}
+	cm["rotateOnEdgeDistance"] = CameraDistance
+	cm["mode"] = "default"
 	return cm
 }
 
@@ -141,9 +143,7 @@ func main() {
 	MenuScreen = screen.New()
 	AppScreen = screen.New()
 
-	AppScreen.SetCamera(CreateCamera())
-	AppScreen.SetCameraMovementMap(CameraMovementMap())
-	AppScreen.SetRotateOnEdgeDistance(CameraDistance)
+	AppScreen.SetupCamera(CreateCamera(), CameraMovementOptions())
 
 	fontShader := shader.NewShader(baseDir()+"/shaders/font.vert", baseDir()+"/shaders/font.frag", glWrapper)
 	MenuScreen.AddShader(fontShader)
