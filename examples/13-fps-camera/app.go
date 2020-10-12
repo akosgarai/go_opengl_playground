@@ -103,7 +103,7 @@ func addTerrainConfigToSettings() {
 	Settings.AddConfig("GroundScale", "Ground scale", "The value is used for generating map. The tile size will be scale*scale unit.", float32(2.0), nil)
 }
 func addRoomConfigToSettings() {
-	Settings.AddConfig("RoomPosition", "Position", "The center point of the floor.", mgl32.Vec3{0, 0, 0}, nil)
+	Settings.AddConfig("RoomPosition", "Position", "The center point of the floor.", mgl32.Vec3{2, 0, 1}, nil)
 	Settings.AddConfig("RoomWidth", "Width", "The width of the room. The size in the X axis", float32(1.0), nil)
 	Settings.AddConfig("RoomLength", "Length", "The length of the room. The size in the Z axis.", float32(1.0), nil)
 	Settings.AddConfig("RoomHeight", "Height", "The height of the room. The size in the Y axis.", float32(1.0), nil)
