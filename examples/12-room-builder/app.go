@@ -45,7 +45,9 @@ var (
 	DirectionalLightSpecular  = mgl32.Vec3{0.3, 0.3, 0.3}
 )
 
-func InitRoomSettings() {
+func init() {
+	runtime.LockOSThread()
+
 	Settings.AddConfig("RoomPosition", "Position", "The center point of the floor.", mgl32.Vec3{0, 0, 0}, nil)
 	Settings.AddConfig("RoomWidth", "Width", "The width of the room. The size in the X axis", float32(1.0), nil)
 	Settings.AddConfig("RoomLength", "Length", "The length of the room. The size in the Z axis.", float32(1.0), nil)
@@ -223,9 +225,7 @@ func GenerateRoom() *model.Room {
 }
 func mainScreen() *screen.Screen {
 	scrn := screen.New()
-	scrn.SetCamera(CreateCameraFromSettings())
-	scrn.SetCameraMovementMap(CameraMovementMap())
-	scrn.SetRotateOnEdgeDistance(Settings["CameraRotationEdge"].GetCurrentValue().(float32))
+	scrn.SetupCamera(CreateCameraFromSettings(), CameraMovementOptions())
 	// Shader application for the textured meshes.
 	shaderProgramTexture := shader.NewTextureShader(glWrapper)
 	scrn.AddShader(shaderProgramTexture)
@@ -281,21 +281,21 @@ func CreateCameraFromSettings() interfaces.Camera {
 	return cam
 }
 
-// Setup keymap for the camera movement
-func CameraMovementMap() map[string]glfw.Key {
-	cm := make(map[string]glfw.Key)
-	cm["forward"] = glfw.KeyW
-	cm["back"] = glfw.KeyS
-	cm["up"] = glfw.KeyQ
-	cm["down"] = glfw.KeyE
-	cm["left"] = glfw.KeyA
-	cm["right"] = glfw.KeyD
+// Setup options for the camera
+func CameraMovementOptions() map[string]interface{} {
+	cm := make(map[string]interface{})
+	cm["forward"] = []glfw.Key{glfw.KeyW}
+	cm["back"] = []glfw.Key{glfw.KeyS}
+	cm["up"] = []glfw.Key{glfw.KeyQ}
+	cm["down"] = []glfw.Key{glfw.KeyE}
+	cm["left"] = []glfw.Key{glfw.KeyA}
+	cm["right"] = []glfw.Key{glfw.KeyD}
+	cm["rotateOnEdgeDistance"] = Settings["CameraRotationEdge"].GetCurrentValue().(float32)
+	cm["mode"] = "default"
 	return cm
 }
 
 func main() {
-	runtime.LockOSThread()
-	InitRoomSettings()
 	app = application.New(glWrapper)
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()

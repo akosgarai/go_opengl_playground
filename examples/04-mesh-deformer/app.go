@@ -49,7 +49,9 @@ var (
 	startTime  int64
 )
 
-func InitSettings() {
+func init() {
+	runtime.LockOSThread()
+
 	var colorValidator model.FloatValidator
 	colorValidator = func(f float32) bool { return f >= 0 && f <= 1 }
 	Settings.AddConfig("ClearCol", "BG color", "The clear color of the window. It is used as the color of the background.", mgl32.Vec3{0.0, 0.0, 0.0}, colorValidator)
@@ -201,11 +203,19 @@ func AddFormScreen() bool {
 	}
 	return false
 }
+
+// Setup options for the camera
+func CameraMovementOptions() map[string]interface{} {
+	cm := make(map[string]interface{})
+	cm["mode"] = "default"
+	cm["rotateOnEdgeDistance"] = float32(0.0)
+	return cm
+}
 func mainScreen() *screen.Screen {
 	scrn := screen.New()
 	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	scrn.AddShader(shaderProgram)
-	scrn.SetCamera(CreateCameraFromSettings())
+	scrn.SetupCamera(CreateCameraFromSettings(), CameraMovementOptions())
 
 	scrn.AddModelToShader(GenerateModel(), shaderProgram)
 	scrn.Setup(setupApp)
@@ -213,9 +223,6 @@ func mainScreen() *screen.Screen {
 }
 
 func main() {
-	runtime.LockOSThread()
-	InitSettings()
-
 	app = application.New(glWrapper)
 	app.SetWindow(window.InitGlfw(WindowWidth, WindowHeight, WindowTitle))
 	defer glfw.Terminate()

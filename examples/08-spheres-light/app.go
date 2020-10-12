@@ -29,7 +29,7 @@ const (
 
 	CameraMoveSpeed      = 0.005
 	CameraDirectionSpeed = float32(0.00500)
-	CameraDistance       = 0.1
+	CameraDistance       = float32(0.1)
 
 	LightSourceRoundSpeed = 3000.0
 )
@@ -49,15 +49,17 @@ var (
 	glWrapper glwrapper.Wrapper
 )
 
-// Setup keymap for the camera movement
-func CameraMovementMap() map[string]glfw.Key {
-	cm := make(map[string]glfw.Key)
-	cm["forward"] = glfw.KeyW
-	cm["back"] = glfw.KeyS
-	cm["up"] = glfw.KeyQ
-	cm["down"] = glfw.KeyE
-	cm["left"] = glfw.KeyA
-	cm["right"] = glfw.KeyD
+// Setup options for the camera
+func CameraMovementOptions() map[string]interface{} {
+	cm := make(map[string]interface{})
+	cm["forward"] = []glfw.Key{glfw.KeyW}
+	cm["back"] = []glfw.Key{glfw.KeyS}
+	cm["up"] = []glfw.Key{glfw.KeyQ}
+	cm["down"] = []glfw.Key{glfw.KeyE}
+	cm["left"] = []glfw.Key{glfw.KeyA}
+	cm["right"] = []glfw.Key{glfw.KeyD}
+	cm["rotateOnEdgeDistance"] = CameraDistance
+	cm["mode"] = "default"
 	return cm
 }
 
@@ -137,9 +139,7 @@ func main() {
 	glWrapper.InitOpenGL()
 
 	scrn := screen.New()
-	scrn.SetCamera(CreateCamera())
-	scrn.SetCameraMovementMap(CameraMovementMap())
-	scrn.SetRotateOnEdgeDistance(CameraDistance)
+	scrn.SetupCamera(CreateCamera(), CameraMovementOptions())
 
 	LightSource = light.NewPointLight([4]mgl32.Vec3{InitialCenterPointLight, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}, mgl32.Vec3{1, 1, 1}}, [3]float32{1.0, 1.0, 1.0})
 	scrn.AddPointLightSource(LightSource, [7]string{"light.position", "light.ambient", "light.diffuse", "light.specular", "", "", ""})

@@ -32,7 +32,7 @@ const (
 
 	CameraMoveSpeed       = 0.005
 	CameraDirectionSpeed  = float32(0.00500)
-	CameraDistance        = 0.1
+	CameraDistance        = float32(0.1)
 	DefaultModelDirectory = "examples/09-model-loading/assets"
 	DefaultModelFilename  = "object.obj"
 )
@@ -115,15 +115,17 @@ func Init() {
 	}
 }
 
-// Setup keymap for the camera movement
-func CameraMovementMap() map[string]glfw.Key {
-	cm := make(map[string]glfw.Key)
-	cm["forward"] = glfw.KeyW
-	cm["back"] = glfw.KeyS
-	cm["up"] = glfw.KeyQ
-	cm["down"] = glfw.KeyE
-	cm["left"] = glfw.KeyA
-	cm["right"] = glfw.KeyD
+// Setup options for the camera
+func CameraMovementOptions() map[string]interface{} {
+	cm := make(map[string]interface{})
+	cm["forward"] = []glfw.Key{glfw.KeyW}
+	cm["back"] = []glfw.Key{glfw.KeyS}
+	cm["up"] = []glfw.Key{glfw.KeyQ}
+	cm["down"] = []glfw.Key{glfw.KeyE}
+	cm["left"] = []glfw.Key{glfw.KeyA}
+	cm["right"] = []glfw.Key{glfw.KeyD}
+	cm["rotateOnEdgeDistance"] = CameraDistance
+	cm["mode"] = "default"
 	return cm
 }
 
@@ -180,9 +182,7 @@ func main() {
 	glWrapper.InitOpenGL()
 
 	scrn := screen.New()
-	scrn.SetCamera(CreateCamera())
-	scrn.SetCameraMovementMap(CameraMovementMap())
-	scrn.SetRotateOnEdgeDistance(CameraDistance)
+	scrn.SetupCamera(CreateCamera(), CameraMovementOptions())
 
 	pointShader := shader.NewShader(baseDir()+"/shaders/point.vert", baseDir()+"/shaders/point.frag", glWrapper)
 	scrn.AddShader(pointShader)

@@ -47,7 +47,7 @@ const (
 
 	CameraMoveSpeed      = 0.005
 	CameraDirectionSpeed = float32(0.050)
-	CameraDistance       = 0.1
+	CameraDistance       = float32(0.1)
 )
 
 func generateHeightMap(width, length, iterations, peakProbability int, minH, maxH float32, seed int64) [][]float32 {
@@ -176,15 +176,17 @@ func NewTerrain(width, length, iterations int, minH, maxH float32, seed int64, t
 	return mesh.NewTexturedMesh(vertices, indices, t, glWrapper)
 }
 
-// Setup keymap for the camera movement
-func CameraMovementMap() map[string]glfw.Key {
-	cm := make(map[string]glfw.Key)
-	cm["forward"] = glfw.KeyW
-	cm["back"] = glfw.KeyS
-	cm["up"] = glfw.KeyQ
-	cm["down"] = glfw.KeyE
-	cm["left"] = glfw.KeyA
-	cm["right"] = glfw.KeyD
+// Setup options for the camera
+func CameraMovementOptions() map[string]interface{} {
+	cm := make(map[string]interface{})
+	cm["forward"] = []glfw.Key{glfw.KeyW}
+	cm["back"] = []glfw.Key{glfw.KeyS}
+	cm["up"] = []glfw.Key{glfw.KeyQ}
+	cm["down"] = []glfw.Key{glfw.KeyE}
+	cm["left"] = []glfw.Key{glfw.KeyA}
+	cm["right"] = []glfw.Key{glfw.KeyD}
+	cm["rotateOnEdgeDistance"] = CameraDistance
+	cm["mode"] = "default"
 	return cm
 }
 
@@ -236,9 +238,7 @@ func main() {
 	glWrapper.InitOpenGL()
 
 	scrn := screen.New()
-	scrn.SetCamera(CreateCamera())
-	scrn.SetCameraMovementMap(CameraMovementMap())
-	scrn.SetRotateOnEdgeDistance(CameraDistance)
+	scrn.SetupCamera(CreateCamera(), CameraMovementOptions())
 
 	// Shader application for the textured meshes.
 	shaderProgramTexture := shader.NewTextureShaderBlending(glWrapper)
