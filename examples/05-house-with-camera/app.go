@@ -37,13 +37,15 @@ var (
 	Model = model.New()
 )
 
-// Setup keymap for the camera movement
-func CameraMovementMap() map[string]glfw.Key {
-	cm := make(map[string]glfw.Key)
-	cm["forward"] = glfw.KeyW
-	cm["back"] = glfw.KeyS
-	cm["rotateLeft"] = glfw.KeyA
-	cm["rotateRight"] = glfw.KeyD
+// Setup options for the camera
+func CameraMovementOptions() map[string]interface{} {
+	cm := make(map[string]interface{})
+	cm["forward"] = []glfw.Key{glfw.KeyW}
+	cm["back"] = []glfw.Key{glfw.KeyS}
+	cm["rotateLeft"] = []glfw.Key{glfw.KeyA}
+	cm["rotateRight"] = []glfw.Key{glfw.KeyD}
+	cm["rotateOnEdgeDistance"] = float32(0.0)
+	cm["mode"] = "default"
 	return cm
 }
 
@@ -199,8 +201,7 @@ func main() {
 	shaderProgram := shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper)
 	scrn.AddShader(shaderProgram)
 
-	scrn.SetCamera(CreateCamera())
-	scrn.SetCameraMovementMap(CameraMovementMap())
+	scrn.SetupCamera(CreateCamera(), CameraMovementOptions())
 	cameraLastUpdate = time.Now().UnixNano()
 
 	Path()
