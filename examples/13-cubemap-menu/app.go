@@ -214,11 +214,19 @@ func CreateMaterialCube(m *material.Material) *mesh.MaterialMesh {
 	rect := mesh.NewMaterialMesh(V, I, m, glWrapper)
 	return rect
 }
+
+// Create a textured rectangle, that represents the walls.
+func CreateTexturedCube(t texture.Textures) *mesh.TexturedMesh {
+	r := cuboid.New(8, 8, 8)
+	V, I, _ := r.TexturedMeshInput(cuboid.TEXTURE_ORIENTATION_DEFAULT)
+	return mesh.NewTexturedMesh(V, I, t, glWrapper)
+}
 func CreateApplicationScreen() *screen.Screen {
 	scrn := screen.New()
 	scrn.SetupCamera(CreateCameraFromSettings(), CameraMovementOptions())
 	monitors := model.New()
 	desk := model.New()
+	rustySurface := model.New()
 
 	var monitorTexture texture.Textures
 	monitorTexture.AddTexture(baseDir()+"/assets/crt_monitor_1280.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.diffuse", glWrapper)
@@ -240,9 +248,9 @@ func CreateApplicationScreen() *screen.Screen {
 	monitors.AddMesh(leftMonitor)
 
 	monitors.SetTransparent(true)
-	shaderAppTexture := shader.NewTextureShaderBlending(glWrapper)
-	scrn.AddShader(shaderAppTexture)
-	scrn.AddModelToShader(monitors, shaderAppTexture)
+	shaderAppTextureBlending := shader.NewTextureShaderBlending(glWrapper)
+	scrn.AddShader(shaderAppTextureBlending)
+	scrn.AddModelToShader(monitors, shaderAppTextureBlending)
 
 	tableSurfaceMaterial := material.Chrome
 	tableSurface := CreateMaterialCube(tableSurfaceMaterial)
@@ -253,6 +261,14 @@ func CreateApplicationScreen() *screen.Screen {
 	shaderAppMaterial := shader.NewMaterialShader(glWrapper)
 	scrn.AddShader(shaderAppMaterial)
 	scrn.AddModelToShader(desk, shaderAppMaterial)
+
+	shaderAppTexture := shader.NewTextureShader(glWrapper)
+	scrn.AddShader(shaderAppTexture)
+	var rustyTexture texture.Textures
+	rustyTexture.AddTexture(baseDir()+"/assets/rusty_iron_1280.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.diffuse", glWrapper)
+	rustyTexture.AddTexture(baseDir()+"/assets/rusty_iron_1280.jpg", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.specular", glWrapper)
+	rustySurface.AddMesh(CreateTexturedCube(rustyTexture))
+	scrn.AddModelToShader(rustySurface, shaderAppTexture)
 
 	DirectionalLightSource := light.NewDirectionalLight([4]mgl32.Vec3{
 		Settings["DLDirection"].GetCurrentValue().(mgl32.Vec3),
