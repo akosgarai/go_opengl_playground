@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path"
 	"runtime"
 	"strconv"
 	"time"
@@ -11,7 +12,13 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/config"
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
 	"github.com/akosgarai/playground_engine/pkg/interfaces"
+	"github.com/akosgarai/playground_engine/pkg/light"
+	"github.com/akosgarai/playground_engine/pkg/mesh"
+	"github.com/akosgarai/playground_engine/pkg/model"
+	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
 	"github.com/akosgarai/playground_engine/pkg/screen"
+	"github.com/akosgarai/playground_engine/pkg/shader"
+	"github.com/akosgarai/playground_engine/pkg/texture"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -49,6 +56,12 @@ func init() {
 	setupWindowBuilder()
 	// Camera configuration with initial values
 	addCameraConfigToSettings()
+	// Directional light configuration with initial values
+	addDirectionalLightConfigToSettings()
+}
+func baseDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
 }
 func setupWindowBuilder() {
 	Builder = window.NewWindowBuilder()
@@ -86,7 +99,7 @@ func addCameraConfigToSettings() {
 	// - position
 	Settings.AddConfig("CameraPos", "Cam position", "The initial position of the camera.", mgl32.Vec3{0.0, 0.0, 0.0}, nil)
 	// - up direction
-	Settings.AddConfig("WorldUp", "World up dir", "The up direction in the world.", mgl32.Vec3{0, 1, 0}, nil)
+	Settings.AddConfig("WorldUp", "World up dir", "The up direction in the world.", mgl32.Vec3{0, 0, -1}, nil)
 	// - pitch, yaw
 	Settings.AddConfig("CameraYaw", "Cam Yaw", "The yaw (angle) of the camera. Rotation on the Z axis.", float32(0.0), nil)
 	Settings.AddConfig("CameraPitch", "Cam Pitch", "The pitch (angle) of the camera. Rotation on the Y axis.", float32(0.0), nil)
@@ -98,6 +111,14 @@ func addCameraConfigToSettings() {
 	Settings.AddConfig("CameraVelocity", "Cam Speed", "The movement velocity of the camera. If it moves, it moves with this speed.", float32(0.005), nil)
 	// - direction speed
 	Settings.AddConfig("CameraRotation", "Cam Rotate", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", float32(0.5), nil)
+}
+func addDirectionalLightConfigToSettings() {
+	var colorValidator model.FloatValidator
+	colorValidator = func(f float32) bool { return f >= 0 && f <= 1 }
+	Settings.AddConfig("DLAmbient", "DL ambient", "The ambient color component of the directional lightsource.", mgl32.Vec3{1.0, 1.0, 1.0}, colorValidator)
+	Settings.AddConfig("DLDiffuse", "DL diffuse", "The diffuse color component of the directional lightsource.", mgl32.Vec3{1.0, 1.0, 1.0}, colorValidator)
+	Settings.AddConfig("DLSpecular", "DL specular", "The specular color component of the directional lightsource.", mgl32.Vec3{1.0, 1.0, 1.0}, colorValidator)
+	Settings.AddConfig("DLDirection", "DL direction", "The direction vector of the directional lightsource.", mgl32.Vec3{0.0, 1.0, 0.0}, nil)
 }
 
 // It creates the menu screen.
@@ -167,16 +188,67 @@ func CameraMovementOptions() map[string]interface{} {
 	cm := make(map[string]interface{})
 	cm["mode"] = "default"
 	cm["rotateOnEdgeDistance"] = float32(0.0)
+	cm["forward"] = []glfw.Key{glfw.KeyW}
+	cm["back"] = []glfw.Key{glfw.KeyS}
+	cm["up"] = []glfw.Key{glfw.KeyQ}
+	cm["down"] = []glfw.Key{glfw.KeyE}
+	cm["left"] = []glfw.Key{glfw.KeyA}
+	cm["right"] = []glfw.Key{glfw.KeyD}
 	return cm
+}
+
+// Create a textured rectangle, that represents the monitors.
+func CreateRectangle(t texture.Textures) *mesh.TexturedMesh {
+	r := rectangle.NewExact(2, 2)
+	V, I, _ := r.MeshInput()
+	rect := mesh.NewTexturedMesh(V, I, t, glWrapper)
+	return rect
 }
 func CreateApplicationScreen() *screen.Screen {
 	scrn := screen.New()
 	scrn.SetupCamera(CreateCameraFromSettings(), CameraMovementOptions())
+	monitors := model.New()
+
+	var monitorTexture texture.Textures
+	monitorTexture.AddTexture(baseDir()+"/assets/crt_monitor_1280.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.diffuse", glWrapper)
+	monitorTexture.AddTexture(baseDir()+"/assets/crt_monitor_1280.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.specular", glWrapper)
+
+	middleMonitor := CreateRectangle(monitorTexture)
+	middleMonitor.SetPosition(mgl32.Vec3{2.0, 0, 0})
+	middleMonitor.RotateZ(90)
+	monitors.AddMesh(middleMonitor)
+
+	rightMonitor := CreateRectangle(monitorTexture)
+	rightMonitor.SetPosition(mgl32.Vec3{1.5, -2.0, 0})
+	rightMonitor.RotateZ(45)
+	monitors.AddMesh(rightMonitor)
+
+	leftMonitor := CreateRectangle(monitorTexture)
+	leftMonitor.SetPosition(mgl32.Vec3{1.5, 2.0, 0})
+	leftMonitor.RotateZ(135)
+	monitors.AddMesh(leftMonitor)
+
+	monitors.SetTransparent(true)
+	shaderApp := shader.NewTextureShaderBlending(glWrapper)
+	scrn.AddShader(shaderApp)
+	scrn.AddModelToShader(monitors, shaderApp)
+
+	DirectionalLightSource := light.NewDirectionalLight([4]mgl32.Vec3{
+		Settings["DLDirection"].GetCurrentValue().(mgl32.Vec3),
+		Settings["DLAmbient"].GetCurrentValue().(mgl32.Vec3),
+		Settings["DLDiffuse"].GetCurrentValue().(mgl32.Vec3),
+		Settings["DLSpecular"].GetCurrentValue().(mgl32.Vec3),
+	})
+	// Add the lightources to the application
+	scrn.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
 	scrn.Setup(setupApp)
+
 	return scrn
 }
 func setupApp(glWrapper interfaces.GLWrapper) {
 	glWrapper.Enable(glwrapper.DEPTH_TEST)
+	glWrapper.Enable(glwrapper.BLEND)
+	glWrapper.BlendFunc(glwrapper.SRC_APLHA, glwrapper.ONE_MINUS_SRC_ALPHA)
 	glWrapper.DepthFunc(glwrapper.LESS)
 	glWrapper.ClearColor(0.0, 0.25, 0.5, 1.0)
 }
