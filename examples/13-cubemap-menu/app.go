@@ -13,8 +13,10 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/glwrapper"
 	"github.com/akosgarai/playground_engine/pkg/interfaces"
 	"github.com/akosgarai/playground_engine/pkg/light"
+	"github.com/akosgarai/playground_engine/pkg/material"
 	"github.com/akosgarai/playground_engine/pkg/mesh"
 	"github.com/akosgarai/playground_engine/pkg/model"
+	"github.com/akosgarai/playground_engine/pkg/primitives/cuboid"
 	"github.com/akosgarai/playground_engine/pkg/primitives/rectangle"
 	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
@@ -198,40 +200,59 @@ func CameraMovementOptions() map[string]interface{} {
 }
 
 // Create a textured rectangle, that represents the monitors.
-func CreateRectangle(t texture.Textures) *mesh.TexturedMesh {
+func CreateTexturedRectangle(t texture.Textures) *mesh.TexturedMesh {
 	r := rectangle.NewExact(2, 2)
 	V, I, _ := r.MeshInput()
 	rect := mesh.NewTexturedMesh(V, I, t, glWrapper)
+	return rect
+}
+
+// Create material rectangle, that represents the table.
+func CreateMaterialCube(m *material.Material) *mesh.MaterialMesh {
+	r := cuboid.New(2, 6, 0.05)
+	V, I, _ := r.MaterialMeshInput()
+	rect := mesh.NewMaterialMesh(V, I, m, glWrapper)
 	return rect
 }
 func CreateApplicationScreen() *screen.Screen {
 	scrn := screen.New()
 	scrn.SetupCamera(CreateCameraFromSettings(), CameraMovementOptions())
 	monitors := model.New()
+	desk := model.New()
 
 	var monitorTexture texture.Textures
 	monitorTexture.AddTexture(baseDir()+"/assets/crt_monitor_1280.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.diffuse", glWrapper)
 	monitorTexture.AddTexture(baseDir()+"/assets/crt_monitor_1280.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.specular", glWrapper)
 
-	middleMonitor := CreateRectangle(monitorTexture)
+	middleMonitor := CreateTexturedRectangle(monitorTexture)
 	middleMonitor.SetPosition(mgl32.Vec3{2.0, 0, 0})
 	middleMonitor.RotateZ(90)
 	monitors.AddMesh(middleMonitor)
 
-	rightMonitor := CreateRectangle(monitorTexture)
+	rightMonitor := CreateTexturedRectangle(monitorTexture)
 	rightMonitor.SetPosition(mgl32.Vec3{1.5, -2.0, 0})
 	rightMonitor.RotateZ(45)
 	monitors.AddMesh(rightMonitor)
 
-	leftMonitor := CreateRectangle(monitorTexture)
+	leftMonitor := CreateTexturedRectangle(monitorTexture)
 	leftMonitor.SetPosition(mgl32.Vec3{1.5, 2.0, 0})
 	leftMonitor.RotateZ(135)
 	monitors.AddMesh(leftMonitor)
 
 	monitors.SetTransparent(true)
-	shaderApp := shader.NewTextureShaderBlending(glWrapper)
-	scrn.AddShader(shaderApp)
-	scrn.AddModelToShader(monitors, shaderApp)
+	shaderAppTexture := shader.NewTextureShaderBlending(glWrapper)
+	scrn.AddShader(shaderAppTexture)
+	scrn.AddModelToShader(monitors, shaderAppTexture)
+
+	tableSurfaceMaterial := material.Chrome
+	tableSurface := CreateMaterialCube(tableSurfaceMaterial)
+	tableSurface.SetPosition(mgl32.Vec3{1.5, 0, -1})
+	tableSurface.RotateX(90)
+	desk.AddMesh(tableSurface)
+
+	shaderAppMaterial := shader.NewMaterialShader(glWrapper)
+	scrn.AddShader(shaderAppMaterial)
+	scrn.AddModelToShader(desk, shaderAppMaterial)
 
 	DirectionalLightSource := light.NewDirectionalLight([4]mgl32.Vec3{
 		Settings["DLDirection"].GetCurrentValue().(mgl32.Vec3),
