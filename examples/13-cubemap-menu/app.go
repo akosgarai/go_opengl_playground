@@ -58,6 +58,8 @@ var (
 	CameraLogIsPrinted = false
 	// true if the current screen is the app screen.
 	AppScreenIsActive = false
+	// middle monitor position
+	MiddleMonitorPosition = mgl32.Vec3{2.0, 0, 0}
 )
 
 func init() {
@@ -225,9 +227,9 @@ func CreateTexturedRectangle(t texture.Textures) *mesh.TexturedMesh {
 	return rect
 }
 
-// Create material rectangle, that represents the table.
-func CreateMaterialCube(m *material.Material) *mesh.MaterialMesh {
-	r := cuboid.New(2, 6, 0.05)
+// Create material cube, that represents the table and the screens.
+func CreateMaterialCube(m *material.Material, size mgl32.Vec3) *mesh.MaterialMesh {
+	r := cuboid.New(size.X(), size.Y(), size.Z())
 	V, I, _ := r.MaterialMeshInput()
 	rect := mesh.NewMaterialMesh(V, I, m, glWrapper)
 	return rect
@@ -245,23 +247,30 @@ func CreateApplicationScreen() *screen.Screen {
 	monitors := model.New()
 	desk := model.New()
 	rustySurface := model.New()
+	screens := model.New()
 
 	var monitorTexture texture.Textures
 	monitorTexture.AddTexture(baseDir()+"/assets/crt_monitor_1280.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.diffuse", glWrapper)
 	monitorTexture.AddTexture(baseDir()+"/assets/crt_monitor_1280.png", glwrapper.CLAMP_TO_EDGE, glwrapper.CLAMP_TO_EDGE, glwrapper.LINEAR, glwrapper.LINEAR, "tex.specular", glWrapper)
 
 	middleMonitor := CreateTexturedRectangle(monitorTexture)
-	middleMonitor.SetPosition(mgl32.Vec3{2.0, 0, 0})
+	middleMonitor.SetPosition(MiddleMonitorPosition)
 	middleMonitor.RotateZ(90)
 	monitors.AddMesh(middleMonitor)
+	middleMonitorScreen := CreateMaterialCube(material.Emerald, mgl32.Vec3{1.5, 1.5, 0})
+	middleMonitorScreen.SetParent(middleMonitor)
+	middleMonitorScreen.SetPosition(mgl32.Vec3{-0.02, 0, 0})
+	screens.AddMesh(middleMonitorScreen)
 
 	rightMonitor := CreateTexturedRectangle(monitorTexture)
-	rightMonitor.SetPosition(mgl32.Vec3{1.5, -2.0, 0})
+	rightMonitorPosition := mgl32.TransformCoordinate(MiddleMonitorPosition, mgl32.HomogRotate3DZ(mgl32.DegToRad(-60)))
+	rightMonitor.SetPosition(rightMonitorPosition)
 	rightMonitor.RotateZ(45)
 	monitors.AddMesh(rightMonitor)
 
 	leftMonitor := CreateTexturedRectangle(monitorTexture)
-	leftMonitor.SetPosition(mgl32.Vec3{1.5, 2.0, 0})
+	leftMonitorPosition := mgl32.TransformCoordinate(MiddleMonitorPosition, mgl32.HomogRotate3DZ(mgl32.DegToRad(60)))
+	leftMonitor.SetPosition(leftMonitorPosition)
 	leftMonitor.RotateZ(135)
 	monitors.AddMesh(leftMonitor)
 
@@ -271,7 +280,7 @@ func CreateApplicationScreen() *screen.Screen {
 	scrn.AddModelToShader(monitors, shaderAppTextureBlending)
 
 	tableSurfaceMaterial := material.Chrome
-	tableSurface := CreateMaterialCube(tableSurfaceMaterial)
+	tableSurface := CreateMaterialCube(tableSurfaceMaterial, mgl32.Vec3{2, 6, 0.05})
 	tableSurface.SetPosition(mgl32.Vec3{1.5, 0, -1})
 	tableSurface.RotateX(90)
 	desk.AddMesh(tableSurface)
@@ -279,6 +288,7 @@ func CreateApplicationScreen() *screen.Screen {
 	shaderAppMaterial := shader.NewMaterialShader(glWrapper)
 	scrn.AddShader(shaderAppMaterial)
 	scrn.AddModelToShader(desk, shaderAppMaterial)
+	scrn.AddModelToShader(screens, shaderAppMaterial)
 
 	shaderAppTexture := shader.NewTextureShader(glWrapper)
 	scrn.AddShader(shaderAppTexture)
