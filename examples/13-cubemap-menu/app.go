@@ -58,8 +58,9 @@ var (
 	CameraLogIsPrinted = false
 	// true if the current screen is the app screen.
 	AppScreenIsActive = false
-	// middle monitor position
+	// middle monitor & screen position
 	MiddleMonitorPosition = mgl32.Vec3{2.0, 0, 0}
+	MiddleScreenPosition  = mgl32.Vec3{-0.02, 0.0, 0.07}
 )
 
 func init() {
@@ -257,9 +258,9 @@ func CreateApplicationScreen() *screen.Screen {
 	middleMonitor.SetPosition(MiddleMonitorPosition)
 	middleMonitor.RotateZ(90)
 	monitors.AddMesh(middleMonitor)
-	middleMonitorScreen := CreateMaterialCube(material.Emerald, mgl32.Vec3{1.5, 1.5, 0})
+	middleMonitorScreen := CreateMaterialCube(material.Emerald, mgl32.Vec3{1.5, 1.3, 0})
 	middleMonitorScreen.SetParent(middleMonitor)
-	middleMonitorScreen.SetPosition(mgl32.Vec3{-0.02, 0, 0})
+	middleMonitorScreen.SetPosition(MiddleScreenPosition)
 	screens.AddMesh(middleMonitorScreen)
 
 	rightMonitor := CreateTexturedRectangle(monitorTexture)
@@ -267,12 +268,20 @@ func CreateApplicationScreen() *screen.Screen {
 	rightMonitor.SetPosition(rightMonitorPosition)
 	rightMonitor.RotateZ(45)
 	monitors.AddMesh(rightMonitor)
+	rightMonitorScreen := CreateMaterialCube(material.Emerald, mgl32.Vec3{1.5, 1.3, 0})
+	rightMonitorScreen.SetParent(rightMonitor)
+	rightMonitorScreen.SetPosition(mgl32.TransformCoordinate(MiddleScreenPosition, mgl32.HomogRotate3DZ(mgl32.DegToRad(-60))))
+	screens.AddMesh(rightMonitorScreen)
 
 	leftMonitor := CreateTexturedRectangle(monitorTexture)
 	leftMonitorPosition := mgl32.TransformCoordinate(MiddleMonitorPosition, mgl32.HomogRotate3DZ(mgl32.DegToRad(60)))
 	leftMonitor.SetPosition(leftMonitorPosition)
 	leftMonitor.RotateZ(135)
 	monitors.AddMesh(leftMonitor)
+	leftMonitorScreen := CreateMaterialCube(material.Emerald, mgl32.Vec3{1.5, 1.3, 0})
+	leftMonitorScreen.SetParent(leftMonitor)
+	leftMonitorScreen.SetPosition(mgl32.TransformCoordinate(MiddleScreenPosition, mgl32.HomogRotate3DZ(mgl32.DegToRad(60))))
+	screens.AddMesh(leftMonitorScreen)
 
 	monitors.SetTransparent(true)
 	shaderAppTextureBlending := shader.NewTextureShaderBlending(glWrapper)
