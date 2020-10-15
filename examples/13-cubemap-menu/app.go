@@ -61,6 +61,9 @@ var (
 	// middle monitor & screen position
 	MiddleMonitorPosition = mgl32.Vec3{2.0, 0, 0}
 	MiddleScreenPosition  = mgl32.Vec3{-0.02, 0.0, 0.07}
+	RightRotationMatrix   = mgl32.HomogRotate3DZ(mgl32.DegToRad(-60))
+	LeftRotationMatrix    = mgl32.HomogRotate3DZ(mgl32.DegToRad(60))
+	MonitorScreenSize     = mgl32.Vec3{1.5, 1.3, 0}
 )
 
 func init() {
@@ -258,29 +261,28 @@ func CreateApplicationScreen() *screen.Screen {
 	middleMonitor.SetPosition(MiddleMonitorPosition)
 	middleMonitor.RotateZ(90)
 	monitors.AddMesh(middleMonitor)
-	middleMonitorScreen := CreateMaterialCube(material.Emerald, mgl32.Vec3{1.5, 1.3, 0})
+	middleMonitorScreen := CreateMaterialCube(material.Emerald, MonitorScreenSize)
 	middleMonitorScreen.SetParent(middleMonitor)
 	middleMonitorScreen.SetPosition(MiddleScreenPosition)
 	screens.AddMesh(middleMonitorScreen)
 
 	rightMonitor := CreateTexturedRectangle(monitorTexture)
-	rightMonitorPosition := mgl32.TransformCoordinate(MiddleMonitorPosition, mgl32.HomogRotate3DZ(mgl32.DegToRad(-60)))
-	rightMonitor.SetPosition(rightMonitorPosition)
+	rightMonitor.SetPosition(mgl32.TransformCoordinate(MiddleMonitorPosition, RightRotationMatrix))
 	rightMonitor.RotateZ(45)
 	monitors.AddMesh(rightMonitor)
-	rightMonitorScreen := CreateMaterialCube(material.Emerald, mgl32.Vec3{1.5, 1.3, 0})
+	rightMonitorScreen := CreateMaterialCube(material.Emerald, MonitorScreenSize)
 	rightMonitorScreen.SetParent(rightMonitor)
-	rightMonitorScreen.SetPosition(mgl32.TransformCoordinate(MiddleScreenPosition, mgl32.HomogRotate3DZ(mgl32.DegToRad(-60))))
+	rightMonitorScreen.SetPosition(mgl32.TransformCoordinate(MiddleScreenPosition, RightRotationMatrix))
 	screens.AddMesh(rightMonitorScreen)
 
 	leftMonitor := CreateTexturedRectangle(monitorTexture)
-	leftMonitorPosition := mgl32.TransformCoordinate(MiddleMonitorPosition, mgl32.HomogRotate3DZ(mgl32.DegToRad(60)))
+	leftMonitorPosition := mgl32.TransformCoordinate(MiddleMonitorPosition, LeftRotationMatrix)
 	leftMonitor.SetPosition(leftMonitorPosition)
 	leftMonitor.RotateZ(135)
 	monitors.AddMesh(leftMonitor)
-	leftMonitorScreen := CreateMaterialCube(material.Emerald, mgl32.Vec3{1.5, 1.3, 0})
+	leftMonitorScreen := CreateMaterialCube(material.Emerald, MonitorScreenSize)
 	leftMonitorScreen.SetParent(leftMonitor)
-	leftMonitorScreen.SetPosition(mgl32.TransformCoordinate(MiddleScreenPosition, mgl32.HomogRotate3DZ(mgl32.DegToRad(60))))
+	leftMonitorScreen.SetPosition(mgl32.TransformCoordinate(MiddleScreenPosition, LeftRotationMatrix))
 	screens.AddMesh(leftMonitorScreen)
 
 	monitors.SetTransparent(true)
