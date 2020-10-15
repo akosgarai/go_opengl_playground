@@ -29,8 +29,9 @@ import (
 )
 
 const (
-	WindowTitle     = "Example - Cubemap menu screen"
-	CAMERA_POSITION = glfw.KeyP
+	WindowTitle       = "Example - Cubemap menu screen"
+	CAMERA_POSITION   = glfw.KeyP
+	LEFT_MOUSE_BUTTON = glfw.MouseButtonLeft
 )
 
 var (
@@ -64,6 +65,16 @@ var (
 	RightRotationMatrix   = mgl32.HomogRotate3DZ(mgl32.DegToRad(-60))
 	LeftRotationMatrix    = mgl32.HomogRotate3DZ(mgl32.DegToRad(60))
 	MonitorScreenSize     = mgl32.Vec3{1.5, 1.3, 0}
+	ButtonSize            = mgl32.Vec3{0.5, 1.0, 0.0}
+	// Buttons on the screen
+	MiddleMonitorGoRightButton *mesh.MaterialMesh
+	MiddleMonitorGoLeftButton  *mesh.MaterialMesh
+	RightMonitorGoLeftButton   *mesh.MaterialMesh
+	LeftMonitorGoRightButton   *mesh.MaterialMesh
+	// Rotation to the monitors
+	RotationToLeft  = false
+	RotationToRight = false
+	SumOfRotation   = float32(0.0)
 )
 
 func init() {
@@ -127,7 +138,7 @@ func addCameraConfigToSettings() {
 	// - move speed
 	Settings.AddConfig("CameraVelocity", "Cam Speed", "The movement velocity of the camera. If it moves, it moves with this speed.", float32(0.005), nil)
 	// - direction speed
-	Settings.AddConfig("CameraRotation", "Cam Rotate", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", float32(0.5), nil)
+	Settings.AddConfig("CameraRotation", "Cam Rotate", "The rotation velocity of the camera. If it rotates, it rotates with this speed.", float32(0.125), nil)
 }
 func addDirectionalLightConfigToSettings() {
 	var colorValidator model.FloatValidator
@@ -135,7 +146,7 @@ func addDirectionalLightConfigToSettings() {
 	Settings.AddConfig("DLAmbient", "DL ambient", "The ambient color component of the directional lightsource.", mgl32.Vec3{1.0, 1.0, 1.0}, colorValidator)
 	Settings.AddConfig("DLDiffuse", "DL diffuse", "The diffuse color component of the directional lightsource.", mgl32.Vec3{1.0, 1.0, 1.0}, colorValidator)
 	Settings.AddConfig("DLSpecular", "DL specular", "The specular color component of the directional lightsource.", mgl32.Vec3{1.0, 1.0, 1.0}, colorValidator)
-	Settings.AddConfig("DLDirection", "DL direction", "The direction vector of the directional lightsource.", mgl32.Vec3{0.0, 1.0, 0.0}, nil)
+	Settings.AddConfig("DLDirection", "DL direction", "The direction vector of the directional lightsource.", mgl32.Vec3{0.0, 0.0, -1.0}, nil)
 }
 func addAnimationConfigToSettings() {
 	Settings.AddConfig("CameraInitPos", "Cam init position", "The initial position of the camera.", mgl32.Vec3{-3.5, 0.0, 1.25}, nil)
@@ -239,6 +250,15 @@ func CreateMaterialCube(m *material.Material, size mgl32.Vec3) *mesh.MaterialMes
 	return rect
 }
 
+// Create material cube, that represents the button on the screens.
+func CreateMaterialCubeWithBinding(m *material.Material, size mgl32.Vec3) *mesh.MaterialMesh {
+	r := cuboid.New(size.X(), size.Y(), size.Z())
+	V, I, BO := r.MaterialMeshInput()
+	rect := mesh.NewMaterialMesh(V, I, m, glWrapper)
+	rect.SetBoundingObject(BO)
+	return rect
+}
+
 // Create a textured rectangle, that represents the walls.
 func CreateTexturedCube(t texture.Textures) *mesh.TexturedMesh {
 	r := cuboid.New(8, 8, 8)
@@ -265,6 +285,16 @@ func CreateApplicationScreen() *screen.Screen {
 	middleMonitorScreen.SetParent(middleMonitor)
 	middleMonitorScreen.SetPosition(MiddleScreenPosition)
 	screens.AddMesh(middleMonitorScreen)
+	// Rotate right button
+	MiddleMonitorGoRightButton = CreateMaterialCubeWithBinding(material.Ruby, ButtonSize)
+	MiddleMonitorGoRightButton.SetParent(middleMonitorScreen)
+	MiddleMonitorGoRightButton.SetPosition(mgl32.Vec3{-0.02, 0.35, 0.0})
+	screens.AddMesh(MiddleMonitorGoRightButton)
+	// Rotate left button
+	MiddleMonitorGoLeftButton = CreateMaterialCubeWithBinding(material.Ruby, ButtonSize)
+	MiddleMonitorGoLeftButton.SetParent(middleMonitorScreen)
+	MiddleMonitorGoLeftButton.SetPosition(mgl32.Vec3{-0.02, -0.35, 0.0})
+	screens.AddMesh(MiddleMonitorGoLeftButton)
 
 	rightMonitor := CreateTexturedRectangle(monitorTexture)
 	rightMonitor.SetPosition(mgl32.TransformCoordinate(MiddleMonitorPosition, RightRotationMatrix))
@@ -274,6 +304,10 @@ func CreateApplicationScreen() *screen.Screen {
 	rightMonitorScreen.SetParent(rightMonitor)
 	rightMonitorScreen.SetPosition(mgl32.TransformCoordinate(MiddleScreenPosition, RightRotationMatrix))
 	screens.AddMesh(rightMonitorScreen)
+	RightMonitorGoLeftButton = CreateMaterialCubeWithBinding(material.Ruby, ButtonSize)
+	RightMonitorGoLeftButton.SetParent(rightMonitorScreen)
+	RightMonitorGoLeftButton.SetPosition(mgl32.Vec3{-0.02, 0.35, 0.0})
+	screens.AddMesh(RightMonitorGoLeftButton)
 
 	leftMonitor := CreateTexturedRectangle(monitorTexture)
 	leftMonitorPosition := mgl32.TransformCoordinate(MiddleMonitorPosition, LeftRotationMatrix)
@@ -284,6 +318,10 @@ func CreateApplicationScreen() *screen.Screen {
 	leftMonitorScreen.SetParent(leftMonitor)
 	leftMonitorScreen.SetPosition(mgl32.TransformCoordinate(MiddleScreenPosition, LeftRotationMatrix))
 	screens.AddMesh(leftMonitorScreen)
+	LeftMonitorGoRightButton = CreateMaterialCubeWithBinding(material.Ruby, ButtonSize)
+	LeftMonitorGoRightButton.SetParent(leftMonitorScreen)
+	LeftMonitorGoRightButton.SetPosition(mgl32.Vec3{-0.02, -0.35, 0.0})
+	screens.AddMesh(LeftMonitorGoRightButton)
 
 	monitors.SetTransparent(true)
 	shaderAppTextureBlending := shader.NewTextureShaderBlending(glWrapper)
@@ -353,6 +391,23 @@ func Update() {
 	// changes the direction to -z and goes until it reaches 0.
 	if AppScreenIsActive {
 		if !AnimationIsrunning {
+			monitorScreenButtonHandler()
+			dY := float32(0.0)
+			direction := float32(1.0)
+			if RotationToRight {
+				dY = AppScreen.GetCamera().GetRotationStep() * float32(delta)
+				direction = float32(-1.0)
+			} else if RotationToLeft {
+				dY = AppScreen.GetCamera().GetRotationStep() * float32(delta)
+			}
+			SumOfRotation = SumOfRotation + dY
+			if SumOfRotation > 60 {
+				dY = dY - (SumOfRotation - 60)
+				RotationToRight = false
+				RotationToLeft = false
+				SumOfRotation = 0.0
+			}
+			AppScreen.GetCamera().UpdateDirection(0.0, direction*dY)
 			return
 		}
 		camPos := AppScreen.GetCamera().GetPosition()
@@ -365,6 +420,32 @@ func Update() {
 		} else {
 			AnimationIsrunning = false
 		}
+	}
+}
+func monitorScreenButtonHandler() {
+	if RotationToRight || RotationToLeft {
+		return
+	}
+	_, msh, _ := app.GetClosestModelMeshDistance()
+	switch msh.(type) {
+	case *mesh.MaterialMesh:
+		mMesh := msh.(*mesh.MaterialMesh)
+		if app.GetMouseButtonState(LEFT_MOUSE_BUTTON) {
+			if mMesh == MiddleMonitorGoRightButton {
+				fmt.Println("MiddleMonitorGoRightButton button has been pressed.\n")
+				RotationToRight = true
+			} else if mMesh == MiddleMonitorGoLeftButton {
+				fmt.Println("MiddleMonitorGoLeftButton button has been pressed.\n")
+				RotationToLeft = true
+			} else if mMesh == RightMonitorGoLeftButton {
+				fmt.Println("RightMonitorGoLeftButton button has been pressed.\n")
+				RotationToLeft = true
+			} else if mMesh == LeftMonitorGoRightButton {
+				fmt.Println("LeftMonitorGoRightButton button has been pressed.\n")
+				RotationToRight = true
+			}
+		}
+		break
 	}
 }
 func main() {
