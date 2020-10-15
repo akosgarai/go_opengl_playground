@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"runtime"
@@ -28,7 +29,8 @@ import (
 )
 
 const (
-	WindowTitle = "Example - Cubemap menu screen"
+	WindowTitle     = "Example - Cubemap menu screen"
+	CAMERA_POSITION = glfw.KeyP
 )
 
 var (
@@ -49,6 +51,13 @@ var (
 	glWrapper glwrapper.Wrapper
 	// config
 	Settings = config.New()
+	// This flag is active until the screen animation is running.
+	// The animation is the movement to the computers.
+	AnimationIsrunning = false
+	// Camera log
+	CameraLogIsPrinted = false
+	// true if the current screen is the app screen.
+	AppScreenIsActive = false
 )
 
 func init() {
@@ -60,6 +69,8 @@ func init() {
 	addCameraConfigToSettings()
 	// Directional light configuration with initial values
 	addDirectionalLightConfigToSettings()
+	// Application config - camera start & stop position.
+	addAnimationConfigToSettings()
 }
 func baseDir() string {
 	_, filename, _, _ := runtime.Caller(1)
@@ -98,8 +109,6 @@ func setupWindowBuilder() {
 	Builder.SetWindowSize(WindowWidth, WindowHeight)
 }
 func addCameraConfigToSettings() {
-	// - position
-	Settings.AddConfig("CameraPos", "Cam position", "The initial position of the camera.", mgl32.Vec3{0.0, 0.0, 0.0}, nil)
 	// - up direction
 	Settings.AddConfig("WorldUp", "World up dir", "The up direction in the world.", mgl32.Vec3{0, 0, -1}, nil)
 	// - pitch, yaw
@@ -122,6 +131,10 @@ func addDirectionalLightConfigToSettings() {
 	Settings.AddConfig("DLSpecular", "DL specular", "The specular color component of the directional lightsource.", mgl32.Vec3{1.0, 1.0, 1.0}, colorValidator)
 	Settings.AddConfig("DLDirection", "DL direction", "The direction vector of the directional lightsource.", mgl32.Vec3{0.0, 1.0, 0.0}, nil)
 }
+func addAnimationConfigToSettings() {
+	Settings.AddConfig("CameraInitPos", "Cam init position", "The initial position of the camera.", mgl32.Vec3{-3.5, 0.0, 1.25}, nil)
+	Settings.AddConfig("CameraFiniPos", "Cam finish position", "The initial position of the camera.", mgl32.Vec3{0.0, 0.0, 0.0}, nil)
+}
 
 // It creates the menu screen.
 func CreateMenuScreen() *screen.MenuScreen {
@@ -139,17 +152,22 @@ func CreateMenuScreen() *screen.MenuScreen {
 		startTime = lastUpdate
 		AppScreen = CreateApplicationScreen()
 		app.ActivateScreen(AppScreen)
+		AppScreenIsActive = true
+		AnimationIsrunning = true
 	}
 	startEvent := func() {
 		lastUpdate = time.Now().UnixNano()
 		startTime = lastUpdate
 		AppScreen = CreateApplicationScreen()
 		app.ActivateScreen(AppScreen)
+		AppScreenIsActive = true
+		AnimationIsrunning = true
 		MenuScreen.SetState("world-started", true)
 		MenuScreen.BuildScreen()
 	}
 	settingsEvent := func() {
 		app.ActivateScreen(SettingsScreen)
+		AppScreenIsActive = false
 	}
 	exitEvent := func() {
 		app.GetWindow().SetShouldClose(true)
@@ -169,7 +187,7 @@ func CreateMenuScreen() *screen.MenuScreen {
 
 // It creates a new fps camera with the necessary setup from settings screen
 func CreateCameraFromSettings() interfaces.Camera {
-	cameraPosition := Settings["CameraPos"].GetCurrentValue().(mgl32.Vec3)
+	cameraPosition := Settings["CameraInitPos"].GetCurrentValue().(mgl32.Vec3)
 	worldUp := Settings["WorldUp"].GetCurrentValue().(mgl32.Vec3)
 	yawAngle := Settings["CameraYaw"].GetCurrentValue().(float32)
 	pitchAngle := Settings["CameraPitch"].GetCurrentValue().(float32)
@@ -300,6 +318,33 @@ func Update() {
 	delta := float64(nowNano-lastUpdate) / float64(time.Millisecond)
 	lastUpdate = nowNano
 	app.Update(delta)
+	if app.GetKeyState(CAMERA_POSITION) {
+		if !CameraLogIsPrinted {
+			fmt.Println(AppScreen.GetCamera().Log())
+			CameraLogIsPrinted = true
+		}
+	} else {
+		CameraLogIsPrinted = false
+	}
+	// Camera animation for the AppScreen:
+	// It starts from the (-3.5,0,1.2) position and goes to (0,0,0)
+	// First it goest to the +x direction until it reaches 0. Then it
+	// changes the direction to -z and goes until it reaches 0.
+	if AppScreenIsActive {
+		if !AnimationIsrunning {
+			return
+		}
+		camPos := AppScreen.GetCamera().GetPosition()
+		finish := Settings["CameraFiniPos"].GetCurrentValue().(mgl32.Vec3)
+		step := float32(delta) * AppScreen.GetCamera().GetVelocity()
+		if camPos.X() < finish.X() {
+			AppScreen.GetCamera().Walk(step)
+		} else if camPos.Z() > finish.Z() {
+			AppScreen.GetCamera().Lift(-step)
+		} else {
+			AnimationIsrunning = false
+		}
+	}
 }
 func main() {
 	app = application.New(glWrapper)
@@ -310,7 +355,8 @@ func main() {
 	// Init opengl.
 	glWrapper.InitOpenGL()
 	// application screen
-	app.AddScreen(CreateApplicationScreen())
+	AppScreen = CreateApplicationScreen()
+	app.AddScreen(AppScreen)
 	// menu screen
 	MenuScreen = CreateMenuScreen()
 	app.AddScreen(MenuScreen)
