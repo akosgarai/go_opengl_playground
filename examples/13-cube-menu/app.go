@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	WindowTitle       = "Example - Cubemap menu screen"
+	WindowTitle       = "Example - Improved menu screen base"
 	CAMERA_POSITION   = glfw.KeyP
 	LEFT_MOUSE_BUTTON = glfw.MouseButtonLeft
 )
