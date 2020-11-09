@@ -67,6 +67,7 @@ type Button struct {
 	surfaceSize  mgl32.Vec2
 	screen       interfaces.Mesh
 	position     mgl32.Vec3
+	aspect       float32
 }
 
 // PinToScreen sets the parent of the bg mesh to the given one and updates its position.
@@ -87,11 +88,11 @@ func (b *Button) Clear() {
 	b.baseModelToDefaultState()
 }
 func (b *Button) baseModelToHoverState() {
-	bgRect := rectangle.NewExact(b.frameSize.Y(), b.frameSize.X())
+	bgRect := rectangle.NewExact(b.frameSize.Y()/b.aspect, b.frameSize.X()/b.aspect)
 	V, I, BO := bgRect.ColoredMeshInput(b.hoverColor)
 	bg := mesh.NewColorMesh(V, I, b.hoverColor, glWrapper)
 	bg.SetBoundingObject(BO)
-	fgRect := rectangle.NewExact(b.surfaceSize.Y(), b.surfaceSize.X())
+	fgRect := rectangle.NewExact(b.surfaceSize.Y()/b.aspect, b.surfaceSize.X()/b.aspect)
 	V, I, _ = fgRect.ColoredMeshInput(b.defaultColor)
 	fg := mesh.NewColorMesh(V, I, b.defaultColor, glWrapper)
 	fg.SetPosition(mgl32.Vec3{0.0, -0.001, 0.0})
@@ -100,14 +101,15 @@ func (b *Button) baseModelToHoverState() {
 	m.AddMesh(bg)
 	m.AddMesh(fg)
 	b.BaseModel = m
-	b.PinToScreen(b.screen, b.position)
+	pos := mgl32.Vec3{b.position.X() / b.aspect, b.position.Y(), b.position.Z() / b.aspect}
+	b.PinToScreen(b.screen, pos)
 }
 func (b *Button) baseModelToDefaultState() {
-	bgRect := rectangle.NewExact(b.frameSize.Y(), b.frameSize.X())
+	bgRect := rectangle.NewExact(b.frameSize.Y()/b.aspect, b.frameSize.X()/b.aspect)
 	V, I, BO := bgRect.ColoredMeshInput(b.defaultColor)
 	bg := mesh.NewColorMesh(V, I, b.defaultColor, glWrapper)
 	bg.SetBoundingObject(BO)
-	fgRect := rectangle.NewExact(b.surfaceSize.Y(), b.surfaceSize.X())
+	fgRect := rectangle.NewExact(b.surfaceSize.Y()/b.aspect, b.surfaceSize.X()/b.aspect)
 	V, I, _ = fgRect.ColoredMeshInput(b.defaultColor)
 	fg := mesh.NewColorMesh(V, I, b.defaultColor, glWrapper)
 	fg.SetPosition(mgl32.Vec3{0.0, -0.001, 0.0})
@@ -116,14 +118,15 @@ func (b *Button) baseModelToDefaultState() {
 	m.AddMesh(bg)
 	m.AddMesh(fg)
 	b.BaseModel = m
-	b.PinToScreen(b.screen, b.position)
+	pos := mgl32.Vec3{b.position.X() / b.aspect, b.position.Y(), b.position.Z() / b.aspect}
+	b.PinToScreen(b.screen, pos)
 }
 
 // NewButton returns a button instance. The following inputs has to be set:
 // Size of the frame mesh, size of the surface mesh, default and hover color of the button.
 // The size (vec2) inputs, the x component means the length on the horizontal axis,
 // the y component means the length on the vertical axis.
-func NewButton(sizeFrame, sizeSurface mgl32.Vec2, defaultCol, hoverCol []mgl32.Vec3, scrn interfaces.Mesh, pos mgl32.Vec3) *Button {
+func NewButton(sizeFrame, sizeSurface mgl32.Vec2, defaultCol, hoverCol []mgl32.Vec3, scrn interfaces.Mesh, pos mgl32.Vec3, aspect float32) *Button {
 	btn := &Button{
 		BaseModel:    model.New(),
 		defaultColor: defaultCol,
@@ -132,6 +135,7 @@ func NewButton(sizeFrame, sizeSurface mgl32.Vec2, defaultCol, hoverCol []mgl32.V
 		surfaceSize:  sizeSurface,
 		screen:       scrn,
 		position:     pos,
+		aspect:       aspect,
 	}
 	btn.baseModelToDefaultState()
 	return btn
@@ -146,6 +150,7 @@ type EditorScreen struct {
 
 func NewEditorScreen() *EditorScreen {
 	scrn := screen.New()
+	scrn.SetWrapper(glWrapper)
 	wX, wY := app.GetWindow().GetSize()
 	scrn.SetWindowSize(float32(wX), float32(wY))
 	scrn.SetupCamera(CreateCamera(), CameraMovementOptions())
@@ -162,20 +167,21 @@ func NewEditorScreen() *EditorScreen {
 	})
 	// Add the lightources to the application
 	scrn.AddDirectionalLightSource(DirectionalLightSource, [4]string{"dirLight[0].direction", "dirLight[0].ambient", "dirLight[0].diffuse", "dirLight[0].specular"})
-	scrn.Setup(setupApp)
 	ModelMenu := model.New()
 	var MenuModels []interfaces.Model
 	aspectRatio := scrn.GetAspectRatio()
 	screenMesh := CreateMenuRectangle(aspectRatio)
 	ModelMenu.AddMesh(screenMesh)
 	MenuModels = append(MenuModels, ModelMenu)
-	btn := NewButton(frame, surface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -0.01, -0.35})
+	btn := NewButton(frame, surface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -0.01, -0.35}, aspectRatio)
 	MenuModels = append(MenuModels, btn)
-	return &EditorScreen{
+	es := &EditorScreen{
 		Screen:     scrn,
 		menuShader: shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper),
 		menuModels: MenuModels,
 	}
+	es.Setup(es.setupApp)
+	return es
 }
 
 // AddMenuPanel activates the menu form on the screen.
@@ -205,7 +211,7 @@ func (scrn *EditorScreen) MenuItemsDefaultState() {
 }
 func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore interfaces.RoKeyStore, buttonStore interfaces.RoButtonStore) {
 	posX, posY := p.GetCurrent()
-	mCoords := mgl32.Vec3{float32(-posY), -0.01, float32(posX)}
+	mCoords := mgl32.Vec3{float32(-posY) / scrn.GetAspectRatio(), -0.01, float32(posX)}
 	scrn.UpdateWithDistance(dt, mCoords)
 	closestModel, _, dist := scrn.GetClosestModelMeshDistance()
 	scrn.MenuItemsDefaultState()
@@ -220,6 +226,21 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 		break
 	}
 }
+func (scrn *EditorScreen) setupApp(w interfaces.GLWrapper) {
+	scrn.GetWrapper().Enable(glwrapper.DEPTH_TEST)
+	scrn.GetWrapper().DepthFunc(glwrapper.LESS)
+	scrn.GetWrapper().ClearColor(0.3, 0.3, 0.3, 1.0)
+	wW, wH := scrn.GetWindowSize()
+	scrn.GetWrapper().Viewport(0, 0, int32(wW), int32(wH))
+}
+func (scrn *EditorScreen) ResizeEvent(wW, wH float32) {
+	scrn.SetWindowSize(wW, wH)
+}
+
+// type SizeCallback func(w *Window, width int, height int)
+func ResizeCallback(w *glfw.Window, width, height int) {
+	AppScreen.ResizeEvent(float32(width), float32(height))
+}
 func init() {
 	// lock thread
 	runtime.LockOSThread()
@@ -233,6 +254,7 @@ func init() {
 	app.ActivateScreen(AppScreen)
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
+	app.GetWindow().SetSizeCallback(ResizeCallback)
 	lastUpdate = time.Now().UnixNano() / int64(time.Millisecond)
 	lastToggle = lastUpdate
 }
@@ -273,11 +295,6 @@ func setupWindowBuilder() *window.WindowBuilder {
 func baseDir() string {
 	_, filename, _, _ := runtime.Caller(1)
 	return path.Dir(filename)
-}
-func setupApp(glWrapper interfaces.GLWrapper) {
-	glWrapper.Enable(glwrapper.DEPTH_TEST)
-	glWrapper.DepthFunc(glwrapper.LESS)
-	glWrapper.ClearColor(0.3, 0.3, 0.3, 1.0)
 }
 
 // It creates a new camera with the necessary setup
@@ -323,7 +340,7 @@ func CreateJadeSphere() *mesh.MaterialMesh {
 	return JadeSphere
 }
 func CreateMenuRectangle(aspect float32) *mesh.ColorMesh {
-	rect := rectangle.NewExact(2.0/aspect, 1.0)
+	rect := rectangle.NewExact(2.0/aspect, 1.0/aspect)
 	colors := []mgl32.Vec3{mgl32.Vec3{0.0, 0.0, 1.0}}
 	v, i, _ := rect.ColoredMeshInput(colors)
 	menu := mesh.NewColorMesh(v, i, colors, glWrapper)
