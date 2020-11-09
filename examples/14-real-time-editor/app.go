@@ -121,6 +121,9 @@ func (b *Button) baseModelToDefaultState() {
 	pos := mgl32.Vec3{b.position.X() / b.aspect, b.position.Y(), b.position.Z() / b.aspect}
 	b.PinToScreen(b.screen, pos)
 }
+func (b *Button) SetAspect(aspect float32) {
+	b.aspect = aspect
+}
 
 // NewButton returns a button instance. The following inputs has to be set:
 // Size of the frame mesh, size of the surface mesh, default and hover color of the button.
@@ -140,6 +143,16 @@ func NewButton(sizeFrame, sizeSurface mgl32.Vec2, defaultCol, hoverCol []mgl32.V
 	btn.baseModelToDefaultState()
 	return btn
 }
+
+/*
+type FormSurfaceModel struct {
+	*model.BaseModel
+	surfaceColor []mgl32.Vec3
+	surfaceSize  mgl32.Vec2
+	position     mgl32.Vec3
+	aspect       float32
+}
+*/
 
 // It represents our editor.
 type EditorScreen struct {
@@ -235,6 +248,14 @@ func (scrn *EditorScreen) setupApp(w interfaces.GLWrapper) {
 }
 func (scrn *EditorScreen) ResizeEvent(wW, wH float32) {
 	scrn.SetWindowSize(wW, wH)
+	for index, _ := range scrn.menuModels {
+		switch scrn.menuModels[index].(type) {
+		case *Button:
+			item := scrn.menuModels[index].(*Button)
+			item.SetAspect(wW / wH)
+			break
+		}
+	}
 }
 
 // type SizeCallback func(w *Window, width int, height int)
@@ -316,7 +337,7 @@ func CreateCamera() *camera.DefaultCamera {
 	mat := mgl32.Perspective(45, float32(WindowWidth)/float32(WindowHeight), 0.001, 10.0)
 	// 1.732 ~ sqrt(3)
 	camera := camera.NewCamera(mgl32.Vec3{0.0, -mat[0], 0.0}, mgl32.Vec3{1, 0, 0}, 0.0, 90.0)
-	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.001, 10.0)
+	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.0001, 10.0)
 	camera.SetVelocity(float32(0.005))
 	return camera
 }
@@ -344,7 +365,7 @@ func CreateMenuRectangle(aspect float32) *mesh.ColorMesh {
 	colors := []mgl32.Vec3{mgl32.Vec3{0.0, 0.0, 1.0}}
 	v, i, _ := rect.ColoredMeshInput(colors)
 	menu := mesh.NewColorMesh(v, i, colors, glWrapper)
-	menu.SetPosition(mgl32.Vec3{0.0, 0.0, 0.5})
+	menu.SetPosition(mgl32.Vec3{0.0, 0.0, 0.5 / aspect})
 	return menu
 }
 func CreateApplicationScreen() *EditorScreen {
