@@ -88,13 +88,13 @@ func (b *Button) Clear() {
 }
 func (b *Button) baseModelToHoverState() {
 	bgRect := rectangle.NewExact(b.frameSize.Y(), b.frameSize.X())
-	V, I, BO := bgRect.ColoredMeshInput(b.defaultColor)
-	bg := mesh.NewColorMesh(V, I, b.defaultColor, glWrapper)
+	V, I, BO := bgRect.ColoredMeshInput(b.hoverColor)
+	bg := mesh.NewColorMesh(V, I, b.hoverColor, glWrapper)
 	bg.SetBoundingObject(BO)
 	fgRect := rectangle.NewExact(b.surfaceSize.Y(), b.surfaceSize.X())
-	V, I, _ = fgRect.ColoredMeshInput(b.hoverColor)
-	fg := mesh.NewColorMesh(V, I, b.hoverColor, glWrapper)
-	fg.SetPosition(mgl32.Vec3{0.0, 0.001, 0.0})
+	V, I, _ = fgRect.ColoredMeshInput(b.defaultColor)
+	fg := mesh.NewColorMesh(V, I, b.defaultColor, glWrapper)
+	fg.SetPosition(mgl32.Vec3{0.0, -0.001, 0.0})
 	fg.SetParent(bg)
 	m := model.New()
 	m.AddMesh(bg)
@@ -110,7 +110,7 @@ func (b *Button) baseModelToDefaultState() {
 	fgRect := rectangle.NewExact(b.surfaceSize.Y(), b.surfaceSize.X())
 	V, I, _ = fgRect.ColoredMeshInput(b.defaultColor)
 	fg := mesh.NewColorMesh(V, I, b.defaultColor, glWrapper)
-	fg.SetPosition(mgl32.Vec3{0.0, 0.001, 0.0})
+	fg.SetPosition(mgl32.Vec3{0.0, -0.001, 0.0})
 	fg.SetParent(bg)
 	m := model.New()
 	m.AddMesh(bg)
@@ -146,6 +146,8 @@ type EditorScreen struct {
 
 func NewEditorScreen() *EditorScreen {
 	scrn := screen.New()
+	wX, wY := app.GetWindow().GetSize()
+	scrn.SetWindowSize(float32(wX), float32(wY))
 	scrn.SetupCamera(CreateCamera(), CameraMovementOptions())
 	shaderProgram := shader.NewMaterialShader(glWrapper)
 	scrn.AddShader(shaderProgram)
@@ -163,10 +165,11 @@ func NewEditorScreen() *EditorScreen {
 	scrn.Setup(setupApp)
 	ModelMenu := model.New()
 	var MenuModels []interfaces.Model
-	screenMesh := CreateMenuRectangle()
+	aspectRatio := scrn.GetAspectRatio()
+	screenMesh := CreateMenuRectangle(aspectRatio)
 	ModelMenu.AddMesh(screenMesh)
 	MenuModels = append(MenuModels, ModelMenu)
-	btn := NewButton(frame, surface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{-0.01, 0.7, 0.35})
+	btn := NewButton(frame, surface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -0.01, -0.35})
 	MenuModels = append(MenuModels, btn)
 	return &EditorScreen{
 		Screen:     scrn,
@@ -192,8 +195,29 @@ func (scrn *EditorScreen) RemoveMenuPanel() {
 // MenuItemsDefaultState rebuilds the menu models in their default state.
 func (scrn *EditorScreen) MenuItemsDefaultState() {
 	for index, _ := range scrn.menuModels {
-		item := scrn.menuModels[index].(*Button)
-		item.Clear()
+		switch scrn.menuModels[index].(type) {
+		case *Button:
+			item := scrn.menuModels[index].(*Button)
+			item.Clear()
+			break
+		}
+	}
+}
+func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore interfaces.RoKeyStore, buttonStore interfaces.RoButtonStore) {
+	posX, posY := p.GetCurrent()
+	mCoords := mgl32.Vec3{float32(-posY), -0.01, float32(posX)}
+	scrn.UpdateWithDistance(dt, mCoords)
+	closestModel, _, dist := scrn.GetClosestModelMeshDistance()
+	scrn.MenuItemsDefaultState()
+	switch closestModel.(type) {
+	case (*Button):
+		if dist < 0.001 {
+			btn := closestModel.(*Button)
+			btn.Hover()
+			fmt.Printf("Hover ")
+		}
+		fmt.Printf("Distance: %f, coords: %#v\n", dist, mCoords)
+		break
 	}
 }
 func init() {
@@ -257,9 +281,26 @@ func setupApp(glWrapper interfaces.GLWrapper) {
 }
 
 // It creates a new camera with the necessary setup
+// cameraPosition: Vector{X : 0.0000000000, Y : -1.7319999933, Z : 0.0000000000}
+// worldUp: Vector{X : 1.0000000000, Y : 0.0000000000, Z : 0.0000000000}
+// cameraFrontDirection: Vector{X : -0.0000000437, Y : 1.0000000000, Z : -0.0000000000}
+// cameraUpDirection: Vector{X : -1.0000000000, Y : -0.0000000437, Z : 0.0000000000}
+// cameraRightDirection: Vector{X : -0.0000000000, Y : 0.0000000000, Z : 1.0000000000}
+// yaw : 0.0000000000
+// pitch : 90.0000000000
+// velocity : 0.0049999999
+// rotationStep : 0.0000000000
+// ProjectionOptions:
+//  - fov : 45.0000000000
+//  - aspectRatio : 1.0000000000
+//  - far : 10.0000000000
+//  - near : 0.0010000000
 func CreateCamera() *camera.DefaultCamera {
-	camera := camera.NewCamera(mgl32.Vec3{0.0, 0.0, 0.0}, mgl32.Vec3{0, 1, 0}, 0.0, 0.0)
+	mat := mgl32.Perspective(45, float32(WindowWidth)/float32(WindowHeight), 0.001, 10.0)
+	// 1.732 ~ sqrt(3)
+	camera := camera.NewCamera(mgl32.Vec3{0.0, -mat[0], 0.0}, mgl32.Vec3{1, 0, 0}, 0.0, 90.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.001, 10.0)
+	camera.SetVelocity(float32(0.005))
 	return camera
 }
 
@@ -268,6 +309,8 @@ func CameraMovementOptions() map[string]interface{} {
 	cm := make(map[string]interface{})
 	cm["mode"] = "default"
 	cm["rotateOnEdgeDistance"] = float32(0.0)
+	cm["forward"] = []glfw.Key{glfw.KeyY}
+	cm["back"] = []glfw.Key{glfw.KeyX}
 	return cm
 }
 
@@ -276,16 +319,15 @@ func CreateJadeSphere() *mesh.MaterialMesh {
 	sph := sphere.New(20)
 	v, i, _ := sph.MaterialMeshInput()
 	JadeSphere := mesh.NewMaterialMesh(v, i, material.Jade, glWrapper)
-	JadeSphere.SetPosition(mgl32.Vec3{5.0, 0.0, 1.4142})
+	JadeSphere.SetPosition(mgl32.Vec3{0.0, 3.5858, -1.4142})
 	return JadeSphere
 }
-func CreateMenuRectangle() *mesh.ColorMesh {
-	rect := rectangle.NewExact(2.0, 1.0)
+func CreateMenuRectangle(aspect float32) *mesh.ColorMesh {
+	rect := rectangle.NewExact(2.0/aspect, 1.0)
 	colors := []mgl32.Vec3{mgl32.Vec3{0.0, 0.0, 1.0}}
 	v, i, _ := rect.ColoredMeshInput(colors)
 	menu := mesh.NewColorMesh(v, i, colors, glWrapper)
-	menu.SetPosition(mgl32.Vec3{1.4142, 0.0, -0.5})
-	menu.RotateZ(90)
+	menu.SetPosition(mgl32.Vec3{0.0, 0.0, 0.5})
 	return menu
 }
 func CreateApplicationScreen() *EditorScreen {
@@ -309,16 +351,6 @@ func Update() {
 		} else {
 			AppScreen.RemoveMenuPanel()
 		}
-	}
-	mod, _, dist := AppScreen.GetClosestModelMeshDistance()
-	switch mod.(type) {
-	case (*Button):
-		if dist < 0.1 {
-			btn := mod.(*Button)
-			btn.Hover()
-		}
-		fmt.Printf("Distance: %f\n", dist)
-		break
 	}
 }
 
