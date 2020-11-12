@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"runtime"
@@ -46,8 +47,8 @@ var (
 	// menu screen flag
 	MenuScreenEnabled = true
 	// Button metric
-	frame              = mgl32.Vec2{0.2, 0.1}
-	surface            = mgl32.Vec2{0.185, 0.0925}
+	frame              = mgl32.Vec2{0.1, 0.2}
+	surface            = mgl32.Vec2{0.0925, 0.185}
 	buttonDefaultColor = []mgl32.Vec3{mgl32.Vec3{0.4, 0.4, 0.4}}
 	buttonHoverColor   = []mgl32.Vec3{mgl32.Vec3{0.4, 0.8, 0.4}}
 )
@@ -141,6 +142,7 @@ func (b *Button) baseModelToHoverState() {
 	V, I, BO := bgRect.ColoredMeshInput(b.hoverColor)
 	bg := mesh.NewColorMesh(V, I, b.hoverColor, glWrapper)
 	bg.SetBoundingObject(BO)
+	bg.RotateY(-90)
 	fgRect := rectangle.NewExact(b.surfaceSize.Y()/b.aspect, b.surfaceSize.X()/b.aspect)
 	V, I, _ = fgRect.ColoredMeshInput(b.defaultColor)
 	fg := mesh.NewColorMesh(V, I, b.defaultColor, glWrapper)
@@ -161,6 +163,7 @@ func (b *Button) baseModelToDefaultState() {
 	V, I, BO := bgRect.ColoredMeshInput(b.defaultColor)
 	bg := mesh.NewColorMesh(V, I, b.defaultColor, glWrapper)
 	bg.SetBoundingObject(BO)
+	bg.RotateY(-90)
 	fgRect := rectangle.NewExact(b.surfaceSize.Y()/b.aspect, b.surfaceSize.X()/b.aspect)
 	V, I, _ = fgRect.ColoredMeshInput(b.defaultColor)
 	fg := mesh.NewColorMesh(V, I, b.defaultColor, glWrapper)
@@ -252,7 +255,7 @@ func NewEditorScreen() *EditorScreen {
 	MenuModels = append(MenuModels, ModelMenu)
 	btn := NewButton(frame, surface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -0.01, -0.35}, aspectRatio)
 	s, _ := btn.GetMeshByIndex(1)
-	btn.SetLabel(NewLabel("Test", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, 0}, 3/800, s))
+	btn.SetLabel(NewLabel("Material", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -0.01}, 0.0005, s))
 	MenuModels = append(MenuModels, btn)
 	es := &EditorScreen{
 		Screen:     scrn,
@@ -268,8 +271,6 @@ func NewEditorScreen() *EditorScreen {
 	fontShader := shader.NewShader(baseDir()+"/shaders/font.vert", baseDir()+"/shaders/font.frag", es.GetWrapper())
 	es.AddShader(fontShader)
 	es.AddModelToShader(es.charset, fontShader)
-	// Try to write something to the surface of the blue form container.
-	es.charset.PrintTo("Something", 0.0, 0.0, 0.01, 3/800, scrn.GetWrapper(), es.screenMesh, []mgl32.Vec3{mgl32.Vec3{1, 0, 1}})
 	return es
 }
 
@@ -293,6 +294,7 @@ func (scrn *EditorScreen) MenuItemsDefaultState() {
 		switch scrn.menuModels[index].(type) {
 		case *Button:
 			item := scrn.menuModels[index].(*Button)
+			scrn.charset.CleanSurface(item.GetLabelSurface())
 			item.Clear()
 			break
 		}
@@ -308,6 +310,7 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 	case (*Button):
 		if dist < 0.001 {
 			btn := closestModel.(*Button)
+			scrn.charset.CleanSurface(btn.GetLabelSurface())
 			btn.Hover()
 		}
 		break
@@ -325,12 +328,25 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 	}
 }
 func (scrn *EditorScreen) defaultCharset() {
-	cs, err := model.LoadCharset("assets/fonts/Desyrel/desyrel.regular.ttf", 32, 127, 40.0, 72, scrn.GetWrapper())
+	cs, err := model.LoadCharset("assets/fonts/Desyrel/desyrel.regular.ttf", 32, 127, 20.0, 300, scrn.GetWrapper())
 	if err != nil {
 		panic(err)
 	}
 	cs.SetTransparent(true)
 	scrn.charset = cs
+	// Update the position of the labels. It depends on the charset setup.
+	for index, _ := range scrn.menuModels {
+		switch scrn.menuModels[index].(type) {
+		case *Button:
+			item := scrn.menuModels[index].(*Button)
+			if item.HasLabel() {
+				w, h := scrn.charset.TextContainerSize(item.GetLabelText(), item.GetLabelSize())
+				pos := item.GetLabelPosition()
+				item.SetLabel(NewLabel(item.GetLabelText(), item.GetLabelColor(), mgl32.Vec3{-w / 2, -h / 4, pos.Z()}, item.GetLabelSize(), item.GetLabelSurface()))
+			}
+			break
+		}
+	}
 }
 func (scrn *EditorScreen) setupApp(w interfaces.GLWrapper) {
 	scrn.GetWrapper().Enable(glwrapper.DEPTH_TEST)
@@ -434,6 +450,7 @@ func CreateCamera() *camera.DefaultCamera {
 	camera := camera.NewCamera(mgl32.Vec3{0.0, -mat[0], 0.0}, mgl32.Vec3{1, 0, 0}, 0.0, 90.0)
 	camera.SetupProjection(45, float32(WindowWidth)/float32(WindowHeight), 0.0001, 10.0)
 	camera.SetVelocity(float32(0.005))
+	fmt.Println(camera.Log())
 	return camera
 }
 
