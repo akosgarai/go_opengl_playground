@@ -189,7 +189,7 @@ func (ti *TextInput) baseModelToHoverState() {
 	fgRect := rectangle.NewExact(ti.surfaceSize.Y()/ti.aspect, ti.surfaceSize.X()/ti.aspect)
 	V, I, _ = fgRect.ColoredMeshInput(ti.defaultColor)
 	fg := mesh.NewColorMesh(V, I, ti.defaultColor, glWrapper)
-	fg.SetPosition(mgl32.Vec3{0.0, -0.001, 0.0})
+	fg.SetPosition(mgl32.Vec3{0.0, -0.002, 0.0})
 	fg.SetParent(bg)
 	// text input field
 	tiRect := rectangle.NewExact(ti.textInputSize.Y()/ti.aspect, ti.textInputSize.X()/ti.aspect)
@@ -217,7 +217,7 @@ func (ti *TextInput) baseModelToDefaultState() {
 	fgRect := rectangle.NewExact(ti.surfaceSize.Y()/ti.aspect, ti.surfaceSize.X()/ti.aspect)
 	V, I, _ = fgRect.ColoredMeshInput(ti.defaultColor)
 	fg := mesh.NewColorMesh(V, I, ti.defaultColor, glWrapper)
-	fg.SetPosition(mgl32.Vec3{0.0, -0.001, 0.0})
+	fg.SetPosition(mgl32.Vec3{0.0, -0.002, 0.0})
 	fg.SetParent(bg)
 	// text input field
 	tiRect := rectangle.NewExact(ti.textInputSize.Y()/ti.aspect, ti.textInputSize.X()/ti.aspect)
@@ -276,7 +276,7 @@ func (b *Button) baseModelToHoverState() {
 	fgRect := rectangle.NewExact(b.surfaceSize.Y()/b.aspect, b.surfaceSize.X()/b.aspect)
 	V, I, _ = fgRect.ColoredMeshInput(b.defaultColor)
 	fg := mesh.NewColorMesh(V, I, b.defaultColor, glWrapper)
-	fg.SetPosition(mgl32.Vec3{0.0, -0.001, 0.0})
+	fg.SetPosition(mgl32.Vec3{0.0, -0.002, 0.0})
 	fg.SetParent(bg)
 	m := model.New()
 	m.AddMesh(bg)
@@ -297,7 +297,7 @@ func (b *Button) baseModelToDefaultState() {
 	fgRect := rectangle.NewExact(b.surfaceSize.Y()/b.aspect, b.surfaceSize.X()/b.aspect)
 	V, I, _ = fgRect.ColoredMeshInput(b.defaultColor)
 	fg := mesh.NewColorMesh(V, I, b.defaultColor, glWrapper)
-	fg.SetPosition(mgl32.Vec3{0.0, -0.001, 0.0})
+	fg.SetPosition(mgl32.Vec3{0.0, -0.002, 0.0})
 	fg.SetParent(bg)
 	m := model.New()
 	m.AddMesh(bg)
@@ -419,6 +419,22 @@ func (scrn *EditorScreen) AddMenuPanel() {
 // RemoveMenuPanel removes the menu form from the screen.
 func (scrn *EditorScreen) RemoveMenuPanel() {
 	for index, _ := range scrn.menuModels {
+		switch scrn.menuModels[index].(type) {
+		case *Button:
+			item := scrn.menuModels[index].(*Button)
+			if item.HasLabel() {
+				fmt.Println("Removing the button.")
+				scrn.charset.CleanSurface(item.GetLabelSurface())
+			}
+			break
+		case *TextInput:
+			item := scrn.menuModels[index].(*TextInput)
+			if item.HasLabel() {
+				fmt.Println("Removing the TextInput.")
+				scrn.charset.CleanSurface(item.GetLabelSurface())
+			}
+			break
+		}
 		scrn.RemoveModelFromShader(scrn.menuModels[index], scrn.menuShader)
 	}
 }
@@ -470,22 +486,24 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 		}
 		break
 	}
-	for index, _ := range scrn.menuModels {
-		switch scrn.menuModels[index].(type) {
-		case *Button:
-			item := scrn.menuModels[index].(*Button)
-			if item.HasLabel() {
-				pos := item.GetLabelPosition()
-				scrn.charset.PrintTo(item.GetLabelText(), pos.X(), pos.Y(), pos.Z(), item.GetLabelSize(), scrn.GetWrapper(), item.GetLabelSurface(), []mgl32.Vec3{item.GetLabelColor()})
+	if MenuScreenEnabled {
+		for index, _ := range scrn.menuModels {
+			switch scrn.menuModels[index].(type) {
+			case *Button:
+				item := scrn.menuModels[index].(*Button)
+				if item.HasLabel() {
+					pos := item.GetLabelPosition()
+					scrn.charset.PrintTo(item.GetLabelText(), pos.X(), pos.Y(), pos.Z(), item.GetLabelSize()/item.aspect, scrn.GetWrapper(), item.GetLabelSurface(), []mgl32.Vec3{item.GetLabelColor()})
+				}
+				break
+			case *TextInput:
+				item := scrn.menuModels[index].(*TextInput)
+				if item.HasLabel() {
+					pos := item.GetLabelPosition()
+					scrn.charset.PrintTo(item.GetLabelText(), pos.X(), pos.Y(), pos.Z(), item.GetLabelSize()/item.aspect, scrn.GetWrapper(), item.GetLabelSurface(), []mgl32.Vec3{item.GetLabelColor()})
+				}
+				break
 			}
-			break
-		case *TextInput:
-			item := scrn.menuModels[index].(*TextInput)
-			if item.HasLabel() {
-				pos := item.GetLabelPosition()
-				scrn.charset.PrintTo(item.GetLabelText(), pos.X(), pos.Y(), pos.Z(), item.GetLabelSize(), scrn.GetWrapper(), item.GetLabelSurface(), []mgl32.Vec3{item.GetLabelColor()})
-			}
-			break
 		}
 	}
 }
@@ -504,9 +522,15 @@ func (scrn *EditorScreen) defaultCharset() {
 			if item.HasLabel() {
 				w, h := scrn.charset.TextContainerSize(item.GetLabelText(), item.GetLabelSize())
 				pos := item.GetLabelPosition()
-				if item.HasLabel() {
-					item.SetLabel(NewLabel(item.GetLabelText(), item.GetLabelColor(), mgl32.Vec3{-w / 2, -h / 4, pos.Z()}, item.GetLabelSize(), item.GetLabelSurface()))
-				}
+				item.SetLabel(NewLabel(item.GetLabelText(), item.GetLabelColor(), mgl32.Vec3{-w / 2 / item.aspect, -h / 4, pos.Z()}, item.GetLabelSize(), item.GetLabelSurface()))
+			}
+			break
+		case *TextInput:
+			item := scrn.menuModels[index].(*TextInput)
+			if item.HasLabel() {
+				w, _ := scrn.charset.TextContainerSize(item.GetLabelText(), item.GetLabelSize())
+				pos := item.GetLabelPosition()
+				item.SetLabel(NewLabel(item.GetLabelText(), item.GetLabelColor(), mgl32.Vec3{-w / 2 / item.aspect, pos.Y(), pos.Z()}, item.GetLabelSize(), item.GetLabelSurface()))
 			}
 			break
 		}
