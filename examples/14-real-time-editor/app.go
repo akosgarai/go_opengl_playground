@@ -47,10 +47,17 @@ var (
 	// menu screen flag
 	MenuScreenEnabled = true
 	// Button metric
-	frame              = mgl32.Vec2{0.1, 0.2}
-	surface            = mgl32.Vec2{0.0925, 0.185}
+	Buttonframe        = mgl32.Vec2{0.1, 0.2}
+	Buttonsurface      = mgl32.Vec2{0.0925, 0.185}
 	buttonDefaultColor = []mgl32.Vec3{mgl32.Vec3{0.4, 0.4, 0.4}}
 	buttonHoverColor   = []mgl32.Vec3{mgl32.Vec3{0.4, 0.8, 0.4}}
+	// Text Input variables
+	TextInputframe        = mgl32.Vec2{0.2, 0.8}
+	TextInputsurface      = mgl32.Vec2{0.1925, 0.785}
+	TextInputField        = mgl32.Vec2{0.09625, 0.785}
+	TextInputDefaultColor = []mgl32.Vec3{mgl32.Vec3{0.4, 0.4, 0.4}}
+	TextInputHoverColor   = []mgl32.Vec3{mgl32.Vec3{0.4, 0.8, 0.4}}
+	TextInputFieldColor   = []mgl32.Vec3{mgl32.Vec3{1.0, 1.0, 1.0}}
 )
 
 type Label struct {
@@ -102,10 +109,133 @@ func (l *Label) SetLabelSurface(surface interfaces.Mesh) {
 	l.surface = surface
 }
 
-/*
- * Now i want to extend the application with the button model. It supposed to contain 2 meshes (bg, surface), should have the update options.
- * The menuModel should be extended with the menu items. It could be an array of models with some support functions.
- */
+// It is the representation of the text input ui item.
+// The idea about the item: Based on rectangles.
+// The background rectangle is responsible for the hover event
+// The foreground rectangle is split (horizontal) two half.
+// The top half contains the label of the item.
+// The bottom half contains the current value of the input.
+// For the color component picker, the following changes are applied:
+// The bottom half contains a slip bar and also a label
+// for the value of the slip bar.
+type TextInput struct {
+	*model.BaseModel
+	*Label
+	defaultColor   []mgl32.Vec3
+	hoverColor     []mgl32.Vec3
+	frameSize      mgl32.Vec2
+	surfaceSize    mgl32.Vec2
+	textInputSize  mgl32.Vec2
+	textInputColor []mgl32.Vec3
+	screen         interfaces.Mesh
+	positionOnForm mgl32.Vec3
+	aspect         float32
+}
+
+// NewTextInput returns a text input instance. The following inputs has to be set:
+// Size of the frame mesh, size of the surface mesh, size of the textInput,
+// default and hover color of the button, color of the text input field.
+// The size (vec2) inputs, the x component means the length on the horizontal axis,
+// the y component means the length on the vertical axis.
+func NewTextInput(sizeFrame, sizeSurface, textInputSize mgl32.Vec2, defaultCol, hoverCol, tiCol []mgl32.Vec3, scrn interfaces.Mesh, pos mgl32.Vec3, aspect float32) *TextInput {
+	ti := &TextInput{
+		BaseModel:      model.New(),
+		Label:          nil,
+		defaultColor:   defaultCol,
+		hoverColor:     hoverCol,
+		frameSize:      sizeFrame,
+		surfaceSize:    sizeSurface,
+		textInputSize:  textInputSize,
+		textInputColor: tiCol,
+		screen:         scrn,
+		positionOnForm: pos,
+		aspect:         aspect,
+	}
+	return ti
+}
+func (ti *TextInput) SetAspect(aspect float32) {
+	ti.aspect = aspect
+}
+func (ti *TextInput) SetLabel(l *Label) {
+	ti.Label = l
+}
+func (ti *TextInput) HasLabel() bool {
+	return ti.Label != nil
+}
+
+// PinToScreen sets the parent of the bg mesh to the given one and updates its position.
+func (ti *TextInput) PinToScreen(scrn interfaces.Mesh, pos mgl32.Vec3) {
+	msh, _ := ti.GetMeshByIndex(0)
+	m := msh.(*mesh.ColorMesh)
+	m.SetParent(scrn)
+	m.SetPosition(pos)
+}
+
+// Hover changes the color of the surface to the hoverColor.
+func (ti *TextInput) Hover() {
+	ti.baseModelToHoverState()
+}
+
+// Clear changes the color of the surface to the defaultColor.
+func (ti *TextInput) Clear() {
+	ti.baseModelToDefaultState()
+}
+func (ti *TextInput) baseModelToHoverState() {
+	bgRect := rectangle.NewExact(ti.frameSize.Y()/ti.aspect, ti.frameSize.X()/ti.aspect)
+	V, I, BO := bgRect.ColoredMeshInput(ti.hoverColor)
+	bg := mesh.NewColorMesh(V, I, ti.hoverColor, glWrapper)
+	bg.SetBoundingObject(BO)
+	bg.RotateY(-90)
+	fgRect := rectangle.NewExact(ti.surfaceSize.Y()/ti.aspect, ti.surfaceSize.X()/ti.aspect)
+	V, I, _ = fgRect.ColoredMeshInput(ti.defaultColor)
+	fg := mesh.NewColorMesh(V, I, ti.defaultColor, glWrapper)
+	fg.SetPosition(mgl32.Vec3{0.0, -0.001, 0.0})
+	fg.SetParent(bg)
+	// text input field
+	tiRect := rectangle.NewExact(ti.textInputSize.Y()/ti.aspect, ti.textInputSize.X()/ti.aspect)
+	V, I, _ = tiRect.ColoredMeshInput(ti.textInputColor)
+	tif := mesh.NewColorMesh(V, I, ti.textInputColor, glWrapper)
+	tif.SetPosition(mgl32.Vec3{ti.textInputSize.X() / 2.0 / ti.aspect, -0.003, 0.0})
+	tif.SetParent(fg)
+	m := model.New()
+	m.AddMesh(bg)
+	m.AddMesh(fg)
+	m.AddMesh(tif)
+	ti.BaseModel = m
+	pos := mgl32.Vec3{ti.positionOnForm.X() / ti.aspect, ti.positionOnForm.Y(), ti.positionOnForm.Z() / ti.aspect}
+	ti.PinToScreen(ti.screen, pos)
+	if ti.HasLabel() {
+		ti.SetLabelSurface(fg)
+	}
+}
+func (ti *TextInput) baseModelToDefaultState() {
+	bgRect := rectangle.NewExact(ti.frameSize.Y()/ti.aspect, ti.frameSize.X()/ti.aspect)
+	V, I, BO := bgRect.ColoredMeshInput(ti.defaultColor)
+	bg := mesh.NewColorMesh(V, I, ti.defaultColor, glWrapper)
+	bg.SetBoundingObject(BO)
+	bg.RotateY(-90)
+	fgRect := rectangle.NewExact(ti.surfaceSize.Y()/ti.aspect, ti.surfaceSize.X()/ti.aspect)
+	V, I, _ = fgRect.ColoredMeshInput(ti.defaultColor)
+	fg := mesh.NewColorMesh(V, I, ti.defaultColor, glWrapper)
+	fg.SetPosition(mgl32.Vec3{0.0, -0.001, 0.0})
+	fg.SetParent(bg)
+	// text input field
+	tiRect := rectangle.NewExact(ti.textInputSize.Y()/ti.aspect, ti.textInputSize.X()/ti.aspect)
+	V, I, _ = tiRect.ColoredMeshInput(ti.textInputColor)
+	tif := mesh.NewColorMesh(V, I, ti.textInputColor, glWrapper)
+	tif.SetPosition(mgl32.Vec3{ti.textInputSize.X() / 2.0 / ti.aspect, -0.003, 0.0})
+	tif.SetParent(fg)
+	m := model.New()
+	m.AddMesh(bg)
+	m.AddMesh(fg)
+	m.AddMesh(tif)
+	ti.BaseModel = m
+	pos := mgl32.Vec3{ti.positionOnForm.X() / ti.aspect, ti.positionOnForm.Y(), ti.positionOnForm.Z() / ti.aspect}
+	ti.PinToScreen(ti.screen, pos)
+	if ti.HasLabel() {
+		ti.SetLabelSurface(fg)
+	}
+}
 
 // It is the representation of the button ui item.
 type Button struct {
@@ -253,10 +383,15 @@ func NewEditorScreen() *EditorScreen {
 	screenMesh := CreateMenuRectangle(aspectRatio)
 	ModelMenu.AddMesh(screenMesh)
 	MenuModels = append(MenuModels, ModelMenu)
-	btn := NewButton(frame, surface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -0.01, -0.35}, aspectRatio)
+	btn := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -0.01, -0.35}, aspectRatio)
 	s, _ := btn.GetMeshByIndex(1)
 	btn.SetLabel(NewLabel("Material", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -0.01}, 0.0005, s))
 	MenuModels = append(MenuModels, btn)
+	// text input
+	ti := NewTextInput(TextInputframe, TextInputsurface, TextInputField, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.5, -0.01, 0.0}, aspectRatio)
+	s, _ = ti.GetMeshByIndex(1)
+	ti.SetLabel(NewLabel("TextInputLabel", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, TextInputField.X() / aspectRatio / 2, -0.01}, 0.0005, s))
+	MenuModels = append(MenuModels, ti)
 	es := &EditorScreen{
 		Screen:     scrn,
 		menuShader: shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper),
@@ -294,7 +429,16 @@ func (scrn *EditorScreen) MenuItemsDefaultState() {
 		switch scrn.menuModels[index].(type) {
 		case *Button:
 			item := scrn.menuModels[index].(*Button)
-			scrn.charset.CleanSurface(item.GetLabelSurface())
+			if item.HasLabel() {
+				scrn.charset.CleanSurface(item.GetLabelSurface())
+			}
+			item.Clear()
+			break
+		case *TextInput:
+			item := scrn.menuModels[index].(*TextInput)
+			if item.HasLabel() {
+				scrn.charset.CleanSurface(item.GetLabelSurface())
+			}
 			item.Clear()
 			break
 		}
@@ -310,8 +454,19 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 	case (*Button):
 		if dist < 0.001 {
 			btn := closestModel.(*Button)
-			scrn.charset.CleanSurface(btn.GetLabelSurface())
+			if btn.HasLabel() {
+				scrn.charset.CleanSurface(btn.GetLabelSurface())
+			}
 			btn.Hover()
+		}
+		break
+	case (*TextInput):
+		if dist < 0.001 {
+			ti := closestModel.(*TextInput)
+			if ti.HasLabel() {
+				scrn.charset.CleanSurface(ti.GetLabelSurface())
+			}
+			ti.Hover()
 		}
 		break
 	}
@@ -319,6 +474,13 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 		switch scrn.menuModels[index].(type) {
 		case *Button:
 			item := scrn.menuModels[index].(*Button)
+			if item.HasLabel() {
+				pos := item.GetLabelPosition()
+				scrn.charset.PrintTo(item.GetLabelText(), pos.X(), pos.Y(), pos.Z(), item.GetLabelSize(), scrn.GetWrapper(), item.GetLabelSurface(), []mgl32.Vec3{item.GetLabelColor()})
+			}
+			break
+		case *TextInput:
+			item := scrn.menuModels[index].(*TextInput)
 			if item.HasLabel() {
 				pos := item.GetLabelPosition()
 				scrn.charset.PrintTo(item.GetLabelText(), pos.X(), pos.Y(), pos.Z(), item.GetLabelSize(), scrn.GetWrapper(), item.GetLabelSurface(), []mgl32.Vec3{item.GetLabelColor()})
@@ -342,7 +504,9 @@ func (scrn *EditorScreen) defaultCharset() {
 			if item.HasLabel() {
 				w, h := scrn.charset.TextContainerSize(item.GetLabelText(), item.GetLabelSize())
 				pos := item.GetLabelPosition()
-				item.SetLabel(NewLabel(item.GetLabelText(), item.GetLabelColor(), mgl32.Vec3{-w / 2, -h / 4, pos.Z()}, item.GetLabelSize(), item.GetLabelSurface()))
+				if item.HasLabel() {
+					item.SetLabel(NewLabel(item.GetLabelText(), item.GetLabelColor(), mgl32.Vec3{-w / 2, -h / 4, pos.Z()}, item.GetLabelSize(), item.GetLabelSurface()))
+				}
 			}
 			break
 		}
