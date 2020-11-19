@@ -27,7 +27,9 @@ import (
 )
 
 const (
-	WindowTitle = "Example - real-time editor"
+	WindowTitle                      = "Example - real-time editor"
+	ForegroundDistanceFromBackground = float32(0.002)
+	InputFieldDistanceFromForeground = float32(0.003)
 )
 
 var (
@@ -109,15 +111,187 @@ func (l *Label) SetLabelSurface(surface interfaces.Mesh) {
 	l.surface = surface
 }
 
+// It is the representation of the slider input ui item.
+// The idea about the item: Based on rectangles.
+// The background rectangle is responsible for the hover event
+// The foreground rectangle is split (horizontal) two half.
+// The top half contains the label of the item.
+// The bottom half contains a slip bar and also a label
+// for the value of the slip bar.
+// The ratio between she slider and the label is 3/1
+type SliderInput struct {
+	*model.BaseModel
+	*Label
+	defaultColor   []mgl32.Vec3
+	hoverColor     []mgl32.Vec3
+	frameSize      mgl32.Vec2
+	surfaceSize    mgl32.Vec2
+	screen         interfaces.Mesh
+	positionOnForm mgl32.Vec3
+	aspect         float32
+	textInputColor []mgl32.Vec3 // The read-only surface color for the value of the slider.
+	sliderMin      float32
+	sliderMax      float32
+}
+
+// NewSliderInput returns a slider input instance. The following inputs has to be set:
+// Size of the frame mesh, size of the surface mesh,
+// default and hover color of the button, color of the text field,
+// and the min,max values of the slider.
+// The size (vec2) inputs, the x component means the length on the horizontal axis,
+// the y component means the length on the vertical axis.
+func NewSliderInput(sizeFrame, sizeSurface mgl32.Vec2, defaultCol, hoverCol, tiCol []mgl32.Vec3, scrn interfaces.Mesh, pos mgl32.Vec3, aspect, min, max float32) *SliderInput {
+	si := &SliderInput{
+		BaseModel:      model.New(),
+		Label:          nil,
+		defaultColor:   defaultCol,
+		hoverColor:     hoverCol,
+		frameSize:      sizeFrame,
+		surfaceSize:    sizeSurface,
+		textInputColor: tiCol,
+		screen:         scrn,
+		positionOnForm: pos,
+		aspect:         aspect,
+		sliderMin:      min,
+		sliderMax:      max,
+	}
+	si.baseModelToDefaultState()
+	return si
+}
+func (si *SliderInput) SetAspect(aspect float32) {
+	si.aspect = aspect
+}
+func (si *SliderInput) SetLabel(l *Label) {
+	si.Label = l
+}
+func (si *SliderInput) HasLabel() bool {
+	return si.Label != nil
+}
+
+// PinToScreen sets the parent of the bg mesh to the given one and updates its position.
+func (si *SliderInput) PinToScreen(scrn interfaces.Mesh, pos mgl32.Vec3) {
+	msh, _ := si.GetMeshByIndex(0)
+	m := msh.(*mesh.ColorMesh)
+	m.SetParent(scrn)
+	m.SetPosition(pos)
+}
+
+// Hover changes the color of the surface to the hoverColor.
+func (si *SliderInput) Hover() {
+	si.baseModelToHoverState()
+}
+
+// Clear changes the color of the surface to the defaultColor.
+func (si *SliderInput) Clear() {
+	si.baseModelToDefaultState()
+}
+func (si *SliderInput) baseModelToHoverState() {
+	bgRect := rectangle.NewExact(si.frameSize.Y()/si.aspect, si.frameSize.X()/si.aspect)
+	V, I, BO := bgRect.ColoredMeshInput(si.hoverColor)
+	bg := mesh.NewColorMesh(V, I, si.hoverColor, glWrapper)
+	bg.SetBoundingObject(BO)
+	bg.RotateY(-90)
+	fgRect := rectangle.NewExact(si.surfaceSize.Y()/si.aspect, si.surfaceSize.X()/si.aspect)
+	V, I, _ = fgRect.ColoredMeshInput(si.defaultColor)
+	fg := mesh.NewColorMesh(V, I, si.defaultColor, glWrapper)
+	fg.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
+	fg.SetParent(bg)
+	// text input field
+	// it has to be on the bottom half of the screen -> height: fg.height/2.
+	// width: fg.width/4.
+	tiRect := rectangle.NewExact(si.surfaceSize.Y()/4/si.aspect, si.surfaceSize.X()/2/si.aspect)
+	V, I, _ = tiRect.ColoredMeshInput(si.textInputColor)
+	tif := mesh.NewColorMesh(V, I, si.textInputColor, glWrapper)
+	tif.SetPosition(mgl32.Vec3{si.surfaceSize.X() / 4.0 / si.aspect, -InputFieldDistanceFromForeground, 3.0 * si.surfaceSize.Y() / 8 / si.aspect})
+	tif.SetParent(fg)
+	// The black line for the slider. It represents the min-max interval.
+	// The lenght of it: 3/4 of the foreground width - width of the slider.
+	// The width of the slider is interval length / 10
+	lenFull := 3 * si.surfaceSize.Y() / 4 / si.aspect
+	len := lenFull * 0.9
+	blackLineColor := []mgl32.Vec3{mgl32.Vec3{0, 0, 0}}
+	blackLineRect := rectangle.NewExact(len, 0.005/si.aspect)
+	V, I, _ = blackLineRect.ColoredMeshInput(blackLineColor)
+	blackLine := mesh.NewColorMesh(V, I, blackLineColor, glWrapper)
+	blackLine.SetParent(fg)
+	blackLine.SetPosition(mgl32.Vec3{si.surfaceSize.X() / 4.0 / si.aspect, -InputFieldDistanceFromForeground, -si.surfaceSize.Y() / 8 / si.aspect})
+	sliderRect := rectangle.NewExact(lenFull/10.0, lenFull/10.0)
+	sliderColor := []mgl32.Vec3{mgl32.Vec3{0.3, 0.5, 0.7}}
+	V, I, BO = sliderRect.ColoredMeshInput(sliderColor)
+	slider := mesh.NewColorMesh(V, I, sliderColor, glWrapper)
+	slider.SetBoundingObject(BO)
+	slider.SetParent(blackLine)
+	slider.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
+	m := model.New()
+	m.AddMesh(bg)
+	m.AddMesh(fg)
+	m.AddMesh(tif)
+	m.AddMesh(blackLine)
+	m.AddMesh(slider)
+	si.BaseModel = m
+	pos := mgl32.Vec3{si.positionOnForm.X() / si.aspect, si.positionOnForm.Y(), si.positionOnForm.Z() / si.aspect}
+	si.PinToScreen(si.screen, pos)
+	if si.HasLabel() {
+		si.SetLabelSurface(fg)
+	}
+}
+func (si *SliderInput) baseModelToDefaultState() {
+	bgRect := rectangle.NewExact(si.frameSize.Y()/si.aspect, si.frameSize.X()/si.aspect)
+	V, I, BO := bgRect.ColoredMeshInput(si.defaultColor)
+	bg := mesh.NewColorMesh(V, I, si.defaultColor, glWrapper)
+	bg.SetBoundingObject(BO)
+	bg.RotateY(-90)
+	fgRect := rectangle.NewExact(si.surfaceSize.Y()/si.aspect, si.surfaceSize.X()/si.aspect)
+	V, I, _ = fgRect.ColoredMeshInput(si.defaultColor)
+	fg := mesh.NewColorMesh(V, I, si.defaultColor, glWrapper)
+	fg.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
+	fg.SetParent(bg)
+	// text input field
+	// it has to be on the bottom half of the screen -> height: fg.height/2.
+	// width: fg.width/4.
+	tiRect := rectangle.NewExact(si.surfaceSize.Y()/4/si.aspect, si.surfaceSize.X()/2/si.aspect)
+	V, I, _ = tiRect.ColoredMeshInput(si.textInputColor)
+	tif := mesh.NewColorMesh(V, I, si.textInputColor, glWrapper)
+	tif.SetPosition(mgl32.Vec3{si.surfaceSize.X() / 4.0 / si.aspect, -InputFieldDistanceFromForeground, 3.0 * si.surfaceSize.Y() / 8 / si.aspect})
+	tif.SetParent(fg)
+	// The black line for the slider. It represents the min-max interval.
+	// The lenght of it: 3/4 of the foreground width - width of the slider.
+	// The width of the slider is interval length / 10
+	lenFull := 3 * si.surfaceSize.Y() / 4 / si.aspect
+	len := lenFull * 0.9
+	blackLineColor := []mgl32.Vec3{mgl32.Vec3{0, 0, 0}}
+	blackLineRect := rectangle.NewExact(len, 0.005/si.aspect)
+	V, I, _ = blackLineRect.ColoredMeshInput(blackLineColor)
+	blackLine := mesh.NewColorMesh(V, I, blackLineColor, glWrapper)
+	blackLine.SetParent(fg)
+	blackLine.SetPosition(mgl32.Vec3{si.surfaceSize.X() / 4.0 / si.aspect, -InputFieldDistanceFromForeground, -si.surfaceSize.Y() / 8 / si.aspect})
+	sliderRect := rectangle.NewExact(lenFull/10.0, lenFull/10.0)
+	sliderColor := []mgl32.Vec3{mgl32.Vec3{0.3, 0.5, 0.7}}
+	V, I, BO = sliderRect.ColoredMeshInput(sliderColor)
+	slider := mesh.NewColorMesh(V, I, sliderColor, glWrapper)
+	slider.SetBoundingObject(BO)
+	slider.SetParent(blackLine)
+	slider.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
+	m := model.New()
+	m.AddMesh(bg)
+	m.AddMesh(fg)
+	m.AddMesh(tif)
+	m.AddMesh(blackLine)
+	m.AddMesh(slider)
+	si.BaseModel = m
+	pos := mgl32.Vec3{si.positionOnForm.X() / si.aspect, si.positionOnForm.Y(), si.positionOnForm.Z() / si.aspect}
+	si.PinToScreen(si.screen, pos)
+	if si.HasLabel() {
+		si.SetLabelSurface(fg)
+	}
+}
+
 // It is the representation of the text input ui item.
 // The idea about the item: Based on rectangles.
 // The background rectangle is responsible for the hover event
 // The foreground rectangle is split (horizontal) two half.
 // The top half contains the label of the item.
 // The bottom half contains the current value of the input.
-// For the color component picker, the following changes are applied:
-// The bottom half contains a slip bar and also a label
-// for the value of the slip bar.
 type TextInput struct {
 	*model.BaseModel
 	*Label
@@ -151,6 +325,7 @@ func NewTextInput(sizeFrame, sizeSurface, textInputSize mgl32.Vec2, defaultCol, 
 		positionOnForm: pos,
 		aspect:         aspect,
 	}
+	ti.baseModelToDefaultState()
 	return ti
 }
 func (ti *TextInput) SetAspect(aspect float32) {
@@ -189,13 +364,13 @@ func (ti *TextInput) baseModelToHoverState() {
 	fgRect := rectangle.NewExact(ti.surfaceSize.Y()/ti.aspect, ti.surfaceSize.X()/ti.aspect)
 	V, I, _ = fgRect.ColoredMeshInput(ti.defaultColor)
 	fg := mesh.NewColorMesh(V, I, ti.defaultColor, glWrapper)
-	fg.SetPosition(mgl32.Vec3{0.0, -0.002, 0.0})
+	fg.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
 	fg.SetParent(bg)
 	// text input field
 	tiRect := rectangle.NewExact(ti.textInputSize.Y()/ti.aspect, ti.textInputSize.X()/ti.aspect)
 	V, I, _ = tiRect.ColoredMeshInput(ti.textInputColor)
 	tif := mesh.NewColorMesh(V, I, ti.textInputColor, glWrapper)
-	tif.SetPosition(mgl32.Vec3{ti.textInputSize.X() / 2.0 / ti.aspect, -0.003, 0.0})
+	tif.SetPosition(mgl32.Vec3{ti.textInputSize.X() / 2.0 / ti.aspect, -InputFieldDistanceFromForeground, 0.0})
 	tif.SetParent(fg)
 	m := model.New()
 	m.AddMesh(bg)
@@ -217,13 +392,13 @@ func (ti *TextInput) baseModelToDefaultState() {
 	fgRect := rectangle.NewExact(ti.surfaceSize.Y()/ti.aspect, ti.surfaceSize.X()/ti.aspect)
 	V, I, _ = fgRect.ColoredMeshInput(ti.defaultColor)
 	fg := mesh.NewColorMesh(V, I, ti.defaultColor, glWrapper)
-	fg.SetPosition(mgl32.Vec3{0.0, -0.002, 0.0})
+	fg.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
 	fg.SetParent(bg)
 	// text input field
 	tiRect := rectangle.NewExact(ti.textInputSize.Y()/ti.aspect, ti.textInputSize.X()/ti.aspect)
 	V, I, _ = tiRect.ColoredMeshInput(ti.textInputColor)
 	tif := mesh.NewColorMesh(V, I, ti.textInputColor, glWrapper)
-	tif.SetPosition(mgl32.Vec3{ti.textInputSize.X() / 2.0 / ti.aspect, -0.003, 0.0})
+	tif.SetPosition(mgl32.Vec3{ti.textInputSize.X() / 2.0 / ti.aspect, -InputFieldDistanceFromForeground, 0.0})
 	tif.SetParent(fg)
 	m := model.New()
 	m.AddMesh(bg)
@@ -276,7 +451,7 @@ func (b *Button) baseModelToHoverState() {
 	fgRect := rectangle.NewExact(b.surfaceSize.Y()/b.aspect, b.surfaceSize.X()/b.aspect)
 	V, I, _ = fgRect.ColoredMeshInput(b.defaultColor)
 	fg := mesh.NewColorMesh(V, I, b.defaultColor, glWrapper)
-	fg.SetPosition(mgl32.Vec3{0.0, -0.002, 0.0})
+	fg.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
 	fg.SetParent(bg)
 	m := model.New()
 	m.AddMesh(bg)
@@ -297,7 +472,7 @@ func (b *Button) baseModelToDefaultState() {
 	fgRect := rectangle.NewExact(b.surfaceSize.Y()/b.aspect, b.surfaceSize.X()/b.aspect)
 	V, I, _ = fgRect.ColoredMeshInput(b.defaultColor)
 	fg := mesh.NewColorMesh(V, I, b.defaultColor, glWrapper)
-	fg.SetPosition(mgl32.Vec3{0.0, -0.002, 0.0})
+	fg.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
 	fg.SetParent(bg)
 	m := model.New()
 	m.AddMesh(bg)
@@ -384,14 +559,31 @@ func NewEditorScreen() *EditorScreen {
 	ModelMenu.AddMesh(screenMesh)
 	MenuModels = append(MenuModels, ModelMenu)
 	btn := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -0.01, -0.35}, aspectRatio)
-	s, _ := btn.GetMeshByIndex(1)
+	s, err := btn.GetMeshByIndex(1)
+	if err != nil {
+		fmt.Println("Something terrible happened on btn branch.")
+		panic(err)
+	}
 	btn.SetLabel(NewLabel("Material", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -0.01}, 0.0005, s))
 	MenuModels = append(MenuModels, btn)
 	// text input
 	ti := NewTextInput(TextInputframe, TextInputsurface, TextInputField, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.5, -0.01, 0.0}, aspectRatio)
-	s, _ = ti.GetMeshByIndex(1)
+	s, err = ti.GetMeshByIndex(1)
+	if err != nil {
+		fmt.Println("Something terrible happened on ti branch.")
+		panic(err)
+	}
 	ti.SetLabel(NewLabel("TextInputLabel", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, TextInputField.X() / aspectRatio / 2, -0.01}, 0.0005, s))
 	MenuModels = append(MenuModels, ti)
+	// slider input
+	si := NewSliderInput(TextInputframe, TextInputsurface, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.1, -0.01, 0.0}, aspectRatio, 0.0, 1.0)
+	s, err = si.GetMeshByIndex(1)
+	if err != nil {
+		fmt.Println("Something terrible happened on si branch.")
+		panic(err)
+	}
+	si.SetLabel(NewLabel("SliderInputLabel", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, TextInputField.X() / aspectRatio / 2, -0.01}, 0.0005, s))
+	MenuModels = append(MenuModels, si)
 	es := &EditorScreen{
 		Screen:     scrn,
 		menuShader: shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper),
@@ -434,6 +626,13 @@ func (scrn *EditorScreen) RemoveMenuPanel() {
 				scrn.charset.CleanSurface(item.GetLabelSurface())
 			}
 			break
+		case *SliderInput:
+			item := scrn.menuModels[index].(*SliderInput)
+			if item.HasLabel() {
+				fmt.Println("Removing the SliderInput.")
+				scrn.charset.CleanSurface(item.GetLabelSurface())
+			}
+			break
 		}
 		scrn.RemoveModelFromShader(scrn.menuModels[index], scrn.menuShader)
 	}
@@ -452,6 +651,13 @@ func (scrn *EditorScreen) MenuItemsDefaultState() {
 			break
 		case *TextInput:
 			item := scrn.menuModels[index].(*TextInput)
+			if item.HasLabel() {
+				scrn.charset.CleanSurface(item.GetLabelSurface())
+			}
+			item.Clear()
+			break
+		case *SliderInput:
+			item := scrn.menuModels[index].(*SliderInput)
 			if item.HasLabel() {
 				scrn.charset.CleanSurface(item.GetLabelSurface())
 			}
@@ -485,6 +691,15 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 			ti.Hover()
 		}
 		break
+	case (*SliderInput):
+		if dist < 0.001 {
+			ti := closestModel.(*SliderInput)
+			if ti.HasLabel() {
+				scrn.charset.CleanSurface(ti.GetLabelSurface())
+			}
+			ti.Hover()
+		}
+		break
 	}
 	if MenuScreenEnabled {
 		for index, _ := range scrn.menuModels {
@@ -498,6 +713,13 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 				break
 			case *TextInput:
 				item := scrn.menuModels[index].(*TextInput)
+				if item.HasLabel() {
+					pos := item.GetLabelPosition()
+					scrn.charset.PrintTo(item.GetLabelText(), pos.X(), pos.Y(), pos.Z(), item.GetLabelSize()/item.aspect, scrn.GetWrapper(), item.GetLabelSurface(), []mgl32.Vec3{item.GetLabelColor()})
+				}
+				break
+			case *SliderInput:
+				item := scrn.menuModels[index].(*SliderInput)
 				if item.HasLabel() {
 					pos := item.GetLabelPosition()
 					scrn.charset.PrintTo(item.GetLabelText(), pos.X(), pos.Y(), pos.Z(), item.GetLabelSize()/item.aspect, scrn.GetWrapper(), item.GetLabelSurface(), []mgl32.Vec3{item.GetLabelColor()})
@@ -527,6 +749,14 @@ func (scrn *EditorScreen) defaultCharset() {
 			break
 		case *TextInput:
 			item := scrn.menuModels[index].(*TextInput)
+			if item.HasLabel() {
+				w, _ := scrn.charset.TextContainerSize(item.GetLabelText(), item.GetLabelSize())
+				pos := item.GetLabelPosition()
+				item.SetLabel(NewLabel(item.GetLabelText(), item.GetLabelColor(), mgl32.Vec3{-w / 2 / item.aspect, pos.Y(), pos.Z()}, item.GetLabelSize(), item.GetLabelSurface()))
+			}
+			break
+		case *SliderInput:
+			item := scrn.menuModels[index].(*SliderInput)
 			if item.HasLabel() {
 				w, _ := scrn.charset.TextContainerSize(item.GetLabelText(), item.GetLabelSize())
 				pos := item.GetLabelPosition()
