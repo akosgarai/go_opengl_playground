@@ -30,6 +30,9 @@ const (
 	WindowTitle                      = "Example - real-time editor"
 	ForegroundDistanceFromBackground = float32(0.002)
 	InputFieldDistanceFromForeground = float32(0.003)
+	LEFT_MOUSE_BUTTON                = glfw.MouseButtonLeft
+	FormItemsDistanceFromScreen      = float32(0.01)
+	CollisionEpsilon                 = float32(0.001)
 )
 
 var (
@@ -221,7 +224,13 @@ func (si *SliderInput) baseModelToHoverState() {
 	slider := mesh.NewColorMesh(V, I, sliderColor, glWrapper)
 	slider.SetBoundingObject(BO)
 	slider.SetParent(blackLine)
-	slider.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
+	// The slider is a scrollable item, so that we need to redraw it with its current position.
+	origSlider, err := si.GetMeshByIndex(4)
+	if err != nil {
+		slider.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
+	} else {
+		slider.SetPosition(origSlider.GetPosition())
+	}
 	m := model.New()
 	m.AddMesh(bg)
 	m.AddMesh(fg)
@@ -271,7 +280,13 @@ func (si *SliderInput) baseModelToDefaultState() {
 	slider := mesh.NewColorMesh(V, I, sliderColor, glWrapper)
 	slider.SetBoundingObject(BO)
 	slider.SetParent(blackLine)
-	slider.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
+	// The slider is a scrollable item, so that we need to redraw it with its current position.
+	origSlider, err := si.GetMeshByIndex(4)
+	if err != nil {
+		slider.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
+	} else {
+		slider.SetPosition(origSlider.GetPosition())
+	}
 	m := model.New()
 	m.AddMesh(bg)
 	m.AddMesh(fg)
@@ -284,6 +299,37 @@ func (si *SliderInput) baseModelToDefaultState() {
 	if si.HasLabel() {
 		si.SetLabelSurface(fg)
 	}
+}
+func (si *SliderInput) SliderCollision(coords mgl32.Vec3) bool {
+	slider, err := si.GetMeshByIndex(4)
+	if err != nil {
+		fmt.Printf("Slider issue. %#v\n", err)
+		return false
+	}
+	coordsInSliderPlane := mgl32.Vec3{coords.X(), coords.Y() - (2 * ForegroundDistanceFromBackground) - InputFieldDistanceFromForeground, coords.Z()}
+	msh, dist := si.ClosestMeshTo(coordsInSliderPlane)
+	if dist > CollisionEpsilon {
+		return false
+	}
+	return msh == slider
+}
+func (si *SliderInput) MoveSliderWith(x float32) {
+	slider, err := si.GetMeshByIndex(4)
+	if err != nil {
+		return
+	}
+	currentPosition := slider.GetPosition()
+	// The vertical position has to be kept above the black line, so that it might be updated with the max/min value.
+	lenFull := 3 * si.surfaceSize.Y() / 4 / si.aspect * 0.9
+	newVerticalCoordinateValue := currentPosition.Z() - x
+	if newVerticalCoordinateValue > lenFull/2 {
+		newVerticalCoordinateValue = lenFull / 2
+	}
+	if newVerticalCoordinateValue < -lenFull/2 {
+		newVerticalCoordinateValue = -lenFull / 2
+	}
+	newPosition := mgl32.Vec3{currentPosition.X(), currentPosition.Y(), newVerticalCoordinateValue}
+	slider.SetPosition(newPosition)
 }
 
 // It is the representation of the text input ui item.
@@ -558,16 +604,16 @@ func NewEditorScreen() *EditorScreen {
 	screenMesh := CreateMenuRectangle(aspectRatio)
 	ModelMenu.AddMesh(screenMesh)
 	MenuModels = append(MenuModels, ModelMenu)
-	btn := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -0.01, -0.35}, aspectRatio)
+	btn := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, -0.35}, aspectRatio)
 	s, err := btn.GetMeshByIndex(1)
 	if err != nil {
 		fmt.Println("Something terrible happened on btn branch.")
 		panic(err)
 	}
-	btn.SetLabel(NewLabel("Material", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -0.01}, 0.0005, s))
+	btn.SetLabel(NewLabel("Material", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
 	MenuModels = append(MenuModels, btn)
 	// text input
-	ti := NewTextInput(TextInputframe, TextInputsurface, TextInputField, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.5, -0.01, 0.0}, aspectRatio)
+	ti := NewTextInput(TextInputframe, TextInputsurface, TextInputField, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.5, -FormItemsDistanceFromScreen, 0.0}, aspectRatio)
 	s, err = ti.GetMeshByIndex(1)
 	if err != nil {
 		fmt.Println("Something terrible happened on ti branch.")
@@ -576,7 +622,7 @@ func NewEditorScreen() *EditorScreen {
 	ti.SetLabel(NewLabel("TextInputLabel", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, TextInputField.X() / aspectRatio / 2, -0.01}, 0.0005, s))
 	MenuModels = append(MenuModels, ti)
 	// slider input
-	si := NewSliderInput(TextInputframe, TextInputsurface, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.1, -0.01, 0.0}, aspectRatio, 0.0, 1.0)
+	si := NewSliderInput(TextInputframe, TextInputsurface, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.1, -FormItemsDistanceFromScreen, 0.0}, aspectRatio, 0.0, 1.0)
 	s, err = si.GetMeshByIndex(1)
 	if err != nil {
 		fmt.Println("Something terrible happened on si branch.")
@@ -668,13 +714,13 @@ func (scrn *EditorScreen) MenuItemsDefaultState() {
 }
 func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore interfaces.RoKeyStore, buttonStore interfaces.RoButtonStore) {
 	posX, posY := p.GetCurrent()
-	mCoords := mgl32.Vec3{float32(-posY) / scrn.GetAspectRatio(), -0.01, float32(posX)}
+	mCoords := mgl32.Vec3{float32(-posY) / scrn.GetAspectRatio(), -FormItemsDistanceFromScreen, float32(posX)}
 	scrn.UpdateWithDistance(dt, mCoords)
 	closestModel, _, dist := scrn.GetClosestModelMeshDistance()
 	scrn.MenuItemsDefaultState()
 	switch closestModel.(type) {
 	case (*Button):
-		if dist < 0.001 {
+		if dist < CollisionEpsilon {
 			btn := closestModel.(*Button)
 			if btn.HasLabel() {
 				scrn.charset.CleanSurface(btn.GetLabelSurface())
@@ -683,7 +729,7 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 		}
 		break
 	case (*TextInput):
-		if dist < 0.001 {
+		if dist < CollisionEpsilon {
 			ti := closestModel.(*TextInput)
 			if ti.HasLabel() {
 				scrn.charset.CleanSurface(ti.GetLabelSurface())
@@ -692,12 +738,17 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 		}
 		break
 	case (*SliderInput):
-		if dist < 0.001 {
-			ti := closestModel.(*SliderInput)
-			if ti.HasLabel() {
-				scrn.charset.CleanSurface(ti.GetLabelSurface())
+		if dist < CollisionEpsilon {
+			si := closestModel.(*SliderInput)
+			if si.HasLabel() {
+				scrn.charset.CleanSurface(si.GetLabelSurface())
 			}
-			ti.Hover()
+			si.Hover()
+			// If the left mouse button is pressed, we have to detect collision against the slider.
+			if buttonStore.Get(LEFT_MOUSE_BUTTON) && si.SliderCollision(mCoords) {
+				dX, _ := p.GetDelta()
+				si.MoveSliderWith(float32(dX))
+			}
 		}
 		break
 	}
@@ -804,6 +855,7 @@ func init() {
 	app.ActivateScreen(AppScreen)
 	// register keyboard button callback
 	app.GetWindow().SetKeyCallback(app.KeyCallback)
+	app.GetWindow().SetMouseButtonCallback(app.MouseButtonCallback)
 	app.GetWindow().SetSizeCallback(ResizeCallback)
 	lastUpdate = time.Now().UnixNano() / int64(time.Millisecond)
 	lastToggle = lastUpdate
