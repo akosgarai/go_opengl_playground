@@ -469,6 +469,7 @@ type Button struct {
 	screen         interfaces.Mesh
 	positionOnForm mgl32.Vec3
 	aspect         float32
+	clickCallback  func()
 }
 
 // PinToScreen sets the parent of the bg mesh to the given one and updates its position.
@@ -576,7 +577,6 @@ type EditorScreen struct {
 	menuShader *shader.Shader
 	menuModels map[string][]interfaces.Model
 	charset    *model.Charset
-	screenMesh *mesh.ColorMesh
 	// We draw the UI items based on the state.
 	// Default state - only the Material button is shown.
 	// Material state - the Color and the back buttons are shown. The Material
@@ -610,7 +610,14 @@ func NewEditorScreen() *EditorScreen {
 	aspectRatio := scrn.GetAspectRatio()
 	screenMesh := CreateMenuRectangle(aspectRatio)
 	ModelMenu.AddMesh(screenMesh)
+	es := &EditorScreen{
+		Screen:     scrn,
+		menuShader: shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper),
+		charset:    nil,
+		state:      "Default",
+	}
 	MenuModels["Default"] = append(MenuModels["Default"], ModelMenu)
+	MenuModels["Material"] = append(MenuModels["Material"], ModelMenu)
 	btn := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, -0.35}, aspectRatio)
 	s, err := btn.GetMeshByIndex(1)
 	if err != nil {
@@ -618,7 +625,18 @@ func NewEditorScreen() *EditorScreen {
 		panic(err)
 	}
 	btn.SetLabel(NewLabel("Material", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
+	btn.clickCallback = es.SetStateMaterial
 	MenuModels["Default"] = append(MenuModels["Default"], btn)
+	// back button Material State
+	btnBack := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, -0.35}, aspectRatio)
+	s, err = btnBack.GetMeshByIndex(1)
+	if err != nil {
+		fmt.Println("Something terrible happened on btn branch.")
+		panic(err)
+	}
+	btnBack.SetLabel(NewLabel("Back", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
+	btnBack.clickCallback = es.SetStateDefault
+	MenuModels["Material"] = append(MenuModels["Material"], btnBack)
 	// text input
 	ti := NewTextInput(TextInputframe, TextInputsurface, TextInputField, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.5, -FormItemsDistanceFromScreen, 0.0}, aspectRatio)
 	s, err = ti.GetMeshByIndex(1)
@@ -637,14 +655,7 @@ func NewEditorScreen() *EditorScreen {
 	}
 	si.SetLabel(NewLabel("SliderInputLabel", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, TextInputField.X() / aspectRatio / 2, -0.01}, 0.0005, s))
 	MenuModels["Default"] = append(MenuModels["Default"], si)
-	es := &EditorScreen{
-		Screen:     scrn,
-		menuShader: shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper),
-		menuModels: MenuModels,
-		charset:    nil,
-		screenMesh: screenMesh,
-		state:      "Default",
-	}
+	es.menuModels = MenuModels
 	es.AddShader(es.menuShader)
 	es.Setup(es.setupApp)
 	es.defaultCharset()
@@ -660,6 +671,20 @@ func (scrn *EditorScreen) AddMenuPanel() {
 	for index, _ := range scrn.menuModels[scrn.state] {
 		scrn.AddModelToShader(scrn.menuModels[scrn.state][index], scrn.menuShader)
 	}
+}
+func (scrn *EditorScreen) SetStateDefault() {
+	scrn.setState("Default")
+}
+func (scrn *EditorScreen) SetStateMaterial() {
+	scrn.setState("Material")
+}
+func (scrn *EditorScreen) SetStateMaterialForm() {
+	scrn.state = "Form"
+}
+func (scrn *EditorScreen) setState(newState string) {
+	scrn.RemoveMenuPanel()
+	scrn.state = newState
+	scrn.AddMenuPanel()
 }
 
 // RemoveMenuPanel removes the menu form from the screen.
@@ -734,6 +759,10 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 				scrn.charset.CleanSurface(btn.GetLabelSurface())
 			}
 			btn.Hover()
+			if buttonStore.Get(LEFT_MOUSE_BUTTON) {
+				btn.clickCallback()
+			}
+
 		}
 		break
 	case (*TextInput):
@@ -796,32 +825,38 @@ func (scrn *EditorScreen) defaultCharset() {
 	cs.SetTransparent(true)
 	scrn.charset = cs
 	// Update the position of the labels. It depends on the charset setup.
-	for index, _ := range scrn.menuModels[scrn.state] {
-		switch scrn.menuModels[scrn.state][index].(type) {
-		case *Button:
-			item := scrn.menuModels[scrn.state][index].(*Button)
-			if item.HasLabel() {
-				w, h := scrn.charset.TextContainerSize(item.GetLabelText(), item.GetLabelSize())
-				pos := item.GetLabelPosition()
-				item.SetLabel(NewLabel(item.GetLabelText(), item.GetLabelColor(), mgl32.Vec3{-w / 2 / item.aspect, -h / 4, pos.Z()}, item.GetLabelSize(), item.GetLabelSurface()))
+	allStates := []string{"Default", "Material", "MaterialForm"}
+	for _, name := range allStates {
+		if _, ok := scrn.menuModels[name]; !ok {
+			continue
+		}
+		for index, _ := range scrn.menuModels[name] {
+			switch scrn.menuModels[name][index].(type) {
+			case *Button:
+				item := scrn.menuModels[name][index].(*Button)
+				if item.HasLabel() {
+					w, h := scrn.charset.TextContainerSize(item.GetLabelText(), item.GetLabelSize())
+					pos := item.GetLabelPosition()
+					item.SetLabel(NewLabel(item.GetLabelText(), item.GetLabelColor(), mgl32.Vec3{-w / 2 / item.aspect, -h / 4, pos.Z()}, item.GetLabelSize(), item.GetLabelSurface()))
+				}
+				break
+			case *TextInput:
+				item := scrn.menuModels[name][index].(*TextInput)
+				if item.HasLabel() {
+					w, _ := scrn.charset.TextContainerSize(item.GetLabelText(), item.GetLabelSize())
+					pos := item.GetLabelPosition()
+					item.SetLabel(NewLabel(item.GetLabelText(), item.GetLabelColor(), mgl32.Vec3{-w / 2 / item.aspect, pos.Y(), pos.Z()}, item.GetLabelSize(), item.GetLabelSurface()))
+				}
+				break
+			case *SliderInput:
+				item := scrn.menuModels[name][index].(*SliderInput)
+				if item.HasLabel() {
+					w, _ := scrn.charset.TextContainerSize(item.GetLabelText(), item.GetLabelSize())
+					pos := item.GetLabelPosition()
+					item.SetLabel(NewLabel(item.GetLabelText(), item.GetLabelColor(), mgl32.Vec3{-w / 2 / item.aspect, pos.Y(), pos.Z()}, item.GetLabelSize(), item.GetLabelSurface()))
+				}
+				break
 			}
-			break
-		case *TextInput:
-			item := scrn.menuModels[scrn.state][index].(*TextInput)
-			if item.HasLabel() {
-				w, _ := scrn.charset.TextContainerSize(item.GetLabelText(), item.GetLabelSize())
-				pos := item.GetLabelPosition()
-				item.SetLabel(NewLabel(item.GetLabelText(), item.GetLabelColor(), mgl32.Vec3{-w / 2 / item.aspect, pos.Y(), pos.Z()}, item.GetLabelSize(), item.GetLabelSurface()))
-			}
-			break
-		case *SliderInput:
-			item := scrn.menuModels[scrn.state][index].(*SliderInput)
-			if item.HasLabel() {
-				w, _ := scrn.charset.TextContainerSize(item.GetLabelText(), item.GetLabelSize())
-				pos := item.GetLabelPosition()
-				item.SetLabel(NewLabel(item.GetLabelText(), item.GetLabelColor(), mgl32.Vec3{-w / 2 / item.aspect, pos.Y(), pos.Z()}, item.GetLabelSize(), item.GetLabelSurface()))
-			}
-			break
 		}
 	}
 }
