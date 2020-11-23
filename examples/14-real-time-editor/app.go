@@ -627,8 +627,38 @@ func NewEditorScreen() *EditorScreen {
 	btn.SetLabel(NewLabel("Material", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
 	btn.clickCallback = es.SetStateMaterial
 	MenuModels["Default"] = append(MenuModels["Default"], btn)
+	// Ambient button Material State
+	btnAmbient := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, -0.35}, aspectRatio)
+	s, err = btnAmbient.GetMeshByIndex(1)
+	if err != nil {
+		fmt.Println("Something terrible happened on btn branch.")
+		panic(err)
+	}
+	btnAmbient.SetLabel(NewLabel("Ambient", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
+	btnAmbient.clickCallback = es.SetStateMaterialForm
+	MenuModels["Material"] = append(MenuModels["Material"], btnAmbient)
+	// Diffuse button Material State
+	btnDiffuse := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, -0.15}, aspectRatio)
+	s, err = btnDiffuse.GetMeshByIndex(1)
+	if err != nil {
+		fmt.Println("Something terrible happened on btn branch.")
+		panic(err)
+	}
+	btnDiffuse.SetLabel(NewLabel("Diffuse", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
+	btnDiffuse.clickCallback = es.SetStateMaterialForm
+	MenuModels["Material"] = append(MenuModels["Material"], btnDiffuse)
+	// Specular button Material State
+	btnSpecular := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, 0.05}, aspectRatio)
+	s, err = btnSpecular.GetMeshByIndex(1)
+	if err != nil {
+		fmt.Println("Something terrible happened on btn branch.")
+		panic(err)
+	}
+	btnSpecular.SetLabel(NewLabel("Specular", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
+	btnSpecular.clickCallback = es.SetStateMaterialForm
+	MenuModels["Material"] = append(MenuModels["Material"], btnSpecular)
 	// back button Material State
-	btnBack := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, -0.35}, aspectRatio)
+	btnBack := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, 0.35}, aspectRatio)
 	s, err = btnBack.GetMeshByIndex(1)
 	if err != nil {
 		fmt.Println("Something terrible happened on btn branch.")
@@ -679,7 +709,8 @@ func (scrn *EditorScreen) SetStateMaterial() {
 	scrn.setState("Material")
 }
 func (scrn *EditorScreen) SetStateMaterialForm() {
-	scrn.state = "Form"
+	// Temp value, because the form part is not implemented yet.
+	scrn.setState("Material")
 }
 func (scrn *EditorScreen) setState(newState string) {
 	scrn.RemoveMenuPanel()
