@@ -469,6 +469,7 @@ type Button struct {
 	screen         interfaces.Mesh
 	positionOnForm mgl32.Vec3
 	aspect         float32
+	clicked        bool
 	clickCallback  func()
 }
 
@@ -556,6 +557,7 @@ func NewButton(sizeFrame, sizeSurface mgl32.Vec2, defaultCol, hoverCol []mgl32.V
 		screen:         scrn,
 		positionOnForm: pos,
 		aspect:         aspect,
+		clicked:        false,
 	}
 	btn.baseModelToDefaultState()
 	return btn
@@ -581,8 +583,8 @@ type EditorScreen struct {
 	// Default state - only the Material button is shown.
 	// Material state - the Color and the back buttons are shown. The Material
 	// text is printed to the top of the screen mesh.
-	// MaterialForm state - the back button is printed, the Material > Color comp.
-	// text is printed to the top of the screen mesh.
+	// Material[Amibent|Diffuse|Specular]Form state - the back button is printed,
+	// the Material > Color comp. text is printed to the top of the screen mesh.
 	state string
 }
 
@@ -618,6 +620,9 @@ func NewEditorScreen() *EditorScreen {
 	}
 	MenuModels["Default"] = append(MenuModels["Default"], ModelMenu)
 	MenuModels["Material"] = append(MenuModels["Material"], ModelMenu)
+	MenuModels["MaterialAbmientForm"] = append(MenuModels["MaterialAbmientForm"], ModelMenu)
+	MenuModels["MaterialDiffuseForm"] = append(MenuModels["MaterialDiffuseForm"], ModelMenu)
+	MenuModels["MaterialSpecularForm"] = append(MenuModels["MaterialSpecularForm"], ModelMenu)
 	btn := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, -0.35}, aspectRatio)
 	s, err := btn.GetMeshByIndex(1)
 	if err != nil {
@@ -635,7 +640,7 @@ func NewEditorScreen() *EditorScreen {
 		panic(err)
 	}
 	btnAmbient.SetLabel(NewLabel("Ambient", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
-	btnAmbient.clickCallback = es.SetStateMaterialForm
+	btnAmbient.clickCallback = es.SetStateMaterialAmbientForm
 	MenuModels["Material"] = append(MenuModels["Material"], btnAmbient)
 	// Diffuse button Material State
 	btnDiffuse := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, -0.15}, aspectRatio)
@@ -645,7 +650,7 @@ func NewEditorScreen() *EditorScreen {
 		panic(err)
 	}
 	btnDiffuse.SetLabel(NewLabel("Diffuse", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
-	btnDiffuse.clickCallback = es.SetStateMaterialForm
+	btnDiffuse.clickCallback = es.SetStateMaterialDiffuseForm
 	MenuModels["Material"] = append(MenuModels["Material"], btnDiffuse)
 	// Specular button Material State
 	btnSpecular := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, 0.05}, aspectRatio)
@@ -655,7 +660,7 @@ func NewEditorScreen() *EditorScreen {
 		panic(err)
 	}
 	btnSpecular.SetLabel(NewLabel("Specular", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
-	btnSpecular.clickCallback = es.SetStateMaterialForm
+	btnSpecular.clickCallback = es.SetStateMaterialSpecularForm
 	MenuModels["Material"] = append(MenuModels["Material"], btnSpecular)
 	// back button Material State
 	btnBack := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, 0.35}, aspectRatio)
@@ -667,6 +672,18 @@ func NewEditorScreen() *EditorScreen {
 	btnBack.SetLabel(NewLabel("Back", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
 	btnBack.clickCallback = es.SetStateDefault
 	MenuModels["Material"] = append(MenuModels["Material"], btnBack)
+	// back button To Material State from color forms.
+	btnBackForm := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, 0.35}, aspectRatio)
+	s, err = btnBackForm.GetMeshByIndex(1)
+	if err != nil {
+		fmt.Println("Something terrible happened on btn branch.")
+		panic(err)
+	}
+	btnBackForm.SetLabel(NewLabel("Back", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
+	btnBackForm.clickCallback = es.SetStateMaterial
+	MenuModels["MaterialAbmientForm"] = append(MenuModels["MaterialAbmientForm"], btnBackForm)
+	MenuModels["MaterialDiffuseForm"] = append(MenuModels["MaterialDiffuseForm"], btnBackForm)
+	MenuModels["MaterialSpecularForm"] = append(MenuModels["MaterialSpecularForm"], btnBackForm)
 	// text input
 	ti := NewTextInput(TextInputframe, TextInputsurface, TextInputField, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.5, -FormItemsDistanceFromScreen, 0.0}, aspectRatio)
 	s, err = ti.GetMeshByIndex(1)
@@ -708,9 +725,14 @@ func (scrn *EditorScreen) SetStateDefault() {
 func (scrn *EditorScreen) SetStateMaterial() {
 	scrn.setState("Material")
 }
-func (scrn *EditorScreen) SetStateMaterialForm() {
-	// Temp value, because the form part is not implemented yet.
-	scrn.setState("Material")
+func (scrn *EditorScreen) SetStateMaterialAmbientForm() {
+	scrn.setState("MaterialAbmientForm")
+}
+func (scrn *EditorScreen) SetStateMaterialDiffuseForm() {
+	scrn.setState("MaterialDiffuseForm")
+}
+func (scrn *EditorScreen) SetStateMaterialSpecularForm() {
+	scrn.setState("MaterialSpecularForm")
 }
 func (scrn *EditorScreen) setState(newState string) {
 	scrn.RemoveMenuPanel()
@@ -776,6 +798,21 @@ func (scrn *EditorScreen) MenuItemsDefaultState() {
 		}
 	}
 }
+func (scrn *EditorScreen) releaseButtons() {
+	allStates := []string{"Default", "Material", "MaterialAbmientForm", "MaterialDiffuseForm", "MaterialSpecularForm"}
+	for _, name := range allStates {
+		if _, ok := scrn.menuModels[name]; !ok {
+			continue
+		}
+		for index, _ := range scrn.menuModels[name] {
+			switch scrn.menuModels[name][index].(type) {
+			case *Button:
+				item := scrn.menuModels[name][index].(*Button)
+				item.clicked = false
+			}
+		}
+	}
+}
 func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore interfaces.RoKeyStore, buttonStore interfaces.RoButtonStore) {
 	posX, posY := p.GetCurrent()
 	mCoords := mgl32.Vec3{float32(-posY) / scrn.GetAspectRatio(), -FormItemsDistanceFromScreen, float32(posX)}
@@ -791,9 +828,14 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 			}
 			btn.Hover()
 			if buttonStore.Get(LEFT_MOUSE_BUTTON) {
+				btn.clicked = true
+			}
+			if btn.clicked && !buttonStore.Get(LEFT_MOUSE_BUTTON) {
 				btn.clickCallback()
 			}
 
+		} else {
+			scrn.releaseButtons()
 		}
 		break
 	case (*TextInput):
@@ -804,6 +846,7 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 			}
 			ti.Hover()
 		}
+		scrn.releaseButtons()
 		break
 	case (*SliderInput):
 		if dist < CollisionEpsilon {
@@ -818,7 +861,10 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 				si.MoveSliderWith(float32(dX))
 			}
 		}
+		scrn.releaseButtons()
 		break
+	default:
+		scrn.releaseButtons()
 	}
 	if MenuScreenEnabled {
 		for index, _ := range scrn.menuModels[scrn.state] {
@@ -856,7 +902,7 @@ func (scrn *EditorScreen) defaultCharset() {
 	cs.SetTransparent(true)
 	scrn.charset = cs
 	// Update the position of the labels. It depends on the charset setup.
-	allStates := []string{"Default", "Material", "MaterialForm"}
+	allStates := []string{"Default", "Material", "MaterialAbmientForm", "MaterialDiffuseForm", "MaterialSpecularForm"}
 	for _, name := range allStates {
 		if _, ok := scrn.menuModels[name]; !ok {
 			continue
