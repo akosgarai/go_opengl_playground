@@ -135,6 +135,7 @@ type SliderInput struct {
 	textInputColor []mgl32.Vec3 // The read-only surface color for the value of the slider.
 	sliderMin      float32
 	sliderMax      float32
+	sliderCurrent  float32 // This is the current value of the slider input.
 }
 
 // NewSliderInput returns a slider input instance. The following inputs has to be set:
@@ -157,6 +158,7 @@ func NewSliderInput(sizeFrame, sizeSurface mgl32.Vec2, defaultCol, hoverCol, tiC
 		aspect:         aspect,
 		sliderMin:      min,
 		sliderMax:      max,
+		sliderCurrent:  (max-min)/2.0 + min,
 	}
 	si.baseModelToDefaultState()
 	return si
@@ -330,6 +332,15 @@ func (si *SliderInput) MoveSliderWith(x float32) {
 	}
 	newPosition := mgl32.Vec3{currentPosition.X(), currentPosition.Y(), newVerticalCoordinateValue}
 	slider.SetPosition(newPosition)
+	si.updateCurrentFromPosition(newPosition)
+}
+func (si *SliderInput) updateCurrentFromPosition(currentPosition mgl32.Vec3) {
+	lenFull := 3 * si.surfaceSize.Y() / 4 / si.aspect * 0.9
+	diffFromMinimum := currentPosition.Z() + lenFull/2
+	ratio := diffFromMinimum / lenFull
+	value := (si.sliderMax-si.sliderMin)*ratio + si.sliderMin
+	si.sliderCurrent = value
+	fmt.Printf("Current value: %f\n", si.sliderCurrent)
 }
 
 // It is the representation of the text input ui item.
