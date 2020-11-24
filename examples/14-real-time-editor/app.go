@@ -684,6 +684,37 @@ func NewEditorScreen() *EditorScreen {
 	MenuModels["MaterialAbmientForm"] = append(MenuModels["MaterialAbmientForm"], btnBackForm)
 	MenuModels["MaterialDiffuseForm"] = append(MenuModels["MaterialDiffuseForm"], btnBackForm)
 	MenuModels["MaterialSpecularForm"] = append(MenuModels["MaterialSpecularForm"], btnBackForm)
+	// slider inputs for the color components.
+	siRed := NewSliderInput(TextInputframe, TextInputsurface, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{-0.5, -FormItemsDistanceFromScreen, 0.0}, aspectRatio, 0.0, 1.0)
+	s, err = siRed.GetMeshByIndex(1)
+	if err != nil {
+		fmt.Println("Something terrible happened on si branch.")
+		panic(err)
+	}
+	siRed.SetLabel(NewLabel("Red", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, TextInputField.X() / aspectRatio / 2, -0.01}, 0.0005, s))
+	MenuModels["MaterialAbmientForm"] = append(MenuModels["MaterialAbmientForm"], siRed)
+	MenuModels["MaterialDiffuseForm"] = append(MenuModels["MaterialDiffuseForm"], siRed)
+	MenuModels["MaterialSpecularForm"] = append(MenuModels["MaterialSpecularForm"], siRed)
+	siGreen := NewSliderInput(TextInputframe, TextInputsurface, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{-0.2, -FormItemsDistanceFromScreen, 0.0}, aspectRatio, 0.0, 1.0)
+	s, err = siGreen.GetMeshByIndex(1)
+	if err != nil {
+		fmt.Println("Something terrible happened on si branch.")
+		panic(err)
+	}
+	siGreen.SetLabel(NewLabel("Green", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, TextInputField.X() / aspectRatio / 2, -0.01}, 0.0005, s))
+	MenuModels["MaterialAbmientForm"] = append(MenuModels["MaterialAbmientForm"], siGreen)
+	MenuModels["MaterialDiffuseForm"] = append(MenuModels["MaterialDiffuseForm"], siGreen)
+	MenuModels["MaterialSpecularForm"] = append(MenuModels["MaterialSpecularForm"], siGreen)
+	siBlue := NewSliderInput(TextInputframe, TextInputsurface, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.1, -FormItemsDistanceFromScreen, 0.0}, aspectRatio, 0.0, 1.0)
+	s, err = siBlue.GetMeshByIndex(1)
+	if err != nil {
+		fmt.Println("Something terrible happened on si branch.")
+		panic(err)
+	}
+	siBlue.SetLabel(NewLabel("Blue", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, TextInputField.X() / aspectRatio / 2, -0.01}, 0.0005, s))
+	MenuModels["MaterialAbmientForm"] = append(MenuModels["MaterialAbmientForm"], siBlue)
+	MenuModels["MaterialDiffuseForm"] = append(MenuModels["MaterialDiffuseForm"], siBlue)
+	MenuModels["MaterialSpecularForm"] = append(MenuModels["MaterialSpecularForm"], siBlue)
 	// text input
 	ti := NewTextInput(TextInputframe, TextInputsurface, TextInputField, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.5, -FormItemsDistanceFromScreen, 0.0}, aspectRatio)
 	s, err = ti.GetMeshByIndex(1)
