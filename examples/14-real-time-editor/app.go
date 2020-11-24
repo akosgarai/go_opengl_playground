@@ -20,6 +20,7 @@ import (
 	"github.com/akosgarai/playground_engine/pkg/primitives/sphere"
 	"github.com/akosgarai/playground_engine/pkg/screen"
 	"github.com/akosgarai/playground_engine/pkg/shader"
+	"github.com/akosgarai/playground_engine/pkg/transformations"
 	"github.com/akosgarai/playground_engine/pkg/window"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -806,6 +807,11 @@ func (scrn *EditorScreen) RemoveMenuPanel() {
 				fmt.Println("Removing the SliderInput.")
 				scrn.charset.CleanSurface(item.GetLabelSurface())
 			}
+			// clean the field where the curren value is printed out.
+			msh, err := item.GetMeshByIndex(2)
+			if err == nil {
+				scrn.charset.CleanSurface(msh)
+			}
 			break
 		}
 		scrn.RemoveModelFromShader(scrn.menuModels[scrn.state][index], scrn.menuShader)
@@ -834,6 +840,11 @@ func (scrn *EditorScreen) MenuItemsDefaultState() {
 			item := scrn.menuModels[scrn.state][index].(*SliderInput)
 			if item.HasLabel() {
 				scrn.charset.CleanSurface(item.GetLabelSurface())
+			}
+			// clean the field where the curren value is printed out.
+			msh, err := item.GetMeshByIndex(2)
+			if err == nil {
+				scrn.charset.CleanSurface(msh)
 			}
 			item.Clear()
 			break
@@ -896,6 +907,11 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 			if si.HasLabel() {
 				scrn.charset.CleanSurface(si.GetLabelSurface())
 			}
+			// clean the field where the curren value is printed out.
+			msh, err := si.GetMeshByIndex(2)
+			if err == nil {
+				scrn.charset.CleanSurface(msh)
+			}
 			si.Hover()
 			// If the left mouse button is pressed, we have to detect collision against the slider.
 			if buttonStore.Get(LEFT_MOUSE_BUTTON) && si.SliderCollision(mCoords) {
@@ -930,6 +946,13 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 				if item.HasLabel() {
 					pos := item.GetLabelPosition()
 					scrn.charset.PrintTo(item.GetLabelText(), pos.X(), pos.Y(), pos.Z(), item.GetLabelSize()/item.aspect, scrn.GetWrapper(), item.GetLabelSurface(), []mgl32.Vec3{item.GetLabelColor()})
+					// print the current value
+					msh, err := item.GetMeshByIndex(2)
+					if err == nil {
+						valueText := transformations.Float32ToStringExact(item.sliderCurrent)
+						w, _ := scrn.charset.TextContainerSize(valueText, item.GetLabelSize()/item.aspect)
+						scrn.charset.PrintTo(transformations.Float32ToStringExact(item.sliderCurrent), -w/2, 0, pos.Z(), item.GetLabelSize()/item.aspect, scrn.GetWrapper(), msh, []mgl32.Vec3{item.GetLabelColor()})
+					}
 				}
 				break
 			}
