@@ -255,7 +255,7 @@ func (si *SliderInput) baseModelToState(state string) {
 	// The slider is a scrollable item, so that we need to redraw it with its current position.
 	origSlider, err := si.GetMeshByIndex(4)
 	if err != nil {
-		slider.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
+		slider.SetPosition(si.calculatePositionBasedOnCurrent())
 	} else {
 		slider.SetPosition(origSlider.GetPosition())
 	}
@@ -303,6 +303,13 @@ func (si *SliderInput) MoveSliderWith(x float32) {
 	newPosition := mgl32.Vec3{currentPosition.X(), currentPosition.Y(), newVerticalCoordinateValue}
 	slider.SetPosition(newPosition)
 	si.updateCurrentFromPosition(newPosition)
+}
+func (si *SliderInput) calculatePositionBasedOnCurrent() mgl32.Vec3 {
+	intervalLength := si.sliderMax - si.sliderMin
+	ratio := si.sliderCurrent / intervalLength
+	sliderSpaceWidth := si.sliderSpaceWidth()
+	diffFromLeft := sliderSpaceWidth * ratio
+	return mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, -sliderSpaceWidth/2 + diffFromLeft}
 }
 func (si *SliderInput) updateCurrentFromPosition(currentPosition mgl32.Vec3) {
 	sliderSpaceWidth := si.sliderSpaceWidth()
