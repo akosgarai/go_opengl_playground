@@ -205,60 +205,26 @@ func (si *SliderInput) sliderSpaceWidth() float32 {
 	return si.sliderAreaWidth() * 0.9
 }
 func (si *SliderInput) baseModelToHoverState() {
-	bgRect := rectangle.NewExact(si.frameSize.Y()/si.aspect, si.frameSize.X()/si.aspect)
-	V, I, BO := bgRect.ColoredMeshInput(si.hoverColor)
-	bg := mesh.NewColorMesh(V, I, si.hoverColor, glWrapper)
-	bg.SetBoundingObject(BO)
-	bg.RotateY(-90)
-	fgRect := rectangle.NewExact(si.surfaceSize.Y()/si.aspect, si.surfaceSize.X()/si.aspect)
-	V, I, _ = fgRect.ColoredMeshInput(si.defaultColor)
-	fg := mesh.NewColorMesh(V, I, si.defaultColor, glWrapper)
-	fg.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
-	fg.SetParent(bg)
-	// text input field
-	// it has to be on the bottom half of the screen -> height: fg.height/2.
-	// width: fg.width/4.
-	tiRect := rectangle.NewExact(si.surfaceSize.Y()/4/si.aspect, si.surfaceSize.X()/2/si.aspect)
-	V, I, _ = tiRect.ColoredMeshInput(si.textInputColor)
-	tif := mesh.NewColorMesh(V, I, si.textInputColor, glWrapper)
-	tif.SetPosition(mgl32.Vec3{si.surfaceSize.X() / 4.0 / si.aspect, -InputFieldDistanceFromForeground, si.sliderAreaWidth() / 2.0})
-	tif.SetParent(fg)
-	blackLineColor := []mgl32.Vec3{mgl32.Vec3{0, 0, 0}}
-	blackLineRect := rectangle.NewExact(si.sliderSpaceWidth(), 0.005/si.aspect)
-	V, I, _ = blackLineRect.ColoredMeshInput(blackLineColor)
-	blackLine := mesh.NewColorMesh(V, I, blackLineColor, glWrapper)
-	blackLine.SetParent(fg)
-	blackLine.SetPosition(mgl32.Vec3{si.surfaceSize.X() / 4.0 / si.aspect, -InputFieldDistanceFromForeground, -si.surfaceSize.Y() / 8 / si.aspect})
-	sliderRect := rectangle.NewExact(si.sliderSquareWidth(), si.sliderSquareWidth())
-	sliderColor := []mgl32.Vec3{mgl32.Vec3{0.3, 0.5, 0.7}}
-	V, I, BO = sliderRect.ColoredMeshInput(sliderColor)
-	slider := mesh.NewColorMesh(V, I, sliderColor, glWrapper)
-	slider.SetBoundingObject(BO)
-	slider.SetParent(blackLine)
-	// The slider is a scrollable item, so that we need to redraw it with its current position.
-	origSlider, err := si.GetMeshByIndex(4)
-	if err != nil {
-		slider.SetPosition(mgl32.Vec3{0.0, -ForegroundDistanceFromBackground, 0.0})
-	} else {
-		slider.SetPosition(origSlider.GetPosition())
-	}
-	m := model.New()
-	m.AddMesh(bg)
-	m.AddMesh(fg)
-	m.AddMesh(tif)
-	m.AddMesh(blackLine)
-	m.AddMesh(slider)
-	si.BaseModel = m
-	pos := mgl32.Vec3{si.positionOnForm.X() / si.aspect, si.positionOnForm.Y(), si.positionOnForm.Z() / si.aspect}
-	si.PinToScreen(si.screen, pos)
-	if si.HasLabel() {
-		si.SetLabelSurface(fg)
-	}
+	si.baseModelToState("hover")
 }
 func (si *SliderInput) baseModelToDefaultState() {
+	si.baseModelToState("default")
+}
+func (si *SliderInput) baseModelToState(state string) {
+	var bgColor []mgl32.Vec3
+	switch state {
+	case "default":
+		bgColor = si.defaultColor
+		break
+	case "hover":
+		bgColor = si.hoverColor
+		break
+	default:
+		panic(fmt.Sprintf("Unknown state name: %s.", state))
+	}
 	bgRect := rectangle.NewExact(si.frameSize.Y()/si.aspect, si.frameSize.X()/si.aspect)
-	V, I, BO := bgRect.ColoredMeshInput(si.defaultColor)
-	bg := mesh.NewColorMesh(V, I, si.defaultColor, glWrapper)
+	V, I, BO := bgRect.ColoredMeshInput(bgColor)
+	bg := mesh.NewColorMesh(V, I, bgColor, glWrapper)
 	bg.SetBoundingObject(BO)
 	bg.RotateY(-90)
 	fgRect := rectangle.NewExact(si.surfaceSize.Y()/si.aspect, si.surfaceSize.X()/si.aspect)
