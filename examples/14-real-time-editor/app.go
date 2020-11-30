@@ -285,6 +285,16 @@ func (si *SliderInput) SliderCollision(coords mgl32.Vec3) bool {
 	}
 	return msh == slider
 }
+func (si *SliderInput) SetCurrentValue(current float32) {
+	si.sliderCurrent = current
+	msh, err := si.GetMeshByIndex(4)
+	if err != nil {
+		fmt.Println("Mesh is missing. Skipping position update.")
+		return
+	}
+	msh.SetPosition(si.calculatePositionBasedOnCurrent())
+
+}
 func (si *SliderInput) MoveSliderWith(x float32) {
 	slider, err := si.GetMeshByIndex(4)
 	if err != nil {
@@ -574,6 +584,8 @@ type EditorScreen struct {
 	// Material[Amibent|Diffuse|Specular]Form state - the back button is printed,
 	// the Material > Color comp. text is printed to the top of the screen mesh.
 	state string
+	// the sphere model for easy access.
+	sphereModel *model.BaseModel
 }
 
 func NewEditorScreen() *EditorScreen {
@@ -601,10 +613,11 @@ func NewEditorScreen() *EditorScreen {
 	screenMesh := CreateMenuRectangle(aspectRatio)
 	ModelMenu.AddMesh(screenMesh)
 	es := &EditorScreen{
-		Screen:     scrn,
-		menuShader: shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper),
-		charset:    nil,
-		state:      "Default",
+		Screen:      scrn,
+		menuShader:  shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper),
+		charset:     nil,
+		state:       "Default",
+		sphereModel: ModelSphere,
 	}
 	MenuModels["Default"] = append(MenuModels["Default"], ModelMenu)
 	MenuModels["Material"] = append(MenuModels["Material"], ModelMenu)
@@ -745,12 +758,39 @@ func (scrn *EditorScreen) SetStateMaterial() {
 	scrn.setState("Material")
 }
 func (scrn *EditorScreen) SetStateMaterialAmbientForm() {
+	msh, err := scrn.sphereModel.GetMeshByIndex(0)
+	if err != nil {
+		fmt.Println("Mesh is missing. Skipping update.")
+		return
+	}
+	colorComponent := msh.(*mesh.MaterialMesh).Material.GetAmbient()
+	scrn.menuModels["MaterialAmbientForm"][2].(*SliderInput).SetCurrentValue(colorComponent.X())
+	scrn.menuModels["MaterialAmbientForm"][3].(*SliderInput).SetCurrentValue(colorComponent.Y())
+	scrn.menuModels["MaterialAmbientForm"][4].(*SliderInput).SetCurrentValue(colorComponent.Z())
 	scrn.setState("MaterialAmbientForm")
 }
 func (scrn *EditorScreen) SetStateMaterialDiffuseForm() {
+	msh, err := scrn.sphereModel.GetMeshByIndex(0)
+	if err != nil {
+		fmt.Println("Mesh is missing. Skipping update.")
+		return
+	}
+	colorComponent := msh.(*mesh.MaterialMesh).Material.GetDiffuse()
+	scrn.menuModels["MaterialDiffuseForm"][2].(*SliderInput).SetCurrentValue(colorComponent.X())
+	scrn.menuModels["MaterialDiffuseForm"][3].(*SliderInput).SetCurrentValue(colorComponent.Y())
+	scrn.menuModels["MaterialDiffuseForm"][4].(*SliderInput).SetCurrentValue(colorComponent.Z())
 	scrn.setState("MaterialDiffuseForm")
 }
 func (scrn *EditorScreen) SetStateMaterialSpecularForm() {
+	msh, err := scrn.sphereModel.GetMeshByIndex(0)
+	if err != nil {
+		fmt.Println("Mesh is missing. Skipping update.")
+		return
+	}
+	colorComponent := msh.(*mesh.MaterialMesh).Material.GetSpecular()
+	scrn.menuModels["MaterialSpecularForm"][2].(*SliderInput).SetCurrentValue(colorComponent.X())
+	scrn.menuModels["MaterialSpecularForm"][3].(*SliderInput).SetCurrentValue(colorComponent.Y())
+	scrn.menuModels["MaterialSpecularForm"][4].(*SliderInput).SetCurrentValue(colorComponent.Z())
 	scrn.setState("MaterialSpecularForm")
 }
 func (scrn *EditorScreen) setState(newState string) {
