@@ -933,6 +933,7 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 			if buttonStore.Get(LEFT_MOUSE_BUTTON) && si.SliderCollision(mCoords) {
 				dX, _ := p.GetDelta()
 				si.MoveSliderWith(float32(dX))
+				scrn.updateMaterialColorComponent()
 			}
 		}
 		scrn.releaseButtons()
@@ -973,6 +974,40 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 				break
 			}
 		}
+	}
+}
+func (scrn *EditorScreen) updateMaterialColorComponent() {
+	sphereMesh, err := scrn.sphereModel.GetMeshByIndex(0)
+	if err != nil {
+		fmt.Println("Mesh is missing, skip material update.")
+		return
+	}
+	origMaterial := sphereMesh.(*mesh.MaterialMesh).Material
+	switch scrn.state {
+	case "MaterialAmbientForm":
+		red := scrn.menuModels[scrn.state][2].(*SliderInput).sliderCurrent
+		green := scrn.menuModels[scrn.state][3].(*SliderInput).sliderCurrent
+		blue := scrn.menuModels[scrn.state][4].(*SliderInput).sliderCurrent
+		newMaterial := material.New(mgl32.Vec3{red, green, blue}, origMaterial.GetDiffuse(), origMaterial.GetSpecular(), origMaterial.GetShininess())
+		sphereMesh.(*mesh.MaterialMesh).Material = newMaterial
+		break
+	case "MaterialDiffuseForm":
+		red := scrn.menuModels[scrn.state][2].(*SliderInput).sliderCurrent
+		green := scrn.menuModels[scrn.state][3].(*SliderInput).sliderCurrent
+		blue := scrn.menuModels[scrn.state][4].(*SliderInput).sliderCurrent
+		newMaterial := material.New(origMaterial.GetAmbient(), mgl32.Vec3{red, green, blue}, origMaterial.GetSpecular(), origMaterial.GetShininess())
+		sphereMesh.(*mesh.MaterialMesh).Material = newMaterial
+		break
+	case "MaterialSpecularForm":
+		red := scrn.menuModels[scrn.state][2].(*SliderInput).sliderCurrent
+		green := scrn.menuModels[scrn.state][3].(*SliderInput).sliderCurrent
+		blue := scrn.menuModels[scrn.state][4].(*SliderInput).sliderCurrent
+		newMaterial := material.New(origMaterial.GetAmbient(), origMaterial.GetDiffuse(), mgl32.Vec3{red, green, blue}, origMaterial.GetShininess())
+		sphereMesh.(*mesh.MaterialMesh).Material = newMaterial
+		break
+	default:
+		fmt.Println("Irrelevant state, skipping update.")
+		break
 	}
 }
 func (scrn *EditorScreen) defaultCharset() {
