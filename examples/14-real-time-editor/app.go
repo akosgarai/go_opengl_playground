@@ -191,6 +191,19 @@ func (si *SliderInput) Hover() {
 func (si *SliderInput) Clear() {
 	si.baseModelToDefaultState()
 }
+
+// The black line for the slider. It represents the min-max interval.
+// The lenght of it: 3/4 of the foreground width - width of the slider.
+// The width of the slider is interval length / 10
+func (si *SliderInput) sliderAreaWidth() float32 {
+	return 3 * si.surfaceSize.Y() / 4 / si.aspect
+}
+func (si *SliderInput) sliderSquareWidth() float32 {
+	return si.sliderAreaWidth() / 10.0
+}
+func (si *SliderInput) sliderSpaceWidth() float32 {
+	return si.sliderAreaWidth() * 0.9
+}
 func (si *SliderInput) baseModelToHoverState() {
 	bgRect := rectangle.NewExact(si.frameSize.Y()/si.aspect, si.frameSize.X()/si.aspect)
 	V, I, BO := bgRect.ColoredMeshInput(si.hoverColor)
@@ -208,20 +221,15 @@ func (si *SliderInput) baseModelToHoverState() {
 	tiRect := rectangle.NewExact(si.surfaceSize.Y()/4/si.aspect, si.surfaceSize.X()/2/si.aspect)
 	V, I, _ = tiRect.ColoredMeshInput(si.textInputColor)
 	tif := mesh.NewColorMesh(V, I, si.textInputColor, glWrapper)
-	tif.SetPosition(mgl32.Vec3{si.surfaceSize.X() / 4.0 / si.aspect, -InputFieldDistanceFromForeground, 3.0 * si.surfaceSize.Y() / 8 / si.aspect})
+	tif.SetPosition(mgl32.Vec3{si.surfaceSize.X() / 4.0 / si.aspect, -InputFieldDistanceFromForeground, si.sliderAreaWidth() / 2.0})
 	tif.SetParent(fg)
-	// The black line for the slider. It represents the min-max interval.
-	// The lenght of it: 3/4 of the foreground width - width of the slider.
-	// The width of the slider is interval length / 10
-	lenFull := 3 * si.surfaceSize.Y() / 4 / si.aspect
-	len := lenFull * 0.9
 	blackLineColor := []mgl32.Vec3{mgl32.Vec3{0, 0, 0}}
-	blackLineRect := rectangle.NewExact(len, 0.005/si.aspect)
+	blackLineRect := rectangle.NewExact(si.sliderSpaceWidth(), 0.005/si.aspect)
 	V, I, _ = blackLineRect.ColoredMeshInput(blackLineColor)
 	blackLine := mesh.NewColorMesh(V, I, blackLineColor, glWrapper)
 	blackLine.SetParent(fg)
 	blackLine.SetPosition(mgl32.Vec3{si.surfaceSize.X() / 4.0 / si.aspect, -InputFieldDistanceFromForeground, -si.surfaceSize.Y() / 8 / si.aspect})
-	sliderRect := rectangle.NewExact(lenFull/10.0, lenFull/10.0)
+	sliderRect := rectangle.NewExact(si.sliderSquareWidth(), si.sliderSquareWidth())
 	sliderColor := []mgl32.Vec3{mgl32.Vec3{0.3, 0.5, 0.7}}
 	V, I, BO = sliderRect.ColoredMeshInput(sliderColor)
 	slider := mesh.NewColorMesh(V, I, sliderColor, glWrapper)
@@ -264,20 +272,15 @@ func (si *SliderInput) baseModelToDefaultState() {
 	tiRect := rectangle.NewExact(si.surfaceSize.Y()/4/si.aspect, si.surfaceSize.X()/2/si.aspect)
 	V, I, _ = tiRect.ColoredMeshInput(si.textInputColor)
 	tif := mesh.NewColorMesh(V, I, si.textInputColor, glWrapper)
-	tif.SetPosition(mgl32.Vec3{si.surfaceSize.X() / 4.0 / si.aspect, -InputFieldDistanceFromForeground, 3.0 * si.surfaceSize.Y() / 8 / si.aspect})
+	tif.SetPosition(mgl32.Vec3{si.surfaceSize.X() / 4.0 / si.aspect, -InputFieldDistanceFromForeground, si.sliderAreaWidth() / 2.0})
 	tif.SetParent(fg)
-	// The black line for the slider. It represents the min-max interval.
-	// The lenght of it: 3/4 of the foreground width - width of the slider.
-	// The width of the slider is interval length / 10
-	lenFull := 3 * si.surfaceSize.Y() / 4 / si.aspect
-	len := lenFull * 0.9
 	blackLineColor := []mgl32.Vec3{mgl32.Vec3{0, 0, 0}}
-	blackLineRect := rectangle.NewExact(len, 0.005/si.aspect)
+	blackLineRect := rectangle.NewExact(si.sliderSpaceWidth(), 0.005/si.aspect)
 	V, I, _ = blackLineRect.ColoredMeshInput(blackLineColor)
 	blackLine := mesh.NewColorMesh(V, I, blackLineColor, glWrapper)
 	blackLine.SetParent(fg)
 	blackLine.SetPosition(mgl32.Vec3{si.surfaceSize.X() / 4.0 / si.aspect, -InputFieldDistanceFromForeground, -si.surfaceSize.Y() / 8 / si.aspect})
-	sliderRect := rectangle.NewExact(lenFull/10.0, lenFull/10.0)
+	sliderRect := rectangle.NewExact(si.sliderSquareWidth(), si.sliderSquareWidth())
 	sliderColor := []mgl32.Vec3{mgl32.Vec3{0.3, 0.5, 0.7}}
 	V, I, BO = sliderRect.ColoredMeshInput(sliderColor)
 	slider := mesh.NewColorMesh(V, I, sliderColor, glWrapper)
@@ -323,22 +326,22 @@ func (si *SliderInput) MoveSliderWith(x float32) {
 	}
 	currentPosition := slider.GetPosition()
 	// The vertical position has to be kept above the black line, so that it might be updated with the max/min value.
-	lenFull := 3 * si.surfaceSize.Y() / 4 / si.aspect * 0.9
+	sliderSpaceWidth := si.sliderSpaceWidth()
 	newVerticalCoordinateValue := currentPosition.Z() - x
-	if newVerticalCoordinateValue > lenFull/2 {
-		newVerticalCoordinateValue = lenFull / 2
+	if newVerticalCoordinateValue > sliderSpaceWidth/2 {
+		newVerticalCoordinateValue = sliderSpaceWidth / 2
 	}
-	if newVerticalCoordinateValue < -lenFull/2 {
-		newVerticalCoordinateValue = -lenFull / 2
+	if newVerticalCoordinateValue < -sliderSpaceWidth/2 {
+		newVerticalCoordinateValue = -sliderSpaceWidth / 2
 	}
 	newPosition := mgl32.Vec3{currentPosition.X(), currentPosition.Y(), newVerticalCoordinateValue}
 	slider.SetPosition(newPosition)
 	si.updateCurrentFromPosition(newPosition)
 }
 func (si *SliderInput) updateCurrentFromPosition(currentPosition mgl32.Vec3) {
-	lenFull := 3 * si.surfaceSize.Y() / 4 / si.aspect * 0.9
-	diffFromMinimum := currentPosition.Z() + lenFull/2
-	ratio := diffFromMinimum / lenFull
+	sliderSpaceWidth := si.sliderSpaceWidth()
+	diffFromMinimum := currentPosition.Z() + sliderSpaceWidth/2
+	ratio := diffFromMinimum / sliderSpaceWidth
 	value := (si.sliderMax-si.sliderMin)*ratio + si.sliderMin
 	si.sliderCurrent = value
 	fmt.Printf("Current value: %f\n", si.sliderCurrent)
