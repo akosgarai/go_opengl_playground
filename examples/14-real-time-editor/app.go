@@ -739,24 +739,6 @@ func NewEditorScreen() *EditorScreen {
 	}
 	siShininess.SetLabel(NewLabel("Shininess", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, TextInputField.X() / aspectRatio / 2, -0.01}, 0.0005, s))
 	MenuModels["MaterialShininessForm"] = append(MenuModels["MaterialShininessForm"], siShininess)
-	// text input
-	ti := NewTextInput(TextInputframe, TextInputsurface, TextInputField, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.5, -FormItemsDistanceFromScreen, 0.0}, aspectRatio)
-	s, err = ti.GetMeshByIndex(1)
-	if err != nil {
-		fmt.Println("Something terrible happened on ti branch.")
-		panic(err)
-	}
-	ti.SetLabel(NewLabel("TextInputLabel", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, TextInputField.X() / aspectRatio / 2, -0.01}, 0.0005, s))
-	MenuModels["Default"] = append(MenuModels["Default"], ti)
-	// slider input
-	si := NewSliderInput(TextInputframe, TextInputsurface, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.1, -FormItemsDistanceFromScreen, 0.0}, aspectRatio, 0.0, 1.0)
-	s, err = si.GetMeshByIndex(1)
-	if err != nil {
-		fmt.Println("Something terrible happened on si branch.")
-		panic(err)
-	}
-	si.SetLabel(NewLabel("SliderInputLabel", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, TextInputField.X() / aspectRatio / 2, -0.01}, 0.0005, s))
-	MenuModels["Default"] = append(MenuModels["Default"], si)
 	es.menuModels = MenuModels
 	es.AddShader(es.menuShader)
 	es.Setup(es.setupApp)
