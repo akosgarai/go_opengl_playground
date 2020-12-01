@@ -1,6 +1,6 @@
 # Real time editor
 
-This application is a kind of material editor. It displays a material sphere and a form, where i can set the parameters of the material. The UI items will be implemented in the engine later.
+This application is a kind of material editor. It displays a material sphere and a form, where i can set the parameters of the material. The UI items will be implemented in the engine later. With the buttons you can navigate to the form screens. On the form screens, with the sliders you can change the material components of the sphere. There is a directional light source attached to the screen, so that you can see, how the material changes when you update the color components. The key `s` hides / displays the menu panel.
 
 How to run the application (if you are in the main directory):
 
