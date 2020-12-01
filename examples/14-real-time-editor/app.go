@@ -203,7 +203,7 @@ func (si *SliderInput) Clear() {
 }
 
 // The black line for the slider. It represents the min-max interval.
-// The lenght of it: 3/4 of the foreground width - width of the slider.
+// The length of it: 3/4 of the foreground width - width of the slider.
 // The width of the slider is interval length / 10
 func (si *SliderInput) sliderAreaWidth() float32 {
 	return 3 * si.surfaceSize.Y() / 4 / si.aspect
