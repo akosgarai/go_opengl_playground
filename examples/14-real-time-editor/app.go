@@ -66,6 +66,14 @@ var (
 	TextInputFieldColor   = []mgl32.Vec3{mgl32.Vec3{1.0, 1.0, 1.0}}
 	// the states
 	AllScreenStates = []string{"Default", "Material", "MaterialAmbientForm", "MaterialDiffuseForm", "MaterialSpecularForm", "MaterialShininessForm"}
+	ScreenLabels    = map[string]string{
+		"Default":               "Editor application",
+		"Material":              "Material",
+		"MaterialAmbientForm":   "Material > Ambient",
+		"MaterialDiffuseForm":   "Material > Diffuse",
+		"MaterialSpecularForm":  "Material > Specualar",
+		"MaterialShininessForm": "Material > Shininess",
+	}
 )
 
 type Label struct {
@@ -329,7 +337,6 @@ func (si *SliderInput) updateCurrentFromPosition(currentPosition mgl32.Vec3) {
 	ratio := diffFromMinimum / sliderSpaceWidth
 	value := (si.sliderMax-si.sliderMin)*ratio + si.sliderMin
 	si.sliderCurrent = value
-	fmt.Printf("Current value: %f\n", si.sliderCurrent)
 }
 
 // It is the representation of the text input ui item.
@@ -603,7 +610,10 @@ func NewEditorScreen() *EditorScreen {
 	MenuModels := make(map[string][]interfaces.Model)
 	aspectRatio := scrn.GetAspectRatio()
 	screenMesh := CreateMenuRectangle(aspectRatio)
+	screenLabelMesh := CreateMenuLabelRectangle(aspectRatio)
+	screenLabelMesh.SetParent(screenMesh)
 	ModelMenu.AddMesh(screenMesh)
+	ModelMenu.AddMesh(screenLabelMesh)
 	es := &EditorScreen{
 		Screen:      scrn,
 		menuShader:  shader.NewShader(baseDir()+"/shaders/vertexshader.vert", baseDir()+"/shaders/fragmentshader.frag", glWrapper),
@@ -852,6 +862,13 @@ func (scrn *EditorScreen) RemoveMenuPanel() {
 				scrn.charset.CleanSurface(msh)
 			}
 			break
+		default:
+			// default case for the menu panel. We have to clean it.
+			msh, err := scrn.menuModels[scrn.state][index].(*model.BaseModel).GetMeshByIndex(1)
+			if err == nil {
+				scrn.charset.CleanSurface(msh)
+			}
+			break
 		}
 		scrn.RemoveModelFromShader(scrn.menuModels[scrn.state][index], scrn.menuShader)
 	}
@@ -992,6 +1009,16 @@ func (scrn *EditorScreen) Update(dt float64, p interfaces.Pointer, keyStore inte
 						w, _ := scrn.charset.TextContainerSize(valueText, item.GetLabelSize()/item.aspect)
 						scrn.charset.PrintTo(transformations.Float32ToStringExact(item.sliderCurrent), -w/2, 0, pos.Z(), item.GetLabelSize()/item.aspect, scrn.GetWrapper(), msh, []mgl32.Vec3{item.GetLabelColor()})
 					}
+				}
+				break
+			default:
+				// default case for the state label.
+				// Print the state label to the top.
+				msh, err := scrn.menuModels[scrn.state][index].(*model.BaseModel).GetMeshByIndex(1)
+				if err == nil {
+					labelSize := 0.001 / scrn.GetAspectRatio()
+					w, h := scrn.charset.TextContainerSize(ScreenLabels[scrn.state], labelSize)
+					scrn.charset.PrintTo(ScreenLabels[scrn.state], -w/2.0, -h, -0.01, labelSize, scrn.GetWrapper(), msh, []mgl32.Vec3{mgl32.Vec3{0, 0, 0}})
 				}
 				break
 			}
@@ -1210,6 +1237,15 @@ func CreateMenuRectangle(aspect float32) *mesh.ColorMesh {
 	v, i, _ := rect.ColoredMeshInput(colors)
 	menu := mesh.NewColorMesh(v, i, colors, glWrapper)
 	menu.SetPosition(mgl32.Vec3{0.0, 0.0, 0.5 / aspect})
+	return menu
+}
+func CreateMenuLabelRectangle(aspect float32) *mesh.ColorMesh {
+	rect := rectangle.NewExact(1.0/aspect, 0.2/aspect)
+	colors := []mgl32.Vec3{mgl32.Vec3{0.0, 0.0, 1.0}}
+	v, i, _ := rect.ColoredMeshInput(colors)
+	menu := mesh.NewColorMesh(v, i, colors, glWrapper)
+	menu.SetPosition(mgl32.Vec3{-0.9 / aspect, -0.1 / aspect, 0.0})
+	menu.RotateY(-90)
 	return menu
 }
 func CreateApplicationScreen() *EditorScreen {
