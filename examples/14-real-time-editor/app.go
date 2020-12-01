@@ -581,7 +581,7 @@ type EditorScreen struct {
 	// Default state - only the Material button is shown.
 	// Material state - the Color and the back buttons are shown. The Material
 	// text is printed to the top of the screen mesh.
-	// Material[Amibent|Diffuse|Specular]Form state - the back button is printed,
+	// Material[Amibent|Diffuse|Specular|Shininess]Form state - the back button is printed,
 	// the Material > Color comp. text is printed to the top of the screen mesh.
 	state string
 	// the sphere model for easy access.
@@ -624,6 +624,7 @@ func NewEditorScreen() *EditorScreen {
 	MenuModels["MaterialAmbientForm"] = append(MenuModels["MaterialAmbientForm"], ModelMenu)
 	MenuModels["MaterialDiffuseForm"] = append(MenuModels["MaterialDiffuseForm"], ModelMenu)
 	MenuModels["MaterialSpecularForm"] = append(MenuModels["MaterialSpecularForm"], ModelMenu)
+	MenuModels["MaterialShininessForm"] = append(MenuModels["MaterialShininessForm"], ModelMenu)
 	btn := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, -0.35}, aspectRatio)
 	s, err := btn.GetMeshByIndex(1)
 	if err != nil {
@@ -663,6 +664,16 @@ func NewEditorScreen() *EditorScreen {
 	btnSpecular.SetLabel(NewLabel("Specular", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
 	btnSpecular.clickCallback = es.SetStateMaterialSpecularForm
 	MenuModels["Material"] = append(MenuModels["Material"], btnSpecular)
+	// Shininess button Material State
+	btnShininess := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.8, -FormItemsDistanceFromScreen, -0.15}, aspectRatio)
+	s, err = btnShininess.GetMeshByIndex(1)
+	if err != nil {
+		fmt.Println("Something terrible happened on btn branch.")
+		panic(err)
+	}
+	btnShininess.SetLabel(NewLabel("Shininess", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, 0, -FormItemsDistanceFromScreen}, 0.0005, s))
+	btnShininess.clickCallback = es.SetStateMaterialShininessForm
+	MenuModels["Material"] = append(MenuModels["Material"], btnShininess)
 	// back button Material State
 	btnBack := NewButton(Buttonframe, Buttonsurface, buttonDefaultColor, buttonHoverColor, screenMesh, mgl32.Vec3{0.9, -FormItemsDistanceFromScreen, 0.35}, aspectRatio)
 	s, err = btnBack.GetMeshByIndex(1)
@@ -685,6 +696,7 @@ func NewEditorScreen() *EditorScreen {
 	MenuModels["MaterialAmbientForm"] = append(MenuModels["MaterialAmbientForm"], btnBackForm)
 	MenuModels["MaterialDiffuseForm"] = append(MenuModels["MaterialDiffuseForm"], btnBackForm)
 	MenuModels["MaterialSpecularForm"] = append(MenuModels["MaterialSpecularForm"], btnBackForm)
+	MenuModels["MaterialShininessForm"] = append(MenuModels["MaterialShininessForm"], btnBackForm)
 	// slider inputs for the color components.
 	siRed := NewSliderInput(TextInputframe, TextInputsurface, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{-0.5, -FormItemsDistanceFromScreen, 0.0}, aspectRatio, 0.0, 1.0)
 	s, err = siRed.GetMeshByIndex(1)
@@ -716,6 +728,15 @@ func NewEditorScreen() *EditorScreen {
 	MenuModels["MaterialAmbientForm"] = append(MenuModels["MaterialAmbientForm"], siBlue)
 	MenuModels["MaterialDiffuseForm"] = append(MenuModels["MaterialDiffuseForm"], siBlue)
 	MenuModels["MaterialSpecularForm"] = append(MenuModels["MaterialSpecularForm"], siBlue)
+	// shininess component
+	siShininess := NewSliderInput(TextInputframe, TextInputsurface, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.1, -FormItemsDistanceFromScreen, 0.0}, aspectRatio, 0.0, 128.0)
+	s, err = siShininess.GetMeshByIndex(1)
+	if err != nil {
+		fmt.Println("Something terrible happened on si branch.")
+		panic(err)
+	}
+	siShininess.SetLabel(NewLabel("Shininess", mgl32.Vec3{0, 0, 0.05}, mgl32.Vec3{0, TextInputField.X() / aspectRatio / 2, -0.01}, 0.0005, s))
+	MenuModels["MaterialShininessForm"] = append(MenuModels["MaterialShininessForm"], siShininess)
 	// text input
 	ti := NewTextInput(TextInputframe, TextInputsurface, TextInputField, TextInputDefaultColor, TextInputHoverColor, TextInputFieldColor, screenMesh, mgl32.Vec3{0.5, -FormItemsDistanceFromScreen, 0.0}, aspectRatio)
 	s, err = ti.GetMeshByIndex(1)
@@ -793,6 +814,16 @@ func (scrn *EditorScreen) SetStateMaterialSpecularForm() {
 	scrn.menuModels["MaterialSpecularForm"][4].(*SliderInput).SetCurrentValue(colorComponent.Z())
 	scrn.setState("MaterialSpecularForm")
 }
+func (scrn *EditorScreen) SetStateMaterialShininessForm() {
+	msh, err := scrn.sphereModel.GetMeshByIndex(0)
+	if err != nil {
+		fmt.Println("Mesh is missing. Skipping update.")
+		return
+	}
+	colorComponent := msh.(*mesh.MaterialMesh).Material.GetShininess()
+	scrn.menuModels["MaterialShininessForm"][2].(*SliderInput).SetCurrentValue(colorComponent)
+	scrn.setState("MaterialShininessForm")
+}
 func (scrn *EditorScreen) setState(newState string) {
 	scrn.RemoveMenuPanel()
 	scrn.state = newState
@@ -868,7 +899,7 @@ func (scrn *EditorScreen) MenuItemsDefaultState() {
 	}
 }
 func (scrn *EditorScreen) releaseButtons() {
-	allStates := []string{"Default", "Material", "MaterialAmbientForm", "MaterialDiffuseForm", "MaterialSpecularForm"}
+	allStates := []string{"Default", "Material", "MaterialAmbientForm", "MaterialDiffuseForm", "MaterialSpecularForm", "MaterialShininessForm"}
 	for _, name := range allStates {
 		if _, ok := scrn.menuModels[name]; !ok {
 			continue
@@ -1005,6 +1036,11 @@ func (scrn *EditorScreen) updateMaterialColorComponent() {
 		newMaterial := material.New(origMaterial.GetAmbient(), origMaterial.GetDiffuse(), mgl32.Vec3{red, green, blue}, origMaterial.GetShininess())
 		sphereMesh.(*mesh.MaterialMesh).Material = newMaterial
 		break
+	case "MaterialShininessForm":
+		shininess := scrn.menuModels[scrn.state][2].(*SliderInput).sliderCurrent
+		newMaterial := material.New(origMaterial.GetAmbient(), origMaterial.GetDiffuse(), origMaterial.GetSpecular(), shininess)
+		sphereMesh.(*mesh.MaterialMesh).Material = newMaterial
+		break
 	default:
 		fmt.Println("Irrelevant state, skipping update.")
 		break
@@ -1018,7 +1054,7 @@ func (scrn *EditorScreen) defaultCharset() {
 	cs.SetTransparent(true)
 	scrn.charset = cs
 	// Update the position of the labels. It depends on the charset setup.
-	allStates := []string{"Default", "Material", "MaterialAmbientForm", "MaterialDiffuseForm", "MaterialSpecularForm"}
+	allStates := []string{"Default", "Material", "MaterialAmbientForm", "MaterialDiffuseForm", "MaterialSpecularForm", "MaterialShininessForm"}
 	for _, name := range allStates {
 		if _, ok := scrn.menuModels[name]; !ok {
 			continue
