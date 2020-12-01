@@ -64,6 +64,8 @@ var (
 	TextInputDefaultColor = []mgl32.Vec3{mgl32.Vec3{0.4, 0.4, 0.4}}
 	TextInputHoverColor   = []mgl32.Vec3{mgl32.Vec3{0.4, 0.8, 0.4}}
 	TextInputFieldColor   = []mgl32.Vec3{mgl32.Vec3{1.0, 1.0, 1.0}}
+	// the states
+	AllScreenStates = []string{"Default", "Material", "MaterialAmbientForm", "MaterialDiffuseForm", "MaterialSpecularForm", "MaterialShininessForm"}
 )
 
 type Label struct {
@@ -561,16 +563,6 @@ func NewButton(sizeFrame, sizeSurface mgl32.Vec2, defaultCol, hoverCol []mgl32.V
 	return btn
 }
 
-/*
-type FormSurfaceModel struct {
-	*model.BaseModel
-	surfaceColor []mgl32.Vec3
-	surfaceSize  mgl32.Vec2
-	position     mgl32.Vec3
-	aspect       float32
-}
-*/
-
 // It represents our editor.
 type EditorScreen struct {
 	*screen.Screen
@@ -899,8 +891,7 @@ func (scrn *EditorScreen) MenuItemsDefaultState() {
 	}
 }
 func (scrn *EditorScreen) releaseButtons() {
-	allStates := []string{"Default", "Material", "MaterialAmbientForm", "MaterialDiffuseForm", "MaterialSpecularForm", "MaterialShininessForm"}
-	for _, name := range allStates {
+	for _, name := range AllScreenStates {
 		if _, ok := scrn.menuModels[name]; !ok {
 			continue
 		}
@@ -1054,8 +1045,7 @@ func (scrn *EditorScreen) defaultCharset() {
 	cs.SetTransparent(true)
 	scrn.charset = cs
 	// Update the position of the labels. It depends on the charset setup.
-	allStates := []string{"Default", "Material", "MaterialAmbientForm", "MaterialDiffuseForm", "MaterialSpecularForm", "MaterialShininessForm"}
-	for _, name := range allStates {
+	for _, name := range AllScreenStates {
 		if _, ok := scrn.menuModels[name]; !ok {
 			continue
 		}
